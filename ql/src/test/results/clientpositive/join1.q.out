@@ -59,6 +59,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3
           Select Operator
             expressions:
@@ -107,11 +108,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: SELECT dest_j1.* FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1880963968/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/1811838516/10000
 POSTHOOK: query: SELECT dest_j1.* FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1880963968/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/1811838516/10000
 0	val_0
 0	val_0
 0	val_0

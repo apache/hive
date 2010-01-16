@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
+import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Task;
 
 /**
  * Conditional task resolution interface. This is invoked at run time to get the task to invoke. 
@@ -31,5 +35,5 @@ public interface ConditionalResolver {
 	 * @param ctx  opaque context
 	 * @return position of the task
 	 */
-	public int getTaskId(HiveConf conf, Object ctx);
+	public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
 }

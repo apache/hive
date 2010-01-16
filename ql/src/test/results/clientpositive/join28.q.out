@@ -29,8 +29,10 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -45,6 +47,7 @@ STAGE PLANS:
               condition expressions:
                 0 {key}
                 1 
+              handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
@@ -72,6 +75,7 @@ STAGE PLANS:
                   condition expressions:
                     0 {key}
                     1 
+                  handleSkewJoin: false
                   keys:
                     0 [Column[key]]
                     1 [Column[key]]
@@ -87,7 +91,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1349661122/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/296504271/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -104,6 +108,7 @@ STAGE PLANS:
                 condition expressions:
                   0 {_col0}
                   1 {value}
+                handleSkewJoin: false
                 keys:
                   0 [Column[_col0]]
                   1 [Column[key]]
@@ -159,6 +164,7 @@ STAGE PLANS:
                         condition expressions:
                           0 {_col0}
                           1 {value}
+                        handleSkewJoin: false
                         keys:
                           0 [Column[_col0]]
                           1 [Column[key]]
@@ -189,35 +195,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1313653258/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/1349661122/10003 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest_j1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/562095980/10000
 
   Stage: Stage-0
     Move Operator
@@ -228,6 +211,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/296504271/10003 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
@@ -255,11 +264,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/811789807/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1591031497/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/811789807/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1591031497/10000
 128	val_128
 128	val_128
 128	val_128

@@ -24,11 +24,11 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: select * from t1 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1860298432/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1822344324/10000
 POSTHOOK: query: select * from t1 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1860298432/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1822344324/10000
 0	val_0
 0	val_0
 0	val_0
@@ -50,11 +50,11 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: select * from t2 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/235720982/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1897836188/10000
 POSTHOOK: query: select * from t2 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/235720982/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1897836188/10000
 0	val_0
 0	val_0
 0	val_0
@@ -78,11 +78,11 @@ POSTHOOK: Output: default@t3
 PREHOOK: query: select * from t3 sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1672196650/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1295614583/10000
 POSTHOOK: query: select * from t3 sort by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1672196650/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1295614583/10000
 0	val_0
 0	val_0
 0	val_0
@@ -113,11 +113,11 @@ POSTHOOK: Output: default@t4
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2113785466/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/110828986/10000
 POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2113785466/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/110828986/10000
 PREHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
@@ -182,6 +182,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -200,7 +201,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/721833201/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/874015996/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -232,12 +233,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1834571355/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/719598717/10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1834571355/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/719598717/10000
 0	val_0
 0	val_0
 0	val_0
@@ -308,6 +309,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -326,7 +328,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1387501870/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/443021302/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -358,12 +360,12 @@ PREHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/660184449/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/47199658/10000
 POSTHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/660184449/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/47199658/10000
 0	val_0
 0	val_0
 0	val_0
@@ -436,6 +438,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -454,7 +457,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/416754588/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1820186808/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -486,12 +489,12 @@ PREHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/138871132/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1104896819/10000
 POSTHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/138871132/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1104896819/10000
 PREHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
@@ -564,6 +567,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col1
           Select Operator
             expressions:
@@ -580,7 +584,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/489398161/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/852467505/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -608,12 +612,12 @@ PREHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/802843404/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/429851475/10000
 POSTHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/802843404/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/429851475/10000
 val_0
 val_0
 val_0
@@ -701,6 +705,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -719,7 +724,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1424338560/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/568618311/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -751,12 +756,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/249026043/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/325580841/10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/249026043/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/325580841/10000
 0	val_0
 0	val_0
 0	val_0
@@ -835,6 +840,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col1
           Select Operator
             expressions:
@@ -851,7 +857,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/994124380/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1835076993/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -879,12 +885,12 @@ PREHOOK: query: select a.value from t1 a left semi join (select key from t3 wher
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/301375965/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/802055445/10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key from t3 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/301375965/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/802055445/10000
 val_10
 val_8
 val_9
@@ -973,6 +979,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col1
           Select Operator
             expressions:
@@ -989,7 +996,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1278601785/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1099438469/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1017,12 +1024,12 @@ PREHOOK: query: select a.value from t1 a left semi join (select key , value from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1307756283/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/847509449/10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key , value from t2 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1307756283/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/847509449/10000
 PREHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
@@ -1100,6 +1107,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -1118,7 +1126,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/650280148/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/752092838/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1150,12 +1158,12 @@ PREHOOK: query: select * from t2 a left semi join (select key , value from t1 wh
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1337909566/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1124866757/10000
 POSTHOOK: query: select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1337909566/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1124866757/10000
 4	val_2
 8	val_4
 10	val_5
@@ -1186,6 +1194,7 @@ STAGE PLANS:
               condition expressions:
                 0 {key}
                 1 
+              handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[_col0]]
@@ -1225,6 +1234,7 @@ STAGE PLANS:
                       condition expressions:
                         0 {key}
                         1 
+                      handleSkewJoin: false
                       keys:
                         0 [Column[key]]
                         1 [Column[_col0]]
@@ -1240,7 +1250,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1502786844/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1246154974/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1278,12 +1288,12 @@ PREHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/956596787/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/528721862/10000
 POSTHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/956596787/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/528721862/10000
 0
 0
 0
@@ -1367,6 +1377,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -1385,7 +1396,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1944075529/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/63039358/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1417,12 +1428,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2044127216/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/492389910/10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2044127216/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/492389910/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1510,6 +1521,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col3
           Select Operator
             expressions:
@@ -1532,7 +1544,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/938541959/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1771820602/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1569,13 +1581,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/254520600/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/763936868/10000
 POSTHOOK: query: select * from t1 a join t2 b on a.key = b.key left semi join t3 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/254520600/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/763936868/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1666,6 +1678,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           Select Operator
             expressions:
@@ -1684,7 +1697,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/179874181/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1587364336/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1716,12 +1729,12 @@ PREHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1349295913/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/825220067/10000
 POSTHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1349295913/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/825220067/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1763,6 +1776,7 @@ STAGE PLANS:
                 0 {key}
                 1 
                 2 
+              handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[_col0]]
@@ -1808,6 +1822,7 @@ STAGE PLANS:
                         0 {key}
                         1 
                         2 
+                      handleSkewJoin: false
                       keys:
                         0 [Column[key]]
                         1 [Column[_col0]]
@@ -1843,6 +1858,7 @@ STAGE PLANS:
                         0 {key}
                         1 
                         2 
+                      handleSkewJoin: false
                       keys:
                         0 [Column[key]]
                         1 [Column[_col0]]
@@ -1859,7 +1875,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/144703073/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/580117324/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1898,13 +1914,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/483454873/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1272632986/10000
 POSTHOOK: query: select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/483454873/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1272632986/10000
 0
 0
 0
@@ -1995,6 +2011,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2011,7 +2028,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1776975919/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/832606254/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2040,13 +2057,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1305325861/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1411619492/10000
 POSTHOOK: query: select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1305325861/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1411619492/10000
 0
 0
 0
@@ -2149,6 +2166,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2165,7 +2183,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1724932302/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1566445577/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2194,13 +2212,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2077718744/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1441048499/10000
 POSTHOOK: query: select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2077718744/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1441048499/10000
 NULL
 NULL
 NULL
@@ -2306,6 +2324,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2322,7 +2341,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1208550141/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/882719133/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2351,13 +2370,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1726316291/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1804734638/10000
 POSTHOOK: query: select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1726316291/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1804734638/10000
 NULL
 NULL
 NULL
@@ -2463,6 +2482,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2479,7 +2499,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1389408048/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/72771189/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2508,13 +2528,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/442645926/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1822254251/10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/442645926/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1822254251/10000
 0
 0
 0
@@ -2620,6 +2640,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2636,7 +2657,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1305395524/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1181201254/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2665,13 +2686,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/856536199/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/541121985/10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/856536199/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/541121985/10000
 NULL
 NULL
 NULL
@@ -2779,6 +2800,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2795,7 +2817,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1553440978/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/874601771/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2824,13 +2846,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2113266921/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/575517554/10000
 POSTHOOK: query: select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2113266921/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/575517554/10000
 NULL
 NULL
 NULL
@@ -2938,6 +2960,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
@@ -2981,6 +3004,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -2997,7 +3021,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/125297931/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/336616654/10003 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3026,13 +3050,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1578918637/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/633032319/10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1578918637/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/633032319/10000
 0
 0
 0

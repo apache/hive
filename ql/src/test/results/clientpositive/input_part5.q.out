@@ -20,8 +20,10 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-4
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -60,39 +62,12 @@ STAGE PLANS:
 
   Stage: Stage-4
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/482076054/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/662191449/10002 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-                          expr: hr
-                          type: string
-                          expr: ds
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1914556139/10000
 
   Stage: Stage-0
     Move Operator
@@ -103,6 +78,36 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: tmptable
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1956159984/10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: hr
+                    type: string
+                    expr: ds
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: tmptable
 
 
 PREHOOK: query: insert overwrite table tmptable
@@ -120,11 +125,11 @@ POSTHOOK: Output: default@tmptable
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384620991/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1308089545/10000
 POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384620991/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1308089545/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

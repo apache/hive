@@ -16,8 +16,10 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-4
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -55,37 +57,12 @@ STAGE PLANS:
 
   Stage: Stage-4
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1689506606/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/552481309/10002 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: c1
-                          type: string
-                          expr: c2
-                          type: int
-                          expr: c3
-                          type: double
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: ppd_constant_expr
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1294553801/10000
 
   Stage: Stage-0
     Move Operator
@@ -96,6 +73,34 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: ppd_constant_expr
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1450499892/10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: c1
+                    type: string
+                    expr: c2
+                    type: int
+                    expr: c3
+                    type: double
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: ppd_constant_expr
 
 
 PREHOOK: query: FROM src1 
@@ -111,11 +116,11 @@ POSTHOOK: Output: default@ppd_constant_expr
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1743239897/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1399722106/10000
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1743239897/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1399722106/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -82,10 +83,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver, Seria
     }
   }
   
-	public int getTaskId(HiveConf conf, Object objCtx) {
+	public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object objCtx) {
     ConditionalResolverMergeFilesCtx ctx = (ConditionalResolverMergeFilesCtx)objCtx;
     String dirName = ctx.getDir();
     
+    List<Task<? extends Serializable>> resTsks = new ArrayList<Task<? extends Serializable>>();
     // check if a map-reduce job is needed to merge the files
     // If the current size is smaller than the target, merge
     long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
@@ -114,13 +116,14 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver, Seria
           reducers = Math.max(1, reducers);
           reducers = Math.min(maxReducers, reducers);
           work.setNumReduceTasks(reducers);
-          
-          return 1;
+          resTsks.add(tsk);
+          return resTsks;
         }
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return 0;    
+    resTsks.add(ctx.getListTasks().get(0));
+    return resTsks;
   }
 }

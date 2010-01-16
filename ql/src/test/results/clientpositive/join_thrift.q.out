@@ -68,6 +68,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col4}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col10
           Select Operator
             expressions:
@@ -94,14 +95,14 @@ JOIN src_thrift s2
 ON s1.aint = s2.aint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/895447236/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1362622837/10000
 POSTHOOK: query: SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/895447236/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1362622837/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

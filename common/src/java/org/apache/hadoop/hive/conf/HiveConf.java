@@ -78,6 +78,7 @@ public class HiveConf extends Configuration {
     HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),
     HADOOPFS("fs.default.name", "file:///"),
     HADOOPMAPFILENAME("map.input.file", null),
+    HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
     HADOOPJT("mapred.job.tracker", "local"),
     HADOOPNUMREDUCERS("mapred.reduce.tasks", 1),
     HADOOPJOBNAME("mapred.job.name", null),
@@ -168,6 +169,9 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(256*1000*1000)),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long)(16*1000*1000)),
 
+    HIVESKEWJOIN("hive.optimize.skewjoin", false),
+    HIVESKEWJOINKEY("hive.skewjoin.key", 500000),
+    
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),
 

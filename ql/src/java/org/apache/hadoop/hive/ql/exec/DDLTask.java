@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -102,8 +103,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     super();
   }
 
-  public void initialize(HiveConf conf, QueryPlan queryPlan) {
-    super.initialize(conf, queryPlan);
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
+    super.initialize(conf, queryPlan, ctx);
     this.conf = conf;
   }
 
@@ -1313,6 +1314,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   public int getType() {
     return StageType.DDL;
+  }
+
+  @Override
+  public String getName() {
+    return "DDL";
   }
 
 }

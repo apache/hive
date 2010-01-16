@@ -19,7 +19,6 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
   Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -76,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/931895538/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1488424069/10002 
           Union
             Select Operator
               expressions:
@@ -95,7 +94,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/931895538/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1488424069/10003 
           Union
             Select Operator
               expressions:
@@ -175,7 +174,7 @@ PREHOOK: query: select * from (
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1999598065/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/245645294/10000
 POSTHOOK: query: select * from (
   select * from srcpart a where a.ds = '2008-04-08' and a.hr = '11' order by a.key limit 5
     union all
@@ -183,7 +182,7 @@ POSTHOOK: query: select * from (
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1999598065/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/245645294/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

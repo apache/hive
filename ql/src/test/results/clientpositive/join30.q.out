@@ -36,6 +36,7 @@ STAGE PLANS:
               condition expressions:
                 0 {key}
                 1 
+              handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
@@ -63,6 +64,7 @@ STAGE PLANS:
                   condition expressions:
                     0 {key}
                     1 
+                  handleSkewJoin: false
                   keys:
                     0 [Column[key]]
                     1 [Column[key]]
@@ -78,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/673454449/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1478873095/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -169,11 +171,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1274000397/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/292750136/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1274000397/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/292750136/10000
 66	1
 98	2
 128	3

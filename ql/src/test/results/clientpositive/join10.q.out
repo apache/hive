@@ -71,6 +71,7 @@ STAGE PLANS:
           condition expressions:
             0 
             1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col2, _col3
           Select Operator
             expressions:
@@ -99,7 +100,7 @@ ON (x.key = Y.key)
 SELECT Y.*
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2042178878/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/229474098/10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -108,7 +109,7 @@ ON (x.key = Y.key)
 SELECT Y.*
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2042178878/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/229474098/10000
 0	val_0
 0	val_0
 0	val_0

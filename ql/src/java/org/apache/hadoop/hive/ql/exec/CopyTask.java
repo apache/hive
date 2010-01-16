@@ -86,4 +86,9 @@ public class CopyTask extends Task<copyWork> implements Serializable {
   public int getType() {
     return StageType.COPY;
   }
+
+  @Override
+  public String getName() {
+    return "COPY";
+  }
 }

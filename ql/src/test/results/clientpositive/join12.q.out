@@ -115,6 +115,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 {VALUE._col1}
             2 
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3
           Select Operator
             expressions:
@@ -146,7 +147,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/649343147/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1310440418/10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -158,7 +159,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/649343147/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1310440418/10000
 0	val_0
 0	val_0
 0	val_0

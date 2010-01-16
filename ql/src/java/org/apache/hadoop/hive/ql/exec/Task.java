@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -36,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * Task implementation
  **/
 
-public abstract class Task <T extends Serializable> implements Serializable {
+public abstract class Task <T extends Serializable> implements Serializable, Node {
 
   private static final long serialVersionUID = 1L;
   transient protected boolean started;
@@ -50,7 +53,7 @@ public abstract class Task <T extends Serializable> implements Serializable {
   transient protected QueryPlan queryPlan;
   transient protected TaskHandle taskHandle;
   transient protected Map<String, Long> taskCounters;
-
+  transient protected DriverContext driverContext;
   // Bean methods
 
   protected List<Task<? extends Serializable>> childTasks;
@@ -65,7 +68,7 @@ public abstract class Task <T extends Serializable> implements Serializable {
     this.taskCounters = new HashMap<String, Long>();
   }
 
-  public void initialize (HiveConf conf, QueryPlan queryPlan) {
+  public void initialize (HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     this.queryPlan = queryPlan;
     isdone = false;
     started = false;
@@ -80,7 +83,8 @@ public abstract class Task <T extends Serializable> implements Serializable {
       LOG.error(StringUtils.stringifyException(e));
       throw new RuntimeException (e);
     }
-
+    this.driverContext = driverContext;
+    
     console = new LogHelper(LOG);
   }
 
@@ -132,6 +136,10 @@ public abstract class Task <T extends Serializable> implements Serializable {
 
   public void setChildTasks(List<Task<? extends Serializable>> childTasks) {
     this.childTasks = childTasks;
+  }
+  
+  public List<? extends Node> getChildren() {
+    return getChildTasks();
   }
 
   public List<Task<? extends Serializable>> getChildTasks() {

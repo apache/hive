@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.plan.explain;
@@ -277,6 +278,11 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
     // Start by getting the work part of the task and call the output plan for the work
     outputPlan(task.getWork(), out, extended, indent+2);
     out.println();
+    if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
+      for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+        outputPlan(con, out, extended, displayedSet, indent);
+      }
+    }
     if (task.getChildTasks() != null) {
       for(Task<? extends Serializable> child: task.getChildTasks()) {
         outputPlan(child, out, extended, displayedSet, indent);
@@ -284,13 +290,19 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
     }
   }
 
-  private void outputDependencies(Task<? extends Serializable> task, PrintStream out, int indent) 
+  private Set<Task<? extends Serializable>> dependeciesTaskSet = new HashSet<Task<? extends Serializable>>();
+  private void outputDependencies(Task<? extends Serializable> task, PrintStream out, int indent, boolean rootTskCandidate) 
     throws Exception {
+    
+    if(dependeciesTaskSet.contains(task))
+      return;
+    dependeciesTaskSet.add(task);
     
     out.print(indentString(indent));
     out.printf("%s", task.getId());
-    if (task.getParentTasks() == null || task.getParentTasks().isEmpty()) {
-      out.print(" is a root stage");
+    if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
+      if(rootTskCandidate)
+        out.print(" is a root stage");
     }
     else {
       out.print(" depends on stages: ");
@@ -302,14 +314,34 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
         first = false;
         out.print(parent.getId());
       }
+      
+      if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
+        out.print(" , consists of ");
+        first = true;
+        for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+          if (!first) {
+            out.print(", ");
+          }
+          first = false;
+          out.print(con.getId());
+        }
+      }
+      
     }
     out.println();
     
-    if (task.getChildTasks() != null) {
-      for(Task<? extends Serializable> child: task.getChildTasks()) {
-        outputDependencies(child, out, indent);
+    if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
+      for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+        outputDependencies(con, out, indent, false);
       }
     }
+    
+    if (task.getChildTasks() != null) {
+      for(Task<? extends Serializable> child: task.getChildTasks()) {
+        outputDependencies(child, out, indent, true);
+      }
+    }
+    
   }
 
   public void outputAST(String treeString, PrintStream out, int indent) {
@@ -326,7 +358,7 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
     out.print(indentString(indent));
     out.println("STAGE DEPENDENCIES:");
     for(Task<? extends Serializable> rootTask: rootTasks) {
-      outputDependencies(rootTask, out, indent+2);
+      outputDependencies(rootTask, out, indent+2, true);
     }
   }
 
@@ -353,5 +385,10 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
 
   public int getType() {
     return StageType.EXPLAIN;
+  }
+
+  @Override
+  public String getName() {
+    return "EXPLAIN";
   }
 }

@@ -71,6 +71,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col3
           Select Operator
             expressions:
@@ -99,12 +100,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1575961079/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1249230133/10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1575961079/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1249230133/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -725,6 +726,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3
           Select Operator
             expressions:
@@ -749,12 +751,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1535877066/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1169404066/10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1535877066/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1169404066/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1879,6 +1881,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Select Operator
             expressions:
@@ -1905,7 +1908,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/448458798/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1836147411/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1953,12 +1956,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1868126511/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/561269019/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1868126511/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/561269019/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2131,6 +2134,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Select Operator
             expressions:
@@ -2157,7 +2161,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/825173402/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1889892039/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2205,12 +2209,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1638684247/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1597568732/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1638684247/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1597568732/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2307,6 +2311,7 @@ STAGE PLANS:
               condition expressions:
                 0 {key} {value}
                 1 {_col0} {_col1}
+              handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[_col0]]
@@ -2371,6 +2376,7 @@ STAGE PLANS:
                         condition expressions:
                           0 {key} {value}
                           1 {_col0} {_col1}
+                        handleSkewJoin: false
                         keys:
                           0 [Column[key]]
                           1 [Column[_col0]]
@@ -2414,12 +2420,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/902015943/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/302774741/10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/902015943/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/302774741/10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3035,6 +3041,7 @@ STAGE PLANS:
           condition expressions:
             0 
             1 
+          handleSkewJoin: false
           Select Operator
             Group By Operator
               aggregations:
@@ -3052,7 +3059,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1616259380/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1375711979/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -3086,9 +3093,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/623243330/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991321663/10000
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/623243330/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991321663/10000
 1028

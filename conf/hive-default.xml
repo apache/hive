@@ -280,6 +280,20 @@
 </property>
 
 <property>
+  <name>hive.optimize.skewjoin</name>
+  <value>false</value>
+  <description>Whether to enable skew join optimization. </description>
+</property>
+
+<property>
+  <name>hive.skewjoin.key</name>
+  <value>100000</value>
+  <description>Determine if we get a skew key in join. If we see more
+	than the specified number of rows with the same key in join operator,
+	we think the key as a skew join key. </description>
+</property>
+
+<property>
   <name>hive.mapred.mode</name>
   <value>nonstrict</value>
   <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>

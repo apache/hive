@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,13 @@ public class joinDesc implements Serializable {
   public static final int UNIQUE_JOIN      = 4;
   public static final int LEFT_SEMI_JOIN   = 5;
 
+  //used to handle skew join
+  private boolean handleSkewJoin = false;
+  private int skewKeyDefinition = -1;
+  private Map<Byte, String> bigKeysDirMap;
+  private Map<Byte, Map<Byte, String>> smallKeysDirMap;
+  private Map<Byte, tableDesc> skewKeysValuesTables;
+  
   // alias to key mapping
   private Map<Byte, List<exprNodeDesc>> exprs;
   
@@ -61,6 +69,7 @@ public class joinDesc implements Serializable {
   protected joinCond[] conds;
   
   protected Byte[] tagOrder;
+  private tableDesc keyTableDesc;
   
   public joinDesc() { }
   
@@ -186,5 +195,96 @@ public class joinDesc implements Serializable {
    */
   public void setTagOrder(Byte[] tagOrder) {
     this.tagOrder = tagOrder;
+  }
+
+  @explain(displayName="handleSkewJoin")
+  public boolean getHandleSkewJoin() {
+    return handleSkewJoin;
+  }
+
+  /**
+   * set to handle skew join in this join op
+   * @param handleSkewJoin
+   */
+  public void setHandleSkewJoin(boolean handleSkewJoin) {
+    this.handleSkewJoin = handleSkewJoin;
+  }
+
+  /**
+   * @return mapping from tbl to dir for big keys
+   */
+  public Map<Byte, String> getBigKeysDirMap() {
+    return bigKeysDirMap;
+  }
+
+  /**
+   * set the mapping from tbl to dir for big keys
+   * @param bigKeysDirMap
+   */
+  public void setBigKeysDirMap(Map<Byte, String> bigKeysDirMap) {
+    this.bigKeysDirMap = bigKeysDirMap;
+  }
+
+  /**
+   * @return mapping from tbl to dir for small keys
+   */
+  public Map<Byte, Map<Byte, String>> getSmallKeysDirMap() {
+    return smallKeysDirMap;
+  }
+
+  /**
+   * set the mapping from tbl to dir for small keys
+   * @param bigKeysDirMap
+   */
+  public void setSmallKeysDirMap(Map<Byte, Map<Byte, String>> smallKeysDirMap) {
+    this.smallKeysDirMap = smallKeysDirMap;
+  }
+
+  /**
+   * @return skew key definition. If we see a key's associated entries' number
+   *         is bigger than this, we will define this key as a skew key.
+   */
+  public int getSkewKeyDefinition() {
+    return skewKeyDefinition;
+  }
+
+  /**
+   * set skew key definition
+   * @param skewKeyDefinition
+   */
+  public void setSkewKeyDefinition(int skewKeyDefinition) {
+    this.skewKeyDefinition = skewKeyDefinition;
+  }
+
+  /**
+   * @return the table desc for storing skew keys and their corresponding value;
+   */
+  public Map<Byte, tableDesc> getSkewKeysValuesTables() {
+    return skewKeysValuesTables;
+  }
+
+  /**
+   * @param skewKeysValuesTable set the table desc for storing skew keys and their corresponding value;
+   */
+  public void setSkewKeysValuesTables(Map<Byte, tableDesc> skewKeysValuesTables) {
+    this.skewKeysValuesTables = skewKeysValuesTables;
+  }
+  
+  public boolean isNoOuterJoin() {
+    for (org.apache.hadoop.hive.ql.plan.joinCond cond : conds) {
+      if (cond.getType() == joinDesc.FULL_OUTER_JOIN
+          || (cond.getType() == joinDesc.LEFT_OUTER_JOIN)
+          || cond.getType() == joinDesc.RIGHT_OUTER_JOIN)
+        return false;
+    }
+    return true;
+  }
+
+  public void setKeyTableDesc(tableDesc keyTblDesc) {
+    this.keyTableDesc = keyTblDesc;    
+  }
+
+  public tableDesc getKeyTableDesc() {
+    return keyTableDesc;
   }
 }

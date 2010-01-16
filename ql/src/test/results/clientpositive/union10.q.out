@@ -33,16 +33,12 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
   Stage-6 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
   Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -88,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10002 
           Union
             Select Operator
               expressions:
@@ -112,7 +108,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10004 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10004 
           Union
             Select Operator
               expressions:
@@ -136,7 +132,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10005 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10005 
           Union
             Select Operator
               expressions:
@@ -163,35 +159,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/478382549/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10003 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: int
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/48152402/10000
 
   Stage: Stage-0
     Move Operator
@@ -202,6 +175,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: tmptable
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10003 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: tmptable
 
   Stage: Stage-6
     Map Reduce
@@ -305,11 +304,11 @@ POSTHOOK: Output: default@tmptable
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/330519049/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1819535514/10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/330519049/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1819535514/10000
 tst1	500
 tst2	500
 tst3	500

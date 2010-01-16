@@ -118,11 +118,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2006973494/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/431669224/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2006973494/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/431669224/10000
 0	val_0
 0	val_0
 0	val_0
@@ -136,11 +136,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2006
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/57916260/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1660399866/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/57916260/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1660399866/10000
 11	val_11
 12	val_12
 12	val_12
@@ -165,10 +165,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-8
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-1 depends on stages: Stage-7, Stage-6
+  Stage-6
 
 STAGE PLANS:
   Stage: Stage-2
@@ -218,35 +222,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1139898497/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1001960206/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/412930117/10000
 
   Stage: Stage-0
     Move Operator
@@ -258,37 +239,40 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1197621803/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-8
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1139898497/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1001960206/10005 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/412930117/10002
 
   Stage: Stage-1
     Move Operator
@@ -299,6 +283,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1197621803/10005 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from src
@@ -318,11 +328,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1890759910/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1021534480/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1890759910/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1021534480/10000
 0	val_0
 0	val_0
 0	val_0
@@ -336,11 +346,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1890
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/211577119/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1868854677/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/211577119/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1868854677/10000
 11	val_11
 12	val_12
 12	val_12
@@ -452,11 +462,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1189625142/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1886571656/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1189625142/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1886571656/10000
 0	val_0
 0	val_0
 0	val_0
@@ -470,11 +480,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1189
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1943499121/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/886279091/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1943499121/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/886279091/10000
 11	val_11
 12	val_12
 12	val_12
@@ -499,10 +509,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-8
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-1 depends on stages: Stage-7, Stage-6
+  Stage-6
 
 STAGE PLANS:
   Stage: Stage-2
@@ -552,35 +566,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/719949750/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/700540358/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/83924830/10000
 
   Stage: Stage-0
     Move Operator
@@ -592,37 +583,40 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/538217516/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-8
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/719949750/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/700540358/10005 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/83924830/10002
 
   Stage: Stage-1
     Move Operator
@@ -633,6 +627,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/538217516/10005 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from src
@@ -652,11 +672,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/175952719/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/658703846/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/175952719/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/658703846/10000
 0	val_0
 0	val_0
 0	val_0
@@ -670,11 +690,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1759
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1092946996/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1256145276/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1092946996/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1256145276/10000
 11	val_11
 12	val_12
 12	val_12
@@ -808,7 +828,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/372253731/10004 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1983593088/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -876,11 +896,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/760210899/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991025002/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/760210899/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991025002/10000
 0	val_0
 2	val_2
 4	val_4
@@ -890,11 +910,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/7602
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2138373639/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1442414699/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2138373639/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1442414699/10000
 11	val_11
 12	val_12
 15	val_15
@@ -916,11 +936,15 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
   Stage-6 depends on stages: Stage-2
-  Stage-9 depends on stages: Stage-6
-  Stage-1 depends on stages: Stage-9
+  Stage-9 depends on stages: Stage-6 , consists of Stage-8, Stage-7
+  Stage-8
+  Stage-1 depends on stages: Stage-8, Stage-7
+  Stage-7
 
 STAGE PLANS:
   Stage: Stage-2
@@ -1016,35 +1040,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/632136224/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/471394561/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/255677337/10000
 
   Stage: Stage-0
     Move Operator
@@ -1056,10 +1057,36 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2102317593/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/471394561/10005 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2102317593/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1101,35 +1128,12 @@ STAGE PLANS:
 
   Stage: Stage-9
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/632136224/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/471394561/10006 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-8
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/255677337/10002
 
   Stage: Stage-1
     Move Operator
@@ -1140,6 +1144,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2102317593/10006 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from src
@@ -1159,11 +1189,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1807023789/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1456253532/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1807023789/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1456253532/10000
 0	val_0
 2	val_2
 4	val_4
@@ -1173,11 +1203,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1807
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1760021378/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1011160059/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1760021378/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1011160059/10000
 11	val_11
 12	val_12
 15	val_15
@@ -1308,7 +1338,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1122002515/10004 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1356555878/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1376,11 +1406,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1057327034/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/802713188/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1057327034/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/802713188/10000
 0	val_0
 2	val_2
 4	val_4
@@ -1390,11 +1420,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1057
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/320815063/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1830997643/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/320815063/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1830997643/10000
 11	val_11
 12	val_12
 15	val_15
@@ -1416,11 +1446,15 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
   Stage-6 depends on stages: Stage-2
-  Stage-9 depends on stages: Stage-6
-  Stage-1 depends on stages: Stage-9
+  Stage-9 depends on stages: Stage-6 , consists of Stage-8, Stage-7
+  Stage-8
+  Stage-1 depends on stages: Stage-8, Stage-7
+  Stage-7
 
 STAGE PLANS:
   Stage: Stage-2
@@ -1516,35 +1550,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/215912054/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1529219670/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/34043806/10000
 
   Stage: Stage-0
     Move Operator
@@ -1556,10 +1567,36 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/870862402/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1529219670/10005 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/870862402/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1601,35 +1638,12 @@ STAGE PLANS:
 
   Stage: Stage-9
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/215912054/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1529219670/10006 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-8
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/34043806/10002
 
   Stage: Stage-1
     Move Operator
@@ -1640,6 +1654,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/870862402/10006 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from src
@@ -1659,11 +1699,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/479457557/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1326354495/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/479457557/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1326354495/10000
 0	val_0
 2	val_2
 4	val_4
@@ -1673,11 +1713,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/4794
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/886653252/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1620537338/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/886653252/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1620537338/10000
 11	val_11
 12	val_12
 15	val_15
@@ -1843,11 +1883,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1444504842/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/643053521/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1444504842/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/643053521/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1871,11 +1911,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1444
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/219014062/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1689259781/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/219014062/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1689259781/10000
 11	val_11
 11	val_11
 12	val_12
@@ -1909,10 +1949,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-8
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-1 depends on stages: Stage-7, Stage-6
+  Stage-6
 
 STAGE PLANS:
   Stage: Stage-2
@@ -2019,35 +2063,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1894473781/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1679498211/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/269303231/10000
 
   Stage: Stage-0
     Move Operator
@@ -2059,37 +2080,40 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2037406660/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-8
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1894473781/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1679498211/10005 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/269303231/10002
 
   Stage: Stage-1
     Move Operator
@@ -2100,6 +2124,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2037406660/10005 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -2119,11 +2169,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2028601704/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2006157081/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2028601704/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2006157081/10000
 0	val_0
 0	val_0
 0	val_0
@@ -2147,11 +2197,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2028
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1515250849/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1093041493/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1515250849/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1093041493/10000
 11	val_11
 11	val_11
 12	val_12
@@ -2329,11 +2379,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/576355406/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1099073265/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/576355406/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1099073265/10000
 0	val_0
 0	val_0
 0	val_0
@@ -2357,11 +2407,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/5763
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/338849500/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1497830799/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/338849500/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1497830799/10000
 11	val_11
 11	val_11
 12	val_12
@@ -2395,10 +2445,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
-  Stage-8 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-8
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-1 depends on stages: Stage-7, Stage-6
+  Stage-6
 
 STAGE PLANS:
   Stage: Stage-2
@@ -2505,35 +2559,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1775110736/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/300192642/10004 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/894474/10000
 
   Stage: Stage-0
     Move Operator
@@ -2545,37 +2576,40 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/348733677/10004 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi1
+
   Stage: Stage-8
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1775110736/10002
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/300192642/10005 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/894474/10002
 
   Stage: Stage-1
     Move Operator
@@ -2586,6 +2620,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_multi2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/348733677/10005 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -2605,11 +2665,11 @@ POSTHOOK: Output: default@src_multi2
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1232190219/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/666154363/10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1232190219/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/666154363/10000
 0	val_0
 0	val_0
 0	val_0
@@ -2633,11 +2693,11 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1232
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1558865071/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1934688356/10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1558865071/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1934688356/10000
 11	val_11
 11	val_11
 12	val_12

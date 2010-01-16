@@ -38,7 +38,6 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
   Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -89,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1731789138/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1330722084/10002 
           Union
             Select Operator
               expressions:
@@ -106,7 +105,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1731789138/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1330722084/10003 
           Union
             Select Operator
               expressions:
@@ -181,7 +180,7 @@ PREHOOK: query: select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/288203570/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/2012659727/10000
 POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
@@ -190,7 +189,7 @@ POSTHOOK: query: select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/288203570/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/2012659727/10000
 PREHOOK: query: drop table tst
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tst

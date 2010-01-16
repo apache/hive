@@ -64,6 +64,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 
+          handleSkewJoin: false
           outputColumnNames: _col0
           Select Operator
             expressions:
@@ -80,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/483718410/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/54439940/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -115,7 +116,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1574907719/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/901846595/10000
 POSTHOOK: query: SELECT CASE a.key
         WHEN '1' THEN 2
         WHEN '3' THEN 4
@@ -126,7 +127,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1574907719/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/901846595/10000
 5
 5
 5

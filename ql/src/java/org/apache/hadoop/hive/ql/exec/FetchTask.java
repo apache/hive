@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
@@ -50,8 +51,8 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
  	  super();
  	}
  	
-  public void initialize (HiveConf conf, QueryPlan queryPlan) {
-    super.initialize(conf, queryPlan);
+  public void initialize (HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
+    super.initialize(conf, queryPlan, ctx);
     
    	try {
        // Create a file system handle  
@@ -134,5 +135,10 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   
   public int getType() {
     return StageType.FETCH;
+  }
+
+  @Override
+  public String getName() {
+    return "FETCH";
   }
 }

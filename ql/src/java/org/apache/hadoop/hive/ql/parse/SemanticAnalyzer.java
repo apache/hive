@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
@@ -91,6 +92,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.physical.GenMRSkewJoinProcessor;
+import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
+import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -4993,7 +4997,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opRules.put(new RuleRegExp(new String("R9"), "UNION%.*MAPJOIN%"), MapJoinFactory.getUnionMapJoin());
     opRules.put(new RuleRegExp(new String("R10"), "MAPJOIN%.*MAPJOIN%"), MapJoinFactory.getMapJoinMapJoin());
     opRules.put(new RuleRegExp(new String("R11"), "MAPJOIN%SEL%"), MapJoinFactory.getMapJoin());
-
+    
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules, procCtx);
 
@@ -5007,10 +5011,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // For each task, go over all operators recursively
     for (Task<? extends Serializable> rootTask: rootTasks)
       breakTaskTree(rootTask);
-
+    
     // For each task, set the key descriptor for the reducer
     for (Task<? extends Serializable> rootTask: rootTasks)
       setKeyDescTaskTree(rootTask);
+    
+    PhysicalContext physicalContext = new PhysicalContext(conf, getParseContext(), ctx, rootTasks, fetchTask);
+    PhysicalOptimizer physicalOptimizer = new PhysicalOptimizer(physicalContext, conf);
+    physicalOptimizer.optimize();
 
     // For each operator, generate the counters if needed
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS))
@@ -5039,7 +5047,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
   }
-
+  
   /**
    * Find all leaf tasks of the list of root tasks.
    */
@@ -5104,7 +5112,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Operator<? extends Serializable> child: op.getChildOperators())
       generateCountersOperator(child);
   }
-
+  
   // loop over all the tasks recursviely
   private void breakTaskTree(Task<? extends Serializable> task) {
 

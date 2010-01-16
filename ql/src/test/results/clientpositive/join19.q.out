@@ -229,6 +229,7 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 {VALUE._col1}
             2 {VALUE._col0}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col2, _col3
           File Output Operator
             compressed: false
@@ -321,6 +322,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col2} {VALUE._col4}
             1 
             2 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col2, _col4, _col7
           File Output Operator
             compressed: false
@@ -388,6 +390,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col3} {VALUE._col5} {VALUE._col7}
             1 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3, _col5, _col7, _col9
           Select Operator
             expressions:

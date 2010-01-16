@@ -24,8 +24,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -39,6 +41,7 @@ public class MapJoinObjectValue implements Externalizable {
 
   transient protected int     metadataTag;
   transient protected RowContainer obj;
+  transient protected Configuration conf;
 
   public MapJoinObjectValue() {
   }
@@ -80,7 +83,9 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
-      RowContainer res = new RowContainer();
+      RowContainer res = new RowContainer(ctx.getConf());
+      res.setSerDe(ctx.getSerDe(), ctx.getStandardOI());
+      res.setTableDesc(ctx.getTblDesc());
       for (int pos = 0; pos < sz; pos++) {
         Writable val = ctx.getSerDe().getSerializedClass().newInstance();
         val.readFields(in);
@@ -122,6 +127,9 @@ public class MapJoinObjectValue implements Externalizable {
     catch (SerDeException e) {
       throw new IOException(e);
     }
+    catch (HiveException e) {
+      throw new IOException(e);
+    }
   }
 
   /**
@@ -150,6 +158,10 @@ public class MapJoinObjectValue implements Externalizable {
    */
   public void setObj(RowContainer obj) {
     this.obj = obj;
+  }
+
+  public void setConf(Configuration conf) {
+    this.conf = conf;
   }
 
 }

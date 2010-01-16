@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -97,9 +98,13 @@ public class Driver implements CommandProcessor {
     for (Task<? extends Serializable> task : tasks) {
       if (!seenTasks.contains(task)) {
         seenTasks.add(task);
-        if (task.isMapRedTask()) {
+        
+        if(task instanceof ConditionalTask)
+          jobs +=countJobs(((ConditionalTask)task).getListTasks(), seenTasks);
+        else if (task.isMapRedTask()) { //this may be true for conditional task, but we will not inc the counter 
           jobs++;
         }
+        
         jobs += countJobs(task.getChildTasks(), seenTasks);
       }
     }
@@ -135,7 +140,7 @@ public class Driver implements CommandProcessor {
 
         if (!sem.getFetchTaskInit()) {
           sem.setFetchTaskInit(true);
-          sem.getFetchTask().initialize(conf, plan);
+          sem.getFetchTask().initialize(conf, plan, null);
         }
         FetchTask ft = (FetchTask) sem.getFetchTask();
 
@@ -447,10 +452,12 @@ public class Driver implements CommandProcessor {
       Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
       Map<TaskResult, TaskRunner> running = new HashMap<TaskResult, TaskRunner> ();
 
+      DriverContext driverCxt = new DriverContext(runnable); 
+
       //Add root Tasks to runnable
 
       for (Task<? extends Serializable> tsk : sem.getRootTasks()) {
-        addToRunnable(runnable,tsk);
+        driverCxt.addToRunnable(tsk);
       }
 
       // Loop while you either have tasks running, or tasks queued up
@@ -459,7 +466,7 @@ public class Driver implements CommandProcessor {
         // Launch upto maxthreads tasks
         while(runnable.peek() != null && running.size() < maxthreads) {
           Task<? extends Serializable> tsk = runnable.remove();
-          curJobNo = launchTask(tsk, queryId, noName,running, jobname, jobs, curJobNo);
+          curJobNo = launchTask(tsk, queryId, noName,running, jobname, jobs, curJobNo, driverCxt);
         }
 
         // poll the Tasks to see which one completed
@@ -488,8 +495,8 @@ public class Driver implements CommandProcessor {
 
         if (tsk.getChildTasks() != null) {
           for (Task<? extends Serializable> child : tsk.getChildTasks()) {
-            if(isLaunchable(child)) { 
-              addToRunnable(runnable,child);
+            if(DriverContext.isLaunchable(child)) {
+              driverCxt.addToRunnable(child);
             }
           }
         }
@@ -554,13 +561,13 @@ public class Driver implements CommandProcessor {
 
   public int launchTask(Task<? extends Serializable> tsk, String queryId, 
     boolean noName, Map<TaskResult,TaskRunner> running, String jobname, 
-    int jobs, int curJobNo) {
+    int jobs, int curJobNo, DriverContext cxt) {
     
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory().startTask(queryId, tsk,
         tsk.getClass().getName());
     }
-    if (tsk.isMapRedTask()) {
+    if (tsk.isMapRedTask() && !(tsk instanceof ConditionalTask)) {
       if (noName) {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" 
           + tsk.getId() + ")");
@@ -568,7 +575,7 @@ public class Driver implements CommandProcessor {
       curJobNo++;
       console.printInfo("Launching Job " + curJobNo + " out of "+jobs);
     }
-    tsk.initialize(conf, plan);
+    tsk.initialize(conf, plan, cxt);
     TaskResult tskRes = new TaskResult();
     TaskRunner tskRun = new TaskRunner(tsk,tskRes);
 
@@ -627,30 +634,12 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  /**
-   * Checks if a task can be launched
-   * 
-   * @param tsk the task to be checked 
-   * @return    true if the task is launchable, false otherwise
-   */
-
-  public boolean isLaunchable(Task<? extends Serializable> tsk) {
-    // A launchable task is one that hasn't been queued, hasn't been initialized, and is runnable.
-    return !tsk.getQueued() && !tsk.getInitialized() && tsk.isRunnable();
-  }
-
-  public void addToRunnable(Queue<Task<? extends Serializable>> runnable,
-    Task<? extends Serializable> tsk) {
-    runnable.add(tsk);
-    tsk.setQueued();
- }
-
   public boolean getResults(Vector<String> res) throws IOException {
     if (plan != null && plan.getPlan().getFetchTask() != null) {
       BaseSemanticAnalyzer sem = plan.getPlan();
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
-        sem.getFetchTask().initialize(conf, plan);
+        sem.getFetchTask().initialize(conf, plan, null);
       }
       FetchTask ft = (FetchTask) sem.getFetchTask();
       ft.setMaxRows(maxRows);

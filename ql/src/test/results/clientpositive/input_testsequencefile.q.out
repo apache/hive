@@ -16,8 +16,10 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-4
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -51,35 +53,12 @@ STAGE PLANS:
 
   Stage: Stage-4
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1479501557/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/257843671/10002 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: int
-                          expr: value
-                          type: string
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest4_sequencefile
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/215339388/10000
 
   Stage: Stage-0
     Move Operator
@@ -90,6 +69,32 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest4_sequencefile
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1222374643/10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest4_sequencefile
 
 
 PREHOOK: query: FROM src
@@ -105,11 +110,11 @@ POSTHOOK: Output: default@dest4_sequencefile
 PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest4_sequencefile
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1767307335/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1578298324/10000
 POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1767307335/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1578298324/10000
 238	val_238
 86	val_86
 311	val_311

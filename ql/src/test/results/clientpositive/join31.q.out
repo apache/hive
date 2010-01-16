@@ -30,9 +30,6 @@ STAGE DEPENDENCIES:
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
   Stage-4 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -92,13 +89,14 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1198542805/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {_col0}
                 1 
+              handleSkewJoin: false
               keys:
                 0 [Column[_col0]]
                 1 [Column[_col0]]
@@ -113,17 +111,18 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10004 
+            file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1198542805/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10004 
+            file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1198542805/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {_col0}
                     1 
+                  handleSkewJoin: false
                   keys:
                     0 [Column[_col0]]
                     1 [Column[_col0]]
@@ -139,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1198542805/10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -290,11 +289,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/187461149/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2071762334/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/187461149/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2071762334/10000
 128	1
 146	1
 150	1

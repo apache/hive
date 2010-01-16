@@ -205,8 +205,10 @@ public class GenMRFileSink1 implements NodeProcessor {
     List<Task<? extends Serializable>> mvTasks = ctx.getMvTask();
     Task<? extends Serializable> mvTask = findMoveTask(mvTasks, newOutput);
     
-    if (mvTask != null)
-      cndTsk.addDependentTask(mvTask);
+    if (mvTask != null) {
+      for(Task<? extends Serializable> tsk : cndTsk.getListTasks())
+        tsk.addDependentTask(mvTask);
+    }
   }
  
   private Task<? extends Serializable> findMoveTask(List<Task<? extends Serializable>> mvTasks, FileSinkOperator fsOp) {

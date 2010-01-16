@@ -799,6 +799,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected long beginTime = 0;
   transient protected long totalTime = 0;
 
+  transient protected Object groupKeyObject;
+
   /**
    * this is called before operator process to buffer some counters
    */
@@ -1010,4 +1012,12 @@ public abstract class Operator <T extends Serializable> implements Serializable,
      assert false;
      return -1;
    }
+
+  public void setGroupKeyObject(Object keyObject) {
+    this.groupKeyObject = keyObject;
+  }
+
+  public Object getGroupKeyObject() {
+    return groupKeyObject;
+  }
 }

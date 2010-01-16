@@ -108,7 +108,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * Initialization when invoked from QL
    */
   public void initialize(HiveConf conf, QueryPlan queryPlan) {
-    super.initialize(conf, queryPlan);
+    super.initialize(conf, queryPlan, null);
     job = new JobConf(conf, ExecDriver.class);
     // NOTE: initialize is only called if it is in non-local mode.
     // In case it's in non-local mode, we need to move the SessionState files
@@ -201,7 +201,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
             SessionState.get().getQueryId(), getId(),
             Keys.TASK_HADOOP_ID, rj.getJobID());
       }
-      console.printInfo("Starting Job = " + rj.getJobID() + ", Tracking URL = "
+      console.printInfo(ExecDriver.getJobEndMsg(rj.getJobID()) + ", Tracking URL = "
           + rj.getTrackingURL());
       console.printInfo("Kill Command = "
           + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
@@ -453,6 +453,9 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * Execute a query plan using Hadoop
    */
   public int execute() {
+    
+    success = true;
+    
     try {
       setNumberOfReducers();
     } catch(IOException e) {
@@ -591,7 +594,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         success = false;
       } 
 
-      String statusMesg = "Ended Job = " + rj.getJobID();
+      String statusMesg = getJobEndMsg(rj.getJobID());
       if (!success) {
         statusMesg += " with errors";
         returnVal = 2;
@@ -653,6 +656,24 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
 
     return (returnVal);
+  }
+  
+  /**
+   * this msg pattern is used to track when a job is started
+   * @param jobId
+   * @return
+   */
+  public static String getJobStartMsg(String jobId) {
+    return "Starting Job = " + jobId;
+  }
+  
+  /**
+   * this msg pattern is used to track when a job is successfully done.
+   * @param jobId
+   * @return
+   */
+  public static String getJobEndMsg(String jobId) {
+    return "Ended Job = " + jobId;
   }
 
   private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
@@ -1031,5 +1052,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
   public int getType() {
     return StageType.MAPRED;
+  }
+
+  @Override
+  public String getName() {
+    return "EXEC";
   }
 }

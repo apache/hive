@@ -45,11 +45,6 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-3
   Stage-1 depends on stages: Stage-5
   Stage-6 is a root stage
-  Stage-3 depends on stages: Stage-2, Stage-6
-  Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-2
@@ -95,7 +90,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1176659022/10004 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/658847227/10004 
           Union
             Reduce Output Operator
               key expressions:
@@ -111,7 +106,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1176659022/10007 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/658847227/10007 
           Union
             Reduce Output Operator
               key expressions:
@@ -165,7 +160,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1176659022/10005 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/658847227/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -217,7 +212,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1176659022/10006 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/658847227/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -316,11 +311,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/601320238/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/132652809/10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/601320238/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/132652809/10000
 0	1
 10	1
 100	1
@@ -634,11 +629,11 @@ tst1	1
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/53402192/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/21838102/10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/53402192/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/21838102/10000
 0	val_0	1
 10	val_10	1
 100	val_100	1

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Properties;
 
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -37,11 +36,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.SequenceFile.CompressionType;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 
 /**
  * File Sink operator implementation
@@ -108,7 +103,6 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       LOG.info("Writing to temp file: FS " + outPath);
 
       HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
-      final Class<? extends Writable> outputClass = serializer.getSerializedClass();
       boolean isCompressed = conf.getCompressed();
 
       // The reason to keep these instead of using
@@ -117,22 +111,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       // we create.
       Path parent = Utilities.toTempPath(specPath);
       finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc, hiveOutputFormat, isCompressed, finalPath);
-      tableDesc tableInfo = conf.getTableInfo();
-      JobConf jc_output = jc;
-      if (isCompressed) {
-        jc_output = new JobConf(jc);
-        String codecStr = conf.getCompressCodec();
-        if (codecStr != null && !codecStr.trim().equals("")) {
-          Class<? extends CompressionCodec> codec = (Class<? extends CompressionCodec>) Class.forName(codecStr);
-          FileOutputFormat.setOutputCompressorClass(jc_output, codec);
-        }
-        String type = conf.getCompressType();
-        if(type !=null && !type.trim().equals("")) {
-          CompressionType style = CompressionType.valueOf(type);
-          SequenceFileOutputFormat.setOutputCompressionType(jc, style);
-        }
-      }
-      outWriter = getRecordWriter(jc_output, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
+      final Class<? extends Writable> outputClass = serializer.getSerializedClass();
+      outWriter = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(), outputClass, conf, outPath);
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, outPath);
@@ -144,15 +124,6 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
-  }
-
-  public static RecordWriter getRecordWriter(JobConf jc, HiveOutputFormat<?, ?> hiveOutputFormat,
-      final Class<? extends Writable> valueClass, boolean isCompressed,
-      Properties tableProp, Path outPath) throws IOException, HiveException {
-    if (hiveOutputFormat != null) {
-      return hiveOutputFormat.getHiveRecordWriter(jc, outPath, valueClass, isCompressed, tableProp, null);
-    }
-    return null;
   }
 
   Writable recordValue; 
@@ -220,31 +191,37 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     try {
       if(conf != null) {
         String specPath = conf.getDirName();
-        fs = (new Path(specPath)).getFileSystem(hconf);
-        Path tmpPath = Utilities.toTempPath(specPath);
-        Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName() + ".intermediate");
-        Path finalPath = new Path(specPath);
-        if(success) {
-          if(fs.exists(tmpPath)) {
-            // Step1: rename tmp output folder to intermediate path. After this
-            // point, updates from speculative tasks still writing to tmpPath 
-            // will not appear in finalPath.
-            LOG.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
-            Utilities.rename(fs, tmpPath, intermediatePath);
-            // Step2: remove any tmp file or double-committed output files
-            Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
-            // Step3: move to the file destination
-            LOG.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
-            Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
-          }
-        } else {
-          fs.delete(tmpPath, true);
-        }
+        FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
       }
     } catch (IOException e) {
       throw new HiveException (e);
     }
     super.jobClose(hconf, success);
+  }
+  
+  public static void mvFileToFinalPath(String specPath, Configuration hconf, boolean success, Log LOG) throws IOException, HiveException{
+    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    Path tmpPath = Utilities.toTempPath(specPath);
+    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
+        + ".intermediate");
+    Path finalPath = new Path(specPath);
+    if (success) {
+      if (fs.exists(tmpPath)) {
+        // Step1: rename tmp output folder to intermediate path. After this
+        // point, updates from speculative tasks still writing to tmpPath
+        // will not appear in finalPath.
+        LOG.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.rename(fs, tmpPath, intermediatePath);
+        // Step2: remove any tmp file or double-committed output files
+        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
+        // Step3: move to the file destination
+        LOG.info("Moving tmp dir: " + intermediatePath + " to: "
+            + finalPath);
+        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+      }
+    } else {
+      fs.delete(tmpPath, true);
+    }
   }
   
   public int getType() {

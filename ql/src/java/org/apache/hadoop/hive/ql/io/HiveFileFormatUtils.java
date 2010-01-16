@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -30,7 +31,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -187,4 +195,44 @@ public class HiveFileFormatUtils {
     }
     return true;
   }
+  
+  
+  public static RecordWriter getHiveRecordWriter(JobConf jc,
+      tableDesc tableInfo, Class<? extends Writable> outputClass,
+      fileSinkDesc conf, Path outPath) throws HiveException {
+    try {
+      HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo.getOutputFileFormatClass().newInstance();
+      boolean isCompressed = conf.getCompressed();
+      JobConf jc_output = jc;
+      if (isCompressed) {
+        jc_output = new JobConf(jc);
+        String codecStr = conf.getCompressCodec();
+        if (codecStr != null && !codecStr.trim().equals("")) {
+          Class<? extends CompressionCodec> codec = (Class<? extends CompressionCodec>) Class.forName(codecStr);
+          FileOutputFormat.setOutputCompressorClass(jc_output, codec);
+        }
+        String type = conf.getCompressType();
+        if (type != null && !type.trim().equals("")) {
+          CompressionType style = CompressionType.valueOf(type);
+          SequenceFileOutputFormat.setOutputCompressionType(jc, style);
+        }
+      }
+      return getRecordWriter(jc_output, hiveOutputFormat, outputClass,
+          isCompressed, tableInfo.getProperties(), outPath);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public static RecordWriter getRecordWriter(JobConf jc,
+      HiveOutputFormat<?, ?> hiveOutputFormat,
+      final Class<? extends Writable> valueClass, boolean isCompressed,
+      Properties tableProp, Path outPath) throws IOException, HiveException {
+    if (hiveOutputFormat != null) {
+      return hiveOutputFormat.getHiveRecordWriter(jc, outPath, valueClass,
+          isCompressed, tableProp, null);
+    }
+    return null;
+  }
+  
 }

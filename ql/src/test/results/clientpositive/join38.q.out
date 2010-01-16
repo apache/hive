@@ -18,11 +18,11 @@ POSTHOOK: Output: default@tmp
 PREHOOK: query: select * from tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/513842932/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/88537684/10000
 POSTHOOK: query: select * from tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/513842932/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/88537684/10000
 100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
 100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
 PREHOOK: query: explain
@@ -62,6 +62,7 @@ STAGE PLANS:
                 condition expressions:
                   0 {value}
                   1 {col5} {col11}
+                handleSkewJoin: false
                 keys:
                   0 [Column[key]]
                   1 [Column[col11]]
@@ -89,6 +90,7 @@ STAGE PLANS:
                   condition expressions:
                     0 {value}
                     1 {col5} {col11}
+                  handleSkewJoin: false
                   keys:
                     0 [Column[key]]
                     1 [Column[col11]]
@@ -104,7 +106,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1670596765/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1516703935/10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -192,7 +194,7 @@ group by a.value, b.col5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1925019467/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/666881903/10000
 POSTHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
 SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111
@@ -200,7 +202,7 @@ group by a.value, b.col5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1925019467/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/666881903/10000
 val_111	105	2
 PREHOOK: query: drop table tmp
 PREHOOK: type: DROPTABLE

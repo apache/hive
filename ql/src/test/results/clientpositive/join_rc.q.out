@@ -88,6 +88,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3
           Select Operator
             expressions:
@@ -113,13 +114,13 @@ FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_rc2
 PREHOOK: Input: default@join_rc1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/476047237/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1138840055/10000
 POSTHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_rc2
 POSTHOOK: Input: default@join_rc1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/476047237/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1138840055/10000
 0	val_0
 0	val_0
 0	val_0

@@ -23,9 +23,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
   Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
   Stage-4 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -72,7 +70,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/709538809/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/84207211/10002 
           Union
             Select Operator
               expressions:
@@ -100,7 +98,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/709538809/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/84207211/10003 
           Union
             Select Operator
               expressions:
@@ -128,7 +126,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/709538809/10004 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/84207211/10004 
           Union
             Select Operator
               expressions:
@@ -233,7 +231,7 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1306651084/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/586655480/10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2
@@ -242,7 +240,7 @@ POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1306651084/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/586655480/10000
 	20
 128	2
 146	2

@@ -54,7 +54,7 @@
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
-  <property name="test.timeout" value="5400000"/>
+  <property name="test.timeout" value="6600000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
   <property name="minimr.query.files" value="join1.q,groupby1.q"/>
@@ -209,7 +209,7 @@
       <classpath refid="test.classpath"/>
     </javac>
   </target>
-	
+
   <target name="test-jar" depends="compile-test">
     <delete file="${test.build.dir}/test-udfs.jar"/>
     <jar jarfile="${test.build.dir}/test-udfs.jar">
@@ -219,14 +219,14 @@
   </target>
 
   <target name="test-conditions">
-        
+
     <condition property="qfile" value="${minimr.query.files}">
       <and>
         <not>
           <isset property="qfile"/>
         </not>
-      
-        <equals arg1="${clustermode}" arg2="miniMR" /> 
+
+        <equals arg1="${clustermode}" arg2="miniMR" />
       </and>
     </condition>
 

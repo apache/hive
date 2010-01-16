@@ -170,24 +170,27 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       
       if (!keyWritable.equals(groupKey)) {
         // If a operator wants to do some work at the beginning of a group
-        if (groupKey == null) {
+        if (groupKey == null) { //the first group
           groupKey = new BytesWritable();
         } else {
           // If a operator wants to do some work at the end of a group
           l4j.trace("End Group");
           reducer.endGroup();
         }
+        
+        try {
+          keyObject = inputKeyDeserializer.deserialize(keyWritable);
+        } catch (Exception e) {
+          throw new HiveException("Unable to deserialize reduce input key from " + 
+              Utilities.formatBinaryString(keyWritable.get(), 0, keyWritable.getSize())
+              + " with properties " + keyTableDesc.getProperties(),
+              e);
+        }
+        
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
         l4j.trace("Start Group");
         reducer.startGroup();
-      }
-      try {
-        keyObject = inputKeyDeserializer.deserialize(keyWritable);
-      } catch (Exception e) {
-        throw new HiveException("Unable to deserialize reduce input key from " + 
-            Utilities.formatBinaryString(keyWritable.get(), 0, keyWritable.getSize())
-            + " with properties " + keyTableDesc.getProperties(),
-            e);
+        reducer.setGroupKeyObject(keyObject);
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {

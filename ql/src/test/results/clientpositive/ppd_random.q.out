@@ -84,6 +84,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 {VALUE._col1}
+          handleSkewJoin: false
           outputColumnNames: _col0, _col3
           Filter Operator
             predicate:

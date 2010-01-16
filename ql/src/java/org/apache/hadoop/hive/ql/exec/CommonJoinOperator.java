@@ -121,6 +121,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   int joinCacheSize = 0;
   int nextSz = 0;
   transient Byte lastAlias = null;
+  
+  transient boolean handleSkewJoin = false;
 
   protected int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
       Map<Byte, List<exprNodeDesc>> inputMap) {
@@ -193,7 +195,10 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return joinOutputObjectInspector;
   }
 
+  Configuration hconf;
   protected void initializeOp(Configuration hconf) throws HiveException {
+    this.handleSkewJoin = conf.getHandleSkewJoin();
+    this.hconf = hconf;
     LOG.info("COMMONJOIN " + ((StructObjectInspector)inputObjInspectors[0]).getTypeName());
     totalSz = 0;
     // Map that contains the rows for each alias
@@ -207,7 +212,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       order = conf.getTagOrder();
     }
     condn = conf.getConds();
-    noOuterJoin = conf.getNoOuterJoin();
+    noOuterJoin = conf.isNoOuterJoin();
 
     totalSz = populateJoinKeyValue(joinValues, conf.getExprs());
 
@@ -232,30 +237,15 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
         nr.add(null);
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
-      RowContainer<ArrayList<Object>> values = new RowContainer<ArrayList<Object>>(1);
+      RowContainer<ArrayList<Object>> values = getRowContainer(hconf, pos, alias, 1);
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
       // if serde is null, the input doesn't need to be spilled out 
       // e.g., the output columns does not contains the input table
-      SerDe serde = getSpillSerDe(pos);
-      RowContainer rc = new RowContainer(joinCacheSize);
-      if ( serde != null ) {
-        
-        // arbitrary column names used internally for serializing to spill table
-        List<String> colList = new ArrayList<String>();
-        for ( int i = 0; i < sz; ++i )
-          colList.add(alias + "_VAL_" + i);
-        
-        // object inspector for serializing input tuples
-        StructObjectInspector rcOI = 
-          ObjectInspectorFactory.getStandardStructObjectInspector(
-                            colList,
-                            joinValuesStandardObjectInspectors.get(pos));
-        
-        rc.setSerDe(serde, rcOI);
-      }
+      RowContainer rc = getRowContainer(hconf, pos, alias, joinCacheSize);
       storage.put(pos, rc);
+
       pos++;
     }
 
@@ -265,9 +255,32 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     LOG.info("JOIN " + ((StructObjectInspector)outputObjInspector).getTypeName() + " totalsz = " + totalSz);
     
   }
+
+  RowContainer getRowContainer(Configuration hconf, byte pos, Byte alias, int containerSize)
+      throws HiveException {
+    tableDesc tblDesc = getSpillTableDesc(alias);
+    SerDe serde = getSpillSerDe(alias);
+    
+    if ( serde == null )
+      containerSize = 1;
+      
+    RowContainer rc = new RowContainer(containerSize, hconf);
+    StructObjectInspector rcOI = null;
+    if(tblDesc != null) {
+   // arbitrary column names used internally for serializing to spill table
+      List<String> colNames = Utilities.getColumnNames(tblDesc.getProperties());
+      // object inspector for serializing input tuples
+      rcOI = ObjectInspectorFactory.getStandardStructObjectInspector(colNames,
+              joinValuesStandardObjectInspectors.get(pos));
+    }
+
+    rc.setSerDe(serde, rcOI);
+    rc.setTableDesc(tblDesc);
+    return rc;
+  }
   
-  private SerDe getSpillSerDe(byte pos) {
-    tableDesc desc = getSpillTableDesc(pos);
+  private SerDe getSpillSerDe(byte alias) {
+    tableDesc desc = getSpillTableDesc(alias);
     if ( desc == null )
       return null;
     SerDe sd = (SerDe) ReflectionUtils.newInstance(desc.getDeserializerClass(),  null);
@@ -278,6 +291,20 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       return null;
     }
     return sd;
+  }
+  
+  transient boolean newGroupStarted = false;
+  
+  public tableDesc getSpillTableDesc(Byte alias) {
+    if(spillTableDesc == null || spillTableDesc.size() == 0)
+      initSpillTables();
+    return spillTableDesc.get(alias);
+  }
+  
+  public Map<Byte, tableDesc> getSpillTableDesc() {
+    if(spillTableDesc == null)
+      initSpillTables();
+    return spillTableDesc;
   }
   
   private void initSpillTables() {
@@ -311,14 +338,9 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     }
   }
   
-  public tableDesc getSpillTableDesc(Byte alias) {
-    if(spillTableDesc == null || spillTableDesc.size() == 0)
-      initSpillTables();
-    return spillTableDesc.get(alias);
-  }
-  
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
+    newGroupStarted = true;
     for (RowContainer<ArrayList<Object>> alw: storage.values()) {
       alw.clear();
     }
@@ -644,7 +666,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
         }
 
         intObj.pushObj(newObj);
-
+        
         // execute the actual join algorithm
         ArrayList<boolean[]> newNulls =  joinObjects(inputNulls, newObj, intObj,
                                                      aliasNum, childFirstRow);
@@ -765,8 +787,10 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    */
   public void closeOp(boolean abort) throws HiveException {
     LOG.trace("Join Op close");
-    for ( RowContainer<ArrayList<Object>> alw: storage.values() )
-      alw.clear(); // clean up the temp files
+    for ( RowContainer<ArrayList<Object>> alw: storage.values() ) {
+      if(alw != null) //it maybe null for mapjoins
+        alw.clear(); // clean up the temp files      
+    }
     storage.clear();
   }
 

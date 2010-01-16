@@ -19,270 +19,317 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.File;
-import java.io.RandomAccessFile;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Simple persistent container for rows.
- *
+ * 
  * This container interface only accepts adding or appending new rows and
  * iterating through the rows in the order of their insertions.
- *
- * The iterator interface is a lightweight first()/next() API rather than
- * the Java Iterator interface. This way we do not need to create 
- * an Iterator object every time we want to start a new iteration. Below is 
- * simple example of how to convert a typical Java's Iterator code to the LW
- * iterator iterface.
  * 
- * Itereator itr = rowContainer.iterator();
- * while (itr.hasNext()) {
- *   v = itr.next();
- *   // do anything with v
- * }
+ * The iterator interface is a lightweight first()/next() API rather than the
+ * Java Iterator interface. This way we do not need to create an Iterator object
+ * every time we want to start a new iteration. Below is simple example of how
+ * to convert a typical Java's Iterator code to the LW iterator iterface.
+ * 
+ * Itereator itr = rowContainer.iterator(); while (itr.hasNext()) { v =
+ * itr.next(); // do anything with v }
  * 
  * can be rewritten to:
  * 
- * for ( v =  rowContainer.first(); 
- *       v != null; 
- *       v =  rowContainer.next()) {
- *   // do anything with v
- * }
- *
- * The adding and iterating operations can be interleaving. 
- *
+ * for ( v = rowContainer.first(); v != null; v = rowContainer.next()) { // do
+ * anything with v }
+ * 
+ * Once the first is called, it will not be able to write again. So there can
+ * not be any writes after read. It can be read multiple times, but it does not
+ * support multiple reader interleaving reading.
+ * 
  */
-public class RowContainer<Row extends List> {
+public class RowContainer<Row extends List<Object>> {
   
   protected Log LOG = LogFactory.getLog(this.getClass().getName());
   
   // max # of rows can be put into one block
   private static final int BLOCKSIZE   = 25000;
-  private static final int BLKMETA_LEN = 100; // default # of block metadata: (offset,length) pair
   
-  private Row[] lastBlock;   // the last block that add() should append to 
-  private Row[] currBlock;   // the current block where the cursor is in
+  private Row[] currentWriteBlock;   // the last block that add() should append to 
+  private Row[] currentReadBlock;   // the current block where the cursor is in
+  // since currentReadBlock may assigned to currentWriteBlock, we need to store
+  // orginal read block
+  private Row[] firstReadBlockPointer;  
   private int blockSize;     // number of objects in the block before it is spilled to disk
-  private int numBlocks;     // total # of blocks
+  private int numFlushedBlocks;     // total # of blocks
   private int size;          // total # of elements in the RowContainer
   private File tmpFile;            // temporary file holding the spilled blocks
-  private RandomAccessFile rFile;  // random access file holding the data
-  private long[] off_len;          // offset length pair: i-th position is offset, (i+1)-th position is length
+  Path tempOutPath = null;
+  private File parentFile;
   private int itrCursor;     // iterator cursor in the currBlock
+  private int readBlockSize; //size of current read block
   private int addCursor;     // append cursor in the lastBlock
-  private int pBlock;        // pointer to the iterator block
   private SerDe serde;       // serialization/deserialization for the row
   private ObjectInspector standardOI;  // object inspector for the row
-  private ArrayList dummyRow; // representing empty row (no columns since value art is null)
   
-  public RowContainer() {
-    this(BLOCKSIZE);
+  private List<Object> keyObject;
+
+  private tableDesc tblDesc;
+  
+  boolean firstCalled = false; //once called first, it will never be able to write again.
+  int acutalSplitNum = 0;
+  int currentSplitPointer = 0;
+  org.apache.hadoop.mapred.RecordReader rr = null; //record reader
+  RecordWriter rw = null;
+  InputFormat<WritableComparable, Writable> inputFormat = null;
+  InputSplit[] inputSplits = null;
+  private Row dummyRow = null;
+  
+  Writable val = null; //cached to use serialize data
+  
+  JobConf jobCloneUsingLocalFs = null;
+  private LocalFileSystem localFs;
+
+  public RowContainer(Configuration jc) throws HiveException {
+    this(BLOCKSIZE, jc);
   }
   
-  public RowContainer(int blockSize) {
+  public RowContainer(int blockSize, Configuration jc) throws HiveException {
     // no 0-sized block
     this.blockSize = blockSize == 0 ? BLOCKSIZE : blockSize;
     this.size      = 0;
     this.itrCursor = 0;
     this.addCursor = 0;
-    this.numBlocks = 0;
-    this.pBlock    = 0;
+    this.numFlushedBlocks = 0;
     this.tmpFile   = null;
-    this.lastBlock = (Row[]) new ArrayList[blockSize];
-    this.currBlock = this.lastBlock;
-    this.off_len   = new long[BLKMETA_LEN * 2];
+    this.currentWriteBlock = (Row[]) new ArrayList[blockSize];
+    this.currentReadBlock = this.currentWriteBlock;
+    this.firstReadBlockPointer = currentReadBlock;
     this.serde     = null;
     this.standardOI= null;
-    this.dummyRow  = new ArrayList(0);
+    try {
+      this.localFs = FileSystem.getLocal(jc);
+    } catch (IOException e) {
+     throw new HiveException(e);
+    }
+    this.jobCloneUsingLocalFs = new JobConf(jc);
+    HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS, Utilities.HADOOP_LOCAL_FS);
   }
   
-  public RowContainer(int blockSize, SerDe sd, ObjectInspector oi) {
-    this(blockSize);
+  public RowContainer(int blockSize, SerDe sd, ObjectInspector oi, Configuration jc) throws HiveException {
+    this(blockSize, jc);
     setSerDe(sd, oi);
   }
   
   public void setSerDe(SerDe sd, ObjectInspector oi) {
-    assert serde != null : "serde is null";
-    assert oi != null : "oi is null";
     this.serde = sd;
     this.standardOI = oi;
   }
   
   public void add(Row t) throws HiveException {
-    if ( addCursor >= blockSize ) { // spill the current block to tmp file
-      spillBlock(lastBlock);
-      addCursor = 0;
-      if ( numBlocks == 1 )
-        lastBlock = (Row[]) new ArrayList[blockSize];
-    } 
-    lastBlock[addCursor++] = t;
+    if(this.tblDesc != null) {
+      if ( addCursor >= blockSize ) { // spill the current block to tmp file
+        spillBlock(currentWriteBlock, addCursor);
+        addCursor = 0;
+        if ( numFlushedBlocks == 1 )
+          currentWriteBlock = (Row[]) new ArrayList[blockSize];
+      } 
+      currentWriteBlock[addCursor++] = t;
+    } else if(t != null) {
+      // the tableDesc will be null in the case that all columns in that table
+      // is not used. we use a dummy row to denote all rows in that table, and
+      // the dummy row is added by caller. 
+      this.dummyRow = t;
+    }
     ++size;
   }
   
-  public Row first() {
+  public Row first() throws HiveException {
     if ( size == 0 )
       return null;
     
-    if ( pBlock > 0 ) {
-      pBlock = 0;
-      currBlock = getBlock(0);
-      assert currBlock != null: "currBlock == null";
-    }  
-    if ( currBlock == null && lastBlock != null ) {
-      currBlock = lastBlock;
-    }
-    assert pBlock == 0: "pBlock != 0 ";
-    itrCursor = 1;
-    return currBlock[0];
-  }
-  
-  public Row next() {
-    assert pBlock<= numBlocks: "pBlock " + pBlock + " > numBlocks" + numBlocks; // pBlock should not be greater than numBlocks;
-    if ( pBlock < numBlocks ) {
-      if ( itrCursor < blockSize ) {
-     	  return currBlock[itrCursor++];
-	    } else if (  ++pBlock < numBlocks ) {
- 	      currBlock = getBlock(pBlock);
- 	      assert currBlock != null: "currBlock == null";
- 	      itrCursor = 1;
-	    	return  currBlock[0];
-    	} else {
-    	  itrCursor = 0;
-    	  currBlock = lastBlock;
-    	}
-    } 
-    // last block (pBlock == numBlocks)
-    if ( itrCursor < addCursor )
-      return currBlock[itrCursor++];
-    else
-      return null;
-  }
-  
-  private void spillBlock(Row[] block) throws HiveException {
     try {
-      if ( tmpFile == null ) {
-        tmpFile = File.createTempFile("RowContainer", ".tmp", new File("/tmp"));
-	      LOG.info("RowContainer created temp file " + tmpFile.getAbsolutePath());
- 	      // Delete the temp file if the JVM terminate normally through Hadoop job kill command.
-        // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
-        tmpFile.deleteOnExit(); 
-        rFile = new RandomAccessFile(tmpFile, "rw");
+      firstCalled = true;
+      // when we reach here, we must have some data already (because size >0).
+      // We need to see if there are any data flushed into file system. If not, we can
+      // directly read from the current write block. Otherwise, we need to read
+      // from the beginning of the underlying file.
+      this.itrCursor = 0;
+      closeWriter();
+      closeReader();
+      
+      if(tblDesc == null) {
+        this.itrCursor ++;
+        return dummyRow;
       }
-      byte[] buf = serialize(block);
-      long offset = rFile.length();
-      long len = buf.length;
-      // append the block at the end
-      rFile.seek(offset);
-      rFile.write(buf);
       
-      // maintain block metadata
-      addBlockMetadata(offset, len);
-    } catch (Exception e) {
-      LOG.debug(e.toString());
-      throw new HiveException(e);
-    }
-  }
-  
-  /**
-   * Maintain the blocks meta data: number of blocks, and the block (offset, length)
-   * pair. 
-   * @param offset offset of the tmp file where the block was serialized.
-   * @param len the length of the serialized block in the temp file.
-   */
-  private void addBlockMetadata(long offset, long len) {
-    if ( (numBlocks+1) * 2 >= off_len.length ) { // expand (offset, len) array
-      off_len = Arrays.copyOf(off_len, off_len.length*2);
-    }
-    off_len[numBlocks*2] = offset;
-    off_len[numBlocks*2+1] = len;
-    ++numBlocks;
-  }
-  
-  /**
-   * Serialize the object into a byte array.
-   * @param obj object needed to be serialized
-   * @return the byte array that contains the serialized array.
-   * @throws IOException
-   */
-  private byte[] serialize(Row[] obj) throws HiveException {
-    assert(serde != null && standardOI != null);
-    
-    ByteArrayOutputStream  baos;
-    DataOutputStream     oos;
-    
-    try {
-      baos = new ByteArrayOutputStream();
-      oos = new DataOutputStream(baos);
-      
-      // # of rows
-      oos.writeInt(obj.length); 
-      
-      // if serde or OI is null, meaning the join value is null, we don't need
-      // to serialize anything to disk, just need to keep the length.
-      if ( serde != null && standardOI != null ) {
-        for ( int i = 0; i < obj.length; ++i ) {
-          Writable outVal = serde.serialize(obj[i], standardOI);
-          outVal.write(oos);
-        }
-      }
-      oos.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new HiveException(e);
-    }
-    return baos.toByteArray();
-  }
+      this.currentReadBlock = this.firstReadBlockPointer;
+      if (this.numFlushedBlocks == 0) {
+        this.readBlockSize = this.addCursor;
+        this.currentReadBlock = this.currentWriteBlock;
+      } else {
+        if (inputSplits == null) {
+          if (this.inputFormat == null)
+            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils.newInstance(tblDesc.getInputFileFormatClass(),
+                    jobCloneUsingLocalFs);
 
-  /**
-   * Deserialize an object from a byte array
-   * @param buf the byte array containing the serialized object.
-   * @return the serialized object.
-   */
-  private Row[] deserialize(byte[] buf) throws HiveException {
-    ByteArrayInputStream  bais;
-    DataInputStream     ois;
-    
-    try {
-      bais = new ByteArrayInputStream(buf);
-      ois = new DataInputStream(bais);
-      int sz = ois.readInt();
-      assert sz == blockSize: 
-             "deserialized size " + sz + " is not the same as block size " + blockSize;
-      Row[] ret = (Row[]) new ArrayList[sz];
-      
-      // if serde or OI is null, meaning the join value is null, we don't need
-      // to serialize anything to disk, just need to keep the length.
-      for ( int i = 0; i < sz; ++i ) {
-        if ( serde != null && standardOI != null ) {
-          Writable val = serde.getSerializedClass().newInstance();
-          val.readFields(ois);
-        
-          ret[i] = (Row) ObjectInspectorUtils.copyToStandardObject(
-                           serde.deserialize(val),
-                           serde.getObjectInspector(),
-                           ObjectInspectorCopyOption.WRITABLE);
-        } else {
-          ret[i] = (Row) dummyRow;
+          HiveConf.setVar(jobCloneUsingLocalFs,
+              HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
+              org.apache.hadoop.util.StringUtils.escapeString(parentFile.getAbsolutePath()));
+          inputSplits = inputFormat.getSplits(jobCloneUsingLocalFs, 1);
+          acutalSplitNum = inputSplits.length;
         }
+        currentSplitPointer = 0;
+        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
+            jobCloneUsingLocalFs, Reporter.NULL);
+        currentSplitPointer++;
+
+        nextBlock();
       }
+      // we are guaranteed that we can get data here (since 'size' is not zero)
+      Row ret = currentReadBlock[itrCursor++];
+      removeKeys(ret);
       return ret;
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new HiveException(e);
+    }
+    
+  }
+
+  public Row next() throws HiveException {
+    
+    if(!firstCalled)
+      throw new RuntimeException("Call first() then call next().");
+    
+    if ( size == 0 )
+      return null;
+    
+    if(tblDesc == null) {
+      if(this.itrCursor < size) {
+        this.itrCursor++;
+        return dummyRow;
+      }
+      return null;  
+    }
+    
+    Row ret;
+    if(itrCursor < this.readBlockSize) {
+      ret = this.currentReadBlock[itrCursor++];
+      removeKeys(ret);
+      return ret;
+    }
+    else {
+      nextBlock();
+      if ( this.readBlockSize == 0) {
+        if (currentWriteBlock != null && currentReadBlock != currentWriteBlock) {
+          this.itrCursor = 0;
+          this.readBlockSize = this.addCursor;
+          this.firstReadBlockPointer = this.currentReadBlock;
+          currentReadBlock = currentWriteBlock;
+        } else {
+          return null;
+        }
+      }
+      return next();
+    }
+  }
+
+  private void removeKeys(Row ret) {
+    if (this.keyObject != null
+        && this.currentReadBlock != this.currentWriteBlock) {
+      int len = this.keyObject.size();
+      int rowSize = ((ArrayList)ret).size();
+      for(int i=0;i<len;i++) {
+        ((ArrayList) ret).remove(rowSize - i - 1);
+      }
+    }
+  }
+  
+  ArrayList<Object> row = new ArrayList<Object>(2);
+  private void spillBlock(Row[] block, int length) throws HiveException {
+    try {
+      if ( tmpFile == null ) {
+
+        String suffix = ".tmp";
+        if(this.keyObject != null)
+          suffix = "." + this.keyObject.toString() + suffix;
+        
+        while(true) {
+          String parentId = "hive-rowcontainer" + Utilities.randGen.nextInt();
+          parentFile = new File("/tmp/"+ parentId);
+          boolean success = parentFile.mkdir();
+          if(success)
+            break;
+          LOG.debug("retry creating tmp row-container directory...");
+        }
+        
+        tmpFile = File.createTempFile("RowContainer", suffix, parentFile);
+        LOG.info("RowContainer created temp file " + tmpFile.getAbsolutePath());
+        // Delete the temp file if the JVM terminate normally through Hadoop job kill command.
+        // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
+        parentFile.deleteOnExit();
+        tmpFile.deleteOnExit(); 
+        
+        // rFile = new RandomAccessFile(tmpFile, "rw");
+        HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
+        tempOutPath = new Path(tmpFile.toString());
+        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs, hiveOutputFormat, 
+            serde.getSerializedClass(), false, tblDesc.getProperties(), tempOutPath);
+      } else if (rw == null) {
+        throw new HiveException("RowContainer has already been closed for writing.");
+      }
+      
+      row.clear();
+      row.add(null);
+      row.add(null);
+      
+      if (this.keyObject != null) {
+        row.set(1, this.keyObject);
+        for (int i = 0; i < length; ++i) {
+          Row currentValRow = block[i];
+          row.set(0, currentValRow);
+          Writable outVal = serde.serialize(row, standardOI);
+          rw.write(outVal);
+        }
+      }else {
+        for ( int i = 0; i < length; ++i ) {
+          Row currentValRow = block[i];
+          Writable outVal = serde.serialize(currentValRow, standardOI);
+          rw.write(outVal);
+        }
+      }
+      
+      if(block == this.currentWriteBlock)
+        this.addCursor = 0;
+      
+      this.numFlushedBlocks ++;
+    } catch (Exception e) {
+      clear();
+      LOG.error(e.toString(), e);
       throw new HiveException(e);
     }
   }
@@ -294,6 +341,60 @@ public class RowContainer<Row extends List> {
   public int size() {
     return size;
   }
+
+  private boolean nextBlock() throws HiveException {
+    itrCursor = 0;
+    this.readBlockSize = 0;
+    if (this.numFlushedBlocks == 0) return false;
+    
+    try {
+      if(val == null)
+        val = serde.getSerializedClass().newInstance();
+      boolean nextSplit = true;
+      int i = 0;
+      
+      if(rr != null) {
+        Object key = rr.createKey();
+        while (i < this.currentReadBlock.length && rr.next(key, val)) {
+          nextSplit = false;
+          this.currentReadBlock[i++] = (Row) ObjectInspectorUtils.copyToStandardObject(
+              serde.deserialize(val),
+              serde.getObjectInspector(),
+              ObjectInspectorCopyOption.WRITABLE);
+        }
+      }
+      
+      if (nextSplit && this.currentSplitPointer < this.acutalSplitNum) {
+        //open record reader to read next split
+        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], jobCloneUsingLocalFs,
+            Reporter.NULL);
+        currentSplitPointer++;
+        return nextBlock();
+      }
+      
+      this.readBlockSize = i;
+      return this.readBlockSize > 0;
+    } catch (Exception e) {
+      LOG.error(e.getMessage(),e);
+      try {
+        this.clear();
+      } catch (HiveException e1) {
+        LOG.error(e.getMessage(),e);
+      }
+      throw new HiveException(e);
+    }
+  }
+
+  public void copyToDFSDirecory(FileSystem destFs, Path destPath) throws IOException, HiveException {
+    if (addCursor > 0)
+      this.spillBlock(this.currentWriteBlock, addCursor);
+    if(tempOutPath == null || tempOutPath.toString().trim().equals(""))
+      return;
+    this.closeWriter();
+    LOG.info("RowContainer copied temp file " + tmpFile.getAbsolutePath()+ " to dfs directory " + destPath.toString());
+    destFs.copyFromLocalFile(true,tempOutPath, new Path(destPath, new Path(tempOutPath.getName())));
+    clear();
+  }
   
   /**
    * Remove all elements in the RowContainer.
@@ -301,33 +402,72 @@ public class RowContainer<Row extends List> {
   public void clear() throws HiveException {
     itrCursor = 0;
     addCursor = 0;
-    numBlocks = 0;
-    pBlock    = 0;
-    size      = 0;
+    numFlushedBlocks = 0;
+    this.readBlockSize = 0;
+    this.acutalSplitNum = 0;
+    this.currentSplitPointer = -1;
+    this.firstCalled = false;
+    this.inputSplits = null;
+    tempOutPath = null;
+    addCursor = 0;
+    
+    size = 0;
     try {
-      if ( rFile != null )
-        rFile.close();
-      if ( tmpFile != null )
-        tmpFile.delete();
+      if (rw != null)
+        rw.close(false);
+      if (rr != null)
+        rr.close();
     } catch (Exception e) {
       LOG.error(e.toString());
       throw new HiveException(e);
+    } finally {
+      rw = null;
+      rr = null;
+      tmpFile = null;
+      deleteLocalFile(parentFile, true);
+      parentFile = null;
     }
-    tmpFile = null;
+  }
+
+  private void deleteLocalFile(File file, boolean recursive) {
+    try{
+      if (file != null) {
+        if(!file.exists())
+          return;
+        if(file.isDirectory() && recursive) {
+          File[] files = file.listFiles();
+          for (int i = 0; i < files.length; i++)
+            deleteLocalFile(files[i], true);
+        }
+        boolean deleteSuccess = file.delete();
+        if(!deleteSuccess)
+          LOG.error("Error deleting tmp file:" + file.getAbsolutePath());
+      }
+    } catch (Exception e) {
+      LOG.error("Error deleting tmp file:" + file.getAbsolutePath(), e);
+    }
   }
   
-  private Row[] getBlock(int block) {
-    long offset = off_len[block*2];
-    long len = off_len[block*2+1];
-    byte[] buf = new byte[(int)len];
-    try {
-      rFile.seek(offset);
-      rFile.readFully(buf);
-      currBlock = deserialize(buf);
-    } catch (Exception e) {
-      LOG.error(e.toString());
-      return null;
+  private void closeWriter() throws IOException {
+    if (this.rw != null) {
+      this.rw.close(false);
+      this.rw = null;
     }
-    return currBlock;
   }
+  
+  private void closeReader() throws IOException {
+    if (this.rr != null) {
+      this.rr.close();
+      this.rr = null;
+    }
+  }
+  
+  public void setKeyObject(List<Object> dummyKey) {
+    this.keyObject = dummyKey;
+  }
+
+  public void setTableDesc(tableDesc tblDesc) {
+    this.tblDesc = tblDesc;
+  }
+  
 }

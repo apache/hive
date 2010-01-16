@@ -72,6 +72,8 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
   transient protected Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
   
+  transient protected RowContainer<ArrayList<Object>> emptyList = null;
+  
   transient static final private String[] fatalErrMsg = { 
     null,  // counter value 0 means no error
     "Mapside join size exceeds hive.mapjoin.maxsize. Please increase that or remove the mapjoin hint." // counter value 1
@@ -80,14 +82,18 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
     SerDe      serde;
+    tableDesc tblDesc;
+    Configuration conf;
 
     /**
      * @param standardOI
      * @param serde
      */
-    public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde) {
+    public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde, tableDesc tblDesc, Configuration conf) {
       this.standardOI = standardOI;
       this.serde = serde;
+      this.tblDesc = tblDesc;
+      this.conf = conf;
     }
 
     /**
@@ -102,6 +108,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
      */
     public SerDe getSerDe() {
       return serde;
+    }
+
+    public tableDesc getTblDesc() {
+      return tblDesc;
+    }
+
+    public Configuration getConf() {
+      return conf;
     }
 
   }
@@ -159,7 +173,9 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       mapJoinTables.put(Byte.valueOf((byte)pos), hashTable);
     }
     
-    storage.put((byte)posBigTable, new RowContainer());
+    emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
+    RowContainer bigPosRC = getRowContainer(hconf, (byte)posBigTable, order[posBigTable], joinCacheSize);
+    storage.put((byte)posBigTable, bigPosRC);
     
     mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
     
@@ -214,7 +230,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
               new MapJoinObjectCtx(
                   ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
                       ObjectInspectorCopyOption.WRITABLE),
-                  keySerializer));
+                  keySerializer, keyTableDesc, hconf));
 
           firstRow = false;
         }
@@ -240,7 +256,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
         boolean needNewKey = true;
         if (o == null) {
-          res = new RowContainer();
+          res = getRowContainer(this.hconf, (byte)tag, order[tag], joinCacheSize);
         	res.add(value);
         } else {
           res = o.getObj();
@@ -266,14 +282,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
                           new MapJoinObjectCtx(
                                 ObjectInspectorUtils.getStandardObjectInspector(valueSerDe.getObjectInspector(),
                                   ObjectInspectorCopyOption.WRITABLE),
-                                valueSerDe));
+                                valueSerDe, valueTableDesc, hconf));
         }
         
         // Construct externalizable objects for key and value
         if ( needNewKey ) {
           MapJoinObjectKey keyObj = new MapJoinObjectKey(metadataKeyTag, key);
 	        MapJoinObjectValue valueObj = new MapJoinObjectValue(metadataValueTag[tag], res);
-          
+	        valueObj.setConf(this.hconf); 
           // This may potentially increase the size of the hashmap on the mapper
   	      if (res.size() > mapJoinRowsKey) {
             if ( res.size() % 100 == 0 ) {
@@ -295,7 +311,10 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           MapJoinObjectValue o = (MapJoinObjectValue)mapJoinTables.get(pos).get(keyMap);
 
           if (o == null) {
-            storage.put(pos, dummyObjVectors[pos.intValue()]);
+            if(noOuterJoin)
+              storage.put(pos, emptyList);
+            else
+              storage.put(pos, dummyObjVectors[pos.intValue()]);
           }
           else {
             storage.put(pos, o.getObj());
@@ -323,6 +342,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
     for (HashMapWrapper hashTable: mapJoinTables.values()) {
       hashTable.close();
     }
+    super.closeOp(abort);
   }
   /**
    * Implements the getName function for the Node Interface.

@@ -25,12 +25,11 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-6
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
   Stage-6 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6
-  Stage-5 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -92,13 +91,14 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1540757477/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/43069541/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {_col0} {_col1}
                 1 {_col1}
+              handleSkewJoin: false
               keys:
                 0 [Column[_col0]]
                 1 [Column[_col0]]
@@ -142,17 +142,18 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1540757477/10004 
+            file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/43069541/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1540757477/10004 
+            file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/43069541/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {_col0} {_col1}
                     1 {_col1}
+                  handleSkewJoin: false
                   keys:
                     0 [Column[_col0]]
                     1 [Column[_col0]]
@@ -196,37 +197,12 @@ STAGE PLANS:
 
   Stage: Stage-5
     Conditional Operator
-      list of dependent Tasks:
-          Move Operator
-            files:
-                hdfs directory: true
-                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/668457340/10000
-          Map Reduce
-            Alias -> Map Operator Tree:
-              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1540757477/10003 
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: key
-                          type: string
-                          expr: cnt1
-                          type: int
-                          expr: cnt2
-                          type: int
-            Reduce Operator Tree:
-              Extract
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest_j1
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/967863622/10000
 
   Stage: Stage-0
     Move Operator
@@ -237,6 +213,34 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/43069541/10003 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: cnt1
+                    type: int
+                    expr: cnt2
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
 
   Stage: Stage-6
     Map Reduce
@@ -314,11 +318,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1821535059/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/280501142/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1821535059/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/280501142/10000
 128	1	3
 146	1	2
 150	1	1

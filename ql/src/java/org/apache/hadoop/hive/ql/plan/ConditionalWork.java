@@ -36,7 +36,6 @@ public class ConditionalWork implements Serializable {
   /**
    * @return the listWorks
    */
-  @explain(displayName="list of dependent Tasks")
   public List<? extends Serializable> getListWorks() {
     return listWorks;
   }

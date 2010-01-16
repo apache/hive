@@ -18,14 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.apache.commons.logging.Log;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -36,15 +40,22 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
   
+  private transient SkewJoinHandler skewJoinKeyContext = null;
+  
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     initializeChildren(hconf);
+    if(this.handleSkewJoin) {
+      skewJoinKeyContext = new SkewJoinHandler(this);
+      skewJoinKeyContext.initiliaze(hconf);
+    }
   }
   
   public void processOp(Object row, int tag)
       throws HiveException {
     try {
+      
       // get alias
       alias = (byte)tag;
     
@@ -52,6 +63,9 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
         nextSz = joinEmitInterval;
       
       ArrayList<Object> nr = computeValues(row, joinValues.get(alias), joinValuesObjectInspectors.get(alias));
+      
+      if(this.handleSkewJoin)
+        skewJoinKeyContext.handleSkew(tag);
       
       // number of rows for the key in the given table
       int sz = storage.get(alias).size();
@@ -92,6 +106,87 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
     return OperatorType.JOIN;
   }
 
+  /**
+   * All done
+   *
+   */
+  public void closeOp(boolean abort) throws HiveException {
+    if (this.handleSkewJoin) {
+      skewJoinKeyContext.close(abort);
+    }
+    super.closeOp(abort);
+  }
+  
+  @Override
+  public void jobClose(Configuration hconf, boolean success) throws HiveException {
+    if(this.handleSkewJoin) {
+      try {
+        for (int i = 0; i < numAliases; i++) {
+          String specPath = this.conf.getBigKeysDirMap().get((byte)i);
+          FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
+          for (int j = 0; j < numAliases; j++) {
+            if(j == i) continue;
+            specPath = getConf().getSmallKeysDirMap().get((byte)i).get((byte)j);
+            FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
+          }
+        }
+        
+        if(success) {
+          //move up files
+          for (int i = 0; i < numAliases; i++) {
+            String specPath = this.conf.getBigKeysDirMap().get((byte)i);
+            moveUpFiles(specPath, hconf, LOG);
+            for (int j = 0; j < numAliases; j++) {
+              if(j == i) continue;
+              specPath = getConf().getSmallKeysDirMap().get((byte)i).get((byte)j);
+              moveUpFiles(specPath, hconf, LOG);
+            }
+          }
+        }
+      } catch (IOException e) {
+        throw new HiveException (e);
+      }
+    }
+    super.jobClose(hconf, success);
+  }
+  
+  
+  
+  private void moveUpFiles(String specPath, Configuration hconf, Log log) throws IOException, HiveException {
+    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    Path finalPath = new Path(specPath);
+    
+    if(fs.exists(finalPath)) {
+      FileStatus[] taskOutputDirs = fs.listStatus(finalPath);
+      if(taskOutputDirs != null ) {
+        for (FileStatus dir : taskOutputDirs) {
+          Utilities.renameOrMoveFiles(fs, dir.getPath(), finalPath);
+          fs.delete(dir.getPath(), true);
+        }
+      }
+    }
+  }
+  
+  /**
+   * Forward a record of join results.
+   *
+   * @throws HiveException
+   */
+  public void endGroup() throws HiveException {
+    //if this is a skew key, we need to handle it in a separate map reduce job.
+    if(this.handleSkewJoin && skewJoinKeyContext.currBigKeyTag >=0) {
+      try {
+        skewJoinKeyContext.endGroup();
+      } catch (IOException e) {
+        LOG.error(e.getMessage(),e);
+        throw new HiveException(e);
+      }
+      return;
+    }
+    else {
+      checkAndGenObject();
+    }
+  }
   
 }
 

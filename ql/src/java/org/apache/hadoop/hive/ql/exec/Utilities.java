@@ -54,12 +54,16 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.commons.logging.LogFactory;
@@ -71,7 +75,9 @@ public class Utilities {
   /**
    * The object in the reducer are composed of these top level fields
    */
-
+  
+  public static String HADOOP_LOCAL_FS = "file:///";
+  
   public static enum ReduceField { KEY, VALUE, ALIAS };
   private static Map<String, mapredWork> gWorkMap=
     Collections.synchronizedMap(new HashMap<String, mapredWork>());
@@ -336,6 +342,15 @@ public class Utilities {
 
   public static tableDesc getTableDesc(Table tbl) {
     return (new tableDesc (tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl.getOutputFormatClass(), tbl.getSchema()));
+  }
+  
+  //column names and column types are all delimited by comma
+  public static tableDesc getTableDesc(String cols, String colTypes) {
+    return (new tableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
+        HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
+            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+            org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
+            org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
   }
 
 
@@ -832,6 +847,32 @@ public class Utilities {
     List<String> names = new ArrayList<String>();
     for (FieldSchema o : partCols) {
       names.add(o.getName());
+    }
+    return names;
+  }
+  
+  public static List<String> getColumnNames(Properties props) {
+    List<String> names = new ArrayList<String>();
+    String colNames = props.getProperty(Constants.LIST_COLUMNS);
+    String[] cols = colNames.trim().split(",");
+    if (cols != null) {
+      for(String col : cols) {
+        if(col!=null && !col.trim().equals(""))
+          names.add(col);
+      }
+    }
+    return names;
+  }
+  
+  public static List<String> getColumnTypes(Properties props) {
+    List<String> names = new ArrayList<String>();
+    String colNames = props.getProperty(Constants.LIST_COLUMN_TYPES);
+    String[] cols = colNames.trim().split(",");
+    if (cols != null) {
+      for(String col : cols) {
+        if(col!=null && !col.trim().equals(""))
+          names.add(col);
+      }
     }
     return names;
   }

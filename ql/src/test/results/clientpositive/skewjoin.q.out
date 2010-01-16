@@ -1,0 +1,1911 @@
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE T4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest_j1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T2
+PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T3
+PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T4
+PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T4
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T4
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t4
+PREHOOK: query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3
+  Stage-3
+  Stage-0 depends on stages: Stage-1, Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src2 
+          TableScan
+            alias: src2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
+                    type: string
+        src1 
+          TableScan
+            alias: src1
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 {VALUE._col1}
+          handleSkewJoin: true
+          outputColumnNames: _col0, _col3
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col0, _col1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(_col0)
+                    type: int
+                    expr: _col1
+                    type: string
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest_j1
+
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        0 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+              handleSkewJoin: false
+              keys:
+                0 [Column[joinkey0]]
+                1 [Column[joinkey0]]
+              outputColumnNames: _col0, _col3
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(_col0)
+                        type: int
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest_j1
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            1 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {0_VALUE_0}
+                    1 {1_VALUE_0}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      expressions:
+                            expr: UDFToInteger(_col0)
+                            type: int
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 1
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: dest_j1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_j1
+
+
+PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_j1
+POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_j1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2065986997/10000
+POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_j1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2065986997/10000
+278697	101852390308
+PREHOOK: query: EXPLAIN
+SELECT /*+ STREAMTABLE(a) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT /*+ STREAMTABLE(a) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF T2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF T3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF T4 d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 3
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 1 to 2
+               Inner Join 2 to 3
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+            3 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: string
+                  expr: _col3
+                  type: string
+                  expr: _col4
+                  type: string
+                  expr: _col5
+                  type: string
+                  expr: _col6
+                  type: string
+                  expr: _col7
+                  type: string
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1684194842/10000
+POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1684194842/10000
+2	12	2	22	2	12	2	12
+PREHOOK: query: EXPLAIN
+SELECT /*+ STREAMTABLE(a,c) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT /*+ STREAMTABLE(a,c) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF T2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF T3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF T4 d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a c))) (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        d 
+          TableScan
+            alias: d
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 3
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 1 to 2
+               Inner Join 2 to 3
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+            3 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: string
+                  expr: _col3
+                  type: string
+                  expr: _col4
+                  type: string
+                  expr: _col5
+                  type: string
+                  expr: _col6
+                  type: string
+                  expr: _col7
+                  type: string
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1949681608/10000
+POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
+FROM T1 a JOIN T2 b ON a.key = b.key
+          JOIN T3 c ON b.key = c.key
+          JOIN T4 d ON c.key = d.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1949681608/10000
+2	12	2	22	2	12	2	12
+PREHOOK: query: EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF src c) (= (+ (. (TOK_TABLE_OR_COL c) key) 1) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) val)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL c) key)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: (key + 1)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: (key + 1)
+                    type: double
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: UDFToDouble(key)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: UDFToDouble(key)
+                    type: double
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: string
+            outputColumnNames: _col0, _col1, _col2
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col0))
+                    expr: sum(hash(_col1))
+                    expr: sum(hash(_col2))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1895945248/10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+                    expr: _col1
+                    type: bigint
+                    expr: _col2
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+                expr: sum(VALUE._col2)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+                  expr: _col1
+                  type: bigint
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1, _col2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/893344305/10000
+POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/893344305/10000
+198	6274	194
+PREHOOK: query: EXPLAIN FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4
+  Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 0
+        y:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: true
+          outputColumnNames: _col2, _col3
+          Select Operator
+            expressions:
+                  expr: _col2
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col2, _col3
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col2))
+                    expr: sum(hash(_col3))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        0 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 {1_VALUE_0} {1_VALUE_1}
+              handleSkewJoin: false
+              keys:
+                0 [Column[joinkey0]]
+                1 [Column[joinkey0]]
+              outputColumnNames: _col2, _col3
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col2
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col2, _col3
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col2))
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            1 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 {1_VALUE_0} {1_VALUE_1}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                  outputColumnNames: _col2, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col2, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col2))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/441875243/10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/586096055/10000
+POSTHOOK: query: FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/586096055/10000
+44481300	101852390308
+PREHOOK: query: EXPLAIN FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) Y) (and (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)) (= (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL x) value) 5) (+ (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL y) value) 5) 1))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4
+  Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                      expr: UDFToDouble(substring(_col1, 5))
+                      type: double
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                      expr: UDFToDouble(substring(_col1, 5))
+                      type: double
+                tag: 0
+        y:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                      expr: (substring(_col1, 5) + 1)
+                      type: double
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                      expr: (substring(_col1, 5) + 1)
+                      type: double
+                tag: 1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: true
+          outputColumnNames: _col2, _col3
+          Select Operator
+            expressions:
+                  expr: _col2
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col2, _col3
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col2))
+                    expr: sum(hash(_col3))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        0 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 {1_VALUE_0} {1_VALUE_1}
+              handleSkewJoin: false
+              keys:
+                0 [Column[joinkey0], Column[joinkey1]]
+                1 [Column[joinkey0], Column[joinkey1]]
+              outputColumnNames: _col2, _col3
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col2
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col2, _col3
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col2))
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            1 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            1 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 {1_VALUE_0} {1_VALUE_1}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0], Column[joinkey1]]
+                    1 [Column[joinkey0], Column[joinkey1]]
+                  outputColumnNames: _col2, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col2, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col2))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/964239922/10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1241392623/10000
+POSTHOOK: query: FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
+SELECT sum(hash(Y.key)), sum(hash(Y.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1241392623/10000
+NULL	NULL
+PREHOOK: query: EXPLAIN
+SELECT sum(hash(src1.c1)), sum(hash(src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 = src3.c5 AND src3.c5 < 80
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT sum(hash(src1.c1)), sum(hash(src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 = src3.c5 AND src3.c5 < 80
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) 100))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c5) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c6)))) src3) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src3) c5)) (< (. (TOK_TABLE_OR_COL src3) c5) 80)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src1) c1)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src2) c4)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-5, Stage-6
+  Stage-5
+  Stage-2 depends on stages: Stage-1, Stage-5, Stage-6
+  Stage-6
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: _col1
+                      type: string
+        src1:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < 100)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                Filter Operator
+                  predicate:
+                      expr: (_col0 < 100)
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+                    value expressions:
+                          expr: _col0
+                          type: string
+        src3:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < 80)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                Filter Operator
+                  predicate:
+                      expr: (_col0 < 80)
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 2
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0}
+            1 {VALUE._col1}
+            2 
+          handleSkewJoin: true
+          outputColumnNames: _col0, _col3
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col0, _col3
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col0))
+                    expr: sum(hash(_col3))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+        0 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+                   Inner Join 0 to 2
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              handleSkewJoin: false
+              keys:
+                0 [Column[joinkey0]]
+                1 [Column[joinkey0]]
+                2 [Column[joinkey0]]
+              outputColumnNames: _col0, _col3
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col0, _col3
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col0))
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            1 
+              Fetch Operator
+                limit: -1
+            2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            1 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {0_VALUE_0}
+                    1 {1_VALUE_0}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                    2 [Column[joinkey0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            2 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {0_VALUE_0}
+                    1 {1_VALUE_0}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                    2 [Column[joinkey0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1281773/10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        1 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+                   Inner Join 0 to 2
+              condition expressions:
+                0 {0_VALUE_0}
+                1 {1_VALUE_0}
+                2 
+              handleSkewJoin: false
+              keys:
+                0 [Column[joinkey0]]
+                1 [Column[joinkey0]]
+                2 [Column[joinkey0]]
+              outputColumnNames: _col0, _col3
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col3
+                      type: string
+                outputColumnNames: _col0, _col3
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(_col0))
+                        expr: sum(hash(_col3))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            0 
+              Fetch Operator
+                limit: -1
+            2 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            0 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {0_VALUE_0}
+                    1 {1_VALUE_0}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                    2 [Column[joinkey0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 1
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            2 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {0_VALUE_0}
+                    1 {1_VALUE_0}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[joinkey0]]
+                    1 [Column[joinkey0]]
+                    2 [Column[joinkey0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 1
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0))
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 = src3.c5 AND src3.c5 < 80
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/516996581/10000
+POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 = src3.c5 AND src3.c5 < 80
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/516996581/10000
+293143	-136853010385
+PREHOOK: query: EXPLAIN
+SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF T1 k) (TOK_TABREF T1 v) (= (+ (. (TOK_TABLE_OR_COL k) key) 1) (. (TOK_TABLE_OR_COL v) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST v))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL k) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL v) val)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        k 
+          TableScan
+            alias: k
+            Common Join Operator
+              condition map:
+                   Left Outer Join0 to 1
+              condition expressions:
+                0 {key}
+                1 {val}
+              handleSkewJoin: false
+              keys:
+                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key], Const int 1()]
+                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+              outputColumnNames: _col0, _col3
+              Position of Big Table: 0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            v 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            v 
+              TableScan
+                alias: v
+                Common Join Operator
+                  condition map:
+                       Left Outer Join0 to 1
+                  condition expressions:
+                    0 {key}
+                    1 {val}
+                  handleSkewJoin: false
+                  keys:
+                    0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key], Const int 1()]
+                    1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/989529143/10002 
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col0, _col3
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col3
+                    type: string
+              outputColumnNames: _col0, _col3
+              Group By Operator
+                aggregations:
+                      expr: sum(hash(_col0))
+                      expr: sum(hash(_col3))
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/58672900/10000
+POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/58672900/10000
+372	6320
+PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/192419159/10000
+POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/192419159/10000
+NULL	NULL
+PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1888200353/10000
+POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1888200353/10000
+429	12643
+PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1407196965/10000
+POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1407196965/10000
+429	12643
+PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1011357453/10000
+POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1011357453/10000
+8
+PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1527156553/10000
+POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1527156553/10000
+317	9462	50
+PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1123650104/10000
+POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1123650104/10000
+51	1570	318
+PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1562579732/10000
+POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1562579732/10000
+317	9462	318
+PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2068857809/10000
+POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2068857809/10000
+370	11003	377
+PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/976567437/10000
+POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/976567437/10000
+370	11003	377
+PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2069296293/10000
+POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2069296293/10000
+372	6320
+PREHOOK: query: DROP TABLE dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest_j1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t2
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t3
+PREHOOK: query: DROP TABLE T4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t4

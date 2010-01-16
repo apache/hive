@@ -19,7 +19,6 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3
   Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -66,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/336715439/10002 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2029325579/10002 
           Union
             Select Operator
               expressions:
@@ -94,7 +93,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/336715439/10003 
+        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2029325579/10003 
           Union
             Select Operator
               expressions:
@@ -196,12 +195,12 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2001946443/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/757963901/10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2001946443/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/757963901/10000
 tst1	1
 tst2	1

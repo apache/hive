@@ -194,4 +194,9 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
   public int getType() {
     return StageType.MAPREDLOCAL;
   }
+
+  @Override
+  public String getName() {
+    return "MAPRED";
+  }
 }

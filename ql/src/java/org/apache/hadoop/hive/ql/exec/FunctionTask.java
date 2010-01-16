@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
@@ -44,8 +45,8 @@ public class FunctionTask extends Task<FunctionWork> {
     super();
   }
   
-  public void initialize(HiveConf conf, QueryPlan queryPlan) {
-    super.initialize(conf, queryPlan);
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
+    super.initialize(conf, queryPlan, ctx);
     this.conf = conf;
   }
   
@@ -113,5 +114,10 @@ public class FunctionTask extends Task<FunctionWork> {
   
   public int getType() {
     return StageType.FUNC;
+  }
+
+  @Override
+  public String getName() {
+    return "FUNCTION";
   }
 }

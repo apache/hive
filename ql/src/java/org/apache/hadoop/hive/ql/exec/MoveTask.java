@@ -180,4 +180,9 @@ public class MoveTask extends Task<moveWork> implements Serializable {
   public int getType() {
     return StageType.MOVE;
   }
+
+  @Override
+  public String getName() {
+    return "MOVE";
+  }
 }
