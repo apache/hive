@@ -68,6 +68,7 @@
     <sequential>
       <subant target="@{target}">
 	<property name="thrift.home" value="${thrift.home}"/>
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
         <!-- TODO filelist dir="." files="metastore/build.xml,serde/build.xml,service/build.xml,odbc/build.xml"/-->
         <filelist dir="." files="odbc/build.xml"/>
       </subant>
@@ -78,6 +79,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
         <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
       </subant>
     </sequential>
@@ -87,6 +89,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
         <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
       </subant>
     </sequential>
@@ -181,6 +184,7 @@
           depends="jar"
           description="Generate test data">
     <subant target="gen-testdata">
+      <property name="build.dir.hive" location="${build.dir.hive}"/>
       <fileset dir="." includes="serde/build.xml"/>
     </subant>
   </target>

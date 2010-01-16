@@ -305,6 +305,10 @@
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>
       <sysproperty key="hadoop.log.dir" value="${test.log.dir}"/>
       <sysproperty key="test.silent" value="${test.silent}"/>
+      <sysproperty key="test.tmp.dir" value="${build.dir}/tmp"/>
+      <sysproperty key="test.warehouse.dir" value="${build.dir}/test/data/warehouse"/>
+      <sysproperty key="build.dir" value="${build.dir}"/>
+      <sysproperty key="build.dir.hive" value="${build.dir.hive}"/>
 
       <classpath refid="${test.classpath.id}"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />

@@ -42,6 +42,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -71,8 +72,9 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 public class QTestUtil {
 
   private String testWarehouse;
-  private String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
+  private String tmpdir =  System.getProperty("test.tmp.dir");
   private Path tmppath = new Path(tmpdir);
+
   private String testFiles;
   private String outDir;
   private String logDir;
@@ -703,26 +705,28 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     String [] cmdArray;
 
-    cmdArray = new String[14];
-    cmdArray[0] = "diff";
-    cmdArray[1] = "-a";
-    cmdArray[2] = "-I";
-    cmdArray[3] = "\\(file:\\)\\|\\(/tmp/.*\\)";
-    cmdArray[4] = "-I";
-    cmdArray[5] = "lastUpdateTime";
-    cmdArray[6] = "-I";
-    cmdArray[7] = "lastAccessTime";
-    cmdArray[8] = "-I";
-    cmdArray[9] = "owner";
-    cmdArray[10] = "-I";
-    cmdArray[11] = "transient_lastDdlTime";
-    cmdArray[12] = (new File(logDir, tname + ".out")).getPath();
-    cmdArray[13] = (new File(outDir, tname + ".out")).getPath();
-    System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
-                       cmdArray[3] + " " + cmdArray[4] + " " + cmdArray[5] + " " +
-                       cmdArray[6] + " " + cmdArray[7] + " " + cmdArray[8] + " " +
-                       cmdArray[9] + " " + cmdArray[10] + " " + cmdArray[11] + " " +
-                       cmdArray[12] + " " + cmdArray[13]);
+    cmdArray = new String[] {
+        "diff",
+        "-a",
+        "-I",
+        "file:",
+        "-I",
+        "/tmp/",
+        "-I",
+        "invalidscheme:",
+        "-I",
+        "lastUpdateTime",
+        "-I",
+        "lastAccessTime",
+        "-I",
+        "owner",
+        "-I",
+        "transient_lastDdlTime",
+        (new File(logDir, tname + ".out")).getPath(),
+        (new File(outDir, tname + ".out")).getPath()
+    };
+
+    System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 

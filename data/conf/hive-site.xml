@@ -12,18 +12,19 @@
 <!-- Hive Execution Parameters -->
 <property>
   <name>hadoop.tmp.dir</name>
-  <value>${user.dir}/../build/test/hadoop-${user.name}</value>
+  <value>${build.dir.hive}/test/hadoop-${user.name}</value>
   <description>A base for other temporary directories.</description>
 </property>
 
 <property>
   <name>hive.exec.scratchdir</name>
-  <value>${user.dir}/../build/ql/tmp</value>
+  <value>${build.dir}/scratchdir</value>
   <description>Scratch space for Hive jobs</description>
 </property>
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
+  <!-- note: variable substituion not working here because it's loaded by jdo, not Hive -->
   <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>
 </property>
 
@@ -51,13 +52,13 @@
 <property>
   <!--  this should eventually be deprecated since the metastore should supply this -->
   <name>hive.metastore.warehouse.dir</name>
-  <value>file://${user.dir}/../build/ql/test/data/warehouse/</value>
+  <value>file://${build.dir}/test/data/warehouse/</value>
   <description></description>
 </property>
 
 <property>
   <name>hive.metastore.metadb.dir</name>
-  <value>file://${user.dir}/../build/ql/test/data/metadb/</value>
+  <value>file://${build.dir}/test/data/metadb/</value>
   <description>
   Required by metastore server or if the uris argument below is not supplied
   </description>
@@ -77,13 +78,13 @@
 
 <property>
   <name>test.log.dir</name>
-  <value>${user.dir}/../build/ql/test/logs</value>
+  <value>${build.dir}/test/logs</value>
   <description></description>
 </property>
 
 <property>
   <name>test.src.dir</name>
-  <value>file://${user.dir}/../ql/src/test</value>
+  <value>file://${build.dir}/src/test</value>
   <description></description>
 </property>
 
@@ -102,7 +103,7 @@
 
 <property>
   <name>hive.jar.path</name>
-  <value>${user.dir}/../build/ql/hive_exec.jar</value>
+  <value>${build.dir.hive}/ql/hive_exec.jar</value>
   <description></description>
 </property>
 
@@ -114,7 +115,7 @@
 
 <property>
   <name>hive.querylog.location</name>
-  <value>${user.dir}/../build/ql/tmp</value>
+  <value>${build.dir}/tmp</value>
   <description>Location of the structured hive logs</description>
 </property>
 
