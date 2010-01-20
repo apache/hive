@@ -1,0 +1,17 @@
+PREHOOK: query: DROP VIEW xxx6
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx6
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: -- Can't use DROP TABLE on a view
+CREATE VIEW xxx6 AS SELECT key FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/890782486/10000
+POSTHOOK: query: -- Can't use DROP TABLE on a view
+CREATE VIEW xxx6 AS SELECT key FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/890782486/10000
+POSTHOOK: Output: default@xxx6
+PREHOOK: query: DROP TABLE xxx6
+PREHOOK: type: DROPTABLE
+FAILED: Error in metadata: Cannot drop a view with DROP TABLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

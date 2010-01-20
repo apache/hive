@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.createViewDesc;
 import org.apache.hadoop.hive.ql.plan.descFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
@@ -135,6 +137,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return alterTable(db, alterTbl);
       }
 
+      createViewDesc crtView = work.getCreateViewDesc();
+      if (crtView != null) {
+        return createView(db, crtView);
+      }
+      
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
@@ -203,6 +210,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(addPartitionDesc.getDbName(),
         addPartitionDesc.getTableName());
+
+    if (tbl.isView()) {
+      throw new HiveException("Cannot use ALTER TABLE on a view");
+    }
 
     if(addPartitionDesc.getLocation() == null) {
       db.createPartition(tbl, addPartitionDesc.getPartSpec());
@@ -884,6 +895,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int alterTable(Hive db, alterTableDesc alterTbl) throws HiveException {
     // alter the table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl.getOldName());
+
+    if (tbl.isView()) {
+      throw new HiveException("Cannot use ALTER TABLE on a view");
+    }
     Table oldTbl = tbl.copy();
 
     if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAME) {
@@ -1084,6 +1099,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop table is idempotent
     }
 
+    if (tbl != null) {
+      if (tbl.isView()) {
+        if (!dropTbl.getExpectView()) {
+          throw new HiveException("Cannot drop a view with DROP TABLE");
+        } 
+      } else {
+        if (dropTbl.getExpectView()) {
+          throw new HiveException("Cannot drop a base table with DROP VIEW");
+        } 
+      }
+    }
+
     if (dropTbl.getPartSpecs() == null) {
       // drop the table
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
@@ -1258,14 +1285,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    try {
-      tbl.setOwner(conf.getUser());
-    } catch (IOException e) {
-      console.printError("Unable to get current user: " + e.getMessage(), stringifyException(e));
-      return 1;
+    int rc = setGenericTableAttributes(tbl);
+    if (rc != 0) {
+      return rc;
     }
-    // set create time
-    tbl.getTTable().setCreateTime((int) (System.currentTimeMillis() / 1000));
 
     if (crtTbl.getCols() != null) {
       tbl.setFields(crtTbl.getCols());
@@ -1309,6 +1332,46 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl));
+    return 0;
+  }
+
+
+  /**
+   * Create a new view.
+   *
+   * @param db The database in question.
+   * @param crtView This is the view we're creating.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException Throws this exception if an unexpected error occurs.
+   */
+  private int createView(Hive db, createViewDesc crtView) throws HiveException {
+    Table tbl = new Table(crtView.getViewName());
+    tbl.setViewOriginalText(crtView.getViewOriginalText());
+    tbl.setViewExpandedText(crtView.getViewExpandedText());
+    tbl.setFields(crtView.getSchema());
+    if (crtView.getComment() != null) {
+      tbl.setProperty("comment", crtView.getComment());
+    }
+
+    int rc = setGenericTableAttributes(tbl);
+    if (rc != 0) {
+      return rc;
+    }
+
+    db.createTable(tbl, crtView.getIfNotExists());
+    work.getOutputs().add(new WriteEntity(tbl));
+    return 0;
+  }
+
+  private int setGenericTableAttributes(Table tbl) {
+    try {
+      tbl.setOwner(conf.getUser());
+    } catch (IOException e) {
+      console.printError("Unable to get current user: " + e.getMessage(), stringifyException(e));
+      return 1;
+    }
+    // set create time
+    tbl.getTTable().setCreateTime((int) (System.currentTimeMillis() / 1000));
     return 0;
   }
 

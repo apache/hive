@@ -704,6 +704,8 @@ class Table:
    - sd
    - partitionKeys
    - parameters
+   - viewOriginalText
+   - viewExpandedText
   """
 
   thrift_spec = (
@@ -717,9 +719,11 @@ class Table:
     (7, TType.STRUCT, 'sd', (StorageDescriptor, StorageDescriptor.thrift_spec), None, ), # 7
     (8, TType.LIST, 'partitionKeys', (TType.STRUCT,(FieldSchema, FieldSchema.thrift_spec)), None, ), # 8
     (9, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 9
+    (10, TType.STRING, 'viewOriginalText', None, None, ), # 10
+    (11, TType.STRING, 'viewExpandedText', None, None, ), # 11
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -729,6 +733,8 @@ class Table:
     self.sd = sd
     self.partitionKeys = partitionKeys
     self.parameters = parameters
+    self.viewOriginalText = viewOriginalText
+    self.viewExpandedText = viewExpandedText
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -797,6 +803,16 @@ class Table:
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.viewOriginalText = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.STRING:
+          self.viewExpandedText = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -849,6 +865,14 @@ class Table:
         oprot.writeString(kiter60)
         oprot.writeString(viter61)
       oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.viewOriginalText != None:
+      oprot.writeFieldBegin('viewOriginalText', TType.STRING, 10)
+      oprot.writeString(self.viewOriginalText)
+      oprot.writeFieldEnd()
+    if self.viewExpandedText != None:
+      oprot.writeFieldBegin('viewExpandedText', TType.STRING, 11)
+      oprot.writeString(self.viewExpandedText)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1267,9 +1291,6 @@ class MetaException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
-    return repr(self)
-
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1325,9 +1346,6 @@ class UnknownTableException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
-
-  def __str__(self):
-    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1385,9 +1403,6 @@ class UnknownDBException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
-    return repr(self)
-
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1443,9 +1458,6 @@ class AlreadyExistsException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
-
-  def __str__(self):
-    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1503,9 +1515,6 @@ class InvalidObjectException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
-    return repr(self)
-
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1561,9 +1570,6 @@ class NoSuchObjectException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
-
-  def __str__(self):
-    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1621,9 +1627,6 @@ class IndexAlreadyExistsException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
-    return repr(self)
-
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1679,9 +1682,6 @@ class InvalidOperationException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
-
-  def __str__(self):
-    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)

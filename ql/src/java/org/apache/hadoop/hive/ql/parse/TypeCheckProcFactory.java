@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
@@ -402,7 +403,7 @@ public class TypeCheckProcFactory {
           funcText = ((ASTNode)expr.getChild(0)).getText();
         }
       }
-      return funcText;
+      return BaseSemanticAnalyzer.unescapeIdentifier(funcText);
     }
 
 
@@ -445,7 +446,7 @@ public class TypeCheckProcFactory {
     }
 
     static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
-        ArrayList<exprNodeDesc> children)
+        ArrayList<exprNodeDesc> children, TypeCheckCtx ctx)
         throws SemanticException, UDFArgumentException {
       // return the child directly if the conversion is redundant.
       if (isRedundantConversionFunction(expr, isFunction, children)) {
@@ -532,6 +533,12 @@ public class TypeCheckProcFactory {
           else
             throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr));
         }
+
+        if (!fi.isNative()) {
+          ctx.getUnparseTranslator().addIdentifierTranslation(
+            (ASTNode) expr.getChild(0));
+        }
+
         // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't supported
         if (fi.getGenericUDTF() != null) {
           throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
@@ -631,7 +638,7 @@ public class TypeCheckProcFactory {
       
       // Create function desc
       try {
-        return getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+        return getXpathOrFuncExprNodeDesc(expr, isFunction, children, ctx);
       } catch (UDFArgumentTypeException e) {
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE
             .getMsg(expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()));

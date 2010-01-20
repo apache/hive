@@ -33,6 +33,11 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   private RowResolver inputRR;
 
   /**
+   * Receives translations which will need to be applied during unparse.
+   */
+  private UnparseTranslator unparseTranslator;
+
+  /**
    * Potential typecheck error reason.
    */
   private String error;
@@ -61,6 +66,20 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     return inputRR;
   }
 
+  /**
+   * @param unparseTranslator the unparseTranslator to set
+   */
+  public void setUnparseTranslator(UnparseTranslator unparseTranslator) {
+    this.unparseTranslator = unparseTranslator;
+  }
+
+  /**
+   * @return the unparseTranslator
+   */
+  public UnparseTranslator getUnparseTranslator() {
+    return unparseTranslator;
+  }
+  
   /**
    * @param error the error to set
    */

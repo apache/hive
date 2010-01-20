@@ -50,6 +50,8 @@ public class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, "SHOWPARTITIONS");
     commandType.put(HiveParser.TOK_CREATEFUNCTION, "CREATEFUNCTION");
     commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
+    commandType.put(HiveParser.TOK_CREATEVIEW, "CREATEVIEW");
+    commandType.put(HiveParser.TOK_DROPVIEW, "DROPVIEW");
     commandType.put(HiveParser.TOK_QUERY, "QUERY");
   }
 
@@ -64,6 +66,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_EXPLAIN: return new ExplainSemanticAnalyzer(conf);
       case HiveParser.TOK_LOAD: return new LoadSemanticAnalyzer(conf);
       case HiveParser.TOK_DROPTABLE: 
+      case HiveParser.TOK_DROPVIEW: 
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:

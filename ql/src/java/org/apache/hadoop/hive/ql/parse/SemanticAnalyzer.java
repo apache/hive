@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -102,6 +103,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.createViewDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
@@ -171,6 +173,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   Map<GroupByOperator, Set<String>> groupOpToInputTables;
   Map<String, PrunedPartitionList> prunedPartitions;
+  private createViewDesc createVwDesc;
+  private ASTNode viewSelect;
+  private UnparseTranslator unparseTranslator;
 
   private static class Phase1Ctx {
     String dest;
@@ -195,6 +200,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.listMapJoinOpsNoReducer = new ArrayList<MapJoinOperator>();
     this.groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     prunedPartitions = new HashMap<String, PrunedPartitionList> ();
+    unparseTranslator = new UnparseTranslator();
   }
 
   @Override
@@ -305,6 +311,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String functionName = unescapeIdentifier(expressionTree.getChild(0).getText());
         if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
           aggregations.put(expressionTree.toStringTree(), expressionTree);
+          FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
+          if (!fi.isNative()) {
+            unparseTranslator.addIdentifierTranslation(
+              (ASTNode) expressionTree.getChild(0));
+          }
           return;
         }
       }
@@ -386,6 +397,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           unescapeIdentifier(sampleClause.getChild(1).getText()),
           sampleCols)
       );
+      if (unparseTranslator.isEnabled()) {
+        for (ASTNode sampleCol : sampleCols) {
+          unparseTranslator.addIdentifierTranslation(
+            (ASTNode) sampleCol.getChild(0));
+        }
+      }
     }
     // Insert this map into the stats
     String table_name = unescapeIdentifier(tabref.getChild(0).getText());
@@ -393,6 +410,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
+    unparseTranslator.addIdentifierTranslation(tableTree);
+    if (aliasIndex != 0) {
+      unparseTranslator.addIdentifierTranslation(
+        (ASTNode) tabref.getChild(aliasIndex));
+    }
+    
     return alias;
   }
 
@@ -416,6 +439,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
+
+    unparseTranslator.addIdentifierTranslation(
+      (ASTNode) subq.getChild(1));
 
     return alias;
   }
@@ -679,8 +705,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       LOG.info("Get metadata for source tables");
 
-      // Go over the tables and populate the related structures
-      for (String alias : qb.getTabAliases()) {
+      // Go over the tables and populate the related structures.
+      // We have to materialize the table alias list since we might
+      // modify it in the middle for view rewrite.
+      List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
+      for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
         Table tab = null;
         try {
@@ -688,6 +717,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         catch (InvalidTableException ite) {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(qb.getParseInfo().getSrcForAlias(alias)));
+        }
+        if (tab.isView()) {
+          replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
+          continue;
         }
 
         if (!InputFormat.class.isAssignableFrom(tab.getInputFormatClass()))
@@ -713,6 +746,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
           tableSpec ts = new tableSpec(this.db, conf, ast);
+          if (ts.tableHandle.isView()) {
+            throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
+          }
 
           if (!HiveOutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(ast));
@@ -758,6 +794,54 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void replaceViewReferenceWithDefinition(
+    QB qb, Table tab, String tab_name, String alias) throws SemanticException {
+
+    ParseDriver pd = new ParseDriver();
+    ASTNode viewTree;
+    final ASTNodeOrigin viewOrigin =
+      new ASTNodeOrigin(
+        "VIEW",
+        tab.getName(),
+        tab.getViewExpandedText(),
+        alias,
+        qb.getParseInfo().getSrcForAlias(alias));
+    try {
+      String viewText = tab.getViewExpandedText();
+      // Reparse text, passing null for context to avoid clobbering
+      // the top-level token stream.
+      ASTNode tree = pd.parse(viewText, null);
+      tree = ParseUtils.findRootNonNullToken(tree);
+      viewTree = tree;
+      Dispatcher nodeOriginDispatcher = new Dispatcher()
+        {
+          public Object dispatch(
+            Node nd, java.util.Stack<Node> stack, Object... nodeOutputs)
+          {
+            ((ASTNode) nd).setOrigin(viewOrigin);
+            return null;
+          }
+        };
+      GraphWalker nodeOriginTagger =
+        new DefaultGraphWalker(nodeOriginDispatcher);
+      nodeOriginTagger.startWalking(
+        java.util.Collections.<Node>singleton(viewTree), null);
+    } catch (ParseException e) {
+      // A user could encounter this if a stored view definition contains
+      // an old SQL construct which has been eliminated in a later Hive
+      // version, so we need to provide full debugging info to help
+      // with fixing the view definition.
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      StringBuilder sb = new StringBuilder();
+      sb.append(e.getMessage());
+      ErrorMsg.renderOrigin(sb, viewOrigin);
+      throw new SemanticException(sb.toString(), e);
+    }
+    QBExpr qbexpr = new QBExpr(alias);
+    doPhase1QBExpr(viewTree, qbexpr, qb.getId(), alias);
+    qb.rewriteViewToSubq(alias, tab_name, qbexpr);
+  }
+
   private boolean isPresent(String[] list, String elem) {
     for (String s : list)
       if (s.equals(elem))
@@ -775,6 +859,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (condn.getToken().getType()) {
     case HiveParser.TOK_TABLE_OR_COL:
       String tableOrCol = unescapeIdentifier(condn.getChild(0).getText().toLowerCase());
+      unparseTranslator.addIdentifierTranslation(
+        (ASTNode) condn.getChild(0));
       if (isPresent(joinTree.getLeftAliases(), tableOrCol)) {
         if (!leftAliases.contains(tableOrCol))
           leftAliases.add(tableOrCol);
@@ -793,6 +879,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ( fields != null ) {
         fields.add(unescapeIdentifier(condn.getToken().getText().toLowerCase()));
       }
+      unparseTranslator.addIdentifierTranslation((ASTNode) condn);
       break;
     case HiveParser.Number:
     case HiveParser.StringLiteral:
@@ -1032,6 +1119,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel, e.getMessage()));
     }
 
+    StringBuilder replacementText = new StringBuilder();
     int matched = 0;
     // This is the tab.* case
     // In this case add all the columns to the fieldList
@@ -1059,9 +1147,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                      colInfo.getTabAlias(), colInfo.getIsPartitionCol()));
       pos = Integer.valueOf(pos.intValue() + 1);
       matched ++;
+
+      if (unparseTranslator.isEnabled()) {
+        if (replacementText.length() > 0) {
+          replacementText.append(", ");
+        }
+        replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
+        replacementText.append(".");
+        replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+      }
     }
     if (matched == 0) {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel));
+    }
+
+    if (unparseTranslator.isEnabled()) {
+      unparseTranslator.addTranslation(sel, replacementText.toString());
     }
     return pos;
   }
@@ -1476,6 +1577,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDTF = fi.getGenericUDTF();
       }
       isUDTF = (genericUDTF != null);
+      if (isUDTF && !fi.isNative()) {
+        unparseTranslator.addIdentifierTranslation(
+          (ASTNode) udtfExpr.getChild(0));
+      }
     }
 
     if (isUDTF) {
@@ -1495,11 +1600,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         switch (selExprChild.getType()) {
         case HiveParser.Identifier:
           udtfColAliases.add(unescapeIdentifier(selExprChild.getText()));
+          unparseTranslator.addIdentifierTranslation(selExprChild);
           break;
         case HiveParser.TOK_TABALIAS:
           assert(selExprChild.getChildCount() == 1);
           udtfTableAlias =
             unescapeIdentifier(selExprChild.getChild(0).getText());
+          unparseTranslator.addIdentifierTranslation(
+            (ASTNode) selExprChild.getChild(0));
           break;
         default:
           assert(false);
@@ -1551,6 +1659,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String[] colRef = getColAlias(child, "_C" + i, inputRR);
         tabAlias = colRef[0];
         colAlias = colRef[1];
+        if (hasAsClause) {
+          unparseTranslator.addIdentifierTranslation(
+            (ASTNode) child.getChild(1));
+        }
         // Get rid of TOK_SELEXPR
         expr = (ASTNode)child.getChild(0);
       }
@@ -2004,7 +2116,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
-      String aggName = value.getChild(0).getText();
+      String aggName = unescapeIdentifier(value.getChild(0).getText());
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
       ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
       // 0 is the function name
@@ -5201,6 +5313,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
          return;
     }
 
+    // analyze create view command
+    if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW) {
+      child = analyzeCreateView(ast, qb);
+      if (child == null) {
+        return;
+      }
+      viewSelect = child;
+    }
+
     // continue analyzing from the child ASTNode.
     doPhase1(child, qb, initPhase1Ctx());
     LOG.info("Completed phase 1 of Semantic Analysis");
@@ -5208,8 +5329,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb);
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
-    genPlan(qb);
+    Operator sinkOp = genPlan(qb);
 
+    if (createVwDesc != null) {
+      saveViewDefinition(sinkOp);
+      // Since we're only creating a view (not executing it), we
+      // don't need to optimize or translate the plan (and in fact, those
+      // procedures can interfere with the view creation).  So
+      // skip the rest of this method.
+      ctx.setResDir(null);
+      ctx.setResFile(null);
+      return;
+    }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner, topOps,
                                          topSelOps, opParseCtx, joinContext, topToTable,
@@ -5236,9 +5367,85 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return;
   }
 
+  private void saveViewDefinition(Operator sinkOp)
+    throws SemanticException {
+
+    // Save the view schema derived from the sink operator produced
+    // by genPlan.
+    List<FieldSchema> derivedSchema =
+      convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRR());
+    validateColumnNameUniqueness(derivedSchema);
+
+    List<FieldSchema> imposedSchema = createVwDesc.getSchema();
+    if (imposedSchema != null) {
+      int explicitColCount = imposedSchema.size();
+      int derivedColCount = derivedSchema.size();
+      if (explicitColCount != derivedColCount) {
+        throw new SemanticException(
+          ErrorMsg.VIEW_COL_MISMATCH.getMsg(viewSelect));
+      }
+    }
+
+    // Preserve the original view definition as specified by the user.
+    String originalText = ctx.getTokenRewriteStream().toString(
+      viewSelect.getTokenStartIndex(),
+      viewSelect.getTokenStopIndex());
+    createVwDesc.setViewOriginalText(originalText);
+
+    // Now expand the view definition with extras such as explicit column
+    // references; this expanded form is what we'll re-parse when the view is
+    // referenced later.
+    unparseTranslator.applyTranslation(ctx.getTokenRewriteStream());
+    String expandedText = ctx.getTokenRewriteStream().toString(
+      viewSelect.getTokenStartIndex(),
+      viewSelect.getTokenStopIndex());
+
+    if (imposedSchema != null) {
+      // Merge the names from the imposed schema into the types
+      // from the derived schema.
+      StringBuilder sb = new StringBuilder();
+      sb.append("SELECT ");
+      int n = derivedSchema.size();
+      for (int i = 0; i < n; ++i) {
+        if (i > 0) {
+          sb.append(", ");
+        }
+        FieldSchema fieldSchema = derivedSchema.get(i);
+        // Modify a copy, not the original
+        fieldSchema = new FieldSchema(fieldSchema);
+        derivedSchema.set(i, fieldSchema);
+        sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName()));
+        sb.append(" AS ");
+        String imposedName = imposedSchema.get(i).getName();
+        sb.append(HiveUtils.unparseIdentifier(imposedName));
+        fieldSchema.setName(imposedName);
+        // We don't currently allow imposition of a type
+        fieldSchema.setComment(imposedSchema.get(i).getComment());
+      }
+      sb.append(" FROM (");
+      sb.append(expandedText);
+      sb.append(") ");
+      sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName()));
+      expandedText = sb.toString();
+    }
+    
+    createVwDesc.setSchema(derivedSchema);
+    createVwDesc.setViewExpandedText(expandedText);
+  }
+
+  private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) {
+    List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
+    for (ColumnInfo colInfo : rr.getColumnInfos()) {
+      String colName = rr.reverseLookup(colInfo.getInternalName())[1];
+      fieldSchemas.add(
+        new FieldSchema(colName, colInfo.getType().getTypeName(), null));
+    }
+    return fieldSchemas;
+  }
+
   /**
-   * Generates and expression node descriptor for the expression passed in the arguments. This
-   * function uses the row resolver and the metadata informatinon that are passed as arguments
+   * Generates an expression node descriptor for the expression passed in the arguments. This
+   * function uses the row resolver and the metadata information that are passed as arguments
    * to resolve the column names to internal names.
    * @param expr The expression
    * @param input The row resolver
@@ -5262,6 +5469,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Create the walker, the rules dispatcher and the context.
     TypeCheckCtx tcCtx = new TypeCheckCtx(input);
+    tcCtx.setUnparseTranslator(unparseTranslator);
 
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
@@ -5294,6 +5502,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(tcCtx.getError());
     }
 
+    if (!unparseTranslator.isEnabled()) {
+      // Not creating a view, so no need to track view expansions.
+      return desc;
+    }
+
+    for (Map.Entry<Node, Object> entry : nodeOutputs.entrySet()) {
+      if (!(entry.getKey() instanceof ASTNode)) {
+        continue;
+      }
+      if (!(entry.getValue() instanceof exprNodeColumnDesc)) {
+        continue;
+      }
+      ASTNode node = (ASTNode) entry.getKey();
+      exprNodeColumnDesc columnDesc = (exprNodeColumnDesc) entry.getValue();
+      if ((columnDesc.getTabAlias() == null)
+        || (columnDesc.getTabAlias().length() == 0)) {
+        // These aren't real column refs; instead, they are special
+        // internal expressions used in the representation of aggregation.
+        continue;
+      }
+      String [] tmp = input.reverseLookup(columnDesc.getColumn());
+      StringBuilder replacementText = new StringBuilder();
+      replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
+      replacementText.append(".");
+      replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+      unparseTranslator.addTranslation(node, replacementText.toString());
+    }
+    
     return desc;
   }
 
@@ -5404,7 +5640,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       serde = COLUMNAR_SERDE;
     }
 
-    LOG.info("Creating table" + tableName + " positin=" + ast.getCharPositionInLine());
+    LOG.info("Creating table " + tableName + " position=" + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
 
     /* Check the 1st-level children and do simple semantic checks:
@@ -5604,10 +5840,67 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void validateCreateTable(createTableDesc crtTblDesc) throws SemanticException {
+  private ASTNode analyzeCreateView(ASTNode ast, QB qb)
+    throws SemanticException {
+    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    List<FieldSchema> cols = null;
+    boolean ifNotExists = false;
+    String comment = null;
+    ASTNode selectStmt = null;
+
+    LOG.info("Creating view " + tableName + " position="
+      + ast.getCharPositionInLine());
+    int numCh = ast.getChildCount();
+    for (int num = 1; num < numCh; num++) {
+      ASTNode child = (ASTNode)ast.getChild(num);
+      switch (child.getToken().getType()) {
+      case HiveParser.TOK_IFNOTEXISTS:
+        ifNotExists = true;
+        break;
+      case HiveParser.TOK_QUERY:
+        selectStmt = child;
+        break;
+      case HiveParser.TOK_TABCOLNAME:
+        cols = getColumns(child);
+        break;
+      case HiveParser.TOK_TABLECOMMENT:
+        comment = unescapeSQLString(child.getChild(0).getText());
+        break;
+      default: assert false;
+      }
+    }
+
+    createVwDesc = new createViewDesc(tableName, cols, comment, ifNotExists);
+    unparseTranslator.enable();
+    rootTasks.add(
+      TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), createVwDesc), conf));
+    return selectStmt;
+  }
+
+  private List<String> validateColumnNameUniqueness(
+    List<FieldSchema> fieldSchemas) throws SemanticException {
+
     // no duplicate column names
     // currently, it is a simple n*n algorithm - this can be optimized later if need be
     // but it should not be a major bottleneck as the number of columns are anyway not so big
+    Iterator<FieldSchema> iterCols = fieldSchemas.iterator();
+    List<String> colNames = new ArrayList<String>();
+    while (iterCols.hasNext()) {
+      String colName = iterCols.next().getName();
+      Iterator<String> iter = colNames.iterator();
+      while (iter.hasNext()) {
+        String oldColName = iter.next();
+        if (colName.equalsIgnoreCase(oldColName))
+          throw new SemanticException(
+            ErrorMsg.DUPLICATE_COLUMN_NAMES.getMsg(oldColName));
+      }
+      colNames.add(colName);
+    }
+    return colNames;
+  }
+
+  private void validateCreateTable(createTableDesc crtTblDesc) throws SemanticException {
 
     if((crtTblDesc.getCols() == null) || (crtTblDesc.getCols().size() == 0)) {
       // for now make sure that serde exists
@@ -5626,18 +5919,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
     }
 
-    Iterator<FieldSchema> iterCols = crtTblDesc.getCols().iterator();
-    List<String> colNames = new ArrayList<String>();
-    while (iterCols.hasNext()) {
-      String colName = iterCols.next().getName();
-      Iterator<String> iter = colNames.iterator();
-      while (iter.hasNext()) {
-        String oldColName = iter.next();
-        if (colName.equalsIgnoreCase(oldColName))
-          throw new SemanticException(ErrorMsg.DUPLICATE_COLUMN_NAMES.getMsg());
-      }
-      colNames.add(colName);
-    }
+    List<String> colNames = validateColumnNameUniqueness(crtTblDesc.getCols());
 
     if (crtTblDesc.getBucketCols() != null)
     {

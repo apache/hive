@@ -27,6 +27,8 @@ import org.antlr.runtime.tree.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.apache.hadoop.hive.ql.Context;
+
 public class ParseDriver {
     
   static final private Log LOG = LogFactory.getLog("hive.ql.parse.ParseDriver");
@@ -344,10 +346,29 @@ public class ParseDriver {
   };
   
   public ASTNode parse(String command) throws ParseException {
+    return parse(command, null);
+  }
+
+  /**
+   * Parses a command, optionally assigning the parser's token stream to
+   * the given context.
+   *
+   * @param command command to parse
+   *
+   * @param ctx context with which to associate this parser's
+   * token stream, or null if either no context is available
+   * or the context already has an existing stream
+   *
+   * @return parsed AST
+   */
+  public ASTNode parse(String command, Context ctx) throws ParseException {
     LOG.info("Parsing command: " + command);
       
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
-    TokenStream tokens = new TokenRewriteStream(lexer);
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    if (ctx != null) {
+      ctx.setTokenRewriteStream(tokens);
+    }
     HiveParserX parser = new HiveParserX(tokens);
     parser.setTreeAdaptor(adaptor);
     HiveParser.statement_return r = null;

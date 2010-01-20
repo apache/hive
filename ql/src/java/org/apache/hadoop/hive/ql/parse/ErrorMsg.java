@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.*;
 
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
@@ -72,7 +74,7 @@ public enum ErrorMsg {
   NON_COLLECTION_TYPE("[] not Valid on Non Collection Types"),
   SELECT_DISTINCT_WITH_GROUPBY("SELECT DISTINCT and GROUP BY can not be in the same query"),
   COLUMN_REPEATED_IN_PARTITIONING_COLS("Column repeated in partitioning columns"),
-  DUPLICATE_COLUMN_NAMES("Duplicate column names"),
+  DUPLICATE_COLUMN_NAMES("Duplicate column name:"),
   INVALID_BUCKET_NUMBER("Bucket number should be bigger than zero"),
   COLUMN_REPEATED_IN_CLUSTER_SORT("Same column cannot appear in cluster and sort by"),
   SAMPLE_RESTRICTION("Cannot Sample on More Than Two Columns"),
@@ -121,7 +123,9 @@ public enum ErrorMsg {
   LATERAL_VIEW_WITH_JOIN("Join with a lateral view is not supported"),
   LATERAL_VIEW_INVALID_CHILD("Lateral view AST with invalid child"),
   OUTPUT_SPECIFIED_MULTIPLE_TIMES("The same output cannot be present multiple times: "),
-  INVALID_AS("AS clause has an invalid number of aliases");
+  INVALID_AS("AS clause has an invalid number of aliases"),
+  VIEW_COL_MISMATCH("The number of columns produced by the SELECT clause does not match the number of column names specified by CREATE VIEW"),
+  DML_AGAINST_VIEW("A view cannot be used as target table for LOAD or INSERT");
   private String mesg;
   private String SQLState;
 
@@ -202,7 +206,7 @@ public enum ErrorMsg {
     this.SQLState = SQLState;
   }
 
-  private int getLine(ASTNode tree) {
+  private static int getLine(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getToken().getLine();
     }
@@ -210,7 +214,7 @@ public enum ErrorMsg {
     return getLine((ASTNode)tree.getChild(0));
   }
 
-  private int getCharPositionInLine(ASTNode tree) {
+  private static int getCharPositionInLine(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getToken().getCharPositionInLine();
     }
@@ -228,7 +232,40 @@ public enum ErrorMsg {
   }
 
   public String getMsg(ASTNode tree) {
-    return "line " + getLine(tree) + ":" + getCharPositionInLine(tree) + " " + mesg + " " + getText(tree);
+    StringBuilder sb = new StringBuilder();
+    renderPosition(sb, tree);
+    sb.append(" ");
+    sb.append(mesg);
+    sb.append(" ");
+    sb.append(getText(tree));
+    renderOrigin(sb, tree.getOrigin());
+    return sb.toString();
+  }
+
+  public static void renderOrigin(StringBuilder sb, ASTNodeOrigin origin) {
+    while (origin != null) {
+      sb.append(" in definition of ");
+      sb.append(origin.getObjectType());
+      sb.append(" ");
+      sb.append(origin.getObjectName());
+      sb.append(" [");
+      sb.append(HiveUtils.LINE_SEP);
+      sb.append(origin.getObjectDefinition());
+      sb.append(HiveUtils.LINE_SEP);
+      sb.append("] used as ");
+      sb.append(origin.getUsageAlias());
+      sb.append(" at ");
+      ASTNode usageNode = origin.getUsageNode();
+      renderPosition(sb, usageNode);
+      origin = usageNode.getOrigin();
+    }
+  }
+
+  private static void renderPosition(StringBuilder sb, ASTNode tree) {
+    sb.append("line ");
+    sb.append(getLine(tree));
+    sb.append(":");
+    sb.append(getCharPositionInLine(tree));
   }
 
   String getMsg(Tree tree) {
@@ -236,7 +273,7 @@ public enum ErrorMsg {
   }
 
   String getMsg(ASTNode tree, String reason) {
-    return "line " + getLine(tree) + ":" + getCharPositionInLine(tree) + " " + mesg + " " + getText(tree) + ": " + reason;
+    return getMsg(tree) + ": " + reason;
   }
 
   String getMsg(Tree tree, String reason) {

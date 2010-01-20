@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
-import org.apache.log4j.Logger;
 
 import org.apache.thrift.*;
 import org.apache.thrift.meta_data.*;
@@ -29,6 +28,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
   private static final TField SD_FIELD_DESC = new TField("sd", TType.STRUCT, (short)7);
   private static final TField PARTITION_KEYS_FIELD_DESC = new TField("partitionKeys", TType.LIST, (short)8);
   private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)9);
+  private static final TField VIEW_ORIGINAL_TEXT_FIELD_DESC = new TField("viewOriginalText", TType.STRING, (short)10);
+  private static final TField VIEW_EXPANDED_TEXT_FIELD_DESC = new TField("viewExpandedText", TType.STRING, (short)11);
 
   private String tableName;
   public static final int TABLENAME = 1;
@@ -48,6 +49,10 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
   public static final int PARTITIONKEYS = 8;
   private Map<String,String> parameters;
   public static final int PARAMETERS = 9;
+  private String viewOriginalText;
+  public static final int VIEWORIGINALTEXT = 10;
+  private String viewExpandedText;
+  public static final int VIEWEXPANDEDTEXT = 11;
 
   private final Isset __isset = new Isset();
   private static final class Isset implements java.io.Serializable {
@@ -78,6 +83,10 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.STRING))));
+    put(VIEWORIGINALTEXT, new FieldMetaData("viewOriginalText", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(VIEWEXPANDEDTEXT, new FieldMetaData("viewExpandedText", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
   }});
 
   static {
@@ -96,7 +105,9 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     int retention,
     StorageDescriptor sd,
     List<FieldSchema> partitionKeys,
-    Map<String,String> parameters)
+    Map<String,String> parameters,
+    String viewOriginalText,
+    String viewExpandedText)
   {
     this();
     this.tableName = tableName;
@@ -111,6 +122,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     this.sd = sd;
     this.partitionKeys = partitionKeys;
     this.parameters = parameters;
+    this.viewOriginalText = viewOriginalText;
+    this.viewExpandedText = viewExpandedText;
   }
 
   /**
@@ -156,6 +169,12 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
       }
       this.parameters = __this__parameters;
+    }
+    if (other.isSetViewOriginalText()) {
+      this.viewOriginalText = other.viewOriginalText;
+    }
+    if (other.isSetViewExpandedText()) {
+      this.viewExpandedText = other.viewExpandedText;
     }
   }
 
@@ -346,6 +365,40 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     return this.parameters != null;
   }
 
+  public String getViewOriginalText() {
+    return this.viewOriginalText;
+  }
+
+  public void setViewOriginalText(String viewOriginalText) {
+    this.viewOriginalText = viewOriginalText;
+  }
+
+  public void unsetViewOriginalText() {
+    this.viewOriginalText = null;
+  }
+
+  // Returns true if field viewOriginalText is set (has been asigned a value) and false otherwise
+  public boolean isSetViewOriginalText() {
+    return this.viewOriginalText != null;
+  }
+
+  public String getViewExpandedText() {
+    return this.viewExpandedText;
+  }
+
+  public void setViewExpandedText(String viewExpandedText) {
+    this.viewExpandedText = viewExpandedText;
+  }
+
+  public void unsetViewExpandedText() {
+    this.viewExpandedText = null;
+  }
+
+  // Returns true if field viewExpandedText is set (has been asigned a value) and false otherwise
+  public boolean isSetViewExpandedText() {
+    return this.viewExpandedText != null;
+  }
+
   public void setFieldValue(int fieldID, Object value) {
     switch (fieldID) {
     case TABLENAME:
@@ -420,6 +473,22 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       }
       break;
 
+    case VIEWORIGINALTEXT:
+      if (value == null) {
+        unsetViewOriginalText();
+      } else {
+        setViewOriginalText((String)value);
+      }
+      break;
+
+    case VIEWEXPANDEDTEXT:
+      if (value == null) {
+        unsetViewExpandedText();
+      } else {
+        setViewExpandedText((String)value);
+      }
+      break;
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -454,6 +523,12 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     case PARAMETERS:
       return getParameters();
 
+    case VIEWORIGINALTEXT:
+      return getViewOriginalText();
+
+    case VIEWEXPANDEDTEXT:
+      return getViewExpandedText();
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -480,6 +555,10 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       return isSetPartitionKeys();
     case PARAMETERS:
       return isSetParameters();
+    case VIEWORIGINALTEXT:
+      return isSetViewOriginalText();
+    case VIEWEXPANDEDTEXT:
+      return isSetViewExpandedText();
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -576,6 +655,24 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       if (!(this_present_parameters && that_present_parameters))
         return false;
       if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    boolean this_present_viewOriginalText = true && this.isSetViewOriginalText();
+    boolean that_present_viewOriginalText = true && that.isSetViewOriginalText();
+    if (this_present_viewOriginalText || that_present_viewOriginalText) {
+      if (!(this_present_viewOriginalText && that_present_viewOriginalText))
+        return false;
+      if (!this.viewOriginalText.equals(that.viewOriginalText))
+        return false;
+    }
+
+    boolean this_present_viewExpandedText = true && this.isSetViewExpandedText();
+    boolean that_present_viewExpandedText = true && that.isSetViewExpandedText();
+    if (this_present_viewExpandedText || that_present_viewExpandedText) {
+      if (!(this_present_viewExpandedText && that_present_viewExpandedText))
+        return false;
+      if (!this.viewExpandedText.equals(that.viewExpandedText))
         return false;
     }
 
@@ -688,6 +785,20 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case VIEWORIGINALTEXT:
+          if (field.type == TType.STRING) {
+            this.viewOriginalText = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case VIEWEXPANDEDTEXT:
+          if (field.type == TType.STRING) {
+            this.viewExpandedText = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -753,6 +864,16 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         }
         oprot.writeMapEnd();
       }
+      oprot.writeFieldEnd();
+    }
+    if (this.viewOriginalText != null) {
+      oprot.writeFieldBegin(VIEW_ORIGINAL_TEXT_FIELD_DESC);
+      oprot.writeString(this.viewOriginalText);
+      oprot.writeFieldEnd();
+    }
+    if (this.viewExpandedText != null) {
+      oprot.writeFieldBegin(VIEW_EXPANDED_TEXT_FIELD_DESC);
+      oprot.writeString(this.viewExpandedText);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -821,6 +942,22 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       sb.append("null");
     } else {
       sb.append(this.parameters);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("viewOriginalText:");
+    if (this.viewOriginalText == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.viewOriginalText);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("viewExpandedText:");
+    if (this.viewExpandedText == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.viewExpandedText);
     }
     first = false;
     sb.append(")");

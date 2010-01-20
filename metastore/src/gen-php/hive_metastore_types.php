@@ -1087,6 +1087,8 @@ class metastore_Table {
   public $sd = null;
   public $partitionKeys = null;
   public $parameters = null;
+  public $viewOriginalText = null;
+  public $viewExpandedText = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1141,6 +1143,14 @@ class metastore_Table {
             'type' => TType::STRING,
             ),
           ),
+        10 => array(
+          'var' => 'viewOriginalText',
+          'type' => TType::STRING,
+          ),
+        11 => array(
+          'var' => 'viewExpandedText',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -1170,6 +1180,12 @@ class metastore_Table {
       }
       if (isset($vals['parameters'])) {
         $this->parameters = $vals['parameters'];
+      }
+      if (isset($vals['viewOriginalText'])) {
+        $this->viewOriginalText = $vals['viewOriginalText'];
+      }
+      if (isset($vals['viewExpandedText'])) {
+        $this->viewExpandedText = $vals['viewExpandedText'];
       }
     }
   }
@@ -1281,6 +1297,20 @@ class metastore_Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 10:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->viewOriginalText);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 11:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->viewExpandedText);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1365,6 +1395,16 @@ class metastore_Table {
         }
         $output->writeMapEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->viewOriginalText !== null) {
+      $xfer += $output->writeFieldBegin('viewOriginalText', TType::STRING, 10);
+      $xfer += $output->writeString($this->viewOriginalText);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->viewExpandedText !== null) {
+      $xfer += $output->writeFieldBegin('viewExpandedText', TType::STRING, 11);
+      $xfer += $output->writeString($this->viewExpandedText);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

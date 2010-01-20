@@ -176,6 +176,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // initialize destination table/partition
     tableSpec ts = new tableSpec(db, conf, (ASTNode) table_t);
+
+    if (ts.tableHandle.isView()) {
+      throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
+    }
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation() : ts.tableHandle.getDataLocation();
 
     List<FieldSchema> parts = ts.tableHandle.getTTable().getPartitionKeys();

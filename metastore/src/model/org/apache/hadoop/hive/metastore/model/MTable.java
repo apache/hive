@@ -32,7 +32,9 @@ public class MTable {
   private int retention;
   private List<MFieldSchema> partitionKeys;
   private Map<String, String> parameters;
-  
+  private String viewOriginalText;
+  private String viewExpandedText;
+
   public MTable() {}
 
   /**
@@ -48,7 +50,8 @@ public class MTable {
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
-      Map<String, String> parameters) {
+      Map<String, String> parameters,
+      String viewOriginalText, String viewExpandedText) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -58,6 +61,8 @@ public class MTable {
     this.retention = retention;
     this.partitionKeys = partitionKeys;
     this.parameters = parameters;
+    this.viewOriginalText = viewOriginalText;
+    this.viewExpandedText = viewExpandedText;
   }
 
   /**
@@ -114,6 +119,34 @@ public class MTable {
    */
   public void setParameters(Map<String, String> parameters) {
     this.parameters = parameters;
+  }
+
+  /**
+   * @return the original view text, or null if this table is not a view
+   */
+  public String getViewOriginalText() {
+    return viewOriginalText;
+  }
+
+  /**
+   * @param viewOriginalText the original view text to set
+   */
+  public void setViewOriginalText(String viewOriginalText) {
+    this.viewOriginalText = viewOriginalText;
+  }
+
+  /**
+   * @return the expanded view text, or null if this table is not a view
+   */
+  public String getViewExpandedText() {
+    return viewExpandedText;
+  }
+
+  /**
+   * @param viewExpandedText the expanded view text to set
+   */
+  public void setViewExpandedText(String viewExpandedText) {
+    this.viewExpandedText = viewExpandedText;
   }
 
   /**

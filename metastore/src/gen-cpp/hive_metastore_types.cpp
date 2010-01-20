@@ -728,8 +728,8 @@ uint32_t StorageDescriptor::write(apache::thrift::protocol::TProtocol* oprot) co
   return xfer;
 }
 
-const char* Table::ascii_fingerprint = "9AED95F9B0977E7C06642265B26C8B36";
-const uint8_t Table::binary_fingerprint[16] = {0x9A,0xED,0x95,0xF9,0xB0,0x97,0x7E,0x7C,0x06,0x64,0x22,0x65,0xB2,0x6C,0x8B,0x36};
+const char* Table::ascii_fingerprint = "CBD4F726F025A868EEB3BDC4028F3D66";
+const uint8_t Table::binary_fingerprint[16] = {0xCB,0xD4,0xF7,0x26,0xF0,0x25,0xA8,0x68,0xEE,0xB3,0xBD,0xC4,0x02,0x8F,0x3D,0x66};
 
 uint32_t Table::read(apache::thrift::protocol::TProtocol* iprot) {
 
@@ -850,6 +850,22 @@ uint32_t Table::read(apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->viewOriginalText);
+          this->__isset.viewOriginalText = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->viewExpandedText);
+          this->__isset.viewExpandedText = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -908,6 +924,12 @@ uint32_t Table::write(apache::thrift::protocol::TProtocol* oprot) const {
     }
     xfer += oprot->writeMapEnd();
   }
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("viewOriginalText", apache::thrift::protocol::T_STRING, 10);
+  xfer += oprot->writeString(this->viewOriginalText);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("viewExpandedText", apache::thrift::protocol::T_STRING, 11);
+  xfer += oprot->writeString(this->viewExpandedText);
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();

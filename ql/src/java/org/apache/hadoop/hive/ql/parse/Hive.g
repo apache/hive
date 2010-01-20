@@ -130,6 +130,8 @@ TOK_TABSORTCOLNAMEDESC;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
+TOK_CREATEVIEW;
+TOK_DROPVIEW;
 TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
@@ -201,12 +203,14 @@ loadStatement
 ddlStatement
 @init { msgs.push("ddl statement"); }
 @after { msgs.pop(); }
-    : createStatement
-    | dropStatement
+    : createTableStatement
+    | dropTableStatement
     | alterStatement
     | descStatement
     | showStatement
     | metastoreCheck
+    | createViewStatement
+    | dropViewStatement
     | createFunctionStatement
     | dropFunctionStatement
     ;
@@ -218,8 +222,8 @@ ifNotExists
     -> ^(TOK_IFNOTEXISTS)
     ;
 
-createStatement
-@init { msgs.push("create statement"); }
+createTableStatement
+@init { msgs.push("create table statement"); }
 @after { msgs.pop(); }
     : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier
       (  like=KW_LIKE likeName=Identifier
@@ -246,7 +250,7 @@ createStatement
         )
     ;
 
-dropStatement
+dropTableStatement
 @init { msgs.push("drop statement"); }
 @after { msgs.pop(); }
     : KW_DROP KW_TABLE Identifier  -> ^(TOK_DROPTABLE Identifier)
@@ -410,6 +414,29 @@ dropFunctionStatement
 @after { msgs.pop(); }
     : KW_DROP KW_TEMPORARY KW_FUNCTION Identifier
     -> ^(TOK_DROPFUNCTION Identifier)
+    ;
+
+createViewStatement
+@init { 
+    msgs.push("create view statement");
+}
+@after { msgs.pop(); }
+    : KW_CREATE KW_VIEW ifNotExists? name=Identifier
+        (LPAREN columnNameCommentList RPAREN)? tableComment?
+        KW_AS 
+        selectStatement 
+    -> ^(TOK_CREATEVIEW $name ifNotExists? 
+         columnNameCommentList?
+         tableComment?
+         selectStatement
+        )
+    ;
+
+dropViewStatement
+@init { msgs.push("drop view statement"); }
+@after { msgs.pop(); }
+    : KW_DROP KW_VIEW Identifier
+    -> ^(TOK_DROPVIEW Identifier)
     ;
 
 showStmtIdentifier
@@ -596,6 +623,19 @@ columnNameOrder
     : Identifier (asc=KW_ASC | desc=KW_DESC)? 
     -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC Identifier)
     ->                  ^(TOK_TABSORTCOLNAMEDESC Identifier)
+    ;
+
+columnNameCommentList
+@init { msgs.push("column name comment list"); }
+@after { msgs.pop(); }
+    : columnNameComment (COMMA columnNameComment)* -> ^(TOK_TABCOLNAME columnNameComment+)
+    ;
+
+columnNameComment
+@init { msgs.push("column name comment"); }
+@after { msgs.pop(); }
+    : colName=Identifier (KW_COMMENT comment=StringLiteral)? 
+    -> ^(TOK_TABCOL $colName TOK_NULL $comment?)
     ;
 
 columnRefOrder

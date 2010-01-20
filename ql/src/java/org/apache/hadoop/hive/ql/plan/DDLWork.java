@@ -28,6 +28,7 @@ public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private createTableDesc      createTblDesc;
   private createTableLikeDesc  createTblLikeDesc;
+  private createViewDesc       createVwDesc;
   private dropTableDesc        dropTblDesc;
   private alterTableDesc       alterTblDesc;
   private showTablesDesc       showTblsDesc;
@@ -74,12 +75,21 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param createTblLikeDesc create table dlike escriptor
+   * @param createTblLikeDesc create table like descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, createTableLikeDesc createTblLikeDesc) {
     this(inputs, outputs);
 
     this.createTblLikeDesc = createTblLikeDesc;
+  }
+
+  /**
+   * @param createVwDesc create view descriptor
+   */
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, createViewDesc createVwDesc) {
+    this(inputs, outputs);
+
+    this.createVwDesc = createVwDesc;
   }
 
   /**
@@ -189,6 +199,22 @@ public class DDLWork implements Serializable {
    */
   public void setCreateTblLikeDesc(createTableLikeDesc createTblLikeDesc) {
     this.createTblLikeDesc = createTblLikeDesc;
+  }
+
+
+  /**
+   * @return the createTblDesc
+   */
+  @explain(displayName="Create View Operator")
+  public createViewDesc getCreateViewDesc() {
+    return createVwDesc;
+  }
+
+  /**
+   * @param createVwDesc the createViewDesc to set
+   */
+  public void setCreateViewDesc(createViewDesc createVwDesc) {
+    this.createVwDesc = createVwDesc;
   }
 
   /**

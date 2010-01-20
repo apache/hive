@@ -30,6 +30,7 @@ public class HiveUtils {
   public static final String RBRACKET = "]";
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
+  public static final String LINE_SEP = System.getProperty("line.separator");
 
 
   public static String escapeString(String str) {
@@ -109,5 +110,15 @@ public class HiveUtils {
       }
     }
     return (escape.toString());
+  }
+
+  /**
+   * Regenerate an identifier as part of unparsing it back to SQL text.
+   */
+  public static String unparseIdentifier(String identifier) {
+    // In the future, if we support arbitrary characters in
+    // identifiers, then we'll need to escape any backticks
+    // in identifier by doubling them up.
+    return "`" + identifier + "`";
   }
 }

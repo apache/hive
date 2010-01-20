@@ -381,6 +381,13 @@ public class Hive {
       Properties p = MetaStoreUtils.getSchema(tTable);
       table.setSchema(p);
       table.setTTable(tTable);
+
+      if (table.isView()) {
+        // Skip the rest, which isn't relevant for a view.
+        table.checkValidity();
+        return table;
+      }
+
       table.setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)
           Class.forName(table.getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
                                                       org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName()),

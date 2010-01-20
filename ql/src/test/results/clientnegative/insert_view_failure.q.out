@@ -1,0 +1,12 @@
+PREHOOK: query: DROP VIEW xxx2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx2 AS SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/2093790207/10000
+POSTHOOK: query: CREATE VIEW xxx2 AS SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/2093790207/10000
+POSTHOOK: Output: default@xxx2
+FAILED: Error in semantic analysis: A view cannot be used as target table for LOAD or INSERT

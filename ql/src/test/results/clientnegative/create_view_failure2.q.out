@@ -1,0 +1,21 @@
+PREHOOK: query: DROP TABLE xxx4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE xxx4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP VIEW xxx4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: -- views and tables share the same namespace
+CREATE VIEW xxx4 AS SELECT key FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1327466632/10000
+POSTHOOK: query: -- views and tables share the same namespace
+CREATE VIEW xxx4 AS SELECT key FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1327466632/10000
+POSTHOOK: Output: default@xxx4
+PREHOOK: query: CREATE TABLE xxx4(key int)
+PREHOOK: type: CREATETABLE
+FAILED: Error in metadata: AlreadyExistsException(message:Table xxx4 already exists)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

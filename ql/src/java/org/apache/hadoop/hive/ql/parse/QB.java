@@ -145,6 +145,13 @@ public class QB {
     return aliasToTabs.get(alias.toLowerCase());
   }
 
+  public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr) {
+    alias = alias.toLowerCase();
+    String tableName = aliasToTabs.remove(alias);
+    assert (viewName.equals(tableName));
+    aliasToSubq.put(alias, qbexpr);
+  }
+
   public QBJoinTree getQbJoinTree() {
     return qbjoin;
   }

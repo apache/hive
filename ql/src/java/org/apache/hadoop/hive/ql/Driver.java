@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -269,11 +270,8 @@ public class Driver implements CommandProcessor {
       ctx = new Context (conf);
 
       ParseDriver pd = new ParseDriver();
-      ASTNode tree = pd.parse(command);
-
-      while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-        tree = (ASTNode) tree.getChild(0);
-      }
+      ASTNode tree = pd.parse(command, ctx);
+      tree = ParseUtils.findRootNonNullToken(tree);
 
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       // Do semantic analysis and plan generation
@@ -284,6 +282,7 @@ public class Driver implements CommandProcessor {
       sem.validate();
 
       plan = new QueryPlan(command, sem);
+
       return (0);
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();

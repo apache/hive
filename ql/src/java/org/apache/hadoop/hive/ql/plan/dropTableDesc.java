@@ -30,18 +30,21 @@ public class dropTableDesc extends ddlDesc implements Serializable
   
   String            tableName;
   List<Map<String, String>> partSpecs;
+  boolean expectView;
 
   /**
    * @param tableName
    */
-  public dropTableDesc(String tableName) {
+  public dropTableDesc(String tableName, boolean expectView) {
     this.tableName = tableName;
     this.partSpecs = null;
+    this.expectView = expectView;
   }
 
   public dropTableDesc(String tableName, List<Map<String, String>> partSpecs) {
     this.tableName = tableName;
     this.partSpecs = partSpecs;
+    this.expectView = false;
   }
 
   /**
@@ -71,5 +74,19 @@ public class dropTableDesc extends ddlDesc implements Serializable
    */
   public void setPartSpecs(List<Map<String, String>> partSpecs) {
     this.partSpecs = partSpecs;
+  }
+
+  /**
+   * @return whether to expect a view being dropped
+   */
+  public boolean getExpectView() {
+    return expectView;
+  }
+
+  /**
+   * @param expectView set whether to expect a view being dropped
+   */
+  public void setExpectView(boolean expectView) {
+    this.expectView = expectView;
   }
 }

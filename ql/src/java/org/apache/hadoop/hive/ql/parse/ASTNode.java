@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
  */
 public class ASTNode extends CommonTree implements Node {
 
+  private ASTNodeOrigin origin;
+  
   public ASTNode() {  
   }
   
@@ -61,6 +63,23 @@ public class ASTNode extends CommonTree implements Node {
    */
   public String getName() {
     return (new Integer(super.getToken().getType())).toString();
+  }
+
+  /**
+   * @return information about the object from which this ASTNode
+   * originated, or null if this ASTNode was not expanded from
+   * an object reference
+   */
+  public ASTNodeOrigin getOrigin() {
+    return origin;
+  }
+
+  /**
+   * Tag this ASTNode with information about the object from which this
+   * node originated.
+   */
+  public void setOrigin(ASTNodeOrigin origin) {
+    this.origin = origin;
   }
   
   public String dump() {

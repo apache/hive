@@ -125,6 +125,12 @@
            <column name="PARAM_VALUE" length="767" jdbc-type="VARCHAR"/>
         </value>
       </field>
+      <field name="viewOriginalText">
+        <column name="VIEW_ORIGINAL_TEXT" jdbc-type="LONGVARCHAR"/>
+      </field>
+      <field name="viewExpandedText">
+        <column name="VIEW_EXPANDED_TEXT" jdbc-type="LONGVARCHAR"/>
+      </field>
     </class>
 
     <class name="MSerDeInfo" identity-type="datastore" table="SERDES" detachable="true">

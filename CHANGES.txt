@@ -9,6 +9,8 @@ Trunk -  Unreleased
     HIVE-964. Handle skew join
     (Yongqiang He via namit)
 
+    HIVE-972. Support views. (John Sichi via zshao)
+
   IMPROVEMENTS
 
     HIVE-983. Function from_unixtime takes long.

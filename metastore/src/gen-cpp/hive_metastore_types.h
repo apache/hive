@@ -345,10 +345,10 @@ class StorageDescriptor {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "9AED95F9B0977E7C06642265B26C8B36";
-  static const uint8_t binary_fingerprint[16]; // = {0x9A,0xED,0x95,0xF9,0xB0,0x97,0x7E,0x7C,0x06,0x64,0x22,0x65,0xB2,0x6C,0x8B,0x36};
+  static const char* ascii_fingerprint; // = "CBD4F726F025A868EEB3BDC4028F3D66";
+  static const uint8_t binary_fingerprint[16]; // = {0xCB,0xD4,0xF7,0x26,0xF0,0x25,0xA8,0x68,0xEE,0xB3,0xBD,0xC4,0x02,0x8F,0x3D,0x66};
 
-  Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0) {
+  Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText("") {
   }
 
   virtual ~Table() throw() {}
@@ -362,9 +362,11 @@ class Table {
   StorageDescriptor sd;
   std::vector<FieldSchema>  partitionKeys;
   std::map<std::string, std::string>  parameters;
+  std::string viewOriginalText;
+  std::string viewExpandedText;
 
   struct __isset {
-    __isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false) {}
+    __isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false) {}
     bool tableName;
     bool dbName;
     bool owner;
@@ -374,6 +376,8 @@ class Table {
     bool sd;
     bool partitionKeys;
     bool parameters;
+    bool viewOriginalText;
+    bool viewExpandedText;
   } __isset;
 
   bool operator == (const Table & rhs) const
@@ -395,6 +399,10 @@ class Table {
     if (!(partitionKeys == rhs.partitionKeys))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (!(viewOriginalText == rhs.viewOriginalText))
+      return false;
+    if (!(viewExpandedText == rhs.viewExpandedText))
       return false;
     return true;
   }

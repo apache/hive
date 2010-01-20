@@ -88,7 +88,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE)
-       analyzeDropTable(ast);
+       analyzeDropTable(ast, false);
     else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE)
     {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -110,7 +110,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME)
+    } else if (ast.getToken().getType() == HiveParser.TOK_DROPVIEW)
+      analyzeDropTable(ast, true);
+    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME)
       analyzeAlterTableRename(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS)
       analyzeAlterTableModifyCols(ast, alterTableTypes.ADDCOLS);
@@ -142,10 +144,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeDropTable(ASTNode ast) 
+  private void analyzeDropTable(ASTNode ast, boolean expectView) 
     throws SemanticException {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
-    dropTableDesc dropTblDesc = new dropTableDesc(tableName);
+    dropTableDesc dropTblDesc = new dropTableDesc(tableName, expectView);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropTblDesc), conf));
   }
 

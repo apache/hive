@@ -37,7 +37,6 @@ public class QBMetaData {
   public static final int DEST_REDUCE = 4;
   public static final int DEST_LOCAL_FILE = 5;
 
-  private ArrayList<Class<?>> outTypes;
   private HashMap<String, Table> aliasToTable;
   private HashMap<String, Table> nameToDestTable;
   private HashMap<String, Partition> nameToDestPartition;
@@ -48,20 +47,11 @@ public class QBMetaData {
   private static final Log LOG = LogFactory.getLog(QBMetaData.class.getName());
   
   public QBMetaData() {
-    this.outTypes = new ArrayList<Class<?>>();
     this.aliasToTable = new HashMap<String, Table>();
     this.nameToDestTable = new HashMap<String, Table>();
     this.nameToDestPartition = new HashMap<String, Partition>();
     this.nameToDestFile = new HashMap<String, String>();
     this.nameToDestType = new HashMap<String, Integer>();
-  }
-
-  public ArrayList<Class<?>> getOutputTypes() {
-    return this.outTypes;
-  }
-
-  public void addOutputType(Class<?> cls) {
-    this.outTypes.add(cls);
   }
 
   // All getXXX needs toLowerCase() because they are directly called from SemanticAnalyzer

@@ -27,6 +27,8 @@ import java.net.URISyntaxException;
 import java.util.Random;
 import java.util.ArrayList;
 
+import org.antlr.runtime.TokenRewriteStream;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,6 +62,7 @@ public class Context {
   protected int randomid = Math.abs(rand.nextInt());
   protected int pathid = 10000;
   protected boolean explain = false;
+  private TokenRewriteStream tokenRewriteStream;
 
   public Context() {  
   }
@@ -393,6 +396,29 @@ public class Context {
    */
   private static boolean strEquals(String str1, String str2) {
     return org.apache.commons.lang.StringUtils.equals(str1, str2);
+  }
+
+  /**
+   * Set the token rewrite stream being used to parse the current top-level SQL
+   * statement.  Note that this should <b>not</b> be used for other parsing
+   * activities; for example, when we encounter a reference to a view, we
+   * switch to a new stream for parsing the stored view definition from the
+   * catalog, but we don't clobber the top-level stream in the context.
+   *
+   * @param tokenRewriteStream the stream being used
+   */
+  public void setTokenRewriteStream(TokenRewriteStream tokenRewriteStream) {
+    assert(this.tokenRewriteStream == null);
+    this.tokenRewriteStream = tokenRewriteStream;
+  }
+
+  /**
+   * @return the token rewrite stream being used to parse the current
+   * top-level SQL statement, or null if it isn't available
+   * (e.g. for parser tests)
+   */
+  public TokenRewriteStream getTokenRewriteStream() {
+    return tokenRewriteStream;
   }
 }
 

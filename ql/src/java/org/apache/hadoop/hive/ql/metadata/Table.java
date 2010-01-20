@@ -156,16 +156,18 @@ public class Table {
       throw new HiveException("[" + name + "]: is not a valid table name");
     }
     if (0 == getCols().size()) {
-      throw new HiveException("atleast one column must be specified for the table");
+      throw new HiveException("at least one column must be specified for the table");
     }
-    if (null == getDeserializer()) {
-      throw new HiveException("must specify a non-null serDe");
-    }
-    if (null == getInputFormatClass()) {
-      throw new HiveException("must specify an InputFormat class");
-    }
-    if (null == getOutputFormatClass()) {
-      throw new HiveException("must specify an OutputFormat class");
+    if (!isView()) {
+      if (null == getDeserializer()) {
+        throw new HiveException("must specify a non-null serDe");
+      }
+      if (null == getInputFormatClass()) {
+        throw new HiveException("must specify an InputFormat class");
+      }
+      if (null == getOutputFormatClass()) {
+        throw new HiveException("must specify an OutputFormat class");
+      }
     }
 
     Iterator<FieldSchema> iterCols = getCols().iterator();
@@ -569,6 +571,46 @@ public class Table {
 
   public List<Order> getSortCols() {
     return getTTable().getSd().getSortCols();
+  }
+
+  /**
+   * @return the original view text, or null if this table is not a view
+   */
+  public String getViewOriginalText() {
+    return getTTable().getViewOriginalText();
+  }
+
+  /**
+   * @param viewOriginalText the original view text to set
+   */
+  public void setViewOriginalText(String viewOriginalText) {
+    getTTable().setViewOriginalText(viewOriginalText);
+  }
+
+  /**
+   * @return the expanded view text, or null if this table is not a view
+   */
+  public String getViewExpandedText() {
+    return getTTable().getViewExpandedText();
+  }
+
+  /**
+   * @param viewExpandedText the expanded view text to set
+   */
+  public void setViewExpandedText(String viewExpandedText) {
+    getTTable().setViewExpandedText(viewExpandedText);
+  }
+
+  /**
+   * @return whether this table is actually a view
+   */
+  public boolean isView() {
+    // either both attributes (expandedText and originalText) should
+    // be set, or neither
+    boolean hasExpandedText = (getViewExpandedText() != null);
+    boolean hasOriginalText = (getViewOriginalText() != null);
+    assert(hasExpandedText == hasOriginalText);
+    return hasExpandedText;
   }
 
   /**

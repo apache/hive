@@ -569,7 +569,9 @@ public class ObjectStore implements RawStore, Configurable {
         mtbl.getRetention(),
         convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()),
-        mtbl.getParameters());
+        mtbl.getParameters(),
+        mtbl.getViewOriginalText(),
+        mtbl.getViewExpandedText());
   }
   
   private MTable convertToMTable(Table tbl) throws InvalidObjectException, MetaException {
@@ -589,7 +591,9 @@ public class ObjectStore implements RawStore, Configurable {
         tbl.getLastAccessTime(),
         tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()),
-        tbl.getParameters());
+        tbl.getParameters(),
+        tbl.getViewOriginalText(),
+        tbl.getViewExpandedText());
   }
   
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
