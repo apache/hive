@@ -25,11 +25,6 @@
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
 
-  <!-- This is the version added to the manifest, which must be manually rev'ed
-  whenever a branch version is created. The non-numberic/dot characters are
-  silently dropped from the Implementation-Version when added to the manifest. -->
-  <property name="version" value="0.6.0-dev"/>
-
   <property name="target.dir" location="${build.dir.hive}/dist"/>
   <property name="target.lib.dir" location="${target.dir}/lib"/>
   <property name="target.conf.dir" location="${target.dir}/conf"/>
@@ -48,6 +43,9 @@
   <property name="final.name" value="${name}-${version}"/>
   <property name="dev.final.name" value="${final.name}-dev"/>
   <property name="bin.final.name" value="${final.name}-bin"/>
+  <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
+  <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
+
 
   <!-- ====================================================== -->
   <!-- Macro definitions                                      -->
@@ -472,6 +470,48 @@
         </tarfileset>
       </param.listofitems>
     </macro_tar>
+  </target>
+
+
+  <!-- ================================================================== -->
+  <!-- Checkstyle                                                         -->
+  <!-- ================================================================== -->
+
+  <import file="${hive.root}/build-common.xml"/>
+  
+  <target name="checkstyle" depends="ivy-retrieve-checkstyle,check-for-checkstyle"
+          if="checkstyle.present"
+          description="Run Checkstyle on source files">
+    <taskdef resource="checkstyletask.properties">
+      <classpath refid="checkstyle-classpath"/>
+    </taskdef>
+    
+    <mkdir dir="${checkstyle.build.dir}"/>
+    
+    <checkstyle config="${checkstyle.conf.dir}/checkstyle.xml"
+  		failOnViolation="false">
+      <fileset dir="${hive.root}/cli/src" includes="**/*.java"/>
+      <fileset dir="${hive.root}/common/src" includes="**/*.java"/>
+      <fileset dir="${hive.root}/contrib/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/hwi/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/jdbc/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/metastore/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/ql/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/serde/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/service/src/java" includes="**/*.java"/>
+      <fileset dir="${hive.root}/shims/src" includes="**/*.java"/>
+      <formatter type="xml" toFile="${checkstyle.build.dir}/checkstyle-errors.xml"/>
+    </checkstyle>
+    
+    <xslt style="${checkstyle.conf.dir}/checkstyle-noframes-sorted.xsl"
+          in="${checkstyle.build.dir}/checkstyle-errors.xml"
+          out="${checkstyle.build.dir}/checkstyle-errors.html"/>
+  </target>
+  
+  <target name="check-for-checkstyle">
+    <available property="checkstyle.present" resource="checkstyletask.properties">
+      <classpath refid="checkstyle-classpath"/>
+    </available>  	
   </target>
 
 </project>

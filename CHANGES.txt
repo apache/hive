@@ -14,6 +14,9 @@ Trunk -  Unreleased
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
 
+    HIVE-990. Incorporate CheckStyle into Hive's build.xml.
+    (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

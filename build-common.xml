@@ -36,13 +36,6 @@
 
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
-  <property name="javac.debug" value="on"/>
-  <property name="javac.version" value="1.5"/>
-  <property name="javac.optimize" value="on"/>
-  <property name="javac.deprecation" value="off"/>
-  <property name="javac.args" value=""/>
-  <property name="javac.args.warnings" value=""/> <!-- -Xlint:unchecked"/ -->
-
   <!-- configuration needed for tests -->
   <property name="test.src.dir" value="${basedir}/src/test"/>
   <property name="test.src.data.dir" value="${hive.root}/data"/>
@@ -69,19 +62,116 @@
     <path refid="classpath"/>
   </path>
 
-  <import file="${hive.root}/ivy/get_ivy.xml"/>
+  <!-- IVY properties set here -->
+  <property name="build.ivy.dir" location="${build.dir.hive}/ivy"/>
+  <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib"/>
+  <property name="build.ivy.report.dir" location="${build.ivy.dir}/report"/>
+  <property name="build.ivy.maven.dir" location="${build.ivy.dir}/maven"/>
+  <condition property="ivy.home" value="${env.IVY_HOME}">
+    <isset property="env.IVY_HOME" />
+  </condition>
+  <property name="ivy.home" value="${user.home}/.ant" />
+  <property name="ivy.conf.dir" location="${hive.root}/ivy"/>
+  <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
+  <property name="ivy.jar" location="${build.ivy.lib.dir}/ivy-${ivy.version}.jar"/>
+  <property name="ivysettings.xml" location="${ivy.conf.dir}/ivysettings.xml" />
+  <property name="ivy.org" value="org.apache.hadoop"/>
+  <property name="mvn.repo" value="http://repo2.maven.org/maven2"/>
+  <property name="repo" value="snapshots"/>
+  <property name="asfrepo" value="https://repository.apache.org/content/repositories/${repo}"/>
+  <property name="ant_task_repo_url" value="${mvn.repo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar"/>
+  <property name="ivy_repo_url" value="${mvn.repo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
 
-  <target name="settings-ivy" depends="init-ivy">
-    <ivy:settings file="${hive.root}/ivy/ivysettings.xml"/>
+  <!--this is the naming policy for artifacts we want pulled down-->
+  <property name="ivy.artifact.retrieve.pattern" value="${ant.project.name}/[conf]/[artifact]-[revision].[ext]"/>
+      
+  <target name="ivy-init-dirs">
+    <mkdir dir="${build.ivy.dir}" />
+    <mkdir dir="${build.ivy.lib.dir}" />
+    <mkdir dir="${build.ivy.report.dir}" />
+    <mkdir dir="${build.ivy.maven.dir}" />
   </target>
 
-  <target name="resolve" description="--> retrieve dependencies with ivy" depends="settings-ivy">
-    <ivy:retrieve pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
+  <target name="ivy-probe-antlib" >
+    <condition property="ivy.found">
+      <typefound uri="antlib:org.apache.ivy.ant" name="cleancache"/>
+    </condition>
   </target>
 
-  <available property="hadoopcore.${hadoop.version.ant-internal}.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
+  <target name="ivy-download" depends="ivy-init-dirs"
+          description="To download ivy" unless="offline">
+    <get src="${ivy_repo_url}" dest="${ivy.jar}" usetimestamp="true"/>
+  </target>
 
-  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.${hadoop.version.ant-internal}.install.done">
+  <!--
+  To avoid Ivy leaking things across big projects, always load Ivy in the same classloader.
+  Also note how we skip loading Ivy if it is already there, just to make sure all is well.
+  -->
+  <target name="ivy-init-antlib" depends="ivy-download,ivy-init-dirs,ivy-probe-antlib" unless="ivy.found">
+    <typedef uri="antlib:org.apache.ivy.ant" onerror="fail"
+      loaderRef="ivyLoader">
+      <classpath>
+        <pathelement location="${ivy.jar}"/>
+      </classpath>
+    </typedef>
+    <fail >
+      <condition >
+        <not>
+          <typefound uri="antlib:org.apache.ivy.ant" name="cleancache"/>
+        </not>
+      </condition>
+      You need Apache Ivy 2.0 or later from http://ant.apache.org/
+      It could not be loaded from ${ivy_repo_url}
+    </fail>
+  </target>
+
+
+  <property name="ivyresolvelog" value="download-only"/>
+  <property name="ivyretrievelog" value="quite"/>
+
+  <target name="ivy-init" depends="ivy-init-antlib" >
+    <!--Configure Ivy by reading in the settings file
+        If anyone has already read in a settings file into this settings ID, it gets priority
+    -->
+    <ivy:settings id="${ant.project.name}.ivy.settings" file="${ivysettings.xml}"/>
+  </target>
+
+  <target name="ivy-resolve" depends="ivy-init">
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
+      log="${ivyresolvelog}"/>
+  </target>
+
+  <target name="ivy-resolve-checkstyle" depends="ivy-init">
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
+      log="${ivyresolvelog}"/>
+  </target>
+  
+  <target name="ivy-retrieve" depends="ivy-resolve"
+    description="Retrieve Ivy-managed artifacts">
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+  </target>
+  
+  <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
+    description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+    <ivy:cachepath pathid="checkstyle-classpath" conf="checkstyle"/>
+  </target>
+  
+  <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
+    description="Retrieve Ivy-managed Hadoop source artifacts" >
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
+  </target>
+  
+  <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
+    file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
+
+  <target name="install-hadoopcore-internal" depends="ivy-retrieve-hadoop-source"
+    unless="hadoopcore.${hadoop.version.ant-internal}.install.done">
     <untar src="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
     <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
     <touch file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>

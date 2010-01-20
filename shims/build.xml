@@ -34,7 +34,8 @@ to call at top-level: ant deploy-contrib compile-core-test
     </fileset>
   </path>
 
-  <target name="build_shims" description="Build shims against a particular hadoop version" depends="install-hadoopcore-internal, resolve">
+  <target name="build_shims" depends="install-hadoopcore-internal, ivy-retrieve-hadoop-source"
+          description="Build shims against a particular hadoop version">
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}" />
     <echo message="Compiling shims against hadoop ${hadoop.version.ant-internal} (${hadoop.root})"/>
     <javac
