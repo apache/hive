@@ -68,7 +68,7 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
     this.taskCounters = new HashMap<String, Long>();
   }
 
-  public void initialize (HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     this.queryPlan = queryPlan;
     isdone = false;
     started = false;

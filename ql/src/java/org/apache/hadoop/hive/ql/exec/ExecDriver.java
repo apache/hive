@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.*;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -107,8 +108,9 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   /**
    * Initialization when invoked from QL
    */
-  public void initialize(HiveConf conf, QueryPlan queryPlan) {
-    super.initialize(conf, queryPlan, null);
+  @Override
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
+    super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
     // NOTE: initialize is only called if it is in non-local mode.
     // In case it's in non-local mode, we need to move the SessionState files

@@ -45,6 +45,7 @@ public class FunctionTask extends Task<FunctionWork> {
     super();
   }
   
+  @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
     this.conf = conf;

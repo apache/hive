@@ -51,6 +51,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
  	  super();
  	}
  	
+ 	@Override
   public void initialize (HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
     

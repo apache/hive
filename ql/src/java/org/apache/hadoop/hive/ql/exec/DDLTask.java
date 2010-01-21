@@ -105,6 +105,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     super();
   }
 
+  @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
     this.conf = conf;
