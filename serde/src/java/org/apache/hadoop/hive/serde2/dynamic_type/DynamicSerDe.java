@@ -18,27 +18,32 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-
 import org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol;
 import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
-
-import java.util.*;
-import java.io.*;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
-
-import org.apache.thrift.protocol.*;
-import org.apache.thrift.transport.*;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TIOStreamTransport;
 
 public class DynamicSerDe implements SerDe, Serializable {
 
@@ -54,30 +59,34 @@ public class DynamicSerDe implements SerDe, Serializable {
   transient protected ByteStream.Output bos_;
 
   /**
-   * protocols are protected in case any of their properties need to be queried from another
-   * class in this package. For TCTLSeparatedProtocol for example, may want to query the separators.
+   * protocols are protected in case any of their properties need to be queried
+   * from another class in this package. For TCTLSeparatedProtocol for example,
+   * may want to query the separators.
    */
   transient protected TProtocol oprot_;
   transient protected TProtocol iprot_;
 
   TIOStreamTransport tios;
 
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+  public void initialize(Configuration job, Properties tbl)
+      throws SerDeException {
     try {
 
       String ddl = tbl.getProperty(Constants.SERIALIZATION_DDL);
       type_name = tbl.getProperty(META_TABLE_NAME);
       String protoName = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
 
-      if(protoName == null) {
+      if (protoName == null) {
         protoName = "org.apache.thrift.protocol.TBinaryProtocol";
       }
       // For backward compatibility
-      protoName = protoName.replace("com.facebook.thrift.protocol", "org.apache.thrift.protocol");
-      TProtocolFactory protFactory = TReflectionUtils.getProtocolFactoryByName(protoName);
+      protoName = protoName.replace("com.facebook.thrift.protocol",
+          "org.apache.thrift.protocol");
+      TProtocolFactory protFactory = TReflectionUtils
+          .getProtocolFactoryByName(protoName);
       bos_ = new ByteStream.Output();
       bis_ = new ByteStream.Input();
-      tios = new TIOStreamTransport(bis_,bos_);
+      tios = new TIOStreamTransport(bis_, bos_);
 
       oprot_ = protFactory.getProtocol(tios);
       iprot_ = protFactory.getProtocol(tios);
@@ -86,32 +95,34 @@ public class DynamicSerDe implements SerDe, Serializable {
        * initialize the protocols
        */
 
-      if(oprot_ instanceof org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol) {
-        ((ConfigurableTProtocol)oprot_).initialize(job, tbl);
+      if (oprot_ instanceof org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol) {
+        ((ConfigurableTProtocol) oprot_).initialize(job, tbl);
       }
 
-      if(iprot_ instanceof org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol) {
-        ((ConfigurableTProtocol)iprot_).initialize(job, tbl);
+      if (iprot_ instanceof org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol) {
+        ((ConfigurableTProtocol) iprot_).initialize(job, tbl);
       }
 
       // in theory the include path should come from the configuration
       List<String> include_path = new ArrayList<String>();
       include_path.add(".");
       LOG.debug("ddl=" + ddl);
-      this.parse_tree = new thrift_grammar(new ByteArrayInputStream(ddl.getBytes()), include_path,false);
-      this.parse_tree.Start();
+      parse_tree = new thrift_grammar(new ByteArrayInputStream(ddl.getBytes()),
+          include_path, false);
+      parse_tree.Start();
 
-      this.bt = (DynamicSerDeStructBase)this.parse_tree.types.get(type_name);
+      bt = (DynamicSerDeStructBase) parse_tree.types.get(type_name);
 
-      if(this.bt == null) {
-        this.bt = (DynamicSerDeStructBase)this.parse_tree.tables.get(type_name);
+      if (bt == null) {
+        bt = (DynamicSerDeStructBase) parse_tree.tables.get(type_name);
       }
 
-      if(this.bt == null) {
-        throw new SerDeException("Could not lookup table type " + type_name + " in this ddl: " + ddl);
+      if (bt == null) {
+        throw new SerDeException("Could not lookup table type " + type_name
+            + " in this ddl: " + ddl);
       }
 
-      this.bt.initialize();
+      bt.initialize();
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       throw new SerDeException(e);
@@ -119,53 +130,59 @@ public class DynamicSerDe implements SerDe, Serializable {
   }
 
   Object deserializeReuse = null;
+
   public Object deserialize(Writable field) throws SerDeException {
     try {
       if (field instanceof Text) {
-        Text b = (Text)field;
+        Text b = (Text) field;
         bis_.reset(b.getBytes(), b.getLength());
       } else {
-        BytesWritable b = (BytesWritable)field;
+        BytesWritable b = (BytesWritable) field;
         bis_.reset(b.get(), b.getSize());
       }
-      deserializeReuse = this.bt.deserialize(deserializeReuse, iprot_);
+      deserializeReuse = bt.deserialize(deserializeReuse, iprot_);
       return deserializeReuse;
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new SerDeException(e);
     }
   }
 
-  public static ObjectInspector dynamicSerDeStructBaseToObjectInspector(DynamicSerDeTypeBase bt) throws SerDeException {
+  public static ObjectInspector dynamicSerDeStructBaseToObjectInspector(
+      DynamicSerDeTypeBase bt) throws SerDeException {
     if (bt.isList()) {
-      return ObjectInspectorFactory.getStandardListObjectInspector(
-          dynamicSerDeStructBaseToObjectInspector(((DynamicSerDeTypeList)bt).getElementType()));
+      return ObjectInspectorFactory
+          .getStandardListObjectInspector(dynamicSerDeStructBaseToObjectInspector(((DynamicSerDeTypeList) bt)
+              .getElementType()));
     } else if (bt.isMap()) {
-      DynamicSerDeTypeMap btMap = (DynamicSerDeTypeMap)bt; 
+      DynamicSerDeTypeMap btMap = (DynamicSerDeTypeMap) bt;
       return ObjectInspectorFactory.getStandardMapObjectInspector(
-          dynamicSerDeStructBaseToObjectInspector(btMap.getKeyType()), 
+          dynamicSerDeStructBaseToObjectInspector(btMap.getKeyType()),
           dynamicSerDeStructBaseToObjectInspector(btMap.getValueType()));
     } else if (bt.isPrimitive()) {
-      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
+              .getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
     } else {
       // Must be a struct
-      DynamicSerDeStructBase btStruct = (DynamicSerDeStructBase)bt;
+      DynamicSerDeStructBase btStruct = (DynamicSerDeStructBase) bt;
       DynamicSerDeFieldList fieldList = btStruct.getFieldList();
       DynamicSerDeField[] fields = fieldList.getChildren();
-      ArrayList<String> fieldNames = new ArrayList<String>(fields.length); 
-      ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fields.length); 
-      for(int i=0; i<fields.length; i++) {
-        fieldNames.add(fields[i].name);
-        fieldObjectInspectors.add(
-            dynamicSerDeStructBaseToObjectInspector(fields[i].getFieldType().getMyType()));
+      ArrayList<String> fieldNames = new ArrayList<String>(fields.length);
+      ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(
+          fields.length);
+      for (DynamicSerDeField field : fields) {
+        fieldNames.add(field.name);
+        fieldObjectInspectors.add(dynamicSerDeStructBaseToObjectInspector(field
+            .getFieldType().getMyType()));
       }
-      return ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
+      return ObjectInspectorFactory.getStandardStructObjectInspector(
+          fieldNames, fieldObjectInspectors);
     }
   }
 
   public ObjectInspector getObjectInspector() throws SerDeException {
-    return dynamicSerDeStructBaseToObjectInspector(this.bt);
+    return dynamicSerDeStructBaseToObjectInspector(bt);
   }
 
   public Class<? extends Writable> getSerializedClass() {
@@ -173,17 +190,18 @@ public class DynamicSerDe implements SerDe, Serializable {
   }
 
   BytesWritable ret = new BytesWritable();
+
   public Writable serialize(Object obj, ObjectInspector objInspector)
-  throws SerDeException {
+      throws SerDeException {
     try {
       bos_.reset();
-      this.bt.serialize(obj, objInspector, oprot_);
+      bt.serialize(obj, objInspector, oprot_);
       oprot_.getTransport().flush();
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       throw new SerDeException(e);
     }
-    ret.set(bos_.getData(),0,bos_.getCount());
+    ret.set(bos_.getData(), 0, bos_.getCount());
     return ret;
   }
 }

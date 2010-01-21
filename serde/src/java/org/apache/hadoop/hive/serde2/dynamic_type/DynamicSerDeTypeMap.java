@@ -18,24 +18,29 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.TApplicationException;
-import org.apache.thrift.protocol.*;
-import org.apache.thrift.server.*;
-import org.apache.thrift.transport.*;
-import java.util.*;
-import java.io.*;
-import org.apache.hadoop.hive.serde2.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import java.lang.reflect.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TMap;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
 
-  public boolean isPrimitive() { return false; }
-  public boolean isMap() { return true;}
+  @Override
+  public boolean isPrimitive() {
+    return false;
+  }
+
+  @Override
+  public boolean isMap() {
+    return true;
+  }
 
   // production is: Map<FieldType(),FieldType()>
 
@@ -43,13 +48,14 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
   private final byte FD_VALUETYPE = 1;
 
   // returns Map<?,?>
+  @Override
   public Class getRealType() {
     try {
-      Class c = this.getKeyType().getRealType();
-      Class c2 = this.getValueType().getRealType();
+      Class c = getKeyType().getRealType();
+      Class c2 = getValueType().getRealType();
       Object o = c.newInstance();
       Object o2 = c2.newInstance();
-      Map<?,?> l = Collections.singletonMap(o,o2);
+      Map<?, ?> l = Collections.singletonMap(o, o2);
       return l.getClass();
     } catch (Exception e) {
       e.printStackTrace();
@@ -62,25 +68,29 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
   }
 
   public DynamicSerDeTypeMap(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
   public DynamicSerDeTypeBase getKeyType() {
-    return (DynamicSerDeTypeBase)((DynamicSerDeFieldType)this.jjtGetChild(FD_KEYTYPE)).getMyType();
+    return ((DynamicSerDeFieldType) jjtGetChild(FD_KEYTYPE)).getMyType();
   }
 
   public DynamicSerDeTypeBase getValueType() {
-    return (DynamicSerDeTypeBase)((DynamicSerDeFieldType)this.jjtGetChild(FD_VALUETYPE)).getMyType();
+    return ((DynamicSerDeFieldType) jjtGetChild(FD_VALUETYPE)).getMyType();
   }
 
+  @Override
   public String toString() {
-    return "map<" + this.getKeyType().toString() + "," + this.getValueType().toString() + ">";
+    return "map<" + getKeyType().toString() + "," + getValueType().toString()
+        + ">";
   }
 
-  public Map<Object,Object> deserialize(Object reuse, TProtocol iprot)  throws SerDeException, TException, IllegalAccessException {
+  @Override
+  public Map<Object, Object> deserialize(Object reuse, TProtocol iprot)
+      throws SerDeException, TException, IllegalAccessException {
     HashMap<Object, Object> deserializeReuse;
     if (reuse != null) {
-      deserializeReuse = (HashMap<Object, Object>)reuse;
+      deserializeReuse = (HashMap<Object, Object>) reuse;
       deserializeReuse.clear();
     } else {
       deserializeReuse = new HashMap<Object, Object>();
@@ -91,57 +101,58 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
     }
     // themap might be reused by the Protocol.
     int mapSize = themap.size;
-    for(int i = 0; i < mapSize; i++) {
-      Object key = this.getKeyType().deserialize(null, iprot);
-      Object value = this.getValueType().deserialize(null, iprot);
-      deserializeReuse.put(key,value);
+    for (int i = 0; i < mapSize; i++) {
+      Object key = getKeyType().deserialize(null, iprot);
+      Object value = getValueType().deserialize(null, iprot);
+      deserializeReuse.put(key, value);
     }
 
-    // in theory, the below call isn't needed in non thrift_mode, but let's not get too crazy
+    // in theory, the below call isn't needed in non thrift_mode, but let's not
+    // get too crazy
     iprot.readMapEnd();
     return deserializeReuse;
   }
 
   TMap serializeMap = null;
+
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-  throws TException, SerDeException, NoSuchFieldException,
-  IllegalAccessException {
-    DynamicSerDeTypeBase keyType = this.getKeyType();
-    DynamicSerDeTypeBase valueType = this.getValueType();
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException {
+    DynamicSerDeTypeBase keyType = getKeyType();
+    DynamicSerDeTypeBase valueType = getValueType();
 
-    org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol nullProtocol = 
-      (oprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)
-      ? (org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)oprot
-      : null;
-    
-    assert(oi.getCategory() == ObjectInspector.Category.MAP);
-    MapObjectInspector moi = (MapObjectInspector)oi;
+    org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol nullProtocol = (oprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) ? (org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) oprot
+        : null;
+
+    assert (oi.getCategory() == ObjectInspector.Category.MAP);
+    MapObjectInspector moi = (MapObjectInspector) oi;
     ObjectInspector koi = moi.getMapKeyObjectInspector();
     ObjectInspector voi = moi.getMapValueObjectInspector();
 
-    Map<?,?> map = moi.getMap(o);
+    Map<?, ?> map = moi.getMap(o);
     serializeMap = new TMap(keyType.getType(), valueType.getType(), map.size());
     oprot.writeMapBegin(serializeMap);
-    
-    for(Iterator i = map.entrySet().iterator(); i.hasNext(); ) {
-      Map.Entry it = (Map.Entry)i.next();
+
+    for (Object element : map.entrySet()) {
+      Map.Entry it = (Map.Entry) element;
       Object key = it.getKey();
       Object value = it.getValue();
       keyType.serialize(key, koi, oprot);
       if (value == null) {
-        assert(nullProtocol != null);
+        assert (nullProtocol != null);
         nullProtocol.writeNull();
       } else {
         valueType.serialize(value, voi, oprot);
       }
     }
-    // in theory, the below call isn't needed in non thrift_mode, but let's not get too crazy
-    oprot.writeMapEnd();      
+    // in theory, the below call isn't needed in non thrift_mode, but let's not
+    // get too crazy
+    oprot.writeMapEnd();
   }
 
+  @Override
   public byte getType() {
     return TType.MAP;
   }
 };
-

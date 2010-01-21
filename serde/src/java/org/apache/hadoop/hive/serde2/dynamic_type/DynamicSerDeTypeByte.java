@@ -18,47 +18,57 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.*;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
-
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeByte extends DynamicSerDeTypeBase {
 
   // production is: byte
 
-
   public DynamicSerDeTypeByte(int i) {
     super(i);
   }
+
   public DynamicSerDeTypeByte(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
-  public String toString() { return "byte"; }
+  @Override
+  public String toString() {
+    return "byte";
+  }
 
-  public Byte deserialize(TProtocol iprot)  throws SerDeException, TException, IllegalAccessException {
+  public Byte deserialize(TProtocol iprot) throws SerDeException, TException,
+      IllegalAccessException {
     byte val = iprot.readByte();
-    if (val == 0 && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol && 
-        ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)iprot).lastPrimitiveWasNull()) {
+    if (val == 0
+        && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
+        && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
+            .lastPrimitiveWasNull()) {
       return null;
     }
     return Byte.valueOf(val);
   }
-  public Object deserialize(Object reuse, TProtocol iprot)  throws SerDeException, TException, IllegalAccessException {
+
+  @Override
+  public Object deserialize(Object reuse, TProtocol iprot)
+      throws SerDeException, TException, IllegalAccessException {
     return deserialize(iprot);
   }
 
-  public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
+  @Override
+  public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException {
     ByteObjectInspector poi = (ByteObjectInspector) oi;
     oprot.writeByte(poi.get(o));
   }
 
+  @Override
   public byte getType() {
     return TType.BYTE;
   }

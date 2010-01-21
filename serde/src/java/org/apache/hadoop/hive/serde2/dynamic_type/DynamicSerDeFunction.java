@@ -22,31 +22,33 @@ import org.apache.thrift.protocol.TMessageType;
 
 public class DynamicSerDeFunction extends DynamicSerDeStructBase {
 
-  // production is: Async() FunctionType() NAME FieldList() Throws() [CommaOrSemicolon]
+  // production is: Async() FunctionType() NAME FieldList() Throws()
+  // [CommaOrSemicolon]
 
-  private final int FD_ASYNC = 0;
-  private final int FD_FUNCTION_TYPE = 1;
   private final int FD_FIELD_LIST = 2;
-  private final int FD_THROWS = 3;
 
   public DynamicSerDeFunction(int i) {
     super(i);
   }
+
   public DynamicSerDeFunction(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
+  @Override
   public DynamicSerDeFieldList getFieldList() {
-    return (DynamicSerDeFieldList)this.jjtGetChild(FD_FIELD_LIST);
+    return (DynamicSerDeFieldList) jjtGetChild(FD_FIELD_LIST);
   }
 
+  @Override
   public String toString() {
-    String result = "function " + this.name + " (";
-    result += this.getFieldList().toString();
+    String result = "function " + name + " (";
+    result += getFieldList().toString();
     result += ")";
     return result;
   }
 
+  @Override
   public byte getType() {
     return TMessageType.CALL;
   }

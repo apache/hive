@@ -18,34 +18,31 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.hadoop.hive.serde2.*;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TProtocol;
 
 public class DynamicSerDeField extends DynamicSerDeSimpleNode {
 
-
   // production is:
-  // [this.fieldid :] Requiredness() FieldType() this.name FieldValue() [CommaOrSemicolon()]
+  // [this.fieldid :] Requiredness() FieldType() this.name FieldValue()
+  // [CommaOrSemicolon()]
 
   private final int FD_REQUIREDNESS = 0;
   private final int FD_FIELD_TYPE = 1;
-  private final int FD_FIELD_VALUE =2;
 
   public boolean isSkippable() {
-    return ((DynamicSerDeFieldRequiredness)this.jjtGetChild(FD_REQUIREDNESS)).getRequiredness() == DynamicSerDeFieldRequiredness.RequirednessTypes.Skippable;
+    return ((DynamicSerDeFieldRequiredness) jjtGetChild(FD_REQUIREDNESS))
+        .getRequiredness() == DynamicSerDeFieldRequiredness.RequirednessTypes.Skippable;
   }
 
   public DynamicSerDeFieldType getFieldType() {
-    return (DynamicSerDeFieldType)this.jjtGetChild(FD_FIELD_TYPE);
+    return (DynamicSerDeFieldType) jjtGetChild(FD_FIELD_TYPE);
   }
 
   public DynamicSerDeField(int i) {
     super(i);
   }
+
   public DynamicSerDeField(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
 }
-

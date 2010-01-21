@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.*;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
-
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
@@ -39,6 +37,7 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
     super(p, i);
   }
 
+  @Override
   public String toString() {
     return "bool";
   }
@@ -47,8 +46,10 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
   public Object deserialize(Object reuse, TProtocol iprot)
       throws SerDeException, TException, IllegalAccessException {
     boolean val = iprot.readBool();
-    if (val == false && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol && 
-        ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)iprot).lastPrimitiveWasNull()) {
+    if (val == false
+        && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
+        && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
+            .lastPrimitiveWasNull()) {
       return null;
     }
     return Boolean.valueOf(val);
@@ -62,11 +63,18 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
     oprot.writeBool(poi.get(o));
   }
 
+  @Override
   public byte getType() {
     return TType.BOOL;
   }
-  
-  public Class getRealType() { return java.lang.Boolean.class; }
-  public Boolean getRealTypeInstance() { return Boolean.FALSE; }
-  
+
+  @Override
+  public Class getRealType() {
+    return java.lang.Boolean.class;
+  }
+
+  public Boolean getRealTypeInstance() {
+    return Boolean.FALSE;
+  }
+
 }

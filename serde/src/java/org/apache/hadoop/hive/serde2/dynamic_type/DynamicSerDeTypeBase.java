@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.hadoop.hive.serde2.*;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.TException;
 import java.io.Serializable;
 
-public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode implements Serializable {
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
+
+public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode
+    implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public DynamicSerDeTypeBase(int i) {
@@ -33,11 +34,12 @@ public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode implem
   }
 
   public DynamicSerDeTypeBase(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
   public void initialize() {
-    // for base type, do nothing. Other types, like structs may initialize internal data
+    // for base type, do nothing. Other types, like structs may initialize
+    // internal data
     // structures.
   }
 
@@ -49,10 +51,14 @@ public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode implem
     throw new RuntimeException("Not implemented in base");
   }
 
-  public abstract Object deserialize(Object reuse, TProtocol iprot)  throws SerDeException, TException, IllegalAccessException;
+  public abstract Object deserialize(Object reuse, TProtocol iprot)
+      throws SerDeException, TException, IllegalAccessException;
 
-  public abstract void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException;
+  public abstract void serialize(Object o, ObjectInspector oi, TProtocol oprot)
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException;
 
+  @Override
   public String toString() {
     return "BAD";
   }
@@ -61,8 +67,16 @@ public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode implem
     return -1;
   }
 
-  public boolean isPrimitive() { return true; }
-  public boolean isList() { return false; }
-  public boolean isMap() { return false; }
+  public boolean isPrimitive() {
+    return true;
+  }
+
+  public boolean isList() {
+    return false;
+  }
+
+  public boolean isMap() {
+    return false;
+  }
 
 }

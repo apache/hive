@@ -22,9 +22,14 @@ public class SimpleNode implements Node {
 
   public void jjtClose() {
   }
-  
-  public void jjtSetParent(Node n) { parent = n; }
-  public Node jjtGetParent() { return parent; }
+
+  public void jjtSetParent(Node n) {
+    parent = n;
+  }
+
+  public Node jjtGetParent() {
+    return parent;
+  }
 
   public void jjtAddChild(Node n, int i) {
     if (children == null) {
@@ -45,28 +50,36 @@ public class SimpleNode implements Node {
     return (children == null) ? 0 : children.length;
   }
 
-  /* You can override these two methods in subclasses of SimpleNode to
-     customize the way the node appears when the tree is dumped.  If
-     your output uses more than one line you should override
-     toString(String), otherwise overriding toString() is probably all
-     you need to do. */
+  /*
+   * You can override these two methods in subclasses of SimpleNode to customize
+   * the way the node appears when the tree is dumped. If your output uses more
+   * than one line you should override toString(String), otherwise overriding
+   * toString() is probably all you need to do.
+   */
 
-  public String toString() { return thrift_grammarTreeConstants.jjtNodeName[id]; }
-  public String toString(String prefix) { return prefix + toString(); }
+  @Override
+  public String toString() {
+    return thrift_grammarTreeConstants.jjtNodeName[id];
+  }
 
-  /* Override this method if you want to customize how the node dumps
-     out its children. */
+  public String toString(String prefix) {
+    return prefix + toString();
+  }
+
+  /*
+   * Override this method if you want to customize how the node dumps out its
+   * children.
+   */
 
   public void dump(String prefix) {
     System.out.println(toString(prefix));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
-	SimpleNode n = (SimpleNode)children[i];
-	if (n != null) {
-	  n.dump(prefix + " ");
-	}
+        SimpleNode n = (SimpleNode) children[i];
+        if (n != null) {
+          n.dump(prefix + " ");
+        }
       }
     }
   }
 }
-

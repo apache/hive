@@ -24,17 +24,21 @@ public class DynamicSerDeFieldType extends DynamicSerDeSimpleNode {
   // production: this.name | BaseType() | MapType() | SetType() | ListType()
 
   private final int FD_FIELD_TYPE = 0;
+
   public DynamicSerDeFieldType(int i) {
     super(i);
   }
+
   public DynamicSerDeFieldType(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
   protected DynamicSerDeTypeBase getMyType() {
-    // bugbug, need to deal with a named type here - i.e., look it up and proxy to it
-    // should raise an exception if this is a typedef since won't be any children
+    // bugbug, need to deal with a named type here - i.e., look it up and proxy
+    // to it
+    // should raise an exception if this is a typedef since won't be any
+    // children
     // and thus we can quickly find this comment and limitation.
-    return (DynamicSerDeTypeBase)this.jjtGetChild(FD_FIELD_TYPE);
+    return (DynamicSerDeTypeBase) jjtGetChild(FD_FIELD_TYPE);
   }
 }

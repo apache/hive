@@ -19,14 +19,13 @@
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
 public class DynamicSerDeFieldRequiredness extends SimpleNode {
-  public enum RequirednessTypes 
-  {
-    Required,  Skippable, Optional,
-      };
+  public enum RequirednessTypes {
+    Required, Skippable, Optional,
+  };
 
   /**
-   *  Is this a required, skippable or optional field.
-   *  Used by DynamicSerDe for optimizations.
+   * Is this a required, skippable or optional field. Used by DynamicSerDe for
+   * optimizations.
    */
   protected RequirednessTypes requiredness;
 

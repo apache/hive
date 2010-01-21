@@ -18,18 +18,16 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.TApplicationException;
-import org.apache.thrift.protocol.*;
-import org.apache.thrift.server.*;
-import org.apache.thrift.transport.*;
-import java.util.*;
-import java.io.*;
-import org.apache.hadoop.hive.serde2.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
-import java.lang.reflect.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TSet;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
@@ -41,14 +39,16 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
   public DynamicSerDeTypeSet(int i) {
     super(i);
   }
+
   public DynamicSerDeTypeSet(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
   // returns Set<?>
+  @Override
   public Class getRealType() {
     try {
-      Class c = this.getElementType().getRealType();
+      Class c = getElementType().getRealType();
       Object o = c.newInstance();
       Set<?> l = Collections.singleton(o);
       return l.getClass();
@@ -59,62 +59,68 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
   }
 
   public DynamicSerDeTypeBase getElementType() {
-    return (DynamicSerDeTypeBase)((DynamicSerDeFieldType)this.jjtGetChild(FD_TYPE)).getMyType();
+    return ((DynamicSerDeFieldType) jjtGetChild(FD_TYPE)).getMyType();
   }
 
+  @Override
   public String toString() {
-    return "set<" + this.getElementType().toString()  + ">";
+    return "set<" + getElementType().toString() + ">";
   }
 
+  @Override
   public byte getType() {
     return TType.SET;
   }
 
-  /** NOTE: Set is not supported by Hive yet.
+  /**
+   * NOTE: Set is not supported by Hive yet.
    */
   @Override
   public Object deserialize(Object reuse, TProtocol iprot)
-  throws SerDeException, TException, IllegalAccessException {
+      throws SerDeException, TException, IllegalAccessException {
     TSet theset = iprot.readSetBegin();
     if (theset == null) {
       return null;
     }
     Set<Object> result;
     if (reuse != null) {
-      result = (Set<Object>)reuse;
+      result = (Set<Object>) reuse;
       result.clear();
     } else {
       result = new HashSet<Object>();
     }
-    for(int i = 0; i < theset.size; i++) {
-      Object elem = this.getElementType().deserialize(null, iprot);
+    for (int i = 0; i < theset.size; i++) {
+      Object elem = getElementType().deserialize(null, iprot);
       result.add(elem);
     }
-    // in theory, the below call isn't needed in non thrift_mode, but let's not get too crazy
+    // in theory, the below call isn't needed in non thrift_mode, but let's not
+    // get too crazy
     iprot.readSetEnd();
     return result;
   }
 
-  /** NOTE: Set is not supported by Hive yet.
-   *  The code uses ListObjectInspector right now. We need to change it to 
-   *  SetObjectInspector when that is done.
+  /**
+   * NOTE: Set is not supported by Hive yet. The code uses ListObjectInspector
+   * right now. We need to change it to SetObjectInspector when that is done.
    */
   TSet tset = null;
+
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-  throws TException, SerDeException, NoSuchFieldException,
-  IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException {
 
-    ListObjectInspector loi = (ListObjectInspector)oi;
+    ListObjectInspector loi = (ListObjectInspector) oi;
 
-    Set<Object> set = (Set<Object>)o;
-    DynamicSerDeTypeBase mt = this.getElementType();
+    Set<Object> set = (Set<Object>) o;
+    DynamicSerDeTypeBase mt = getElementType();
     tset = new TSet(mt.getType(), set.size());
     oprot.writeSetBegin(tset);
-    for(Object element: set) {
+    for (Object element : set) {
       mt.serialize(element, loi.getListElementObjectInspector(), oprot);
     }
-    // in theory, the below call isn't needed in non thrift_mode, but let's not get too crazy
+    // in theory, the below call isn't needed in non thrift_mode, but let's not
+    // get too crazy
     oprot.writeSetEnd();
   }
 }

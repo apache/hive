@@ -29,21 +29,25 @@ public class DynamicSerDeStruct extends DynamicSerDeStructBase {
   public DynamicSerDeStruct(int i) {
     super(i);
   }
+
   public DynamicSerDeStruct(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
+  @Override
   public String toString() {
-    String result = "struct " + this.name + "(";
-    result += this.getFieldList().toString();
+    String result = "struct " + name + "(";
+    result += getFieldList().toString();
     result += ")";
     return result;
   }
 
+  @Override
   public DynamicSerDeFieldList getFieldList() {
-    return (DynamicSerDeFieldList)this.jjtGetChild(FD_FIELD_LIST);
+    return (DynamicSerDeFieldList) jjtGetChild(FD_FIELD_LIST);
   }
 
+  @Override
   public byte getType() {
     return TType.STRUCT;
   }

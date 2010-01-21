@@ -18,20 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.TApplicationException;
-import org.apache.thrift.protocol.*;
-import org.apache.thrift.server.*;
-import org.apache.thrift.transport.*;
-import java.util.*;
-import java.io.*;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
-
-import java.lang.reflect.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypei32 extends DynamicSerDeTypeBase {
@@ -41,32 +32,47 @@ public class DynamicSerDeTypei32 extends DynamicSerDeTypeBase {
   public DynamicSerDeTypei32(int i) {
     super(i);
   }
+
   public DynamicSerDeTypei32(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
-  public String toString() { return "i32"; }
+  @Override
+  public String toString() {
+    return "i32";
+  }
 
   @Override
-  public Object deserialize(Object reuse, TProtocol iprot) throws SerDeException, TException, IllegalAccessException {
+  public Object deserialize(Object reuse, TProtocol iprot)
+      throws SerDeException, TException, IllegalAccessException {
     int val = iprot.readI32();
-    if (val == 0 && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol && 
-        ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)iprot).lastPrimitiveWasNull()) {
+    if (val == 0
+        && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
+        && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
+            .lastPrimitiveWasNull()) {
       return null;
     }
     return Integer.valueOf(val);
   }
 
   @Override
-  public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
+  public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException {
     IntObjectInspector poi = (IntObjectInspector) oi;
     oprot.writeI32(poi.get(o));
   }
 
-  public Class getRealType() { return java.lang.Integer.class; }
-  public Integer getRealTypeInstance() { return Integer.valueOf(0); }
+  @Override
+  public Class getRealType() {
+    return java.lang.Integer.class;
+  }
 
+  public Integer getRealTypeInstance() {
+    return Integer.valueOf(0);
+  }
 
+  @Override
   public byte getType() {
     return TType.I32;
   }

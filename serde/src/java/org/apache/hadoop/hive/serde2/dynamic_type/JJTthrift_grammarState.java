@@ -2,11 +2,11 @@
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
 public class JJTthrift_grammarState {
-  private java.util.List nodes;
-  private java.util.List marks;
+  private final java.util.List nodes;
+  private final java.util.List marks;
 
-  private int sp;        // number of nodes on stack
-  private int mk;        // current mark
+  private int sp; // number of nodes on stack
+  private int mk; // current mark
   private boolean node_created;
 
   public JJTthrift_grammarState() {
@@ -16,15 +16,18 @@ public class JJTthrift_grammarState {
     mk = 0;
   }
 
-  /* Determines whether the current node was actually closed and
-     pushed.  This should only be called in the final user action of a
-     node scope.  */
+  /*
+   * Determines whether the current node was actually closed and pushed. This
+   * should only be called in the final user action of a node scope.
+   */
   public boolean nodeCreated() {
     return node_created;
   }
 
-  /* Call this to reinitialize the node stack.  It is called
-     automatically by the parser's ReInit() method. */
+  /*
+   * Call this to reinitialize the node stack. It is called automatically by the
+   * parser's ReInit() method.
+   */
   public void reset() {
     nodes.clear();
     marks.clear();
@@ -32,10 +35,12 @@ public class JJTthrift_grammarState {
     mk = 0;
   }
 
-  /* Returns the root node of the AST.  It only makes sense to call
-     this after a successful parse. */
+  /*
+   * Returns the root node of the AST. It only makes sense to call this after a
+   * successful parse.
+   */
   public Node rootNode() {
-    return (Node)nodes.get(0);
+    return (Node) nodes.get(0);
   }
 
   /* Pushes a node on to the stack. */
@@ -44,34 +49,34 @@ public class JJTthrift_grammarState {
     ++sp;
   }
 
-  /* Returns the node on the top of the stack, and remove it from the
-     stack.  */
+  /*
+   * Returns the node on the top of the stack, and remove it from the stack.
+   */
   public Node popNode() {
     if (--sp < mk) {
-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
+      mk = ((Integer) marks.remove(marks.size() - 1)).intValue();
     }
-    return (Node)nodes.remove(nodes.size()-1);
+    return (Node) nodes.remove(nodes.size() - 1);
   }
 
   /* Returns the node currently on the top of the stack. */
   public Node peekNode() {
-    return (Node)nodes.get(nodes.size()-1);
+    return (Node) nodes.get(nodes.size() - 1);
   }
 
-  /* Returns the number of children on the stack in the current node
-     scope. */
+  /*
+   * Returns the number of children on the stack in the current node scope.
+   */
   public int nodeArity() {
     return sp - mk;
   }
-
 
   public void clearNodeScope(Node n) {
     while (sp > mk) {
       popNode();
     }
-    mk = ((Integer)marks.remove(marks.size()-1)).intValue();
+    mk = ((Integer) marks.remove(marks.size() - 1)).intValue();
   }
-
 
   public void openNodeScope(Node n) {
     marks.add(new Integer(mk));
@@ -79,13 +84,13 @@ public class JJTthrift_grammarState {
     n.jjtOpen();
   }
 
-
-  /* A definite node is constructed from a specified number of
-     children.  That number of nodes are popped from the stack and
-     made the children of the definite node.  Then the definite node
-     is pushed on to the stack. */
+  /*
+   * A definite node is constructed from a specified number of children. That
+   * number of nodes are popped from the stack and made the children of the
+   * definite node. Then the definite node is pushed on to the stack.
+   */
   public void closeNodeScope(Node n, int num) {
-    mk = ((Integer)marks.remove(marks.size()-1)).intValue();
+    mk = ((Integer) marks.remove(marks.size() - 1)).intValue();
     while (num-- > 0) {
       Node c = popNode();
       c.jjtSetParent(n);
@@ -96,16 +101,16 @@ public class JJTthrift_grammarState {
     node_created = true;
   }
 
-
-  /* A conditional node is constructed if its condition is true.  All
-     the nodes that have been pushed since the node was opened are
-     made children of the conditional node, which is then pushed
-     on to the stack.  If the condition is false the node is not
-     constructed and they are left on the stack. */
+  /*
+   * A conditional node is constructed if its condition is true. All the nodes
+   * that have been pushed since the node was opened are made children of the
+   * conditional node, which is then pushed on to the stack. If the condition is
+   * false the node is not constructed and they are left on the stack.
+   */
   public void closeNodeScope(Node n, boolean condition) {
     if (condition) {
       int a = nodeArity();
-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
+      mk = ((Integer) marks.remove(marks.size() - 1)).intValue();
       while (a-- > 0) {
         Node c = popNode();
         c.jjtSetParent(n);
@@ -115,9 +120,12 @@ public class JJTthrift_grammarState {
       pushNode(n);
       node_created = true;
     } else {
-      mk = ((Integer)marks.remove(marks.size()-1)).intValue();
+      mk = ((Integer) marks.remove(marks.size() - 1)).intValue();
       node_created = false;
     }
   }
 }
-/* JavaCC - OriginalChecksum=67039445e12d18e18e63124a33879cd3 (do not edit this line) */
+/*
+ * JavaCC - OriginalChecksum=67039445e12d18e18e63124a33879cd3 (do not edit this
+ * line)
+ */

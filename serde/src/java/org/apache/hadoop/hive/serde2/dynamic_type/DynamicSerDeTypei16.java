@@ -18,53 +18,57 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import org.apache.thrift.TException;
-import org.apache.thrift.TApplicationException;
-import org.apache.thrift.protocol.*;
-import org.apache.thrift.server.*;
-import org.apache.thrift.transport.*;
-import java.util.*;
-import java.io.*;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
-
-import java.lang.reflect.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypei16 extends DynamicSerDeTypeBase {
 
-  public Class getRealType() { return Integer.valueOf(2).getClass(); }
+  @Override
+  public Class getRealType() {
+    return Integer.valueOf(2).getClass();
+  }
 
   // production is: i16
 
   public DynamicSerDeTypei16(int i) {
     super(i);
   }
+
   public DynamicSerDeTypei16(thrift_grammar p, int i) {
-    super(p,i);
+    super(p, i);
   }
 
-  public String toString() { return "i16"; }
+  @Override
+  public String toString() {
+    return "i16";
+  }
 
   @Override
-  public Object deserialize(Object reuse, TProtocol iprot)  throws SerDeException, TException, IllegalAccessException {
+  public Object deserialize(Object reuse, TProtocol iprot)
+      throws SerDeException, TException, IllegalAccessException {
     int val = iprot.readI16();
-    if (val == 0 && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol && 
-        ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol)iprot).lastPrimitiveWasNull()) {
+    if (val == 0
+        && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
+        && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
+            .lastPrimitiveWasNull()) {
       return null;
     }
     return Integer.valueOf(val);
   }
 
   @Override
-  public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
+  public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
+      throws TException, SerDeException, NoSuchFieldException,
+      IllegalAccessException {
     ShortObjectInspector poi = (ShortObjectInspector) oi;
     oprot.writeI16(poi.get(o));
   }
 
+  @Override
   public byte getType() {
     return TType.I16;
   }
