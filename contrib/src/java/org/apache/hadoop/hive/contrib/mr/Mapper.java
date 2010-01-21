@@ -16,16 +16,20 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.contrib.mr;
+
 /**
  * Mapper.
  */
 public interface Mapper {
   /**
-   * Maps a single row into an intermediate rows. 
+   * Maps a single row into an intermediate rows.
    * 
-   * @param record input record
-   * @param output collect mapped rows.
-   * @throws Exception on error
+   * @param record
+   *          input record
+   * @param output
+   *          collect mapped rows.
+   * @throws Exception
+   *           on error
    */
   void map(String[] record, Output output) throws Exception;
 }

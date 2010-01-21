@@ -18,23 +18,26 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import org.apache.hadoop.hive.serde.Constants;
-
-import java.sql.SQLException;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+
+import org.apache.hadoop.hive.serde.Constants;
 
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   List<String> columnNames;
   List<String> columnTypes;
 
-  public HiveResultSetMetaData(List<String> columnNames, List<String> columnTypes) {
+  public HiveResultSetMetaData(List<String> columnNames,
+      List<String> columnTypes) {
     this.columnNames = columnNames;
     this.columnTypes = columnTypes;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getCatalogName(int)
    */
 
@@ -43,7 +46,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnClassName(int)
    */
 
@@ -52,7 +57,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnCount()
    */
 
@@ -60,130 +67,157 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     return columnNames.size();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnDisplaySize(int)
    */
 
   public int getColumnDisplaySize(int column) throws SQLException {
 
     // taking a stab at appropriate values
-    switch(getColumnType(column)) {
-      case Types.VARCHAR:
-      case Types.BIGINT:
-        return 32;
-      case Types.TINYINT:
-        return 2;
-      case Types.BOOLEAN:
-        return 8;
-      case Types.DOUBLE:
-      case Types.INTEGER:
-        return 16;
-      default:
-        return 32;
+    switch (getColumnType(column)) {
+    case Types.VARCHAR:
+    case Types.BIGINT:
+      return 32;
+    case Types.TINYINT:
+      return 2;
+    case Types.BOOLEAN:
+      return 8;
+    case Types.DOUBLE:
+    case Types.INTEGER:
+      return 16;
+    default:
+      return 32;
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnLabel(int)
    */
 
   public String getColumnLabel(int column) throws SQLException {
     // TODO Auto-generated method stub
-    return columnNames.get(column-1);
+    return columnNames.get(column - 1);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnName(int)
    */
 
   public String getColumnName(int column) throws SQLException {
-    return columnNames.get(column-1);
+    return columnNames.get(column - 1);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnType(int)
    */
 
   public int getColumnType(int column) throws SQLException {
-    if (columnTypes == null)
-      throw new SQLException("Could not determine column type name for ResultSet");
+    if (columnTypes == null) {
+      throw new SQLException(
+          "Could not determine column type name for ResultSet");
+    }
 
-    if (column < 1 || column > columnTypes.size())
+    if (column < 1 || column > columnTypes.size()) {
       throw new SQLException("Invalid column value: " + column);
+    }
 
     // we need to convert the thrift type to the SQL type
-    String type = columnTypes.get(column-1);
+    String type = columnTypes.get(column - 1);
 
     // we need to convert the thrift type to the SQL type
-    //TODO: this would be better handled in an enum
-    if ("string".equals(type))
+    // TODO: this would be better handled in an enum
+    if ("string".equals(type)) {
       return Types.VARCHAR;
-    else if ("bool".equals(type))
+    } else if ("bool".equals(type)) {
       return Types.BOOLEAN;
-    else if ("double".equals(type))
+    } else if ("double".equals(type)) {
       return Types.DOUBLE;
-    else if ("byte".equals(type))
+    } else if ("byte".equals(type)) {
       return Types.TINYINT;
-    else if ("i32".equals(type))
+    } else if ("i32".equals(type)) {
       return Types.INTEGER;
-    else if ("i64".equals(type))
+    } else if ("i64".equals(type)) {
       return Types.BIGINT;
+    }
 
     throw new SQLException("Inrecognized column type: " + type);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getColumnTypeName(int)
    */
 
   public String getColumnTypeName(int column) throws SQLException {
-    if (columnTypes == null)
-      throw new SQLException("Could not determine column type name for ResultSet");
+    if (columnTypes == null) {
+      throw new SQLException(
+          "Could not determine column type name for ResultSet");
+    }
 
-    if (column < 1 || column > columnTypes.size())
+    if (column < 1 || column > columnTypes.size()) {
       throw new SQLException("Invalid column value: " + column);
+    }
 
     // we need to convert the thrift type to the SQL type name
-    //TODO: this would be better handled in an enum
-    String type = columnTypes.get(column-1);
-    if ("string".equals(type))
+    // TODO: this would be better handled in an enum
+    String type = columnTypes.get(column - 1);
+    if ("string".equals(type)) {
       return Constants.STRING_TYPE_NAME;
-    else if ("double".equals(type))
+    } else if ("double".equals(type)) {
       return Constants.DOUBLE_TYPE_NAME;
-    
-    else if ("bool".equals(type))
+    } else if ("bool".equals(type)) {
       return Constants.BOOLEAN_TYPE_NAME;
-    else if ("byte".equals(type))
+    } else if ("byte".equals(type)) {
       return Constants.TINYINT_TYPE_NAME;
-    else if ("i32".equals(type))
+    } else if ("i32".equals(type)) {
       return Constants.INT_TYPE_NAME;
-    else if ("i64".equals(type))
+    } else if ("i64".equals(type)) {
       return Constants.BIGINT_TYPE_NAME;
+    }
 
     throw new SQLException("Inrecognized column type: " + type);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getPrecision(int)
    */
 
   public int getPrecision(int column) throws SQLException {
-    if (Types.DOUBLE == getColumnType(column)) return -1; //Do we have a precision limit?
+    if (Types.DOUBLE == getColumnType(column)) {
+      return -1; // Do we have a precision limit?
+    }
 
     return 0;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getScale(int)
    */
 
   public int getScale(int column) throws SQLException {
-    if (Types.DOUBLE == getColumnType(column)) return -1; //Do we have a scale limit?
+    if (Types.DOUBLE == getColumnType(column)) {
+      return -1; // Do we have a scale limit?
+    }
 
     return 0;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getSchemaName(int)
    */
 
@@ -192,7 +226,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#getTableName(int)
    */
 
@@ -201,7 +237,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isAutoIncrement(int)
    */
 
@@ -210,7 +248,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isCaseSensitive(int)
    */
 
@@ -219,7 +259,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isCurrency(int)
    */
 
@@ -228,7 +270,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isDefinitelyWritable(int)
    */
 
@@ -237,7 +281,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isNullable(int)
    */
 
@@ -246,7 +292,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     return ResultSetMetaData.columnNullable;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isReadOnly(int)
    */
 
@@ -255,7 +303,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isSearchable(int)
    */
 
@@ -264,7 +314,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isSigned(int)
    */
 
@@ -273,7 +325,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSetMetaData#isWritable(int)
    */
 
@@ -282,7 +336,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -291,7 +347,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 

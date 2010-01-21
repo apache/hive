@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import java.io.IOException;
+import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
-import java.net.URL;
-import java.util.jar.Manifest;
 import java.util.jar.Attributes;
-import java.io.IOException;
+import java.util.jar.Manifest;
 
 public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
@@ -37,7 +37,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     // TODO Auto-generated constructor stub
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#allProceduresAreCallable()
    */
 
@@ -46,7 +48,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#allTablesAreSelectable()
    */
 
@@ -55,7 +59,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#autoCommitFailureClosesAllResultSets()
    */
 
@@ -64,7 +70,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#dataDefinitionCausesTransactionCommit()
    */
 
@@ -73,7 +81,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#dataDefinitionIgnoredInTransactions()
    */
 
@@ -82,7 +92,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#deletesAreDetected(int)
    */
 
@@ -91,7 +103,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#doesMaxRowSizeIncludeBlobs()
    */
 
@@ -100,19 +114,24 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getAttributes(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getAttributes(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
    */
 
   public ResultSet getAttributes(String catalog, String schemaPattern,
-      String typeNamePattern, String attributeNamePattern)
-      throws SQLException {
+      String typeNamePattern, String attributeNamePattern) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getBestRowIdentifier(java.lang.String, java.lang.String, java.lang.String, int, boolean)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getBestRowIdentifier(java.lang.String,
+   * java.lang.String, java.lang.String, int, boolean)
    */
 
   public ResultSet getBestRowIdentifier(String catalog, String schema,
@@ -121,7 +140,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getCatalogSeparator()
    */
 
@@ -130,7 +151,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getCatalogTerm()
    */
 
@@ -139,7 +162,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getCatalogs()
    */
 
@@ -148,7 +173,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getClientInfoProperties()
    */
 
@@ -157,8 +184,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getColumnPrivileges(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getColumnPrivileges(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
    */
 
   public ResultSet getColumnPrivileges(String catalog, String schema,
@@ -167,18 +197,22 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getColumns(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
    */
 
   public ResultSet getColumns(String catalog, String schemaPattern,
-      String tableNamePattern, String columnNamePattern)
-      throws SQLException {
+      String tableNamePattern, String columnNamePattern) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getConnection()
    */
 
@@ -187,8 +221,12 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getCrossReference(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getCrossReference(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+   * java.lang.String)
    */
 
   public ResultSet getCrossReference(String primaryCatalog,
@@ -198,7 +236,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDatabaseMajorVersion()
    */
 
@@ -207,7 +247,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDatabaseMinorVersion()
    */
 
@@ -216,7 +258,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDatabaseProductName()
    */
 
@@ -224,7 +268,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return "Hive";
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDatabaseProductVersion()
    */
 
@@ -232,7 +278,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return "0";
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDefaultTransactionIsolation()
    */
 
@@ -241,7 +289,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDriverMajorVersion()
    */
 
@@ -250,7 +300,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return 0;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDriverMinorVersion()
    */
 
@@ -259,7 +311,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return 0;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDriverName()
    */
 
@@ -267,16 +321,21 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_TITLE);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getDriverVersion()
    */
 
   public String getDriverVersion() throws SQLException {
-   return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_VERSION);
+    return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_VERSION);
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getExportedKeys(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getExportedKeys(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getExportedKeys(String catalog, String schema, String table)
@@ -285,7 +344,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getExtraNameCharacters()
    */
 
@@ -294,8 +355,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getFunctionColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getFunctionColumns(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
    */
 
   public ResultSet getFunctionColumns(String arg0, String arg1, String arg2,
@@ -304,8 +368,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getFunctions(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getFunctions(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getFunctions(String arg0, String arg1, String arg2)
@@ -314,7 +381,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getIdentifierQuoteString()
    */
 
@@ -323,8 +392,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getImportedKeys(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getImportedKeys(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getImportedKeys(String catalog, String schema, String table)
@@ -333,8 +405,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getIndexInfo(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getIndexInfo(java.lang.String,
+   * java.lang.String, java.lang.String, boolean, boolean)
    */
 
   public ResultSet getIndexInfo(String catalog, String schema, String table,
@@ -343,7 +418,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getJDBCMajorVersion()
    */
 
@@ -351,7 +428,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return 3;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getJDBCMinorVersion()
    */
 
@@ -359,7 +438,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return 0;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxBinaryLiteralLength()
    */
 
@@ -368,7 +449,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxCatalogNameLength()
    */
 
@@ -377,7 +460,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxCharLiteralLength()
    */
 
@@ -386,7 +471,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnNameLength()
    */
 
@@ -395,7 +482,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnsInGroupBy()
    */
 
@@ -404,7 +493,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnsInIndex()
    */
 
@@ -413,7 +504,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnsInOrderBy()
    */
 
@@ -422,7 +515,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnsInSelect()
    */
 
@@ -431,7 +526,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxColumnsInTable()
    */
 
@@ -440,7 +537,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxConnections()
    */
 
@@ -449,7 +548,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxCursorNameLength()
    */
 
@@ -458,7 +559,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxIndexLength()
    */
 
@@ -467,7 +570,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxProcedureNameLength()
    */
 
@@ -476,7 +581,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxRowSize()
    */
 
@@ -485,7 +592,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxSchemaNameLength()
    */
 
@@ -494,7 +603,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxStatementLength()
    */
 
@@ -503,7 +614,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxStatements()
    */
 
@@ -512,7 +625,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxTableNameLength()
    */
 
@@ -521,7 +636,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxTablesInSelect()
    */
 
@@ -530,7 +647,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getMaxUserNameLength()
    */
 
@@ -539,7 +658,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getNumericFunctions()
    */
 
@@ -548,8 +669,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getPrimaryKeys(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getPrimaryKeys(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getPrimaryKeys(String catalog, String schema, String table)
@@ -558,8 +682,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getProcedureColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getProcedureColumns(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String)
    */
 
   public ResultSet getProcedureColumns(String catalog, String schemaPattern,
@@ -569,7 +696,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getProcedureTerm()
    */
 
@@ -578,17 +707,22 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getProcedures(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getProcedures(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getProcedures(String catalog, String schemaPattern,
       String procedureNamePattern) throws SQLException {
-    //TODO: return empty result set here
+    // TODO: return empty result set here
     return null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getResultSetHoldability()
    */
 
@@ -597,7 +731,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getRowIdLifetime()
    */
 
@@ -606,7 +742,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSQLKeywords()
    */
 
@@ -615,7 +753,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSQLStateType()
    */
 
@@ -623,7 +763,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return DatabaseMetaData.sqlStateSQL99;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSchemaTerm()
    */
 
@@ -632,7 +774,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSchemas()
    */
 
@@ -641,8 +785,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getSchemas(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getSchemas(java.lang.String,
+   * java.lang.String)
    */
 
   public ResultSet getSchemas(String catalog, String schemaPattern)
@@ -651,7 +798,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSearchStringEscape()
    */
 
@@ -660,7 +809,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getStringFunctions()
    */
 
@@ -669,8 +820,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getSuperTables(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getSuperTables(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getSuperTables(String catalog, String schemaPattern,
@@ -679,8 +833,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getSuperTypes(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getSuperTypes(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getSuperTypes(String catalog, String schemaPattern,
@@ -689,7 +846,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getSystemFunctions()
    */
 
@@ -698,8 +857,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getTablePrivileges(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getTablePrivileges(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
   public ResultSet getTablePrivileges(String catalog, String schemaPattern,
@@ -708,7 +870,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getTableTypes()
    */
 
@@ -717,8 +881,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getTables(java.lang.String,
+   * java.lang.String, java.lang.String, java.lang.String[])
    */
 
   public ResultSet getTables(String catalog, String schemaPattern,
@@ -727,7 +894,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getTimeDateFunctions()
    */
 
@@ -736,7 +905,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getTypeInfo()
    */
 
@@ -745,8 +916,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getUDTs(java.lang.String, java.lang.String, java.lang.String, int[])
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getUDTs(java.lang.String, java.lang.String,
+   * java.lang.String, int[])
    */
 
   public ResultSet getUDTs(String catalog, String schemaPattern,
@@ -755,7 +929,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getURL()
    */
 
@@ -764,7 +940,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#getUserName()
    */
 
@@ -773,17 +951,22 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#getVersionColumns(java.lang.String, java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.DatabaseMetaData#getVersionColumns(java.lang.String,
+   * java.lang.String, java.lang.String)
    */
 
-  public ResultSet getVersionColumns(String catalog, String schema,
-      String table) throws SQLException {
+  public ResultSet getVersionColumns(String catalog, String schema, String table)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#insertsAreDetected(int)
    */
 
@@ -792,7 +975,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#isCatalogAtStart()
    */
 
@@ -801,7 +986,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#isReadOnly()
    */
 
@@ -810,7 +997,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#locatorsUpdateCopy()
    */
 
@@ -819,7 +1008,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#nullPlusNonNullIsNull()
    */
 
@@ -828,7 +1019,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#nullsAreSortedAtEnd()
    */
 
@@ -837,7 +1030,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#nullsAreSortedAtStart()
    */
 
@@ -846,7 +1041,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#nullsAreSortedHigh()
    */
 
@@ -855,7 +1052,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#nullsAreSortedLow()
    */
 
@@ -864,7 +1063,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#othersDeletesAreVisible(int)
    */
 
@@ -873,7 +1074,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#othersInsertsAreVisible(int)
    */
 
@@ -882,7 +1085,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#othersUpdatesAreVisible(int)
    */
 
@@ -891,7 +1096,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#ownDeletesAreVisible(int)
    */
 
@@ -900,7 +1107,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#ownInsertsAreVisible(int)
    */
 
@@ -909,7 +1118,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#ownUpdatesAreVisible(int)
    */
 
@@ -918,7 +1129,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesLowerCaseIdentifiers()
    */
 
@@ -927,7 +1140,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesLowerCaseQuotedIdentifiers()
    */
 
@@ -936,7 +1151,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesMixedCaseIdentifiers()
    */
 
@@ -945,7 +1162,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesMixedCaseQuotedIdentifiers()
    */
 
@@ -954,7 +1173,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesUpperCaseIdentifiers()
    */
 
@@ -963,7 +1184,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#storesUpperCaseQuotedIdentifiers()
    */
 
@@ -972,7 +1195,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsANSI92EntryLevelSQL()
    */
 
@@ -981,7 +1206,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsANSI92FullSQL()
    */
 
@@ -990,7 +1217,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsANSI92IntermediateSQL()
    */
 
@@ -999,7 +1228,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsAlterTableWithAddColumn()
    */
 
@@ -1008,7 +1239,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsAlterTableWithDropColumn()
    */
 
@@ -1017,7 +1250,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsBatchUpdates()
    */
 
@@ -1026,7 +1261,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCatalogsInDataManipulation()
    */
 
@@ -1035,7 +1272,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCatalogsInIndexDefinitions()
    */
 
@@ -1044,7 +1283,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCatalogsInPrivilegeDefinitions()
    */
 
@@ -1053,7 +1294,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCatalogsInProcedureCalls()
    */
 
@@ -1062,7 +1305,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCatalogsInTableDefinitions()
    */
 
@@ -1070,7 +1315,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsColumnAliasing()
    */
 
@@ -1079,7 +1326,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsConvert()
    */
 
@@ -1088,17 +1337,20 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsConvert(int, int)
    */
 
-  public boolean supportsConvert(int fromType, int toType)
-      throws SQLException {
+  public boolean supportsConvert(int fromType, int toType) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCoreSQLGrammar()
    */
 
@@ -1107,7 +1359,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsCorrelatedSubqueries()
    */
 
@@ -1116,8 +1370,12 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.DatabaseMetaData#supportsDataDefinitionAndDataManipulationTransactions()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * java.sql.DatabaseMetaData#supportsDataDefinitionAndDataManipulationTransactions
+   * ()
    */
 
   public boolean supportsDataDefinitionAndDataManipulationTransactions()
@@ -1126,17 +1384,20 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsDataManipulationTransactionsOnly()
    */
 
-  public boolean supportsDataManipulationTransactionsOnly()
-      throws SQLException {
+  public boolean supportsDataManipulationTransactionsOnly() throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsDifferentTableCorrelationNames()
    */
 
@@ -1145,7 +1406,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsExpressionsInOrderBy()
    */
 
@@ -1154,7 +1417,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsExtendedSQLGrammar()
    */
 
@@ -1163,7 +1428,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsFullOuterJoins()
    */
 
@@ -1172,7 +1439,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsGetGeneratedKeys()
    */
 
@@ -1181,7 +1450,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsGroupBy()
    */
 
@@ -1190,7 +1461,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsGroupByBeyondSelect()
    */
 
@@ -1199,7 +1472,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsGroupByUnrelated()
    */
 
@@ -1208,7 +1483,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsIntegrityEnhancementFacility()
    */
 
@@ -1217,7 +1494,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsLikeEscapeClause()
    */
 
@@ -1226,7 +1505,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsLimitedOuterJoins()
    */
 
@@ -1235,7 +1516,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMinimumSQLGrammar()
    */
 
@@ -1244,7 +1527,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMixedCaseIdentifiers()
    */
 
@@ -1253,7 +1538,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMixedCaseQuotedIdentifiers()
    */
 
@@ -1262,7 +1549,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMultipleOpenResults()
    */
 
@@ -1271,7 +1560,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMultipleResultSets()
    */
 
@@ -1279,7 +1570,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsMultipleTransactions()
    */
 
@@ -1288,7 +1581,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsNamedParameters()
    */
 
@@ -1297,7 +1592,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsNonNullableColumns()
    */
 
@@ -1306,7 +1603,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOpenCursorsAcrossCommit()
    */
 
@@ -1315,7 +1614,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOpenCursorsAcrossRollback()
    */
 
@@ -1324,7 +1625,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOpenStatementsAcrossCommit()
    */
 
@@ -1333,7 +1636,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOpenStatementsAcrossRollback()
    */
 
@@ -1342,7 +1647,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOrderByUnrelated()
    */
 
@@ -1351,7 +1658,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsOuterJoins()
    */
 
@@ -1360,7 +1669,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsPositionedDelete()
    */
 
@@ -1369,7 +1680,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsPositionedUpdate()
    */
 
@@ -1378,7 +1691,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsResultSetConcurrency(int, int)
    */
 
@@ -1388,7 +1703,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsResultSetHoldability(int)
    */
 
@@ -1397,7 +1714,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsResultSetType(int)
    */
 
@@ -1405,7 +1724,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSavepoints()
    */
 
@@ -1414,7 +1735,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSchemasInDataManipulation()
    */
 
@@ -1422,7 +1745,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSchemasInIndexDefinitions()
    */
 
@@ -1431,7 +1756,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSchemasInPrivilegeDefinitions()
    */
 
@@ -1440,7 +1767,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSchemasInProcedureCalls()
    */
 
@@ -1449,7 +1778,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSchemasInTableDefinitions()
    */
 
@@ -1457,7 +1788,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSelectForUpdate()
    */
 
@@ -1466,7 +1799,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsStatementPooling()
    */
 
@@ -1475,7 +1810,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsStoredFunctionsUsingCallSyntax()
    */
 
@@ -1484,7 +1821,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsStoredProcedures()
    */
 
@@ -1492,7 +1831,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSubqueriesInComparisons()
    */
 
@@ -1501,7 +1842,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSubqueriesInExists()
    */
 
@@ -1510,7 +1853,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSubqueriesInIns()
    */
 
@@ -1519,7 +1864,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsSubqueriesInQuantifieds()
    */
 
@@ -1528,7 +1875,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsTableCorrelationNames()
    */
 
@@ -1537,7 +1886,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsTransactionIsolationLevel(int)
    */
 
@@ -1547,7 +1898,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsTransactions()
    */
 
@@ -1556,7 +1909,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsUnion()
    */
 
@@ -1565,7 +1920,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#supportsUnionAll()
    */
 
@@ -1574,7 +1931,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#updatesAreDetected(int)
    */
 
@@ -1583,7 +1942,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#usesLocalFilePerTable()
    */
 
@@ -1592,7 +1953,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.DatabaseMetaData#usesLocalFiles()
    */
 
@@ -1601,7 +1964,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -1610,7 +1975,9 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 
@@ -1626,26 +1993,32 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   /**
    * Loads the manifest attributes from the jar.
+   * 
    * @throws java.net.MalformedURLException
    * @throws IOException
    */
   private synchronized void loadManifestAttributes() throws IOException {
-    if(manifestAttributes != null) return;
+    if (manifestAttributes != null) {
+      return;
+    }
     Class clazz = this.getClass();
-    String classContainer = clazz.getProtectionDomain().getCodeSource().getLocation().toString();
-    URL manifestUrl = new URL("jar:" + classContainer + "!/META-INF/MANIFEST.MF");
+    String classContainer = clazz.getProtectionDomain().getCodeSource()
+        .getLocation().toString();
+    URL manifestUrl = new URL("jar:" + classContainer
+        + "!/META-INF/MANIFEST.MF");
     Manifest manifest = new Manifest(manifestUrl.openStream());
     manifestAttributes = manifest.getMainAttributes();
   }
 
   /**
    * Helper to initialize attributes and return one.
-   *
+   * 
    * @param attributeName
    * @return
    * @throws SQLException
    */
-  private String fetchManifestAttribute(Attributes.Name attributeName) throws SQLException {
+  private String fetchManifestAttribute(Attributes.Name attributeName)
+      throws SQLException {
     try {
       loadManifestAttributes();
     } catch (IOException e) {
@@ -1653,7 +2026,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     }
     return manifestAttributes.getValue(attributeName);
   }
- 
+
   public static void main(String[] args) throws SQLException {
     HiveDatabaseMetaData meta = new HiveDatabaseMetaData();
     System.out.println("DriverName: " + meta.getDriverName());

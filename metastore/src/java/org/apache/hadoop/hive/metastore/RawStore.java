@@ -34,15 +34,18 @@ public interface RawStore extends Configurable {
   public abstract void shutdown();
 
   /**
-   * Opens a new one or the one already created
-   * Every call of this function must have corresponding commit or rollback function call
+   * Opens a new one or the one already created Every call of this function must
+   * have corresponding commit or rollback function call
+   * 
    * @return an active transaction
    */
 
   public abstract boolean openTransaction();
 
   /**
-   * if this is the commit of the first open call then an actual commit is called. 
+   * if this is the commit of the first open call then an actual commit is
+   * called.
+   * 
    * @return true or false
    */
   public abstract boolean commitTransaction();
@@ -56,7 +59,8 @@ public interface RawStore extends Configurable {
 
   public abstract boolean createDatabase(String name) throws MetaException;
 
-  public abstract Database getDatabase(String name) throws NoSuchObjectException;
+  public abstract Database getDatabase(String name)
+      throws NoSuchObjectException;
 
   public abstract boolean dropDatabase(String dbname);
 
@@ -68,30 +72,35 @@ public interface RawStore extends Configurable {
 
   public abstract boolean dropType(String typeName);
 
-  public abstract void createTable(Table tbl) throws InvalidObjectException, MetaException;
+  public abstract void createTable(Table tbl) throws InvalidObjectException,
+      MetaException;
 
-  public abstract boolean dropTable(String dbName, String tableName) throws MetaException;
-
-  public abstract Table getTable(String dbName, String tableName) throws MetaException;
-
-  public abstract boolean addPartition(Partition part) throws InvalidObjectException, MetaException;
-
-  public abstract Partition getPartition(String dbName, String tableName, List<String> part_vals)
+  public abstract boolean dropTable(String dbName, String tableName)
       throws MetaException;
 
-  public abstract boolean dropPartition(String dbName, String tableName, List<String> part_vals)
+  public abstract Table getTable(String dbName, String tableName)
       throws MetaException;
 
-  public abstract List<Partition> getPartitions(String dbName, String tableName, int max)
-      throws MetaException;
+  public abstract boolean addPartition(Partition part)
+      throws InvalidObjectException, MetaException;
+
+  public abstract Partition getPartition(String dbName, String tableName,
+      List<String> part_vals) throws MetaException;
+
+  public abstract boolean dropPartition(String dbName, String tableName,
+      List<String> part_vals) throws MetaException;
+
+  public abstract List<Partition> getPartitions(String dbName,
+      String tableName, int max) throws MetaException;
 
   public abstract void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
 
-  public List<String> getTables(String dbName, String pattern) throws MetaException;
+  public List<String> getTables(String dbName, String pattern)
+      throws MetaException;
 
-  public abstract List<String> listPartitionNames(String db_name, String tbl_name, short max_parts)
-    throws MetaException;
+  public abstract List<String> listPartitionNames(String db_name,
+      String tbl_name, short max_parts) throws MetaException;
 
   public abstract void alterPartition(String db_name, String tbl_name,
       Partition new_part) throws InvalidObjectException, MetaException;

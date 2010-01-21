@@ -19,6 +19,9 @@ Trunk -  Unreleased
     HIVE-990. Incorporate CheckStyle into Hive's build.xml.
     (Carl Steinbach via zshao)
 
+    HIVE-1081. Automated source code cleanup - Part 1.
+    (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -34,13 +34,15 @@ public class TypedBytesRecordOutput implements RecordOutput {
 
   private TypedBytesOutput out;
 
-  private TypedBytesRecordOutput() {}
+  private TypedBytesRecordOutput() {
+  }
 
   private void setTypedBytesOutput(TypedBytesOutput out) {
     this.out = out;
   }
 
   private static ThreadLocal tbOut = new ThreadLocal() {
+    @Override
     protected synchronized Object initialValue() {
       return new TypedBytesRecordOutput();
     }
@@ -50,7 +52,8 @@ public class TypedBytesRecordOutput implements RecordOutput {
    * Get a thread-local typed bytes record input for the supplied
    * {@link TypedBytesOutput}.
    * 
-   * @param out typed bytes output object
+   * @param out
+   *          typed bytes output object
    * @return typed bytes record output corresponding to the supplied
    *         {@link TypedBytesOutput}.
    */
@@ -64,7 +67,8 @@ public class TypedBytesRecordOutput implements RecordOutput {
    * Get a thread-local typed bytes record output for the supplied
    * {@link DataOutput}.
    * 
-   * @param out data output object
+   * @param out
+   *          data output object
    * @return typed bytes record output corresponding to the supplied
    *         {@link DataOutput}.
    */
@@ -130,8 +134,10 @@ public class TypedBytesRecordOutput implements RecordOutput {
     out.writeListFooter();
   }
 
-  public void endVector(ArrayList v, String tag) throws IOException {}
+  public void endVector(ArrayList v, String tag) throws IOException {
+  }
 
-  public void endMap(TreeMap m, String tag) throws IOException {}
+  public void endMap(TreeMap m, String tag) throws IOException {
+  }
 
 }

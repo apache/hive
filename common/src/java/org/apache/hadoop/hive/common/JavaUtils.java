@@ -19,7 +19,8 @@
 package org.apache.hadoop.hive.common;
 
 /**
- * Collection of Java class loading/reflection related utilities common across Hive
+ * Collection of Java class loading/reflection related utilities common across
+ * Hive
  */
 public class JavaUtils {
 

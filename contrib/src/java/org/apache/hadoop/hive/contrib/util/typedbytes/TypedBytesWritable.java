@@ -73,7 +73,7 @@ public class TypedBytesWritable extends BytesWritable {
       return null;
     }
     for (Type type : Type.values()) {
-      if (type.code == (int) bytes[0]) {
+      if (type.code == bytes[0]) {
         return type;
       }
     }
@@ -81,6 +81,7 @@ public class TypedBytesWritable extends BytesWritable {
   }
 
   /** Generate a suitable string representation. */
+  @Override
   public String toString() {
     return getValue().toString();
   }

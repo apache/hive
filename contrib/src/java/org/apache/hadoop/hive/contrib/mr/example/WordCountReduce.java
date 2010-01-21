@@ -24,19 +24,20 @@ import org.apache.hadoop.hive.contrib.mr.Output;
 import org.apache.hadoop.hive.contrib.mr.Reducer;
 
 /**
- * Example Reducer (WordCount). 
+ * Example Reducer (WordCount).
  */
 public final class WordCountReduce {
   public static void main(final String[] args) throws Exception {
     new GenericMR().reduce(System.in, System.out, new Reducer() {
-      public void reduce(String key, Iterator<String[]> records, Output output) throws Exception {
+      public void reduce(String key, Iterator<String[]> records, Output output)
+          throws Exception {
         int count = 0;
-        
+
         while (records.hasNext()) {
           // note we use col[1] -- the key is provided again as col[0]
           count += Integer.parseInt(records.next()[1]);
         }
-        
+
         output.collect(new String[] { key, String.valueOf(count) });
       }
     });

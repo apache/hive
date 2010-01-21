@@ -50,7 +50,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     // TODO Auto-generated constructor stub
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getArray(int)
    */
 
@@ -59,7 +61,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getArray(java.lang.String)
    */
 
@@ -68,7 +72,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBigDecimal(int)
    */
 
@@ -77,7 +83,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBigDecimal(java.lang.String)
    */
 
@@ -86,7 +94,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBigDecimal(int, int)
    */
 
@@ -96,7 +106,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBlob(int)
    */
 
@@ -105,7 +117,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBlob(java.lang.String)
    */
 
@@ -114,7 +128,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBoolean(int)
    */
 
@@ -123,7 +139,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBoolean(java.lang.String)
    */
 
@@ -132,7 +150,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getByte(int)
    */
 
@@ -141,7 +161,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getByte(java.lang.String)
    */
 
@@ -150,7 +172,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBytes(int)
    */
 
@@ -159,7 +183,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getBytes(java.lang.String)
    */
 
@@ -168,7 +194,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getCharacterStream(int)
    */
 
@@ -177,7 +205,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getCharacterStream(java.lang.String)
    */
 
@@ -186,7 +216,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getClob(int)
    */
 
@@ -195,7 +227,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getClob(java.lang.String)
    */
 
@@ -204,7 +238,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getDate(int)
    */
 
@@ -213,7 +249,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getDate(java.lang.String)
    */
 
@@ -222,7 +260,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getDate(int, java.util.Calendar)
    */
 
@@ -231,8 +271,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#getDate(java.lang.String, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#getDate(java.lang.String,
+   * java.util.Calendar)
    */
 
   public Date getDate(String parameterName, Calendar cal) throws SQLException {
@@ -240,7 +283,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getDouble(int)
    */
 
@@ -249,7 +294,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getDouble(java.lang.String)
    */
 
@@ -258,7 +305,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getFloat(int)
    */
 
@@ -267,7 +316,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getFloat(java.lang.String)
    */
 
@@ -276,7 +327,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getInt(int)
    */
 
@@ -285,7 +338,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getInt(java.lang.String)
    */
 
@@ -294,7 +349,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getLong(int)
    */
 
@@ -303,7 +360,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getLong(java.lang.String)
    */
 
@@ -312,7 +371,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNCharacterStream(int)
    */
 
@@ -321,7 +382,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNCharacterStream(java.lang.String)
    */
 
@@ -330,7 +393,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNClob(int)
    */
 
@@ -339,7 +404,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNClob(java.lang.String)
    */
 
@@ -348,7 +415,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNString(int)
    */
 
@@ -357,7 +426,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getNString(java.lang.String)
    */
 
@@ -366,7 +437,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getObject(int)
    */
 
@@ -375,7 +448,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getObject(java.lang.String)
    */
 
@@ -384,17 +459,20 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getObject(int, java.util.Map)
    */
 
-  public Object getObject(int i, Map<String, Class<?>> map)
-      throws SQLException {
+  public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getObject(java.lang.String, java.util.Map)
    */
 
@@ -404,7 +482,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getRef(int)
    */
 
@@ -413,7 +493,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getRef(java.lang.String)
    */
 
@@ -422,7 +504,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getRowId(int)
    */
 
@@ -431,7 +515,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getRowId(java.lang.String)
    */
 
@@ -440,7 +526,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getSQLXML(int)
    */
 
@@ -449,7 +537,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getSQLXML(java.lang.String)
    */
 
@@ -458,7 +548,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getShort(int)
    */
 
@@ -467,7 +559,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getShort(java.lang.String)
    */
 
@@ -476,7 +570,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getString(int)
    */
 
@@ -485,7 +581,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getString(java.lang.String)
    */
 
@@ -494,7 +592,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTime(int)
    */
 
@@ -503,7 +603,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTime(java.lang.String)
    */
 
@@ -512,7 +614,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTime(int, java.util.Calendar)
    */
 
@@ -521,8 +625,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#getTime(java.lang.String, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#getTime(java.lang.String,
+   * java.util.Calendar)
    */
 
   public Time getTime(String parameterName, Calendar cal) throws SQLException {
@@ -530,7 +637,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTimestamp(int)
    */
 
@@ -539,7 +648,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTimestamp(java.lang.String)
    */
 
@@ -548,7 +659,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getTimestamp(int, java.util.Calendar)
    */
 
@@ -558,8 +671,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#getTimestamp(java.lang.String, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#getTimestamp(java.lang.String,
+   * java.util.Calendar)
    */
 
   public Timestamp getTimestamp(String parameterName, Calendar cal)
@@ -568,7 +684,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getURL(int)
    */
 
@@ -577,7 +695,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#getURL(java.lang.String)
    */
 
@@ -586,7 +706,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#registerOutParameter(int, int)
    */
 
@@ -596,7 +718,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int)
    */
 
@@ -606,7 +730,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#registerOutParameter(int, int, int)
    */
 
@@ -616,38 +742,50 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#registerOutParameter(int, int, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#registerOutParameter(int, int,
+   * java.lang.String)
    */
 
-  public void registerOutParameter(int paramIndex, int sqlType,
+  public void registerOutParameter(int paramIndex, int sqlType, String typeName)
+      throws SQLException {
+    // TODO Auto-generated method stub
+    throw new SQLException("Method not supported");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int,
+   * int)
+   */
+
+  public void registerOutParameter(String parameterName, int sqlType, int scale)
+      throws SQLException {
+    // TODO Auto-generated method stub
+    throw new SQLException("Method not supported");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int,
+   * java.lang.String)
+   */
+
+  public void registerOutParameter(String parameterName, int sqlType,
       String typeName) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int, int)
-   */
-
-  public void registerOutParameter(String parameterName, int sqlType,
-      int scale) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int, java.lang.String)
-   */
-
-  public void registerOutParameter(String parameterName, int sqlType,
-      String typeName) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String,
+   * java.io.InputStream)
    */
 
   public void setAsciiStream(String parameterName, InputStream x)
@@ -656,8 +794,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String,
+   * java.io.InputStream, int)
    */
 
   public void setAsciiStream(String parameterName, InputStream x, int length)
@@ -666,8 +807,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setAsciiStream(java.lang.String,
+   * java.io.InputStream, long)
    */
 
   public void setAsciiStream(String parameterName, InputStream x, long length)
@@ -676,8 +820,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBigDecimal(java.lang.String, java.math.BigDecimal)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBigDecimal(java.lang.String,
+   * java.math.BigDecimal)
    */
 
   public void setBigDecimal(String parameterName, BigDecimal x)
@@ -686,8 +833,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String,
+   * java.io.InputStream)
    */
 
   public void setBinaryStream(String parameterName, InputStream x)
@@ -696,8 +846,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String,
+   * java.io.InputStream, int)
    */
 
   public void setBinaryStream(String parameterName, InputStream x, int length)
@@ -706,8 +859,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBinaryStream(java.lang.String,
+   * java.io.InputStream, long)
    */
 
   public void setBinaryStream(String parameterName, InputStream x, long length)
@@ -716,7 +872,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setBlob(java.lang.String, java.sql.Blob)
    */
 
@@ -725,8 +883,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBlob(java.lang.String, java.io.InputStream)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBlob(java.lang.String,
+   * java.io.InputStream)
    */
 
   public void setBlob(String parameterName, InputStream inputStream)
@@ -735,17 +896,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setBlob(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setBlob(java.lang.String,
+   * java.io.InputStream, long)
    */
 
-  public void setBlob(String parameterName, InputStream inputStream,
-      long length) throws SQLException {
+  public void setBlob(String parameterName, InputStream inputStream, long length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setBoolean(java.lang.String, boolean)
    */
 
@@ -754,7 +920,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setByte(java.lang.String, byte)
    */
 
@@ -763,7 +931,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setBytes(java.lang.String, byte[])
    */
 
@@ -772,8 +942,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String,
+   * java.io.Reader)
    */
 
   public void setCharacterStream(String parameterName, Reader reader)
@@ -782,18 +955,24 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String,
+   * java.io.Reader, int)
    */
 
-  public void setCharacterStream(String parameterName, Reader reader,
-      int length) throws SQLException {
+  public void setCharacterStream(String parameterName, Reader reader, int length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setCharacterStream(java.lang.String,
+   * java.io.Reader, long)
    */
 
   public void setCharacterStream(String parameterName, Reader reader,
@@ -802,7 +981,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setClob(java.lang.String, java.sql.Clob)
    */
 
@@ -811,18 +992,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setClob(java.lang.String, java.io.Reader)
    */
 
-  public void setClob(String parameterName, Reader reader)
-      throws SQLException {
+  public void setClob(String parameterName, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setClob(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setClob(java.lang.String, java.io.Reader,
+   * long)
    */
 
   public void setClob(String parameterName, Reader reader, long length)
@@ -831,7 +1016,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setDate(java.lang.String, java.sql.Date)
    */
 
@@ -840,8 +1027,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setDate(java.lang.String, java.sql.Date, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setDate(java.lang.String, java.sql.Date,
+   * java.util.Calendar)
    */
 
   public void setDate(String parameterName, Date x, Calendar cal)
@@ -850,7 +1040,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setDouble(java.lang.String, double)
    */
 
@@ -859,7 +1051,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setFloat(java.lang.String, float)
    */
 
@@ -868,7 +1062,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setInt(java.lang.String, int)
    */
 
@@ -877,7 +1073,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setLong(java.lang.String, long)
    */
 
@@ -886,8 +1084,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String, java.io.Reader)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String,
+   * java.io.Reader)
    */
 
   public void setNCharacterStream(String parameterName, Reader value)
@@ -896,8 +1097,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setNCharacterStream(java.lang.String,
+   * java.io.Reader, long)
    */
 
   public void setNCharacterStream(String parameterName, Reader value,
@@ -906,7 +1110,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setNClob(java.lang.String, java.sql.NClob)
    */
 
@@ -915,18 +1121,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setNClob(java.lang.String, java.io.Reader)
    */
 
-  public void setNClob(String parameterName, Reader reader)
-      throws SQLException {
+  public void setNClob(String parameterName, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setNClob(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setNClob(java.lang.String, java.io.Reader,
+   * long)
    */
 
   public void setNClob(String parameterName, Reader reader, long length)
@@ -935,8 +1145,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setNString(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setNString(java.lang.String,
+   * java.lang.String)
    */
 
   public void setNString(String parameterName, String value)
@@ -945,7 +1158,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setNull(java.lang.String, int)
    */
 
@@ -954,8 +1169,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setNull(java.lang.String, int, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setNull(java.lang.String, int,
+   * java.lang.String)
    */
 
   public void setNull(String parameterName, int sqlType, String typeName)
@@ -964,8 +1182,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setObject(java.lang.String, java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setObject(java.lang.String,
+   * java.lang.Object)
    */
 
   public void setObject(String parameterName, Object x) throws SQLException {
@@ -973,8 +1194,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setObject(java.lang.String, java.lang.Object, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setObject(java.lang.String,
+   * java.lang.Object, int)
    */
 
   public void setObject(String parameterName, Object x, int targetSqlType)
@@ -983,8 +1207,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setObject(java.lang.String, java.lang.Object, int, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setObject(java.lang.String,
+   * java.lang.Object, int, int)
    */
 
   public void setObject(String parameterName, Object x, int targetSqlType,
@@ -993,7 +1220,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setRowId(java.lang.String, java.sql.RowId)
    */
 
@@ -1002,8 +1231,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setSQLXML(java.lang.String, java.sql.SQLXML)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setSQLXML(java.lang.String,
+   * java.sql.SQLXML)
    */
 
   public void setSQLXML(String parameterName, SQLXML xmlObject)
@@ -1012,7 +1244,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setShort(java.lang.String, short)
    */
 
@@ -1021,8 +1255,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setString(java.lang.String, java.lang.String)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setString(java.lang.String,
+   * java.lang.String)
    */
 
   public void setString(String parameterName, String x) throws SQLException {
@@ -1030,7 +1267,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setTime(java.lang.String, java.sql.Time)
    */
 
@@ -1039,8 +1278,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setTime(java.lang.String, java.sql.Time, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setTime(java.lang.String, java.sql.Time,
+   * java.util.Calendar)
    */
 
   public void setTime(String parameterName, Time x, Calendar cal)
@@ -1049,8 +1291,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setTimestamp(java.lang.String, java.sql.Timestamp)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setTimestamp(java.lang.String,
+   * java.sql.Timestamp)
    */
 
   public void setTimestamp(String parameterName, Timestamp x)
@@ -1059,8 +1304,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.CallableStatement#setTimestamp(java.lang.String, java.sql.Timestamp, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.CallableStatement#setTimestamp(java.lang.String,
+   * java.sql.Timestamp, java.util.Calendar)
    */
 
   public void setTimestamp(String parameterName, Timestamp x, Calendar cal)
@@ -1069,7 +1317,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#setURL(java.lang.String, java.net.URL)
    */
 
@@ -1078,7 +1328,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.CallableStatement#wasNull()
    */
 
@@ -1087,7 +1339,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#addBatch()
    */
 
@@ -1096,7 +1350,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#clearParameters()
    */
 
@@ -1105,7 +1361,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#execute()
    */
 
@@ -1114,7 +1372,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#executeQuery()
    */
 
@@ -1123,7 +1383,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     return new HiveResultSet(null);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#executeUpdate()
    */
 
@@ -1132,7 +1394,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#getMetaData()
    */
 
@@ -1141,7 +1405,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#getParameterMetaData()
    */
 
@@ -1150,7 +1416,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setArray(int, java.sql.Array)
    */
 
@@ -1159,7 +1427,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream)
    */
 
@@ -1168,8 +1438,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream,
+   * int)
    */
 
   public void setAsciiStream(int parameterIndex, InputStream x, int length)
@@ -1178,8 +1451,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream,
+   * long)
    */
 
   public void setAsciiStream(int arg0, InputStream arg1, long arg2)
@@ -1188,7 +1464,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBigDecimal(int, java.math.BigDecimal)
    */
 
@@ -1198,7 +1476,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream)
    */
 
@@ -1208,8 +1488,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream,
+   * int)
    */
 
   public void setBinaryStream(int parameterIndex, InputStream x, int length)
@@ -1218,8 +1501,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream,
+   * long)
    */
 
   public void setBinaryStream(int parameterIndex, InputStream x, long length)
@@ -1228,7 +1514,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBlob(int, java.sql.Blob)
    */
 
@@ -1237,7 +1525,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream)
    */
 
@@ -1247,7 +1537,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream, long)
    */
 
@@ -1257,7 +1549,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBoolean(int, boolean)
    */
 
@@ -1266,7 +1560,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setByte(int, byte)
    */
 
@@ -1275,7 +1571,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setBytes(int, byte[])
    */
 
@@ -1284,7 +1582,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader)
    */
 
@@ -1294,8 +1594,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader,
+   * int)
    */
 
   public void setCharacterStream(int parameterIndex, Reader reader, int length)
@@ -1304,17 +1607,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader,
+   * long)
    */
 
-  public void setCharacterStream(int parameterIndex, Reader reader,
-      long length) throws SQLException {
+  public void setCharacterStream(int parameterIndex, Reader reader, long length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setClob(int, java.sql.Clob)
    */
 
@@ -1323,7 +1631,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setClob(int, java.io.Reader)
    */
 
@@ -1332,7 +1642,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setClob(int, java.io.Reader, long)
    */
 
@@ -1342,7 +1654,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setDate(int, java.sql.Date)
    */
 
@@ -1351,8 +1665,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setDate(int, java.sql.Date, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setDate(int, java.sql.Date,
+   * java.util.Calendar)
    */
 
   public void setDate(int parameterIndex, Date x, Calendar cal)
@@ -1361,7 +1678,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setDouble(int, double)
    */
 
@@ -1370,7 +1689,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setFloat(int, float)
    */
 
@@ -1379,7 +1700,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setInt(int, int)
    */
 
@@ -1388,7 +1711,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setLong(int, long)
    */
 
@@ -1397,7 +1722,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader)
    */
 
@@ -1407,17 +1734,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader,
+   * long)
    */
 
-  public void setNCharacterStream(int parameterIndex, Reader value,
-      long length) throws SQLException {
+  public void setNCharacterStream(int parameterIndex, Reader value, long length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNClob(int, java.sql.NClob)
    */
 
@@ -1426,7 +1758,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNClob(int, java.io.Reader)
    */
 
@@ -1435,7 +1769,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNClob(int, java.io.Reader, long)
    */
 
@@ -1445,17 +1781,20 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNString(int, java.lang.String)
    */
 
-  public void setNString(int parameterIndex, String value)
-      throws SQLException {
+  public void setNString(int parameterIndex, String value) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNull(int, int)
    */
 
@@ -1464,7 +1803,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setNull(int, int, java.lang.String)
    */
 
@@ -1474,7 +1815,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object)
    */
 
@@ -1483,7 +1826,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int)
    */
 
@@ -1493,7 +1838,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int, int)
    */
 
@@ -1503,7 +1850,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setRef(int, java.sql.Ref)
    */
 
@@ -1512,7 +1861,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setRowId(int, java.sql.RowId)
    */
 
@@ -1521,7 +1872,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setSQLXML(int, java.sql.SQLXML)
    */
 
@@ -1531,7 +1884,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setShort(int, short)
    */
 
@@ -1540,7 +1895,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setString(int, java.lang.String)
    */
 
@@ -1549,7 +1906,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)
    */
 
@@ -1558,8 +1917,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setTime(int, java.sql.Time, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setTime(int, java.sql.Time,
+   * java.util.Calendar)
    */
 
   public void setTime(int parameterIndex, Time x, Calendar cal)
@@ -1568,18 +1930,22 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp)
    */
 
-  public void setTimestamp(int parameterIndex, Timestamp x)
-      throws SQLException {
+  public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp, java.util.Calendar)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp,
+   * java.util.Calendar)
    */
 
   public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal)
@@ -1588,7 +1954,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.PreparedStatement#setURL(int, java.net.URL)
    */
 
@@ -1597,8 +1965,11 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream,
+   * int)
    */
 
   public void setUnicodeStream(int parameterIndex, InputStream x, int length)
@@ -1607,7 +1978,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#addBatch(java.lang.String)
    */
 
@@ -1616,7 +1989,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#cancel()
    */
 
@@ -1625,7 +2000,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#clearBatch()
    */
 
@@ -1634,7 +2011,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#clearWarnings()
    */
 
@@ -1643,7 +2022,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#close()
    */
 
@@ -1652,7 +2033,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#execute(java.lang.String)
    */
 
@@ -1661,17 +2044,20 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#execute(java.lang.String, int)
    */
 
-  public boolean execute(String sql, int autoGeneratedKeys)
-      throws SQLException {
+  public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#execute(java.lang.String, int[])
    */
 
@@ -1680,17 +2066,20 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#execute(java.lang.String, java.lang.String[])
    */
 
-  public boolean execute(String sql, String[] columnNames)
-      throws SQLException {
+  public boolean execute(String sql, String[] columnNames) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeBatch()
    */
 
@@ -1699,7 +2088,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeQuery(java.lang.String)
    */
 
@@ -1708,7 +2099,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeUpdate(java.lang.String)
    */
 
@@ -1717,7 +2110,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeUpdate(java.lang.String, int)
    */
 
@@ -1727,17 +2122,20 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeUpdate(java.lang.String, int[])
    */
 
-  public int executeUpdate(String sql, int[] columnIndexes)
-      throws SQLException {
+  public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
    */
 
@@ -1747,7 +2145,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getConnection()
    */
 
@@ -1756,7 +2156,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getFetchDirection()
    */
 
@@ -1765,7 +2167,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getFetchSize()
    */
 
@@ -1774,7 +2178,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getGeneratedKeys()
    */
 
@@ -1783,7 +2189,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getMaxFieldSize()
    */
 
@@ -1792,7 +2200,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getMaxRows()
    */
 
@@ -1801,7 +2211,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getMoreResults()
    */
 
@@ -1810,7 +2222,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getMoreResults(int)
    */
 
@@ -1819,7 +2233,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getQueryTimeout()
    */
 
@@ -1828,7 +2244,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getResultSet()
    */
 
@@ -1837,7 +2255,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getResultSetConcurrency()
    */
 
@@ -1846,7 +2266,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getResultSetHoldability()
    */
 
@@ -1855,7 +2277,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getResultSetType()
    */
 
@@ -1864,7 +2288,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getUpdateCount()
    */
 
@@ -1873,7 +2299,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#getWarnings()
    */
 
@@ -1882,7 +2310,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#isClosed()
    */
 
@@ -1891,7 +2321,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#isPoolable()
    */
 
@@ -1900,7 +2332,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setCursorName(java.lang.String)
    */
 
@@ -1909,7 +2343,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setEscapeProcessing(boolean)
    */
 
@@ -1918,7 +2354,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setFetchDirection(int)
    */
 
@@ -1927,7 +2365,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setFetchSize(int)
    */
 
@@ -1936,7 +2376,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setMaxFieldSize(int)
    */
 
@@ -1945,7 +2387,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setMaxRows(int)
    */
 
@@ -1954,7 +2398,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setPoolable(boolean)
    */
 
@@ -1963,7 +2409,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Statement#setQueryTimeout(int)
    */
 
@@ -1972,7 +2420,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -1981,7 +2431,9 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 

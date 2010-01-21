@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.common;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.conf.Configuration;
 import java.io.IOException;
 import java.net.URI;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 /**
  * Collection of file manipulation utilities common across Hive
@@ -30,21 +31,21 @@ import java.net.URI;
 public class FileUtils {
 
   /**
-   * Variant of Path.makeQualified that qualifies the input
-   * path against the default file system indicated by the 
-   * configuration
-   *
-   * This does not require a FileSystem handle in most cases
-   * - only requires the Filesystem URI. This saves the cost
-   * of opening the Filesystem - which can involve RPCs - as
-   * well as cause errors
-   *
-   * @param path path to be fully qualified
-   * @param conf Configuration file
+   * Variant of Path.makeQualified that qualifies the input path against the
+   * default file system indicated by the configuration
+   * 
+   * This does not require a FileSystem handle in most cases - only requires the
+   * Filesystem URI. This saves the cost of opening the Filesystem - which can
+   * involve RPCs - as well as cause errors
+   * 
+   * @param path
+   *          path to be fully qualified
+   * @param conf
+   *          Configuration file
    * @return path qualified relative to default file system
    */
-  public static Path makeQualified(Path path, Configuration conf) 
-    throws IOException {
+  public static Path makeQualified(Path path, Configuration conf)
+      throws IOException {
 
     if (!path.isAbsolute()) {
       // in this case we need to get the working directory
@@ -59,14 +60,14 @@ public class FileUtils {
     String scheme = pathUri.getScheme();
     String authority = pathUri.getAuthority();
 
-    if (scheme != null &&
-        (authority != null || fsUri.getAuthority() == null))
+    if (scheme != null && (authority != null || fsUri.getAuthority() == null)) {
       return path;
-    
+    }
+
     if (scheme == null) {
       scheme = fsUri.getScheme();
     }
-    
+
     if (authority == null) {
       authority = fsUri.getAuthority();
       if (authority == null) {
@@ -74,6 +75,6 @@ public class FileUtils {
       }
     }
 
-    return new Path(scheme+":"+"//"+authority + pathUri.getPath());
+    return new Path(scheme + ":" + "//" + authority + pathUri.getPath());
   }
 }

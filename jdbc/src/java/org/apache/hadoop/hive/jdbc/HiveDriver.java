@@ -18,16 +18,17 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import java.sql.*;
-import java.sql.DriverManager;
+import java.sql.Connection;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-
 public class HiveDriver implements java.sql.Driver {
   static {
-      try {
-      java.sql.DriverManager.registerDriver(new org.apache.hadoop.hive.jdbc.HiveDriver());
+    try {
+      java.sql.DriverManager
+          .registerDriver(new org.apache.hadoop.hive.jdbc.HiveDriver());
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -87,22 +88,19 @@ public class HiveDriver implements java.sql.Driver {
 
   /**
    * Checks whether a given url is in a valid format.
-   *
-   * The current uri format is:
-   * jdbc:hive://[host[:port]]
-   *
-   * jdbc:hive://                 - run in embedded mode
-   * jdbc:hive://localhost        - connect to localhost default port (10000)
-   * jdbc:hive://localhost:5050   - connect to localhost port 5050
-   *
-   * TODO: - write a better regex.
-   *       - decide on uri format
+   * 
+   * The current uri format is: jdbc:hive://[host[:port]]
+   * 
+   * jdbc:hive:// - run in embedded mode jdbc:hive://localhost - connect to
+   * localhost default port (10000) jdbc:hive://localhost:5050 - connect to
+   * localhost port 5050
+   * 
+   * TODO: - write a better regex. - decide on uri format
    */
 
   public boolean acceptsURL(String url) throws SQLException {
-    return Pattern.matches(URL_PREFIX+".*", url);
+    return Pattern.matches(URL_PREFIX + ".*", url);
   }
-
 
   public Connection connect(String url, Properties info) throws SQLException {
     return new HiveConnection(url, info);
@@ -135,17 +133,17 @@ public class HiveDriver implements java.sql.Driver {
     }
 
     DriverPropertyInfo hostProp = new DriverPropertyInfo(HOST_PROPERTY_KEY,
-                                        info.getProperty(HOST_PROPERTY_KEY, ""));
+        info.getProperty(HOST_PROPERTY_KEY, ""));
     hostProp.required = false;
     hostProp.description = "Hostname of Hive Server";
 
     DriverPropertyInfo portProp = new DriverPropertyInfo(PORT_PROPERTY_KEY,
-                                        info.getProperty(PORT_PROPERTY_KEY, ""));
+        info.getProperty(PORT_PROPERTY_KEY, ""));
     portProp.required = false;
     portProp.description = "Port number of Hive Server";
 
     DriverPropertyInfo dbProp = new DriverPropertyInfo(DBNAME_PROPERTY_KEY,
-                                      info.getProperty(DBNAME_PROPERTY_KEY, "default"));
+        info.getProperty(DBNAME_PROPERTY_KEY, "default"));
     dbProp.required = false;
     dbProp.description = "Database name";
 
@@ -167,9 +165,9 @@ public class HiveDriver implements java.sql.Driver {
   }
 
   /**
-   * Takes a url in the form of jdbc:hive://[hostname]:[port]/[db_name] and parses it.
-   * Everything after jdbc:hive// is optional.
-   *
+   * Takes a url in the form of jdbc:hive://[hostname]:[port]/[db_name] and
+   * parses it. Everything after jdbc:hive// is optional.
+   * 
    * @param url
    * @param defaults
    * @return
@@ -184,7 +182,9 @@ public class HiveDriver implements java.sql.Driver {
       throw new SQLException("Invalid connection url: " + url);
     }
 
-    if (url.length() <= URL_PREFIX.length()) return urlProps;
+    if (url.length() <= URL_PREFIX.length()) {
+      return urlProps;
+    }
 
     // [hostname]:[port]/[db_name]
     String connectionInfo = url.substring(URL_PREFIX.length());
@@ -198,8 +198,7 @@ public class HiveDriver implements java.sql.Driver {
       urlProps.put(HOST_PROPERTY_KEY, hostAndPort[0]);
       if (hostAndPort.length > 1) {
         urlProps.put(PORT_PROPERTY_KEY, hostAndPort[1]);
-      }
-      else {
+      } else {
         urlProps.put(PORT_PROPERTY_KEY, DEFAULT_PORT);
       }
     }

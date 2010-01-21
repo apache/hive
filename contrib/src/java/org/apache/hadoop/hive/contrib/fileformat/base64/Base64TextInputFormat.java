@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -35,28 +36,25 @@ import org.apache.hadoop.mapred.LineRecordReader;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * FileInputFormat for base64 encoded text files.
  * 
- * Each line is a base64-encoded record.
- * The key is a LongWritable which is the offset.
- * The value is a BytesWritable containing the base64-decoded bytes.
+ * Each line is a base64-encoded record. The key is a LongWritable which is the
+ * offset. The value is a BytesWritable containing the base64-decoded bytes.
  * 
  * This class accepts a configurable parameter:
  * "base64.text.input.format.signature"
  * 
- * The UTF-8 encoded signature will be compared with the beginning
- * of each decoded bytes.  If they don't match, the record is discarded.
- * If they match, the signature is stripped off the data.
+ * The UTF-8 encoded signature will be compared with the beginning of each
+ * decoded bytes. If they don't match, the record is discarded. If they match,
+ * the signature is stripped off the data.
  */
-public class Base64TextInputFormat
-  implements InputFormat<LongWritable, BytesWritable>, JobConfigurable {
-  
-  
-  public static class Base64LineRecordReader
-    implements RecordReader<LongWritable, BytesWritable>, JobConfigurable {
+public class Base64TextInputFormat implements
+    InputFormat<LongWritable, BytesWritable>, JobConfigurable {
+
+  public static class Base64LineRecordReader implements
+      RecordReader<LongWritable, BytesWritable>, JobConfigurable {
 
     LineRecordReader reader;
     Text text;
@@ -65,7 +63,7 @@ public class Base64TextInputFormat
       this.reader = reader;
       text = reader.createValue();
     }
-    
+
     @Override
     public void close() throws IOException {
       reader.close();
@@ -98,7 +96,7 @@ public class Base64TextInputFormat
         // text -> byte[] -> value
         byte[] textBytes = text.getBytes();
         int length = text.getLength();
-        
+
         // Trim additional bytes
         if (length != textBytes.length) {
           textBytes = Arrays.copyOf(textBytes, length);
@@ -107,22 +105,24 @@ public class Base64TextInputFormat
 
         // compare data header with signature
         int i;
-        for (i = 0; i < binaryData.length && i < signature.length &&
-                        binaryData[i] == signature[i]; ++i);
+        for (i = 0; i < binaryData.length && i < signature.length
+            && binaryData[i] == signature[i]; ++i) {
+          ;
+        }
 
         // return the row only if it's not corrupted
         if (i == signature.length) {
-          value.set(binaryData, signature.length,
-                    binaryData.length - signature.length);
+          value.set(binaryData, signature.length, binaryData.length
+              - signature.length);
           return true;
         }
       }
       // no more data
       return false;
     }
-    
+
     private byte[] signature;
-    private Base64 base64 = new Base64();
+    private final Base64 base64 = new Base64();
 
     @Override
     public void configure(JobConf job) {
@@ -135,26 +135,26 @@ public class Base64TextInputFormat
         }
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
-      }      
+      }
     }
   }
-  
+
   TextInputFormat format;
   JobConf job;
-  
+
   public Base64TextInputFormat() {
     format = new TextInputFormat();
   }
-  
+
   @Override
   public void configure(JobConf job) {
     this.job = job;
     format.configure(job);
   }
-  
+
   public RecordReader<LongWritable, BytesWritable> getRecordReader(
-      InputSplit genericSplit, JobConf job,
-      Reporter reporter) throws IOException {
+      InputSplit genericSplit, JobConf job, Reporter reporter)
+      throws IOException {
     reporter.setStatus(genericSplit.toString());
     Base64LineRecordReader reader = new Base64LineRecordReader(
         new LineRecordReader(job, (FileSplit) genericSplit));

@@ -46,6 +46,7 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public void reset() {
     count = 0;
   }
@@ -59,6 +60,7 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public void write(int b) {
     enLargeBuffer(1);
     buf[count] = (byte) b;
@@ -69,8 +71,9 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
     int temp = count + increment;
     int newLen = temp;
     if (temp > buf.length) {
-      if ((buf.length << 1) > temp)
+      if ((buf.length << 1) > temp) {
         newLen = buf.length << 1;
+      }
       byte newbuf[] = new byte[newLen];
       System.arraycopy(buf, 0, newbuf, 0, count);
       buf = newbuf;
@@ -81,6 +84,7 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public void write(byte b[], int off, int len) {
     if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length)
         || ((off + len) < 0)) {
@@ -96,6 +100,7 @@ public class NonSyncByteArrayOutputStream extends ByteArrayOutputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public void writeTo(OutputStream out) throws IOException {
     out.write(buf, 0, count);
   }

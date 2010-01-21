@@ -46,17 +46,17 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
  */
 public class Warehouse {
   private Path whRoot;
-  private Configuration conf;
+  private final Configuration conf;
   String whRootString;
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
-    whRootString =  HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
-    if(StringUtils.isBlank(whRootString)) {
+    whRootString = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
+    if (StringUtils.isBlank(whRootString)) {
       throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname
-                              + " is not set in the config or blank");
+          + " is not set in the config or blank");
     }
   }
 
@@ -73,30 +73,29 @@ public class Warehouse {
   }
 
   /**
-   * Hadoop File System reverse lookups paths with raw ip addresses
-   * The File System URI always contains the canonical DNS name of the
-   * Namenode. Subsequently, operations on paths with raw ip addresses
-   * cause an exception since they don't match the file system URI.
-   *
-   * This routine solves this problem by replacing the scheme and authority
-   * of a path with the scheme and authority of the FileSystem that it
-   * maps to.
-   *
-   * @param path Path to be canonicalized
+   * Hadoop File System reverse lookups paths with raw ip addresses The File
+   * System URI always contains the canonical DNS name of the Namenode.
+   * Subsequently, operations on paths with raw ip addresses cause an exception
+   * since they don't match the file system URI.
+   * 
+   * This routine solves this problem by replacing the scheme and authority of a
+   * path with the scheme and authority of the FileSystem that it maps to.
+   * 
+   * @param path
+   *          Path to be canonicalized
    * @return Path with canonical scheme and authority
    */
   public Path getDnsPath(Path path) throws MetaException {
-    FileSystem fs  = getFs(path);
-    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(),
-                     path.toUri().getPath()));
+    FileSystem fs = getFs(path);
+    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), path
+        .toUri().getPath()));
   }
-
 
   /**
    * Resolve the configured warehouse root dir with respect to the configuration
-   * This involves opening the FileSystem corresponding to the warehouse root dir
-   * (but that should be ok given that this is only called during DDL statements
-   * for non-external tables).
+   * This involves opening the FileSystem corresponding to the warehouse root
+   * dir (but that should be ok given that this is only called during DDL
+   * statements for non-external tables).
    */
   private Path getWhRoot() throws MetaException {
     if (whRoot != null) {
@@ -112,8 +111,9 @@ public class Warehouse {
     }
     return new Path(getWhRoot(), dbName.toLowerCase() + ".db");
   }
-  
-  public Path getDefaultTablePath(String dbName, String tableName) throws MetaException {
+
+  public Path getDefaultTablePath(String dbName, String tableName)
+      throws MetaException {
     return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
   }
 
@@ -127,16 +127,16 @@ public class Warehouse {
     }
     return false;
   }
-  
+
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     LOG.info("deleting  " + f);
     try {
       FileSystem fs = getFs(f);
-      if(!fs.exists(f)) {
+      if (!fs.exists(f)) {
         return false;
       }
 
-      // older versions of Hadoop don't have a Trash constructor based on the 
+      // older versions of Hadoop don't have a Trash constructor based on the
       // Path or FileSystem. So need to achieve this by creating a dummy conf.
       // this needs to be filtered out based on version
       Configuration dupConf = new Configuration(conf);
@@ -151,11 +151,11 @@ public class Warehouse {
         LOG.info("Deleted the diretory " + f);
         return true;
       }
-      if(fs.exists(f)) {
+      if (fs.exists(f)) {
         throw new MetaException("Unable to delete directory: " + f);
       }
     } catch (FileNotFoundException e) {
-      return true; //ok even if there is not data
+      return true; // ok even if there is not data
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -164,7 +164,7 @@ public class Warehouse {
 
   // NOTE: This is for generating the internal path name for partitions. Users
   // should always use the MetaStore API to get the path name for a partition.
-  // Users should not directly take partition values and turn it into a path 
+  // Users should not directly take partition values and turn it into a path
   // name by themselves, because the logic below may change in the future.
   //
   // In the future, it's OK to add new chars to the escape list, and old data
@@ -173,34 +173,34 @@ public class Warehouse {
   // new partitions, it will use new names.
   static BitSet charToEscape = new BitSet(128);
   static {
-    for (char c = 0; c < ' ' ; c++) {
+    for (char c = 0; c < ' '; c++) {
       charToEscape.set(c);
     }
-    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':',
-        '=', '?', '\\', '\u00FF'
-    };
+    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':', '=', '?',
+        '\\', '\u00FF' };
     for (char c : clist) {
       charToEscape.set(c);
     }
   }
+
   static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size()
-        && charToEscape.get(c); 
+    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
   }
-  
+
   static String escapePathName(String path) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < path.length(); i++) {
       char c = path.charAt(i);
       if (needsEscaping(c)) {
         sb.append('%');
-        sb.append(String.format("%1$02X", (int)c));
+        sb.append(String.format("%1$02X", (int) c));
       } else {
         sb.append(c);
       }
     }
     return sb.toString();
   }
+
   static String unescapePathName(String path) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < path.length(); i++) {
@@ -208,25 +208,26 @@ public class Warehouse {
       if (c == '%' && i + 2 < path.length()) {
         int code = -1;
         try {
-          code = Integer.valueOf(path.substring(i+1, i+3), 16);
+          code = Integer.valueOf(path.substring(i + 1, i + 3), 16);
         } catch (Exception e) {
           code = -1;
         }
         if (code >= 0) {
-          sb.append((char)code);
+          sb.append((char) code);
           i += 2;
           continue;
         }
       }
       sb.append(c);
-    }    
+    }
     return sb.toString();
   }
-  
-  public static String makePartName(Map<String, String> spec) throws MetaException {
+
+  public static String makePartName(Map<String, String> spec)
+      throws MetaException {
     StringBuffer suffixBuf = new StringBuffer();
-    for(Entry<String, String> e: spec.entrySet()) {
-      if(e.getValue() == null  || e.getValue().length() == 0) {
+    for (Entry<String, String> e : spec.entrySet()) {
+      if (e.getValue() == null || e.getValue().length() == 0) {
         throw new MetaException("Partition spec is incorrect. " + spec);
       }
       suffixBuf.append(escapePathName(e.getKey()));
@@ -236,9 +237,11 @@ public class Warehouse {
     }
     return suffixBuf.toString();
   }
-  
+
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
-  public static LinkedHashMap<String, String> makeSpecFromName(String name) throws MetaException {
+
+  public static LinkedHashMap<String, String> makeSpecFromName(String name)
+      throws MetaException {
     LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
     if (name == null || name.isEmpty()) {
       throw new MetaException("Partition name is invalid. " + name);
@@ -253,40 +256,42 @@ public class Warehouse {
         String v = unescapePathName(m.group(2));
 
         if (partSpec.containsKey(k)) {
-          throw new MetaException("Partition name is invalid. Key " + k + " defined at two levels");
+          throw new MetaException("Partition name is invalid. Key " + k
+              + " defined at two levels");
         }
         String[] kv = new String[2];
         kv[0] = k;
         kv[1] = v;
         kvs.add(kv);
-      }
-      else {
+      } else {
         throw new MetaException("Partition name is invalid. " + name);
       }
       currPath = currPath.getParent();
-    } while(currPath != null && !currPath.getName().isEmpty());
-    
-    // reverse the list since we checked the part from leaf dir to table's base dir
-    for(int i = kvs.size(); i > 0; i--) { 
-      partSpec.put(kvs.get(i-1)[0], kvs.get(i-1)[1]);
+    } while (currPath != null && !currPath.getName().isEmpty());
+
+    // reverse the list since we checked the part from leaf dir to table's base
+    // dir
+    for (int i = kvs.size(); i > 0; i--) {
+      partSpec.put(kvs.get(i - 1)[0], kvs.get(i - 1)[1]);
     }
     return partSpec;
   }
 
+  public Path getPartitionPath(String dbName, String tableName,
+      LinkedHashMap<String, String> pm) throws MetaException {
+    return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm));
+  }
 
-  public Path getPartitionPath(String dbName, String tableName, LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm)); 
+  public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm)
+      throws MetaException {
+    return new Path(tblPath, makePartName(pm));
   }
-  
-  public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(tblPath, makePartName(pm)); 
-  }
-  
+
   public boolean isDir(Path f) throws MetaException {
     try {
       FileSystem fs = getFs(f);
       FileStatus fstatus = fs.getFileStatus(f);
-      if(!fstatus.isDir()) {
+      if (!fstatus.isDir()) {
         return false;
       }
     } catch (FileNotFoundException e) {
@@ -297,13 +302,14 @@ public class Warehouse {
     return true;
   }
 
-  public static String makePartName(List<FieldSchema> partCols, List<String> vals) throws MetaException {
+  public static String makePartName(List<FieldSchema> partCols,
+      List<String> vals) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
       throw new MetaException("Invalid partition key & values");
     }
     StringBuilder name = new StringBuilder();
-    for(int i=0; i< partCols.size(); i++) {
-      if(i > 0) {
+    for (int i = 0; i < partCols.size(); i++) {
+      if (i > 0) {
         name.append(Path.SEPARATOR);
       }
       name.append(escapePathName((partCols.get(i)).getName().toLowerCase()));

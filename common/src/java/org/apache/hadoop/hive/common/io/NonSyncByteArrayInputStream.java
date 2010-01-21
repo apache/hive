@@ -37,10 +37,10 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
   }
 
   public void reset(byte[] input, int start, int length) {
-    this.buf = input;
-    this.count = start + length;
-    this.mark = start;
-    this.pos = start;
+    buf = input;
+    count = start + length;
+    mark = start;
+    pos = start;
   }
 
   public int getPosition() {
@@ -54,6 +54,7 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int read() {
     return (pos < count) ? (buf[pos++] & 0xff) : -1;
   }
@@ -61,6 +62,7 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int read(byte b[], int off, int len) {
     if (b == null) {
       throw new NullPointerException();
@@ -84,6 +86,7 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public long skip(long n) {
     if (pos + n > count) {
       n = count - pos;
@@ -98,6 +101,7 @@ public class NonSyncByteArrayInputStream extends ByteArrayInputStream {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int available() {
     return count - pos;
   }

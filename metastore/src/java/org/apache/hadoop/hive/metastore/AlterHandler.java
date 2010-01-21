@@ -23,22 +23,30 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 /**
- * Interface for Alter Table and Alter Partition code 
+ * Interface for Alter Table and Alter Partition code
  */
 public interface AlterHandler extends Configurable {
 
   /**
    * handles alter table
-   * @param msdb      object to get metadata
-   * @param wh TODO
-   * @param dbname    database of the table being altered
-   * @param name      original name of the table being altered. same as 
-   *                  <i>newTable.tableName</i> if alter op is not a rename.
-   * @param newTable  new table object
-   * @throws InvalidOperationException  thrown if the newTable object is invalid
-   * @throws MetaException              thrown if there is any other erro 
+   * 
+   * @param msdb
+   *          object to get metadata
+   * @param wh
+   *          TODO
+   * @param dbname
+   *          database of the table being altered
+   * @param name
+   *          original name of the table being altered. same as
+   *          <i>newTable.tableName</i> if alter op is not a rename.
+   * @param newTable
+   *          new table object
+   * @throws InvalidOperationException
+   *           thrown if the newTable object is invalid
+   * @throws MetaException
+   *           thrown if there is any other erro
    */
-   public abstract void alterTable(RawStore msdb,
-        Warehouse wh, String dbname,
-        String name, Table newTable) throws InvalidOperationException, MetaException;
+  public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
+      String name, Table newTable) throws InvalidOperationException,
+      MetaException;
 }

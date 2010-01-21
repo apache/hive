@@ -18,31 +18,11 @@
 
 package org.apache.hadoop.hive.service;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.service.ThriftHive;
-import org.apache.hadoop.hive.service.ThriftHive.*;
-import org.apache.hadoop.hive.service.HiveServerException;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringUtils;
-
-import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.FacebookService;
-import com.facebook.fb303.fb_status;
-import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 
-import org.apache.hadoop.hive.metastore.api.*;
-
 /**
- * Thrift Hive Client
- * Just an empty class that can be used to run queries
- * on a stand alone hive server
+ * Thrift Hive Client Just an empty class that can be used to run queries on a
+ * stand alone hive server
  */
 public class HiveClient extends ThriftHive.Client implements HiveInterface {
   public HiveClient(TProtocol prot) {

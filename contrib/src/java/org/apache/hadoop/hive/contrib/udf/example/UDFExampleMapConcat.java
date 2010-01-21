@@ -30,16 +30,16 @@ public class UDFExampleMapConcat extends UDF {
       return null;
     }
     ArrayList<String> r = new ArrayList<String>(a.size());
-    for (Map.Entry<String,String> entry: a.entrySet()) {
+    for (Map.Entry<String, String> entry : a.entrySet()) {
       r.add("(" + entry.getKey() + ":" + entry.getValue() + ")");
     }
     Collections.sort(r);
-    
+
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < r.size(); i++) {
       sb.append(r.get(i));
     }
     return sb.toString();
   }
-  
+
 }

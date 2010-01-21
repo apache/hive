@@ -18,16 +18,18 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.DriverManager;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
+
 import junit.framework.TestCase;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -35,17 +37,19 @@ public class TestJdbcDriver extends TestCase {
   private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
   private static String tableName = "testHiveDriverTable";
   private static String partitionedTableName = "testHiveDriverPartitionedTable";
-  private HiveConf conf;
-  private Path dataFilePath;
+  private final HiveConf conf;
+  private final Path dataFilePath;
   private Connection con;
   private boolean standAloneServer = false;
 
   public TestJdbcDriver(String name) {
     super(name);
     conf = new HiveConf(TestJdbcDriver.class);
-    String dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
+    String dataFileDir = conf.get("test.data.files").replace('\\', '/')
+        .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
-    standAloneServer = "true".equals(System.getProperty("test.service.standalone.server"));
+    standAloneServer = "true".equals(System
+        .getProperty("test.service.standalone.server"));
   }
 
   protected void setUp() throws Exception {
@@ -53,9 +57,9 @@ public class TestJdbcDriver extends TestCase {
     Class.forName(driverName);
     if (standAloneServer) {
       // get connection
-      con = DriverManager.getConnection("jdbc:hive://localhost:10000/default", "", "");
-    }
-    else {
+      con = DriverManager.getConnection("jdbc:hive://localhost:10000/default",
+          "", "");
+    } else {
       con = DriverManager.getConnection("jdbc:hive://", "", "");
     }
     assertNotNull("Connection is null", con);
@@ -70,11 +74,13 @@ public class TestJdbcDriver extends TestCase {
     }
 
     // create table
-    ResultSet res = stmt.executeQuery("create table " + tableName + " (key int, value string)");
+    ResultSet res = stmt.executeQuery("create table " + tableName
+        + " (key int, value string)");
     assertFalse(res.next());
 
     // load data
-    res = stmt.executeQuery("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
+    res = stmt.executeQuery("load data local inpath '"
+        + dataFilePath.toString() + "' into table " + tableName);
     assertFalse(res.next());
 
     // also initialize a paritioned table to test against.
@@ -85,14 +91,14 @@ public class TestJdbcDriver extends TestCase {
     } catch (Exception ex) {
     }
 
-    res = stmt.executeQuery("create table " + partitionedTableName +
-                            " (key int, value string) partitioned by (dt STRING)");
+    res = stmt.executeQuery("create table " + partitionedTableName
+        + " (key int, value string) partitioned by (dt STRING)");
     assertFalse(res.next());
 
     // load data
-    res = stmt.executeQuery("load data local inpath '" + dataFilePath.toString() +
-                            "' into table " + partitionedTableName +
-                            " PARTITION (dt='20090619')");
+    res = stmt.executeQuery("load data local inpath '"
+        + dataFilePath.toString() + "' into table " + partitionedTableName
+        + " PARTITION (dt='20090619')");
     assertFalse(res.next());
 
   }
@@ -114,38 +120,44 @@ public class TestJdbcDriver extends TestCase {
     Exception expectedException = null;
     try {
       con.createStatement();
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       expectedException = e;
     }
-    
-    assertNotNull("createStatement() on closed connection should throw exception",
-                  expectedException);
+
+    assertNotNull(
+        "createStatement() on closed connection should throw exception",
+        expectedException);
   }
 
   public final void testSelectAll() throws Exception {
-    doTestSelectAll(this.tableName, -1); // tests not setting maxRows  (return all)
-    doTestSelectAll(this.tableName, 0);  // tests setting maxRows to 0 (return all)
+    doTestSelectAll(tableName, -1); // tests not setting maxRows (return all)
+    doTestSelectAll(tableName, 0); // tests setting maxRows to 0 (return all)
   }
 
   public final void testSelectAllPartioned() throws Exception {
-    doTestSelectAll(this.partitionedTableName, -1); // tests not setting maxRows  (return all)
-    doTestSelectAll(this.partitionedTableName, 0);  // tests setting maxRows to 0 (return all)
+    doTestSelectAll(partitionedTableName, -1); // tests not setting maxRows
+                                               // (return all)
+    doTestSelectAll(partitionedTableName, 0); // tests setting maxRows to 0
+                                              // (return all)
   }
 
   public final void testSelectAllMaxRows() throws Exception {
-    doTestSelectAll(this.tableName, 100);
+    doTestSelectAll(tableName, 100);
   }
 
-  private final void doTestSelectAll(String tableName, int maxRows) throws Exception {
+  private final void doTestSelectAll(String tableName, int maxRows)
+      throws Exception {
     Statement stmt = con.createStatement();
-    if (maxRows >= 0) stmt.setMaxRows(maxRows);
+    if (maxRows >= 0) {
+      stmt.setMaxRows(maxRows);
+    }
 
-    //JDBC says that 0 means return all, which is the default
+    // JDBC says that 0 means return all, which is the default
     int expectedMaxRows = maxRows < 1 ? 0 : maxRows;
 
     assertNotNull("Statement is null", stmt);
-    assertEquals("Statement max rows not as expected", expectedMaxRows, stmt.getMaxRows());
+    assertEquals("Statement max rows not as expected", expectedMaxRows, stmt
+        .getMaxRows());
     assertFalse("Statement should not be closed", stmt.isClosed());
 
     ResultSet res;
@@ -153,7 +165,8 @@ public class TestJdbcDriver extends TestCase {
     // run some queries
     res = stmt.executeQuery("select * from " + tableName);
     assertNotNull("ResultSet is null", res);
-    assertTrue("getResultSet() not returning expected ResultSet", res == stmt.getResultSet());
+    assertTrue("getResultSet() not returning expected ResultSet", res == stmt
+        .getResultSet());
     assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
 
@@ -165,17 +178,18 @@ public class TestJdbcDriver extends TestCase {
         res.getString(1);
         res.getString(2);
         assertFalse("Last result value was not null", res.wasNull());
-        assertNull("No warnings should be found on ResultSet", res.getWarnings());
-        res.clearWarnings(); //verifying that method is supported
-        
-        //System.out.println(res.getString(1) + " " + res.getString(2));
-        assertEquals("getInt and getString don't align for the same result value",
-                String.valueOf(res.getInt(1)), res.getString(1));
-        assertEquals("Unexpected result found",
-                "val_" + res.getString(1), res.getString(2));
+        assertNull("No warnings should be found on ResultSet", res
+            .getWarnings());
+        res.clearWarnings(); // verifying that method is supported
+
+        // System.out.println(res.getString(1) + " " + res.getString(2));
+        assertEquals(
+            "getInt and getString don't align for the same result value",
+            String.valueOf(res.getInt(1)), res.getString(1));
+        assertEquals("Unexpected result found", "val_" + res.getString(1), res
+            .getString(2));
         moreRow = res.next();
-      }
-      catch (SQLException e) {
+      } catch (SQLException e) {
         System.out.println(e.toString());
         e.printStackTrace();
         throw new Exception(e.toString());
@@ -190,10 +204,10 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(false, moreRow);
 
     assertNull("No warnings should be found on statement", stmt.getWarnings());
-    stmt.clearWarnings(); //verifying that method is supported
+    stmt.clearWarnings(); // verifying that method is supported
 
     assertNull("No warnings should be found on connection", con.getWarnings());
-    con.clearWarnings(); //verifying that method is supported
+    con.clearWarnings(); // verifying that method is supported
 
     stmt.close();
     assertTrue("Statement should be closed", stmt.isClosed());
@@ -203,51 +217,52 @@ public class TestJdbcDriver extends TestCase {
     String invalidSyntaxSQLState = "42000";
     int parseErrorCode = 10;
 
-    //These tests inherently cause exceptions to be written to the test output
-    //logs. This is undesirable, since you it might appear to someone looking
-    //at the test output logs as if something is failing when it isn't. Not sure
-    //how to get around that.
+    // These tests inherently cause exceptions to be written to the test output
+    // logs. This is undesirable, since you it might appear to someone looking
+    // at the test output logs as if something is failing when it isn't. Not
+    // sure
+    // how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
-            "cannot recognize input 'SELECTT'",
-            invalidSyntaxSQLState, 11);
+        "cannot recognize input 'SELECTT'", invalidSyntaxSQLState, 11);
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
-            "Table not found", "42S02", parseErrorCode);
+        "Table not found", "42S02", parseErrorCode);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-            "Table not found", "42S02", parseErrorCode);
+        "Table not found", "42S02", parseErrorCode);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
-            "Invalid Table Alias or Column Reference",
-            invalidSyntaxSQLState, parseErrorCode);
+        "Invalid Table Alias or Column Reference", invalidSyntaxSQLState,
+        parseErrorCode);
     doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
-            "Invalid Function", invalidSyntaxSQLState, parseErrorCode);
+        "Invalid Function", invalidSyntaxSQLState, parseErrorCode);
 
-    //TODO: execute errors like this currently don't return good messages (i.e.
-    //'Table already exists'). This is because the Driver class calls
-    //Task.executeTask() which swallows meaningful exceptions and returns a status
-    //code. This should be refactored.
-    doTestErrorCase("create table " + tableName + " (key int, value string)",
-            "Query returned non-zero code: 9, cause: FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
-            "08S01", 9);
+    // TODO: execute errors like this currently don't return good messages (i.e.
+    // 'Table already exists'). This is because the Driver class calls
+    // Task.executeTask() which swallows meaningful exceptions and returns a
+    // status
+    // code. This should be refactored.
+    doTestErrorCase(
+        "create table " + tableName + " (key int, value string)",
+        "Query returned non-zero code: 9, cause: FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
+        "08S01", 9);
   }
 
   private void doTestErrorCase(String sql, String expectedMessage,
-                                           String expectedSQLState,
-                                           int expectedErrorCode) throws SQLException {
+      String expectedSQLState, int expectedErrorCode) throws SQLException {
     Statement stmt = con.createStatement();
     boolean exceptionFound = false;
     try {
       stmt.executeQuery(sql);
-    }
-    catch(SQLException e) {
-      assertTrue("Adequate error messaging not found for '" + sql + "': " +
-              e.getMessage(), e.getMessage().contains(expectedMessage));
+    } catch (SQLException e) {
+      assertTrue("Adequate error messaging not found for '" + sql + "': "
+          + e.getMessage(), e.getMessage().contains(expectedMessage));
       assertEquals("Expected SQLState not found for '" + sql + "'",
-              expectedSQLState, e.getSQLState());
+          expectedSQLState, e.getSQLState());
       assertEquals("Expected error code not found for '" + sql + "'",
-              expectedErrorCode, e.getErrorCode());
+          expectedErrorCode, e.getErrorCode());
       exceptionFound = true;
     }
 
-    assertNotNull("Exception should have been thrown for query: " + sql, exceptionFound);
+    assertNotNull("Exception should have been thrown for query: " + sql,
+        exceptionFound);
   }
 
   public void testShowTables() throws SQLException {
@@ -259,11 +274,13 @@ public class TestJdbcDriver extends TestCase {
     boolean testTableExists = false;
     while (res.next()) {
       assertNotNull("table name is null in result set", res.getString(1));
-      if (tableName.equalsIgnoreCase(res.getString(1))) testTableExists = true;
+      if (tableName.equalsIgnoreCase(res.getString(1))) {
+        testTableExists = true;
+      }
     }
 
-    assertTrue("table name " + tableName + " not found in SHOW TABLES result set",
-               testTableExists);
+    assertTrue("table name " + tableName
+        + " not found in SHOW TABLES result set", testTableExists);
   }
 
   public void testDescribeTable() throws SQLException {
@@ -274,12 +291,12 @@ public class TestJdbcDriver extends TestCase {
 
     res.next();
     assertEquals("Column name 'key' not found", "key", res.getString(1));
-    assertEquals("Column type 'int' for column key not found",
-                "int", res.getString(2));
+    assertEquals("Column type 'int' for column key not found", "int", res
+        .getString(2));
     res.next();
     assertEquals("Column name 'value' not found", "value", res.getString(1));
-    assertEquals("Column type 'string' for column key not found",
-                "string", res.getString(2));
+    assertEquals("Column type 'string' for column key not found", "string", res
+        .getString(2));
 
     assertFalse("More results found than expected", res.next());
 
@@ -303,26 +320,37 @@ public class TestJdbcDriver extends TestCase {
     Statement stmt = con.createStatement();
     ResultSet res = stmt.executeQuery("drop table " + tableName);
 
-    //creating a table with tinyint is failing currently so not including
-    res = stmt.executeQuery("create table " + tableName + " (a string, b boolean, c bigint, d int, f double)");
+    // creating a table with tinyint is failing currently so not including
+    res = stmt.executeQuery("create table " + tableName
+        + " (a string, b boolean, c bigint, d int, f double)");
     res = stmt.executeQuery("select * from " + tableName + " limit 1");
 
     ResultSetMetaData meta = res.getMetaData();
     assertEquals("Unexpected column type", Types.VARCHAR, meta.getColumnType(1));
     assertEquals("Unexpected column type", Types.BOOLEAN, meta.getColumnType(2));
-    assertEquals("Unexpected column type", Types.BIGINT,  meta.getColumnType(3));
+    assertEquals("Unexpected column type", Types.BIGINT, meta.getColumnType(3));
     assertEquals("Unexpected column type", Types.INTEGER, meta.getColumnType(4));
-    assertEquals("Unexpected column type", Types.DOUBLE,  meta.getColumnType(5));
-    assertEquals("Unexpected column type name", "string", meta.getColumnTypeName(1));
-    assertEquals("Unexpected column type name", "boolean",   meta.getColumnTypeName(2));
-    assertEquals("Unexpected column type name", "bigint",    meta.getColumnTypeName(3));
-    assertEquals("Unexpected column type name", "int",    meta.getColumnTypeName(4));
-    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(5));
-    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(1));
-    assertEquals("Unexpected column display size", 8,  meta.getColumnDisplaySize(2));
-    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(3));
-    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(4));
-    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(5));
+    assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(5));
+    assertEquals("Unexpected column type name", "string", meta
+        .getColumnTypeName(1));
+    assertEquals("Unexpected column type name", "boolean", meta
+        .getColumnTypeName(2));
+    assertEquals("Unexpected column type name", "bigint", meta
+        .getColumnTypeName(3));
+    assertEquals("Unexpected column type name", "int", meta
+        .getColumnTypeName(4));
+    assertEquals("Unexpected column type name", "double", meta
+        .getColumnTypeName(5));
+    assertEquals("Unexpected column display size", 32, meta
+        .getColumnDisplaySize(1));
+    assertEquals("Unexpected column display size", 8, meta
+        .getColumnDisplaySize(2));
+    assertEquals("Unexpected column display size", 32, meta
+        .getColumnDisplaySize(3));
+    assertEquals("Unexpected column display size", 16, meta
+        .getColumnDisplaySize(4));
+    assertEquals("Unexpected column display size", 16, meta
+        .getColumnDisplaySize(5));
 
     for (int i = 1; i <= 5; i++) {
       assertFalse(meta.isAutoIncrement(i));
@@ -330,20 +358,20 @@ public class TestJdbcDriver extends TestCase {
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
 
       int expectedPrecision = i == 5 ? -1 : 0;
-      int expectedScale     = i == 5 ? -1 : 0;
-      assertEquals("Unexpected precision", expectedPrecision, meta.getPrecision(i));
+      int expectedScale = i == 5 ? -1 : 0;
+      assertEquals("Unexpected precision", expectedPrecision, meta
+          .getPrecision(i));
       assertEquals("Unexpected scale", expectedScale, meta.getScale(i));
     }
   }
 
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
-          {"jdbc:hive://", "", "", "default"},
-          {"jdbc:hive://localhost:10001/default", "localhost", "10001", "default"},
-          {"jdbc:hive://localhost/notdefault", "localhost", "10000", "notdefault"},
-          {"jdbc:hive://foo:1243", "foo", "1243", "default"}
-  };
-  
+      { "jdbc:hive://", "", "", "default" },
+      { "jdbc:hive://localhost:10001/default", "localhost", "10001", "default" },
+      { "jdbc:hive://localhost/notdefault", "localhost", "10000", "notdefault" },
+      { "jdbc:hive://foo:1243", "foo", "1243", "default" } };
+
   public void testDriverProperties() throws SQLException {
     HiveDriver driver = new HiveDriver();
 
@@ -357,7 +385,8 @@ public class TestJdbcDriver extends TestCase {
 
   }
 
-  private static void assertDpi(DriverPropertyInfo dpi, String name, String value) {
+  private static void assertDpi(DriverPropertyInfo dpi, String name,
+      String value) {
     assertEquals("Invalid DriverPropertyInfo name", name, dpi.name);
     assertEquals("Invalid DriverPropertyInfo value", value, dpi.value);
     assertEquals("Invalid DriverPropertyInfo required", false, dpi.required);

@@ -20,14 +20,13 @@ package org.apache.hadoop.hive.cli;
 
 import java.util.Properties;
 
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class CliSessionState extends SessionState {
   /**
    * -e option if any that the session has been invoked with
-   */ 
+   */
   public String execString;
 
   /**
@@ -40,12 +39,11 @@ public class CliSessionState extends SessionState {
    */
   public Properties cmdProperties = new Properties();
 
-
   public CliSessionState() {
     super();
   }
 
-  public CliSessionState (HiveConf conf) {
+  public CliSessionState(HiveConf conf) {
     super(conf);
   }
 

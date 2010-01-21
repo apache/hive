@@ -24,5 +24,5 @@ public class UDFExampleFormat extends UDF {
   public String evaluate(String format, Object... args) {
     return String.format(format, args);
   }
-  
+
 }

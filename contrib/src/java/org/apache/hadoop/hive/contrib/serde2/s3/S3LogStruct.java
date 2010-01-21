@@ -5,7 +5,8 @@ public class S3LogStruct {
   public String bucketowner;
   public String bucketname;
   public String rdatetime;
-//  public Long rdatetimeepoch;     //  The format Hive understands by default, should we convert?
+  // public Long rdatetimeepoch; // The format Hive understands by default,
+  // should we convert?
   public String rip;
   public String requester;
   public String requestid;
@@ -20,5 +21,5 @@ public class S3LogStruct {
   public Integer turnaroundtime;
   public String referer;
   public String useragent;
-//  public String rid;  // Specific Zemanta use
+  // public String rid; // Specific Zemanta use
 }

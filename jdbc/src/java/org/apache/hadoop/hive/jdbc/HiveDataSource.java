@@ -24,7 +24,6 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-
 public class HiveDataSource implements DataSource {
 
   /**
@@ -34,15 +33,19 @@ public class HiveDataSource implements DataSource {
     // TODO Auto-generated constructor stub
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.DataSource#getConnection()
    */
 
   public Connection getConnection() throws SQLException {
-    return getConnection("","");
+    return getConnection("", "");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.DataSource#getConnection(java.lang.String, java.lang.String)
    */
 
@@ -55,7 +58,9 @@ public class HiveDataSource implements DataSource {
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.CommonDataSource#getLogWriter()
    */
 
@@ -64,7 +69,9 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.CommonDataSource#getLoginTimeout()
    */
 
@@ -73,7 +80,9 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.CommonDataSource#setLogWriter(java.io.PrintWriter)
    */
 
@@ -82,7 +91,9 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see javax.sql.CommonDataSource#setLoginTimeout(int)
    */
 
@@ -91,7 +102,9 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -100,7 +113,9 @@ public class HiveDataSource implements DataSource {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 

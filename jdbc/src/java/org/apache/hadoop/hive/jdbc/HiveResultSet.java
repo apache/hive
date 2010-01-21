@@ -36,20 +36,19 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.io.BytesWritable;
-
 
 public class HiveResultSet implements java.sql.ResultSet {
   HiveInterface client;
@@ -69,7 +68,7 @@ public class HiveResultSet implements java.sql.ResultSet {
   @SuppressWarnings("unchecked")
   public HiveResultSet(HiveInterface client, int maxRows) throws SQLException {
     this.client = client;
-    this.row = new ArrayList();
+    row = new ArrayList();
     this.maxRows = maxRows;
     initDynamicSerde();
   }
@@ -88,14 +87,15 @@ public class HiveResultSet implements java.sql.ResultSet {
       List<FieldSchema> schema = fullSchema.getFieldSchemas();
       columnNames = new ArrayList<String>();
       columnTypes = new ArrayList<String>();
-      
+
       String serDDL;
 
       if ((schema != null) && (!schema.isEmpty())) {
         serDDL = new String("struct result { ");
         for (int pos = 0; pos < schema.size(); pos++) {
-          if (pos != 0)
+          if (pos != 0) {
             serDDL = serDDL.concat(",");
+          }
           columnTypes.add(schema.get(pos).getType());
           columnNames.add(schema.get(pos).getName());
           serDDL = serDDL.concat(schema.get(pos).getType());
@@ -103,14 +103,18 @@ public class HiveResultSet implements java.sql.ResultSet {
           serDDL = serDDL.concat(schema.get(pos).getName());
         }
         serDDL = serDDL.concat("}");
-      }
-      else
+      } else {
         serDDL = new String("struct result { string empty }");
+      }
 
       ds = new DynamicSerDe();
       Properties dsp = new Properties();
-      dsp.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
-      dsp.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "result");
+      dsp.setProperty(Constants.SERIALIZATION_FORMAT,
+          org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
+              .getName());
+      dsp.setProperty(
+          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+          "result");
       dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
       dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
       dsp.setProperty(Constants.FIELD_DELIM, "9");
@@ -121,7 +125,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#absolute(int)
    */
 
@@ -130,7 +136,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#afterLast()
    */
 
@@ -139,7 +147,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#beforeFirst()
    */
 
@@ -148,7 +158,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#cancelRowUpdates()
    */
 
@@ -157,7 +169,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#clearWarnings()
    */
 
@@ -165,7 +179,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     warningChain = null;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#close()
    */
 
@@ -174,7 +190,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#deleteRow()
    */
 
@@ -183,7 +201,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#findColumn(java.lang.String)
    */
 
@@ -192,7 +212,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#first()
    */
 
@@ -201,7 +223,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getArray(int)
    */
 
@@ -210,7 +234,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getArray(java.lang.String)
    */
 
@@ -219,7 +245,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getAsciiStream(int)
    */
 
@@ -228,7 +256,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getAsciiStream(java.lang.String)
    */
 
@@ -237,7 +267,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBigDecimal(int)
    */
 
@@ -246,7 +278,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBigDecimal(java.lang.String)
    */
 
@@ -255,7 +289,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBigDecimal(int, int)
    */
 
@@ -265,7 +301,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
    */
 
@@ -275,7 +313,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBinaryStream(int)
    */
 
@@ -284,7 +324,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
    */
 
@@ -293,7 +335,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBlob(int)
    */
 
@@ -302,7 +346,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBlob(java.lang.String)
    */
 
@@ -311,19 +357,24 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBoolean(int)
    */
 
   public boolean getBoolean(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     if (Number.class.isInstance(obj)) {
-      return ((Number)obj).intValue() != 0;
+      return ((Number) obj).intValue() != 0;
     }
-    throw new SQLException("Cannot convert column " + columnIndex + " to boolean");
+    throw new SQLException("Cannot convert column " + columnIndex
+        + " to boolean");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBoolean(java.lang.String)
    */
 
@@ -332,19 +383,23 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getByte(int)
    */
 
   public byte getByte(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
     if (Number.class.isInstance(obj)) {
-      return ((Number)obj).byteValue();
+      return ((Number) obj).byteValue();
     }
     throw new SQLException("Cannot convert column " + columnIndex + " to byte");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getByte(java.lang.String)
    */
 
@@ -353,7 +408,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBytes(int)
    */
 
@@ -362,7 +419,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getBytes(java.lang.String)
    */
 
@@ -371,7 +430,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getCharacterStream(int)
    */
 
@@ -380,7 +441,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getCharacterStream(java.lang.String)
    */
 
@@ -389,7 +452,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getClob(int)
    */
 
@@ -398,7 +463,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getClob(java.lang.String)
    */
 
@@ -407,7 +474,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getConcurrency()
    */
 
@@ -416,7 +485,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getCursorName()
    */
 
@@ -425,23 +496,29 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDate(int)
    */
 
   public Date getDate(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
-    if (obj == null) return null;
+    if (obj == null) {
+      return null;
+    }
 
     try {
-      return Date.valueOf((String)obj);
-    }
-    catch (Exception e) {
-    throw new SQLException("Cannot convert column " + columnIndex + " to date: " + e.toString());
+      return Date.valueOf((String) obj);
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to date: " + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDate(java.lang.String)
    */
 
@@ -450,7 +527,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
    */
 
@@ -459,7 +538,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
    */
 
@@ -468,7 +549,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDouble(int)
    */
 
@@ -476,16 +559,18 @@ public class HiveResultSet implements java.sql.ResultSet {
     try {
       Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
-        return ((Number)obj).doubleValue();
+        return ((Number) obj).doubleValue();
       }
       throw new Exception("Illegal conversion");
-    }
-    catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to double: " + e.toString());
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to double: " + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getDouble(java.lang.String)
    */
 
@@ -494,7 +579,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getFetchDirection()
    */
 
@@ -503,7 +590,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getFetchSize()
    */
 
@@ -512,7 +601,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getFloat(int)
    */
 
@@ -520,16 +611,18 @@ public class HiveResultSet implements java.sql.ResultSet {
     try {
       Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
-        return ((Number)obj).floatValue();
+        return ((Number) obj).floatValue();
       }
       throw new Exception("Illegal conversion");
-    }
-    catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to float: " + e.toString());
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to float: " + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getFloat(java.lang.String)
    */
 
@@ -537,7 +630,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getHoldability()
    */
 
@@ -546,7 +641,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getInt(int)
    */
 
@@ -554,16 +651,18 @@ public class HiveResultSet implements java.sql.ResultSet {
     try {
       Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
-        return ((Number)obj).intValue();
+        return ((Number) obj).intValue();
       }
       throw new Exception("Illegal conversion");
-    }
-    catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to integer" + e.toString());
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to integer" + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getInt(java.lang.String)
    */
 
@@ -572,7 +671,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getLong(int)
    */
 
@@ -580,16 +681,18 @@ public class HiveResultSet implements java.sql.ResultSet {
     try {
       Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
-        return ((Number)obj).longValue();
+        return ((Number) obj).longValue();
       }
       throw new Exception("Illegal conversion");
-    }
-    catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to long: " + e.toString());
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to long: " + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getLong(java.lang.String)
    */
 
@@ -598,7 +701,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getMetaData()
    */
 
@@ -606,7 +711,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     return new HiveResultSetMetaData(columnNames, columnTypes);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNCharacterStream(int)
    */
 
@@ -615,7 +722,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNCharacterStream(java.lang.String)
    */
 
@@ -624,7 +733,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNClob(int)
    */
 
@@ -633,7 +744,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNClob(java.lang.String)
    */
 
@@ -642,7 +755,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNString(int)
    */
 
@@ -651,7 +766,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getNString(java.lang.String)
    */
 
@@ -660,7 +777,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getObject(int)
    */
 
@@ -674,17 +793,20 @@ public class HiveResultSet implements java.sql.ResultSet {
     }
 
     try {
-      this.wasNull = false;
-      if (row.get(columnIndex-1) == null) this.wasNull = true;
+      wasNull = false;
+      if (row.get(columnIndex - 1) == null) {
+        wasNull = true;
+      }
 
-      return row.get(columnIndex-1);
-    }
-    catch (Exception e) {
+      return row.get(columnIndex - 1);
+    } catch (Exception e) {
       throw new SQLException(e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getObject(java.lang.String)
    */
 
@@ -693,17 +815,20 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getObject(int, java.util.Map)
    */
 
-  public Object getObject(int i, Map<String, Class<?>> map)
-      throws SQLException {
+  public Object getObject(int i, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
    */
 
@@ -713,7 +838,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getRef(int)
    */
 
@@ -722,7 +849,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getRef(java.lang.String)
    */
 
@@ -731,7 +860,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getRow()
    */
 
@@ -740,7 +871,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getRowId(int)
    */
 
@@ -749,7 +882,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getRowId(java.lang.String)
    */
 
@@ -758,7 +893,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getSQLXML(int)
    */
 
@@ -767,7 +904,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getSQLXML(java.lang.String)
    */
 
@@ -776,7 +915,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getShort(int)
    */
 
@@ -784,16 +925,18 @@ public class HiveResultSet implements java.sql.ResultSet {
     try {
       Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
-        return ((Number)obj).shortValue();
+        return ((Number) obj).shortValue();
       }
       throw new Exception("Illegal conversion");
-    }
-    catch (Exception e) {
-      throw new SQLException("Cannot convert column " + columnIndex + " to short: " + e.toString());
+    } catch (Exception e) {
+      throw new SQLException("Cannot convert column " + columnIndex
+          + " to short: " + e.toString());
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getShort(java.lang.String)
    */
 
@@ -802,7 +945,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getStatement()
    */
 
@@ -812,19 +957,24 @@ public class HiveResultSet implements java.sql.ResultSet {
   }
 
   /**
-   * @param columnIndex - the first column is 1, the second is 2, ...
+   * @param columnIndex
+   *          - the first column is 1, the second is 2, ...
    * @see java.sql.ResultSet#getString(int)
    */
 
   public String getString(int columnIndex) throws SQLException {
     // Column index starts from 1, not 0.
     Object obj = getObject(columnIndex);
-    if (obj == null) return null;
+    if (obj == null) {
+      return null;
+    }
 
     return obj.toString();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getString(java.lang.String)
    */
 
@@ -833,7 +983,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTime(int)
    */
 
@@ -842,7 +994,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTime(java.lang.String)
    */
 
@@ -851,7 +1005,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
    */
 
@@ -860,7 +1016,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTime(java.lang.String, java.util.Calendar)
    */
 
@@ -869,7 +1027,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTimestamp(int)
    */
 
@@ -878,7 +1038,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTimestamp(java.lang.String)
    */
 
@@ -887,7 +1049,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
    */
 
@@ -897,7 +1061,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
    */
 
@@ -907,7 +1073,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getType()
    */
 
@@ -916,7 +1084,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getURL(int)
    */
 
@@ -925,7 +1095,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getURL(java.lang.String)
    */
 
@@ -934,7 +1106,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getUnicodeStream(int)
    */
 
@@ -943,7 +1117,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getUnicodeStream(java.lang.String)
    */
 
@@ -952,7 +1128,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#getWarnings()
    */
 
@@ -960,7 +1138,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     return warningChain;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#insertRow()
    */
 
@@ -969,7 +1149,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#isAfterLast()
    */
 
@@ -978,7 +1160,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#isBeforeFirst()
    */
 
@@ -987,7 +1171,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#isClosed()
    */
 
@@ -996,7 +1182,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#isFirst()
    */
 
@@ -1005,7 +1193,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#isLast()
    */
 
@@ -1014,7 +1204,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#last()
    */
 
@@ -1023,7 +1215,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#moveToCurrentRow()
    */
 
@@ -1032,7 +1226,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#moveToInsertRow()
    */
 
@@ -1043,21 +1239,24 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   /**
    * Moves the cursor down one row from its current position.
-   *
+   * 
    * @see java.sql.ResultSet#next()
-   * @throws SQLException if a database access error occurs.
+   * @throws SQLException
+   *           if a database access error occurs.
    */
 
   public boolean next() throws SQLException {
-    if (this.maxRows > 0 && this.rowsFetched >= this.maxRows) return false;
+    if (maxRows > 0 && rowsFetched >= maxRows) {
+      return false;
+    }
 
     String row_str = "";
     try {
-      row_str = (String)client.fetchOne();
-      this.rowsFetched++;
+      row_str = (String) client.fetchOne();
+      rowsFetched++;
       if (!row_str.equals("")) {
         Object o = ds.deserialize(new BytesWritable(row_str.getBytes()));
-        row = (ArrayList<?>)o;
+        row = (ArrayList<?>) o;
       }
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -1067,7 +1266,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     return !row_str.equals("");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#previous()
    */
 
@@ -1076,7 +1277,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#refreshRow()
    */
 
@@ -1085,7 +1288,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#relative(int)
    */
 
@@ -1094,7 +1299,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#rowDeleted()
    */
 
@@ -1103,7 +1310,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#rowInserted()
    */
 
@@ -1112,7 +1321,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#rowUpdated()
    */
 
@@ -1121,7 +1332,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#setFetchDirection(int)
    */
 
@@ -1130,7 +1343,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#setFetchSize(int)
    */
 
@@ -1139,7 +1354,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateArray(int, java.sql.Array)
    */
 
@@ -1148,7 +1365,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateArray(java.lang.String, java.sql.Array)
    */
 
@@ -1157,7 +1376,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateAsciiStream(int, java.io.InputStream)
    */
 
@@ -1167,8 +1388,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String, java.io.InputStream)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String,
+   * java.io.InputStream)
    */
 
   public void updateAsciiStream(String columnLabel, InputStream x)
@@ -1177,7 +1401,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateAsciiStream(int, java.io.InputStream, int)
    */
 
@@ -1187,8 +1413,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String,
+   * java.io.InputStream, int)
    */
 
   public void updateAsciiStream(String columnName, InputStream x, int length)
@@ -1197,7 +1426,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateAsciiStream(int, java.io.InputStream, long)
    */
 
@@ -1207,8 +1438,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateAsciiStream(java.lang.String,
+   * java.io.InputStream, long)
    */
 
   public void updateAsciiStream(String columnLabel, InputStream x, long length)
@@ -1217,7 +1451,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBigDecimal(int, java.math.BigDecimal)
    */
 
@@ -1227,8 +1463,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateBigDecimal(java.lang.String, java.math.BigDecimal)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateBigDecimal(java.lang.String,
+   * java.math.BigDecimal)
    */
 
   public void updateBigDecimal(String columnName, BigDecimal x)
@@ -1237,7 +1476,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBinaryStream(int, java.io.InputStream)
    */
 
@@ -1247,8 +1488,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String, java.io.InputStream)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String,
+   * java.io.InputStream)
    */
 
   public void updateBinaryStream(String columnLabel, InputStream x)
@@ -1257,7 +1501,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBinaryStream(int, java.io.InputStream, int)
    */
 
@@ -1267,8 +1513,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String, java.io.InputStream, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String,
+   * java.io.InputStream, int)
    */
 
   public void updateBinaryStream(String columnName, InputStream x, int length)
@@ -1277,7 +1526,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBinaryStream(int, java.io.InputStream, long)
    */
 
@@ -1287,17 +1538,22 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateBinaryStream(java.lang.String,
+   * java.io.InputStream, long)
    */
 
-  public void updateBinaryStream(String columnLabel, InputStream x,
-      long length) throws SQLException {
+  public void updateBinaryStream(String columnLabel, InputStream x, long length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBlob(int, java.sql.Blob)
    */
 
@@ -1306,7 +1562,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBlob(java.lang.String, java.sql.Blob)
    */
 
@@ -1315,7 +1573,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBlob(int, java.io.InputStream)
    */
 
@@ -1325,7 +1585,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBlob(java.lang.String, java.io.InputStream)
    */
 
@@ -1335,7 +1597,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBlob(int, java.io.InputStream, long)
    */
 
@@ -1345,8 +1609,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateBlob(java.lang.String, java.io.InputStream, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateBlob(java.lang.String, java.io.InputStream,
+   * long)
    */
 
   public void updateBlob(String columnLabel, InputStream inputStream,
@@ -1355,7 +1622,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBoolean(int, boolean)
    */
 
@@ -1364,7 +1633,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBoolean(java.lang.String, boolean)
    */
 
@@ -1373,7 +1644,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateByte(int, byte)
    */
 
@@ -1382,7 +1655,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateByte(java.lang.String, byte)
    */
 
@@ -1391,7 +1666,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBytes(int, byte[])
    */
 
@@ -1400,7 +1677,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateBytes(java.lang.String, byte[])
    */
 
@@ -1409,7 +1688,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateCharacterStream(int, java.io.Reader)
    */
 
@@ -1419,8 +1700,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String, java.io.Reader)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String,
+   * java.io.Reader)
    */
 
   public void updateCharacterStream(String columnLabel, Reader reader)
@@ -1429,7 +1713,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateCharacterStream(int, java.io.Reader, int)
    */
 
@@ -1439,17 +1725,22 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String, java.io.Reader, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String,
+   * java.io.Reader, int)
    */
 
-  public void updateCharacterStream(String columnName, Reader reader,
-      int length) throws SQLException {
+  public void updateCharacterStream(String columnName, Reader reader, int length)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateCharacterStream(int, java.io.Reader, long)
    */
 
@@ -1459,8 +1750,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateCharacterStream(java.lang.String,
+   * java.io.Reader, long)
    */
 
   public void updateCharacterStream(String columnLabel, Reader reader,
@@ -1469,7 +1763,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(int, java.sql.Clob)
    */
 
@@ -1478,7 +1774,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(java.lang.String, java.sql.Clob)
    */
 
@@ -1487,7 +1785,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(int, java.io.Reader)
    */
 
@@ -1496,17 +1796,20 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(java.lang.String, java.io.Reader)
    */
 
-  public void updateClob(String columnLabel, Reader reader)
-      throws SQLException {
+  public void updateClob(String columnLabel, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(int, java.io.Reader, long)
    */
 
@@ -1516,7 +1819,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateClob(java.lang.String, java.io.Reader, long)
    */
 
@@ -1526,7 +1831,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateDate(int, java.sql.Date)
    */
 
@@ -1535,7 +1842,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateDate(java.lang.String, java.sql.Date)
    */
 
@@ -1544,7 +1853,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateDouble(int, double)
    */
 
@@ -1553,7 +1864,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateDouble(java.lang.String, double)
    */
 
@@ -1562,7 +1875,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateFloat(int, float)
    */
 
@@ -1571,7 +1886,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateFloat(java.lang.String, float)
    */
 
@@ -1580,7 +1897,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateInt(int, int)
    */
 
@@ -1589,7 +1908,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateInt(java.lang.String, int)
    */
 
@@ -1598,7 +1919,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateLong(int, long)
    */
 
@@ -1607,7 +1930,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateLong(java.lang.String, long)
    */
 
@@ -1616,7 +1941,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNCharacterStream(int, java.io.Reader)
    */
 
@@ -1626,8 +1953,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateNCharacterStream(java.lang.String, java.io.Reader)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateNCharacterStream(java.lang.String,
+   * java.io.Reader)
    */
 
   public void updateNCharacterStream(String columnLabel, Reader reader)
@@ -1636,7 +1966,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNCharacterStream(int, java.io.Reader, long)
    */
 
@@ -1646,8 +1978,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateNCharacterStream(java.lang.String, java.io.Reader, long)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateNCharacterStream(java.lang.String,
+   * java.io.Reader, long)
    */
 
   public void updateNCharacterStream(String columnLabel, Reader reader,
@@ -1656,7 +1991,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(int, java.sql.NClob)
    */
 
@@ -1665,7 +2002,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(java.lang.String, java.sql.NClob)
    */
 
@@ -1674,7 +2013,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(int, java.io.Reader)
    */
 
@@ -1683,7 +2024,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(java.lang.String, java.io.Reader)
    */
 
@@ -1693,7 +2036,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(int, java.io.Reader, long)
    */
 
@@ -1703,7 +2048,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNClob(java.lang.String, java.io.Reader, long)
    */
 
@@ -1713,17 +2060,20 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNString(int, java.lang.String)
    */
 
-  public void updateNString(int columnIndex, String string)
-      throws SQLException {
+  public void updateNString(int columnIndex, String string) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNString(java.lang.String, java.lang.String)
    */
 
@@ -1733,7 +2083,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNull(int)
    */
 
@@ -1742,7 +2094,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateNull(java.lang.String)
    */
 
@@ -1751,7 +2105,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateObject(int, java.lang.Object)
    */
 
@@ -1760,7 +2116,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateObject(java.lang.String, java.lang.Object)
    */
 
@@ -1769,7 +2127,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateObject(int, java.lang.Object, int)
    */
 
@@ -1779,8 +2139,11 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateObject(java.lang.String, java.lang.Object, int)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateObject(java.lang.String, java.lang.Object,
+   * int)
    */
 
   public void updateObject(String columnName, Object x, int scale)
@@ -1789,7 +2152,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateRef(int, java.sql.Ref)
    */
 
@@ -1798,7 +2163,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateRef(java.lang.String, java.sql.Ref)
    */
 
@@ -1807,7 +2174,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateRow()
    */
 
@@ -1816,7 +2185,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateRowId(int, java.sql.RowId)
    */
 
@@ -1825,7 +2196,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateRowId(java.lang.String, java.sql.RowId)
    */
 
@@ -1834,7 +2207,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateSQLXML(int, java.sql.SQLXML)
    */
 
@@ -1844,7 +2219,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateSQLXML(java.lang.String, java.sql.SQLXML)
    */
 
@@ -1854,7 +2231,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateShort(int, short)
    */
 
@@ -1863,7 +2242,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateShort(java.lang.String, short)
    */
 
@@ -1872,7 +2253,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateString(int, java.lang.String)
    */
 
@@ -1881,7 +2264,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateString(java.lang.String, java.lang.String)
    */
 
@@ -1890,7 +2275,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateTime(int, java.sql.Time)
    */
 
@@ -1899,7 +2286,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateTime(java.lang.String, java.sql.Time)
    */
 
@@ -1908,18 +2297,22 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#updateTimestamp(int, java.sql.Timestamp)
    */
 
-  public void updateTimestamp(int columnIndex, Timestamp x)
-      throws SQLException {
+  public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
-   * @see java.sql.ResultSet#updateTimestamp(java.lang.String, java.sql.Timestamp)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.sql.ResultSet#updateTimestamp(java.lang.String,
+   * java.sql.Timestamp)
    */
 
   public void updateTimestamp(String columnName, Timestamp x)
@@ -1928,15 +2321,19 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.ResultSet#wasNull()
    */
 
   public boolean wasNull() throws SQLException {
-    return this.wasNull;
+    return wasNull;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -1945,7 +2342,9 @@ public class HiveResultSet implements java.sql.ResultSet {
     throw new SQLException("Method not supported");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 

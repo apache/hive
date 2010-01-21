@@ -27,13 +27,13 @@ public class UDFExampleStructPrint extends UDF {
     if (a == null) {
       return null;
     }
-    List<Object> s = (List<Object>)a;
-    
+    List<Object> s = (List<Object>) a;
+
     StringBuilder sb = new StringBuilder();
-    for (int i=0; i<s.size(); i++) {
+    for (int i = 0; i < s.size(); i++) {
       sb.append("(" + i + ":" + s.get(i) + ")");
     }
     return sb.toString();
   }
-  
+
 }

@@ -32,13 +32,15 @@ public class TypedBytesRecordInput implements RecordInput {
 
   private TypedBytesInput in;
 
-  private TypedBytesRecordInput() {}
+  private TypedBytesRecordInput() {
+  }
 
   private void setTypedBytesInput(TypedBytesInput in) {
     this.in = in;
   }
 
   private static ThreadLocal tbIn = new ThreadLocal() {
+    @Override
     protected synchronized Object initialValue() {
       return new TypedBytesRecordInput();
     }
@@ -48,7 +50,8 @@ public class TypedBytesRecordInput implements RecordInput {
    * Get a thread-local typed bytes record input for the supplied
    * {@link TypedBytesInput}.
    * 
-   * @param in typed bytes input object
+   * @param in
+   *          typed bytes input object
    * @return typed bytes record input corresponding to the supplied
    *         {@link TypedBytesInput}.
    */
@@ -62,7 +65,8 @@ public class TypedBytesRecordInput implements RecordInput {
    * Get a thread-local typed bytes record input for the supplied
    * {@link DataInput}.
    * 
-   * @param in data input object
+   * @param in
+   *          data input object
    * @return typed bytes record input corresponding to the supplied
    *         {@link DataInput}.
    */
@@ -134,13 +138,16 @@ public class TypedBytesRecordInput implements RecordInput {
     return new TypedBytesIndex(in.readMapHeader());
   }
 
-  public void endRecord(String tag) throws IOException {}
+  public void endRecord(String tag) throws IOException {
+  }
 
-  public void endVector(String tag) throws IOException {}
+  public void endVector(String tag) throws IOException {
+  }
 
-  public void endMap(String tag) throws IOException {}
+  public void endMap(String tag) throws IOException {
+  }
 
-  private static  final class TypedBytesIndex implements Index {
+  private static final class TypedBytesIndex implements Index {
     private int nelems;
 
     private TypedBytesIndex(int nelems) {

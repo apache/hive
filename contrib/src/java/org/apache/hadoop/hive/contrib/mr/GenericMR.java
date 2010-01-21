@@ -40,45 +40,50 @@ import java.util.NoSuchElementException;
  * 
  * As an example, here's the wordcount reduce:
  * 
- * new GenericMR().reduce(System.in, System.out, new Reducer() {
- *   public void reduce(String key, Iterator<String[]> records, Output output) throws Exception {
- *     int count = 0;
+ * new GenericMR().reduce(System.in, System.out, new Reducer() { public void
+ * reduce(String key, Iterator<String[]> records, Output output) throws
+ * Exception { int count = 0;
  * 
- *     while (records.hasNext()) {
- *       count += Integer.parseInt(records.next()[1]);
- *     }
+ * while (records.hasNext()) { count += Integer.parseInt(records.next()[1]); }
  * 
- *     output.collect(new String[] { key, String.valueOf(count) }); 
- *   }});
+ * output.collect(new String[] { key, String.valueOf(count) }); }});
  */
 public final class GenericMR {
-  public void map(final InputStream in, final OutputStream out, final Mapper mapper) throws Exception {
+  public void map(final InputStream in, final OutputStream out,
+      final Mapper mapper) throws Exception {
     map(new InputStreamReader(in), new OutputStreamWriter(out), mapper);
   }
 
-  public void map(final Reader in, final Writer out, final Mapper mapper) throws Exception {
+  public void map(final Reader in, final Writer out, final Mapper mapper)
+      throws Exception {
     handle(in, out, new RecordProcessor() {
       @Override
-      public void processNext(RecordReader reader, Output output) throws Exception {
+      public void processNext(RecordReader reader, Output output)
+          throws Exception {
         mapper.map(reader.next(), output);
       }
     });
   }
 
-  public void reduce(final InputStream in, final OutputStream out, final Reducer reducer) throws Exception {
+  public void reduce(final InputStream in, final OutputStream out,
+      final Reducer reducer) throws Exception {
     reduce(new InputStreamReader(in), new OutputStreamWriter(out), reducer);
   }
 
-  public void reduce(final Reader in, final Writer out, final Reducer reducer) throws Exception {
+  public void reduce(final Reader in, final Writer out, final Reducer reducer)
+      throws Exception {
     handle(in, out, new RecordProcessor() {
       @Override
-      public void processNext(RecordReader reader, Output output) throws Exception {
-        reducer.reduce(reader.peek()[0], new KeyRecordIterator(reader.peek()[0], reader), output);
+      public void processNext(RecordReader reader, Output output)
+          throws Exception {
+        reducer.reduce(reader.peek()[0], new KeyRecordIterator(
+            reader.peek()[0], reader), output);
       }
     });
   }
 
-  private void handle(final Reader in, final Writer out, final RecordProcessor processor) throws Exception {
+  private void handle(final Reader in, final Writer out,
+      final RecordProcessor processor) throws Exception {
     final RecordReader reader = new RecordReader(in);
     final OutputStreamOutput output = new OutputStreamOutput(out);
 
@@ -96,7 +101,8 @@ public final class GenericMR {
   }
 
   private static interface RecordProcessor {
-    void processNext(final RecordReader reader, final Output output) throws Exception;
+    void processNext(final RecordReader reader, final Output output)
+        throws Exception;
   }
 
   private static final class KeyRecordIterator implements Iterator<String[]> {
@@ -110,7 +116,7 @@ public final class GenericMR {
 
     @Override
     public boolean hasNext() {
-      return (this.reader.hasNext() && this.key.equals(this.reader.peek()[0]));
+      return (reader.hasNext() && key.equals(reader.peek()[0]));
     }
 
     @Override
@@ -119,7 +125,7 @@ public final class GenericMR {
         throw new NoSuchElementException();
       }
 
-      return this.reader.next();
+      return reader.next();
     }
 
     @Override
@@ -137,21 +143,21 @@ public final class GenericMR {
     }
 
     private RecordReader(final Reader in) {
-      this.reader = new BufferedReader(in);
-      this.next = readNext();
+      reader = new BufferedReader(in);
+      next = readNext();
     }
 
     private String[] next() {
       final String[] ret = next;
 
-      this.next = readNext();
+      next = readNext();
 
       return ret;
     }
 
     private String[] readNext() {
       try {
-        final String line = this.reader.readLine();
+        final String line = reader.readLine();
         return (line == null ? null : line.split("\t"));
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -167,7 +173,7 @@ public final class GenericMR {
     }
 
     private void close() throws Exception {
-      this.reader.close();
+      reader.close();
     }
   }
 
@@ -190,13 +196,13 @@ public final class GenericMR {
     public void collect(String[] record) throws Exception {
       out.println(_join(record, "\t"));
     }
-    
+
     private static String _join(final String[] record, final String separator) {
       if (record == null || record.length == 0) {
         return "";
       }
       final StringBuilder sb = new StringBuilder();
-      for (int i=0; i< record.length; i++) {
+      for (int i = 0; i < record.length; i++) {
         if (i > 0) {
           sb.append(separator);
         }

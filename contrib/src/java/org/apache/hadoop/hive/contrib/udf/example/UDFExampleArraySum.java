@@ -28,7 +28,7 @@ public class UDFExampleArraySum extends UDF {
       return null;
     }
     double total = 0;
-    for (int i=0; i<a.size(); i++) {
+    for (int i = 0; i < a.size(); i++) {
       Double e = a.get(i);
       if (e != null) {
         total += e;
@@ -36,5 +36,5 @@ public class UDFExampleArraySum extends UDF {
     }
     return total;
   }
-  
+
 }

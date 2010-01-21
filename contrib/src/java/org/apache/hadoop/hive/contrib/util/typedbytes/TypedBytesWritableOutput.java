@@ -53,13 +53,15 @@ public class TypedBytesWritableOutput {
 
   private TypedBytesOutput out;
 
-  private TypedBytesWritableOutput() {}
+  private TypedBytesWritableOutput() {
+  }
 
   private void setTypedBytesOutput(TypedBytesOutput out) {
     this.out = out;
   }
 
   private static ThreadLocal tbOut = new ThreadLocal() {
+    @Override
     protected synchronized Object initialValue() {
       return new TypedBytesWritableOutput();
     }
@@ -69,7 +71,8 @@ public class TypedBytesWritableOutput {
    * Get a thread-local typed bytes writable input for the supplied
    * {@link TypedBytesOutput}.
    * 
-   * @param out typed bytes output object
+   * @param out
+   *          typed bytes output object
    * @return typed bytes writable output corresponding to the supplied
    *         {@link TypedBytesOutput}.
    */
@@ -83,7 +86,8 @@ public class TypedBytesWritableOutput {
    * Get a thread-local typed bytes writable output for the supplied
    * {@link DataOutput}.
    * 
-   * @param out data output object
+   * @param out
+   *          data output object
    * @return typed bytes writable output corresponding to the supplied
    *         {@link DataOutput}.
    */
@@ -126,7 +130,7 @@ public class TypedBytesWritableOutput {
     } else if (w instanceof Text) {
       writeText((Text) w);
     } else if (w instanceof ShortWritable) {
-      writeShort((ShortWritable)w);
+      writeShort((ShortWritable) w);
     } else if (w instanceof ArrayWritable) {
       writeArray((ArrayWritable) w);
     } else if (w instanceof MapWritable) {

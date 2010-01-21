@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
-
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -47,7 +46,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Provides functionality for reading typed bytes as Writable objects.
- *
+ * 
  * @see TypedBytesInput
  */
 public class TypedBytesWritableInput implements Configurable {
@@ -64,6 +63,7 @@ public class TypedBytesWritableInput implements Configurable {
   }
 
   private static ThreadLocal tbIn = new ThreadLocal() {
+    @Override
     protected synchronized Object initialValue() {
       return new TypedBytesWritableInput();
     }
@@ -72,8 +72,9 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link TypedBytesInput}.
-   *
-   * @param in typed bytes input object
+   * 
+   * @param in
+   *          typed bytes input object
    * @return typed bytes writable input corresponding to the supplied
    *         {@link TypedBytesInput}.
    */
@@ -86,8 +87,9 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link DataInput}.
-   *
-   * @param in data input object
+   * 
+   * @param in
+   *          data input object
    * @return typed bytes writable input corresponding to the supplied
    *         {@link DataInput}.
    */
@@ -355,7 +357,7 @@ public class TypedBytesWritableInput implements Configurable {
   }
 
   public SortedMapWritable readSortedMap(SortedMapWritable mw)
-    throws IOException {
+      throws IOException {
     if (mw == null) {
       mw = new SortedMapWritable();
     }
@@ -378,8 +380,8 @@ public class TypedBytesWritableInput implements Configurable {
     String className = WritableUtils.readString(dis);
     if (writable == null) {
       try {
-        Class<? extends Writable> cls =
-          conf.getClassByName(className).asSubclass(Writable.class);
+        Class<? extends Writable> cls = conf.getClassByName(className)
+            .asSubclass(Writable.class);
         writable = (Writable) ReflectionUtils.newInstance(cls, conf);
       } catch (ClassNotFoundException e) {
         throw new IOException(e);

@@ -35,13 +35,15 @@ public class TypedBytesInput {
 
   private DataInput in;
 
-  private TypedBytesInput() {}
+  private TypedBytesInput() {
+  }
 
   private void setDataInput(DataInput in) {
     this.in = in;
   }
 
   private static ThreadLocal tbIn = new ThreadLocal() {
+    @Override
     protected synchronized Object initialValue() {
       return new TypedBytesInput();
     }
@@ -49,7 +51,9 @@ public class TypedBytesInput {
 
   /**
    * Get a thread-local typed bytes input for the supplied {@link DataInput}.
-   * @param in data input object
+   * 
+   * @param in
+   *          data input object
    * @return typed bytes input corresponding to the supplied {@link DataInput}.
    */
   public static TypedBytesInput get(DataInput in) {
@@ -64,9 +68,10 @@ public class TypedBytesInput {
   }
 
   /**
-   * Reads a typed bytes sequence and converts it to a Java object. The first 
-   * byte is interpreted as a type code, and then the right number of 
-   * subsequent bytes are read depending on the obtained type.
+   * Reads a typed bytes sequence and converts it to a Java object. The first
+   * byte is interpreted as a type code, and then the right number of subsequent
+   * bytes are read depending on the obtained type.
+   * 
    * @return the obtained object or null when the end of the file is reached
    * @throws IOException
    */
@@ -159,6 +164,7 @@ public class TypedBytesInput {
 
   /**
    * Reads a type byte and returns the corresponding {@link Type}.
+   * 
    * @return the obtained Type or null when the end of the file is reached
    * @throws IOException
    */
@@ -179,6 +185,7 @@ public class TypedBytesInput {
 
   /**
    * Skips a type byte.
+   * 
    * @return true iff the end of the file was not reached
    * @throws IOException
    */
@@ -193,6 +200,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the bytes following a <code>Type.BYTES</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -205,6 +213,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.BYTES</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -222,6 +231,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the byte following a <code>Type.BYTE</code> code.
+   * 
    * @return the obtained byte
    * @throws IOException
    */
@@ -231,6 +241,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw byte following a <code>Type.BYTE</code> code.
+   * 
    * @return the obtained byte
    * @throws IOException
    */
@@ -243,6 +254,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the boolean following a <code>Type.BOOL</code> code.
+   * 
    * @return the obtained boolean
    * @throws IOException
    */
@@ -252,6 +264,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.BOOL</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -264,6 +277,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the integer following a <code>Type.INT</code> code.
+   * 
    * @return the obtained integer
    * @throws IOException
    */
@@ -273,6 +287,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the short following a <code>Type.SHORT</code> code.
+   * 
    * @return the obtained short
    * @throws IOException
    */
@@ -282,6 +297,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.INT</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -294,6 +310,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the long following a <code>Type.LONG</code> code.
+   * 
    * @return the obtained long
    * @throws IOException
    */
@@ -303,6 +320,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.LONG</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -315,6 +333,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the float following a <code>Type.FLOAT</code> code.
+   * 
    * @return the obtained float
    * @throws IOException
    */
@@ -324,6 +343,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.FLOAT</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -336,6 +356,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the double following a <code>Type.DOUBLE</code> code.
+   * 
    * @return the obtained double
    * @throws IOException
    */
@@ -345,6 +366,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.DOUBLE</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -357,6 +379,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the string following a <code>Type.STRING</code> code.
+   * 
    * @return the obtained string
    * @throws IOException
    */
@@ -366,6 +389,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.STRING</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -383,6 +407,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the vector following a <code>Type.VECTOR</code> code.
+   * 
    * @return the obtained vector
    * @throws IOException
    */
@@ -398,17 +423,16 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.VECTOR</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
   public byte[] readRawVector() throws IOException {
     Buffer buffer = new Buffer();
     int length = readVectorHeader();
-    buffer.append(new byte[] {
-      (byte) Type.VECTOR.code,
-      (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
-      (byte) (0xff & (length >> 8)), (byte) (0xff & length)
-    });
+    buffer.append(new byte[] { (byte) Type.VECTOR.code,
+        (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
+        (byte) (0xff & (length >> 8)), (byte) (0xff & length) });
     for (int i = 0; i < length; i++) {
       buffer.append(readRaw());
     }
@@ -417,6 +441,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the header following a <code>Type.VECTOR</code> code.
+   * 
    * @return the number of elements in the vector
    * @throws IOException
    */
@@ -426,6 +451,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the list following a <code>Type.LIST</code> code.
+   * 
    * @return the obtained list
    * @throws IOException
    */
@@ -442,6 +468,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.LIST</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
@@ -458,6 +485,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the map following a <code>Type.MAP</code> code.
+   * 
    * @return the obtained map
    * @throws IOException
    */
@@ -475,17 +503,16 @@ public class TypedBytesInput {
 
   /**
    * Reads the raw bytes following a <code>Type.MAP</code> code.
+   * 
    * @return the obtained bytes sequence
    * @throws IOException
    */
   public byte[] readRawMap() throws IOException {
     Buffer buffer = new Buffer();
     int length = readMapHeader();
-    buffer.append(new byte[] {
-      (byte) Type.MAP.code,
-      (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
-      (byte) (0xff & (length >> 8)), (byte) (0xff & length)
-    });
+    buffer.append(new byte[] { (byte) Type.MAP.code,
+        (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
+        (byte) (0xff & (length >> 8)), (byte) (0xff & length) });
     for (int i = 0; i < length; i++) {
       buffer.append(readRaw());
       buffer.append(readRaw());
@@ -495,6 +522,7 @@ public class TypedBytesInput {
 
   /**
    * Reads the header following a <code>Type.MAP</code> code.
+   * 
    * @return the number of key-value pairs in the map
    * @throws IOException
    */

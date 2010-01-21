@@ -23,18 +23,22 @@ public class UDFExampleAdd extends UDF {
 
   public Integer evaluate(Integer... a) {
     int total = 0;
-    for (int i=0; i<a.length; i++) {
-      if (a[i] != null) total += a[i];
+    for (Integer element : a) {
+      if (element != null) {
+        total += element;
+      }
     }
     return total;
   }
-  
+
   public Double evaluate(Double... a) {
     double total = 0;
-    for (int i=0; i<a.length; i++) {
-      if (a[i] != null) total += a[i];
+    for (Double element : a) {
+      if (element != null) {
+        total += element;
+      }
     }
     return total;
   }
-  
+
 }

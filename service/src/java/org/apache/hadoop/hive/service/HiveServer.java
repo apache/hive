@@ -25,10 +25,16 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.service.ThriftHive;
-import org.apache.hadoop.hive.service.HiveServerException;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
+import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.JobTracker;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
@@ -40,16 +46,6 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
-import org.apache.hadoop.hive.ql.plan.api.Query;
-import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
-import org.apache.hadoop.hive.ql.processors.CommandProcessor;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.*;
-import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.JobTracker;
-
 /**
  * Thrift Hive Server Implementation
  */
@@ -57,21 +53,16 @@ public class HiveServer extends ThriftHive {
   private final static String VERSION = "0";
 
   /**
-   * Handler which implements the Hive Interface
-   * This class can be used in lieu of the HiveClient class
-   * to get an embedded server
+   * Handler which implements the Hive Interface This class can be used in lieu
+   * of the HiveClient class to get an embedded server
    */
-  public static class HiveServerHandler extends HiveMetaStore.HMSHandler implements HiveInterface {
+  public static class HiveServerHandler extends HiveMetaStore.HMSHandler
+      implements HiveInterface {
     /**
-     * Hive server uses org.apache.hadoop.hive.ql.Driver for run() and 
+     * Hive server uses org.apache.hadoop.hive.ql.Driver for run() and
      * getResults() methods.
      */
-    private Driver driver;
-
-    /**
-     * Stores state per connection
-     */
-    private SessionState session;
+    private final Driver driver;
 
     /**
      * Flag that indicates whether the last executed command was a Hive query
@@ -97,24 +88,25 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Executes a query.
-     *
-     * @param cmd HiveQL query to execute
+     * 
+     * @param cmd
+     *          HiveQL query to execute
      */
     public void execute(String cmd) throws HiveServerException, TException {
       HiveServerHandler.LOG.info("Running the query: " + cmd);
-      SessionState ss = SessionState.get();
+      SessionState.get();
 
       String cmd_trimmed = cmd.trim();
       String[] tokens = cmd_trimmed.split("\\s");
       String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
-      
+
       int ret = 0;
       String errorMessage = "";
       String SQLState = null;
 
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
-        if(proc != null) {
+        if (proc != null) {
           if (proc instanceof Driver) {
             isHiveQuery = true;
             Driver.DriverResponse response = driver.runCommand(cmd);
@@ -133,15 +125,16 @@ public class HiveServer extends ThriftHive {
       }
 
       if (ret != 0) {
-        throw new HiveServerException("Query returned non-zero code: " + ret +
-                                      ", cause: " + errorMessage, ret, SQLState);
+        throw new HiveServerException("Query returned non-zero code: " + ret
+            + ", cause: " + errorMessage, ret, SQLState);
       }
     }
 
     /**
      * Return the status information about the Map-Reduce cluster
      */
-    public HiveClusterStatus getClusterStatus() throws HiveServerException, TException {
+    public HiveClusterStatus getClusterStatus() throws HiveServerException,
+        TException {
       HiveClusterStatus hcs;
       try {
         ClusterStatus cs = driver.getClusterStatus();
@@ -150,26 +143,21 @@ public class HiveServer extends ThriftHive {
         // Convert the ClusterStatus to its Thrift equivalent: HiveClusterStatus
         int state;
         switch (jbs) {
-          case INITIALIZING:
-            state = JobTrackerState.INITIALIZING;
-            break;
-          case RUNNING:
-            state = JobTrackerState.RUNNING;
-            break;
-          default:
-            String errorMsg = "Unrecognized JobTracker state: " + jbs.toString();
-            throw new Exception(errorMsg);
+        case INITIALIZING:
+          state = JobTrackerState.INITIALIZING;
+          break;
+        case RUNNING:
+          state = JobTrackerState.RUNNING;
+          break;
+        default:
+          String errorMsg = "Unrecognized JobTracker state: " + jbs.toString();
+          throw new Exception(errorMsg);
         }
 
-        hcs = new HiveClusterStatus(
-            cs.getTaskTrackers(),
-            cs.getMapTasks(),
-            cs.getReduceTasks(),
-            cs.getMaxMapTasks(),
-            cs.getMaxReduceTasks(),
+        hcs = new HiveClusterStatus(cs.getTaskTrackers(), cs.getMapTasks(), cs
+            .getReduceTasks(), cs.getMaxMapTasks(), cs.getMaxReduceTasks(),
             state);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         LOG.error(e.toString());
         e.printStackTrace();
         HiveServerException ex = new HiveServerException();
@@ -183,9 +171,10 @@ public class HiveServer extends ThriftHive {
      * Return the Hive schema of the query result
      */
     public Schema getSchema() throws HiveServerException, TException {
-      if (!isHiveQuery)
+      if (!isHiveQuery) {
         // Return empty schema if the last command was not a Hive query
         return new Schema();
+      }
 
       try {
         Schema schema = driver.getSchema();
@@ -194,8 +183,7 @@ public class HiveServer extends ThriftHive {
         }
         LOG.info("Returning schema: " + schema);
         return schema;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         LOG.error(e.toString());
         e.printStackTrace();
         HiveServerException ex = new HiveServerException();
@@ -208,9 +196,10 @@ public class HiveServer extends ThriftHive {
      * Return the Thrift schema of the query result
      */
     public Schema getThriftSchema() throws HiveServerException, TException {
-      if (!isHiveQuery)
+      if (!isHiveQuery) {
         // Return empty schema if the last command was not a Hive query
         return new Schema();
+      }
 
       try {
         Schema schema = driver.getThriftSchema();
@@ -219,8 +208,7 @@ public class HiveServer extends ThriftHive {
         }
         LOG.info("Returning schema: " + schema);
         return schema;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         LOG.error(e.toString());
         e.printStackTrace();
         HiveServerException ex = new HiveServerException();
@@ -229,16 +217,17 @@ public class HiveServer extends ThriftHive {
       }
     }
 
-
     /**
      * Fetches the next row in a query result set.
-     *
-     * @return the next row in a query result set. null if there is no more row to fetch.
+     * 
+     * @return the next row in a query result set. null if there is no more row
+     *         to fetch.
      */
     public String fetchOne() throws HiveServerException, TException {
-      if (!isHiveQuery)
+      if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
         return "";
+      }
 
       Vector<String> result = new Vector<String>();
       driver.setMaxRows(1);
@@ -259,23 +248,27 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Fetches numRows rows.
-     *
-     * @param numRows Number of rows to fetch.
-     * @return A list of rows. The size of the list is numRows if there are at least
-     *         numRows rows available to return. The size is smaller than numRows if
-     *         there aren't enough rows. The list will be empty if there is no more
-     *         row to fetch or numRows == 0.
-     * @throws HiveServerException Invalid value for numRows (numRows < 0)
+     * 
+     * @param numRows
+     *          Number of rows to fetch.
+     * @return A list of rows. The size of the list is numRows if there are at
+     *         least numRows rows available to return. The size is smaller than
+     *         numRows if there aren't enough rows. The list will be empty if
+     *         there is no more row to fetch or numRows == 0.
+     * @throws HiveServerException
+     *           Invalid value for numRows (numRows < 0)
      */
-    public List<String> fetchN(int numRows) throws HiveServerException, TException {
+    public List<String> fetchN(int numRows) throws HiveServerException,
+        TException {
       if (numRows < 0) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage("Invalid argument for number of rows: " + numRows);
         throw ex;
       }
-      if (!isHiveQuery)
+      if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
         return new Vector<String>();
+      }
 
       Vector<String> result = new Vector<String>();
       driver.setMaxRows(numRows);
@@ -291,16 +284,19 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Fetches all the rows in a result set.
-     *
-     * @return All the rows in a result set of a query executed using execute method.
-     *
-     * TODO: Currently the server buffers all the rows before returning them
-     * to the client. Decide whether the buffering should be done in the client.
+     * 
+     * @return All the rows in a result set of a query executed using execute
+     *         method.
+     * 
+     *         TODO: Currently the server buffers all the rows before returning
+     *         them to the client. Decide whether the buffering should be done
+     *         in the client.
      */
     public List<String> fetchAll() throws HiveServerException, TException {
-      if (!isHiveQuery)
+      if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
         return new Vector<String>();
+      }
 
       Vector<String> rows = new Vector<String>();
       Vector<String> result = new Vector<String>();
@@ -341,8 +337,7 @@ public class HiveServer extends ThriftHive {
       // will be returned in a single QueryPlan
       try {
         qp.addToQueries(driver.getQueryPlan());
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage(e.toString());
         throw ex;
@@ -353,10 +348,11 @@ public class HiveServer extends ThriftHive {
   }
 
   public static class ThriftHiveProcessorFactory extends TProcessorFactory {
-    public ThriftHiveProcessorFactory (TProcessor processor) {
+    public ThriftHiveProcessorFactory(TProcessor processor) {
       super(processor);
     }
 
+    @Override
     public TProcessor getProcessor(TTransport trans) {
       try {
         Iface handler = new HiveServerHandler();

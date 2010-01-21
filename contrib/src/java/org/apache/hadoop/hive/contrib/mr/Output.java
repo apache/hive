@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.contrib.mr;
+
 /**
  * Collects output.
  * 
- * It's the responsibility of the caller to ensure the output
- * is in the correct format (contains the correct number of columns, etc.)
+ * It's the responsibility of the caller to ensure the output is in the correct
+ * format (contains the correct number of columns, etc.)
  */
 public interface Output {
   /**
