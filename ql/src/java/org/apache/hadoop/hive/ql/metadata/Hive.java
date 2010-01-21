@@ -809,20 +809,18 @@ public class Hive {
 
           b = fs.rename(tmppath, destf);
           if (!b) {
-            throw new HiveException("Unable to move results to destination directory: "
+            throw new HiveException("Unable to move results from " + tmppath  
+                + " to destination directory: "
                 + destf.getParent().toString());
           }
           LOG.debug("Renaming:"+tmppath.toString()+",Status:"+b);
 
       } catch (IOException e) {
-          throw new HiveException("replaceFiles: error while moving files!!!", e);
-      } finally {
-          try {
-              fs.delete(tmppath, true);
-          } catch (IOException e) {
-            LOG.warn("Unable delete path " + tmppath, e);
-          }
+          throw new HiveException("replaceFiles: error while moving files from "
+              + tmppath + " to " + destf + "!!!", e);
       }
+      // In case of error, we should leave the temporary data there, so 
+      // that user can recover the data if necessary. 
   }
 
   /**
