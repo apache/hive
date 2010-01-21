@@ -24,7 +24,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObje
 /**
  * LazyBinaryObject for short which takes two bytes.
  */
-public class LazyBinaryShort extends LazyBinaryPrimitive<WritableShortObjectInspector, ShortWritable> {
+public class LazyBinaryShort extends
+    LazyBinaryPrimitive<WritableShortObjectInspector, ShortWritable> {
 
   LazyBinaryShort(WritableShortObjectInspector oi) {
     super(oi);
@@ -38,7 +39,7 @@ public class LazyBinaryShort extends LazyBinaryPrimitive<WritableShortObjectInsp
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    assert(2 == length);
-    data.set(LazyBinaryUtils.byteArrayToShort(bytes.getData(), start));      
-  }  
+    assert (2 == length);
+    data.set(LazyBinaryUtils.byteArrayToShort(bytes.getData(), start));
+  }
 }

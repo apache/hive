@@ -21,32 +21,33 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Defines a LazyBinaryPrimitive. 
+ * Defines a LazyBinaryPrimitive.
  * 
- * data will be initialized to corresponding types in 
- * different LazyBinary primitive classes. For example, data will
- * be a BooleanWritable in the LazyBinaryBoolean class.
+ * data will be initialized to corresponding types in different LazyBinary
+ * primitive classes. For example, data will be a BooleanWritable in the
+ * LazyBinaryBoolean class.
  * 
- * There is no null flag any more, 
- *
+ * There is no null flag any more,
+ * 
  */
-public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, 
-T extends Writable> extends LazyBinaryObject<OI> {
+public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, T extends Writable>
+    extends LazyBinaryObject<OI> {
 
   LazyBinaryPrimitive(OI oi) {
     super(oi);
   }
-  
+
   LazyBinaryPrimitive(LazyBinaryPrimitive<OI, T> copy) {
     super(copy.oi);
   }
 
   T data;
-  
+
   /**
-   * Returns the primitive object represented by this LazyBinaryObject.
-   * This is useful because it can make sure we have "null" for null objects.
+   * Returns the primitive object represented by this LazyBinaryObject. This is
+   * useful because it can make sure we have "null" for null objects.
    */
+  @Override
   public Object getObject() {
     return data;
   }
@@ -54,12 +55,14 @@ T extends Writable> extends LazyBinaryObject<OI> {
   public T getWritableObject() {
     return data;
   }
-  
+
+  @Override
   public String toString() {
     return data.toString();
   }
-  
-  public int hashCode(){
+
+  @Override
+  public int hashCode() {
     return data == null ? 0 : data.hashCode();
   }
 }

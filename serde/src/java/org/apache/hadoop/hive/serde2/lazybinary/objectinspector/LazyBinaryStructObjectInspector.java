@@ -26,29 +26,32 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
 /**
  * ObjectInspector for LazyBinaryStruct
+ * 
  * @see LazyBinaryStruct
  */
-public class LazyBinaryStructObjectInspector extends StandardStructObjectInspector {
+public class LazyBinaryStructObjectInspector extends
+    StandardStructObjectInspector {
 
-  protected LazyBinaryStructObjectInspector(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors) {
+  protected LazyBinaryStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors) {
     super(structFieldNames, structFieldObjectInspectors);
   }
-  
+
   protected LazyBinaryStructObjectInspector(List<StructField> fields) {
-    super(fields);    
+    super(fields);
   }
-  
+
   @Override
   public Object getStructFieldData(Object data, StructField fieldRef) {
     if (data == null) {
       return null;
     }
-    LazyBinaryStruct struct = (LazyBinaryStruct)data;
+    LazyBinaryStruct struct = (LazyBinaryStruct) data;
     MyField f = (MyField) fieldRef;
-    
+
     int fieldID = f.getFieldID();
-    assert(fieldID >= 0 && fieldID < fields.size());
-    
+    assert (fieldID >= 0 && fieldID < fields.size());
+
     return struct.getField(fieldID);
   }
 
@@ -57,7 +60,7 @@ public class LazyBinaryStructObjectInspector extends StandardStructObjectInspect
     if (data == null) {
       return null;
     }
-    LazyBinaryStruct struct = (LazyBinaryStruct)data;
+    LazyBinaryStruct struct = (LazyBinaryStruct) data;
     return struct.getFieldsAsList();
   }
 }

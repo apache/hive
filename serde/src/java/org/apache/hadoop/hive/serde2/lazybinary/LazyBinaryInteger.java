@@ -24,9 +24,11 @@ import org.apache.hadoop.io.IntWritable;
 
 /**
  * LazyBinaryObject for integer which is serialized as VInt
- * @see LazyBinaryUtils#readVInt(byte[], int, VInt) 
+ * 
+ * @see LazyBinaryUtils#readVInt(byte[], int, VInt)
  */
-public class LazyBinaryInteger extends LazyBinaryPrimitive<WritableIntObjectInspector, IntWritable> {
+public class LazyBinaryInteger extends
+    LazyBinaryPrimitive<WritableIntObjectInspector, IntWritable> {
 
   LazyBinaryInteger(WritableIntObjectInspector oi) {
     super(oi);
@@ -39,14 +41,14 @@ public class LazyBinaryInteger extends LazyBinaryPrimitive<WritableIntObjectInsp
   }
 
   /**
-   *  The reusable vInt for decoding the integer
+   * The reusable vInt for decoding the integer
    */
   VInt vInt = new LazyBinaryUtils.VInt();
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     LazyBinaryUtils.readVInt(bytes.getData(), start, vInt);
-    assert(length == vInt.length);
+    assert (length == vInt.length);
     data.set(vInt.value);
   }
 }

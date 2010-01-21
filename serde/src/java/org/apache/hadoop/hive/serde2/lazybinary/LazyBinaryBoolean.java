@@ -34,7 +34,8 @@ import org.apache.hadoop.io.BooleanWritable;
  * </p>
  * 
  */
-public class LazyBinaryBoolean extends LazyBinaryPrimitive<WritableBooleanObjectInspector, BooleanWritable> {
+public class LazyBinaryBoolean extends
+    LazyBinaryPrimitive<WritableBooleanObjectInspector, BooleanWritable> {
 
   public LazyBinaryBoolean(WritableBooleanObjectInspector oi) {
     super(oi);
@@ -48,12 +49,12 @@ public class LazyBinaryBoolean extends LazyBinaryPrimitive<WritableBooleanObject
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    assert(1 == length);
+    assert (1 == length);
     byte val = bytes.getData()[start];
     if (val == 0) {
-      data.set(false);        
+      data.set(false);
     } else if (val == 1) {
-      data.set(true);   
+      data.set(true);
     }
   }
 }

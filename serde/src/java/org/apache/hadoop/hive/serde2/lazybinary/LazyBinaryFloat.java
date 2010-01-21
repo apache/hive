@@ -24,13 +24,14 @@ import org.apache.hadoop.io.FloatWritable;
 /**
  * LazyBinaryObject for float which takes four bytes.
  */
-public class LazyBinaryFloat extends LazyBinaryPrimitive<WritableFloatObjectInspector, FloatWritable> {
+public class LazyBinaryFloat extends
+    LazyBinaryPrimitive<WritableFloatObjectInspector, FloatWritable> {
 
   LazyBinaryFloat(WritableFloatObjectInspector oi) {
     super(oi);
     data = new FloatWritable();
   }
-  
+
   LazyBinaryFloat(LazyBinaryFloat copy) {
     super(copy);
     data = new FloatWritable(copy.data.get());
@@ -39,6 +40,7 @@ public class LazyBinaryFloat extends LazyBinaryPrimitive<WritableFloatObjectInsp
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     assert (4 == length);
-    data.set(Float.intBitsToFloat(LazyBinaryUtils.byteArrayToInt(bytes.getData(), start)));
+    data.set(Float.intBitsToFloat(LazyBinaryUtils.byteArrayToInt(bytes
+        .getData(), start)));
   }
 }

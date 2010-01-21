@@ -35,38 +35,39 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 public class LazyBinaryFactory {
 
   /**
-   * Create a lazy binary primitive class given the type name. 
+   * Create a lazy binary primitive class given the type name.
    */
-  public static LazyBinaryPrimitive<?,?> createLazyBinaryPrimitiveClass(PrimitiveObjectInspector oi) {
+  public static LazyBinaryPrimitive<?, ?> createLazyBinaryPrimitiveClass(
+      PrimitiveObjectInspector oi) {
     PrimitiveCategory p = oi.getPrimitiveCategory();
-    switch(p) {
-      case BOOLEAN: {
-        return new LazyBinaryBoolean((WritableBooleanObjectInspector)oi);
-      }
-      case BYTE: {
-        return new LazyBinaryByte((WritableByteObjectInspector)oi);
-      }
-      case SHORT: {
-        return new LazyBinaryShort((WritableShortObjectInspector)oi);
-      }
-      case INT: {
-        return new LazyBinaryInteger((WritableIntObjectInspector)oi);
-      }
-      case LONG: {
-        return new LazyBinaryLong((WritableLongObjectInspector)oi);
-      }
-      case FLOAT: {
-        return new LazyBinaryFloat((WritableFloatObjectInspector)oi);
-      }
-      case DOUBLE: {
-        return new LazyBinaryDouble((WritableDoubleObjectInspector)oi);
-      }
-      case STRING: {
-        return new LazyBinaryString((WritableStringObjectInspector)oi);
-      }
-      default: {
-        throw new RuntimeException("Internal error: no LazyBinaryObject for " + p);        
-      }
+    switch (p) {
+    case BOOLEAN: {
+      return new LazyBinaryBoolean((WritableBooleanObjectInspector) oi);
+    }
+    case BYTE: {
+      return new LazyBinaryByte((WritableByteObjectInspector) oi);
+    }
+    case SHORT: {
+      return new LazyBinaryShort((WritableShortObjectInspector) oi);
+    }
+    case INT: {
+      return new LazyBinaryInteger((WritableIntObjectInspector) oi);
+    }
+    case LONG: {
+      return new LazyBinaryLong((WritableLongObjectInspector) oi);
+    }
+    case FLOAT: {
+      return new LazyBinaryFloat((WritableFloatObjectInspector) oi);
+    }
+    case DOUBLE: {
+      return new LazyBinaryDouble((WritableDoubleObjectInspector) oi);
+    }
+    case STRING: {
+      return new LazyBinaryString((WritableStringObjectInspector) oi);
+    }
+    default: {
+      throw new RuntimeException("Internal error: no LazyBinaryObject for " + p);
+    }
     }
   }
 
@@ -75,17 +76,17 @@ public class LazyBinaryFactory {
    */
   public static LazyBinaryObject createLazyBinaryObject(ObjectInspector oi) {
     ObjectInspector.Category c = oi.getCategory();
-    switch(c) {
+    switch (c) {
     case PRIMITIVE:
-      return createLazyBinaryPrimitiveClass((PrimitiveObjectInspector)oi);
+      return createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) oi);
     case MAP:
-      return new LazyBinaryMap((LazyBinaryMapObjectInspector)oi);      
-    case LIST: 
-      return new LazyBinaryArray((LazyBinaryListObjectInspector)oi);      
+      return new LazyBinaryMap((LazyBinaryMapObjectInspector) oi);
+    case LIST:
+      return new LazyBinaryArray((LazyBinaryListObjectInspector) oi);
     case STRUCT:
-      return new LazyBinaryStruct((LazyBinaryStructObjectInspector)oi);      
+      return new LazyBinaryStruct((LazyBinaryStructObjectInspector) oi);
     }
 
     throw new RuntimeException("Hive LazyBinarySerDe Internal error.");
-  }  
+  }
 }

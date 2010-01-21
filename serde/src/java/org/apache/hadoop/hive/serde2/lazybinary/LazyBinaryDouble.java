@@ -17,21 +17,21 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * LazyBinaryObject for double which takes eight bytes
  */
-public class LazyBinaryDouble extends LazyBinaryPrimitive<WritableDoubleObjectInspector, DoubleWritable> {
+public class LazyBinaryDouble extends
+    LazyBinaryPrimitive<WritableDoubleObjectInspector, DoubleWritable> {
 
   LazyBinaryDouble(WritableDoubleObjectInspector oi) {
     super(oi);
     data = new DoubleWritable();
   }
-  
+
   LazyBinaryDouble(LazyBinaryDouble copy) {
     super(copy);
     data = new DoubleWritable(copy.data.get());
@@ -39,7 +39,8 @@ public class LazyBinaryDouble extends LazyBinaryPrimitive<WritableDoubleObjectIn
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    assert(8 == length);
-    data.set(Double.longBitsToDouble(LazyBinaryUtils.byteArrayToLong(bytes.getData(), start)));
+    assert (8 == length);
+    data.set(Double.longBitsToDouble(LazyBinaryUtils.byteArrayToLong(bytes
+        .getData(), start)));
   }
 }

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 
 /**
  * ObjectInspector for LazyBinaryMap
+ * 
  * @see LazyBinaryMap
  */
 public class LazyBinaryMapObjectInspector extends StandardMapObjectInspector {
@@ -39,7 +40,7 @@ public class LazyBinaryMapObjectInspector extends StandardMapObjectInspector {
     if (data == null) {
       return null;
     }
-    return ((LazyBinaryMap)data).getMap();
+    return ((LazyBinaryMap) data).getMap();
   }
 
   @Override
@@ -47,7 +48,7 @@ public class LazyBinaryMapObjectInspector extends StandardMapObjectInspector {
     if (data == null) {
       return -1;
     }
-    return ((LazyBinaryMap)data).getMapSize();  
+    return ((LazyBinaryMap) data).getMapSize();
   }
 
   @Override
@@ -55,6 +56,6 @@ public class LazyBinaryMapObjectInspector extends StandardMapObjectInspector {
     if (data == null) {
       return -1;
     }
-    return ((LazyBinaryMap)data).getMapValueElement(key);  
+    return ((LazyBinaryMap) data).getMapValueElement(key);
   }
 }

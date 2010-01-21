@@ -30,18 +30,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
- * LazyBinaryStruct is serialized as follows:
- *            start A       B      A      B     A       B   end
- * bytes[] ->    |-----|---------|--- ... ---|-----|---------|
+ * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] ->
+ * |-----|---------|--- ... ---|-----|---------|
  * 
- * Section A is one null-byte, corresponding to eight struct fields in Section B. 
- * Each bit indicates whether the corresponding field is null (0) or not null (1).
- * Each field is a LazyBinaryObject. 
+ * Section A is one null-byte, corresponding to eight struct fields in Section
+ * B. Each bit indicates whether the corresponding field is null (0) or not null
+ * (1). Each field is a LazyBinaryObject.
  * 
- * Following B, there is another section A and B. This pattern repeats until the 
+ * Following B, there is another section A and B. This pattern repeats until the
  * all struct fields are serialized.
  */
-public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> {
+public class LazyBinaryStruct extends
+    LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> {
 
   private static Log LOG = LogFactory.getLog(LazyBinaryStruct.class.getName());
 
@@ -54,26 +54,25 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
    * The fields of the struct.
    */
   LazyBinaryObject[] fields;
-  
+
   /**
    * Whether a field is initialized or not.
    */
   boolean[] fieldInited;
-  
+
   /**
-   * Whether a field is null or not.
-   * Because length is 0 does not means the field is null.
-   * In particular, a 0-length string is not null.
+   * Whether a field is null or not. Because length is 0 does not means the
+   * field is null. In particular, a 0-length string is not null.
    */
   boolean[] fieldIsNull;
-  
+
   /**
-   * The start positions and lengths of struct fields.
-   * Only valid when the data is parsed.
+   * The start positions and lengths of struct fields. Only valid when the data
+   * is parsed.
    */
-  int[] fieldStart;  
+  int[] fieldStart;
   int[] fieldLength;
-  
+
   /**
    * Construct a LazyBinaryStruct object with an ObjectInspector.
    */
@@ -84,77 +83,81 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     super.init(bytes, start, length);
-    parsed = false;    
+    parsed = false;
   }
-  
-  RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();   
+
+  RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
   boolean missingFieldWarned = false;
   boolean extraFieldWarned = false;
+
   /**
-   * Parse the byte[] and fill fieldStart, fieldLength, 
-   * fieldInited and fieldIsNull.
+   * Parse the byte[] and fill fieldStart, fieldLength, fieldInited and
+   * fieldIsNull.
    */
   private void parse() {
-    
-    List<? extends StructField> fieldRefs = ((StructObjectInspector)oi).getAllStructFieldRefs();
-    
-    if (fields == null) {      
+
+    List<? extends StructField> fieldRefs = ((StructObjectInspector) oi)
+        .getAllStructFieldRefs();
+
+    if (fields == null) {
       fields = new LazyBinaryObject[fieldRefs.size()];
-      for (int i = 0 ; i < fields.length; i++) {
-        fields[i] = LazyBinaryFactory.createLazyBinaryObject(fieldRefs.get(i).getFieldObjectInspector());
+      for (int i = 0; i < fields.length; i++) {
+        fields[i] = LazyBinaryFactory.createLazyBinaryObject(fieldRefs.get(i)
+            .getFieldObjectInspector());
       }
       fieldInited = new boolean[fields.length];
       fieldIsNull = new boolean[fields.length];
-      fieldStart  = new int[fields.length];
+      fieldStart = new int[fields.length];
       fieldLength = new int[fields.length];
     }
-    
+
     /**
-     * Please note that one null byte is followed by eight fields,
-     * then more null byte and fields. 
+     * Please note that one null byte is followed by eight fields, then more
+     * null byte and fields.
      */
-    
+
     int fieldId = 0;
-    int structByteEnd = start + length;       
+    int structByteEnd = start + length;
     byte[] bytes = this.bytes.getData();
 
-    byte nullByte = bytes[start];    
-    int lastFieldByteEnd = start + 1;    
+    byte nullByte = bytes[start];
+    int lastFieldByteEnd = start + 1;
     // Go through all bytes in the byte[]
-    for (int i=0; i<fields.length; i++) {      
+    for (int i = 0; i < fields.length; i++) {
       fieldIsNull[i] = true;
-      if ((nullByte & (1 << (i%8))) !=0) {
+      if ((nullByte & (1 << (i % 8))) != 0) {
         fieldIsNull[i] = false;
-        LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i).getFieldObjectInspector(), 
-            bytes, lastFieldByteEnd, recordInfo);
-        fieldStart[i]  = lastFieldByteEnd + recordInfo.elementOffset;
+        LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i)
+            .getFieldObjectInspector(), bytes, lastFieldByteEnd, recordInfo);
+        fieldStart[i] = lastFieldByteEnd + recordInfo.elementOffset;
         fieldLength[i] = recordInfo.elementSize;
         lastFieldByteEnd = fieldStart[i] + fieldLength[i];
-      }  
+      }
 
       // count how many fields are there
-      if (lastFieldByteEnd <= structByteEnd)
-        fieldId ++;
+      if (lastFieldByteEnd <= structByteEnd) {
+        fieldId++;
+      }
       // next byte is a null byte if there are more bytes to go
-      if (7 == (i%8)) {
+      if (7 == (i % 8)) {
         if (lastFieldByteEnd < structByteEnd) {
           nullByte = bytes[lastFieldByteEnd];
-          lastFieldByteEnd ++;
+          lastFieldByteEnd++;
         } else {
           // otherwise all null afterwards
           nullByte = 0;
-          lastFieldByteEnd ++;
-        }        
-      }      
+          lastFieldByteEnd++;
+        }
+      }
     }
-      
+
     // Extra bytes at the end?
     if (!extraFieldWarned && lastFieldByteEnd < structByteEnd) {
       extraFieldWarned = true;
       LOG.warn("Extra bytes detected at the end of the row! Ignoring similar "
           + "problems.");
     }
-    
+
     // Missing fields?
     if (!missingFieldWarned && lastFieldByteEnd > structByteEnd) {
       missingFieldWarned = true;
@@ -162,21 +165,22 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
           + "only got " + fieldId + "! Ignoring similar problems.");
     }
 
-    Arrays.fill(fieldInited, false);   
-    parsed = true;    
+    Arrays.fill(fieldInited, false);
+    parsed = true;
   }
-  
+
   /**
    * Get one field out of the struct.
    * 
-   * If the field is a primitive field, return the actual object.
-   * Otherwise return the LazyObject.  This is because PrimitiveObjectInspector
-   * does not have control over the object used by the user - the user simply
-   * directly use the Object instead of going through 
-   * Object PrimitiveObjectInspector.get(Object).  
+   * If the field is a primitive field, return the actual object. Otherwise
+   * return the LazyObject. This is because PrimitiveObjectInspector does not
+   * have control over the object used by the user - the user simply directly
+   * use the Object instead of going through Object
+   * PrimitiveObjectInspector.get(Object).
    * 
-   * @param fieldID  The field ID
-   * @return         The field as a LazyObject
+   * @param fieldID
+   *          The field ID
+   * @return The field as a LazyObject
    */
   public Object getField(int fieldID) {
     if (!parsed) {
@@ -184,15 +188,17 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     }
     return uncheckedGetField(fieldID);
   }
-  
+
   /**
-   * Get the field out of the row without checking parsed.
-   * This is called by both getField and getFieldsAsList.
-   * @param fieldID  The id of the field starting from 0.
-   * @return  The value of the field
+   * Get the field out of the row without checking parsed. This is called by
+   * both getField and getFieldsAsList.
+   * 
+   * @param fieldID
+   *          The id of the field starting from 0.
+   * @return The value of the field
    */
   private Object uncheckedGetField(int fieldID) {
-    // Test the length first so in most cases we avoid doing a byte[] 
+    // Test the length first so in most cases we avoid doing a byte[]
     // comparison.
     if (fieldIsNull[fieldID]) {
       return null;
@@ -205,8 +211,10 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
   }
 
   ArrayList<Object> cachedList;
+
   /**
    * Get the values of the fields as an ArrayList.
+   * 
    * @return The values of the fields as an ArrayList.
    */
   public ArrayList<Object> getFieldsAsList() {
@@ -218,12 +226,12 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     } else {
       cachedList.clear();
     }
-    for (int i=0; i<fields.length; i++) {
+    for (int i = 0; i < fields.length; i++) {
       cachedList.add(uncheckedGetField(i));
     }
     return cachedList;
   }
-  
+
   @Override
   public Object getObject() {
     return this;

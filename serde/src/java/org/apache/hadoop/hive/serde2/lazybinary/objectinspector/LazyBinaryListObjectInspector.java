@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.serde2.lazybinary.objectinspector;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryArray;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 
 /**
  * ObjectInspector for LazyBinaryList

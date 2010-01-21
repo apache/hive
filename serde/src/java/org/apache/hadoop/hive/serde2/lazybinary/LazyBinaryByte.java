@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 
 /**
  * LazyBinaryObject for byte which takes one byte
  */
-public class LazyBinaryByte extends LazyBinaryPrimitive<WritableByteObjectInspector, ByteWritable> {
+public class LazyBinaryByte extends
+    LazyBinaryPrimitive<WritableByteObjectInspector, ByteWritable> {
 
   LazyBinaryByte(WritableByteObjectInspector oi) {
     super(oi);
@@ -35,10 +36,10 @@ public class LazyBinaryByte extends LazyBinaryPrimitive<WritableByteObjectInspec
     super(copy);
     data = new ByteWritable(copy.data.get());
   }
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    assert(1 == length);
+    assert (1 == length);
     data.set(bytes.getData()[start]);
   }
 }

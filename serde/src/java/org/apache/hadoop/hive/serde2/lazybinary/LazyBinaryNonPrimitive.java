@@ -21,13 +21,14 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-public abstract class LazyBinaryNonPrimitive<OI extends ObjectInspector>  extends LazyBinaryObject<OI> {
+public abstract class LazyBinaryNonPrimitive<OI extends ObjectInspector>
+    extends LazyBinaryObject<OI> {
 
   protected ByteArrayRef bytes;
   protected int start;
   protected int length;
 
-  protected LazyBinaryNonPrimitive(OI oi) {  
+  protected LazyBinaryNonPrimitive(OI oi) {
     super(oi);
     bytes = null;
     start = 0;
@@ -51,7 +52,8 @@ public abstract class LazyBinaryNonPrimitive<OI extends ObjectInspector>  extend
     this.start = start;
     this.length = length;
   }
-  
+
+  @Override
   public int hashCode() {
     return LazyUtils.hashBytes(bytes.getData(), start, length);
   }
