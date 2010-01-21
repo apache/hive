@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="File Output Operator")
+@explain(displayName = "File Output Operator")
 public class fileSinkDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dirName;
@@ -30,47 +30,46 @@ public class fileSinkDesc implements Serializable {
   private String compressCodec;
   private String compressType;
 
+  public fileSinkDesc() {
+  }
 
-  public fileSinkDesc() { }
-  public fileSinkDesc(
-    final String dirName,
-    final tableDesc tableInfo,
-    final boolean compressed, int destTableId) {
+  public fileSinkDesc(final String dirName, final tableDesc tableInfo,
+      final boolean compressed, int destTableId) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
     this.compressed = compressed;
     this.destTableId = destTableId;
   }
-  
-  public fileSinkDesc(
-      final String dirName,
-      final tableDesc tableInfo,
+
+  public fileSinkDesc(final String dirName, final tableDesc tableInfo,
       final boolean compressed) {
 
-      this.dirName = dirName;
-      this.tableInfo = tableInfo;
-      this.compressed = compressed;
-      this.destTableId = 0;
-    }
-  
-  @explain(displayName="directory", normalExplain=false)
-  public String getDirName() {
-    return this.dirName;
+    this.dirName = dirName;
+    this.tableInfo = tableInfo;
+    this.compressed = compressed;
+    destTableId = 0;
   }
+
+  @explain(displayName = "directory", normalExplain = false)
+  public String getDirName() {
+    return dirName;
+  }
+
   public void setDirName(final String dirName) {
     this.dirName = dirName;
   }
-  
-  @explain(displayName="table")
+
+  @explain(displayName = "table")
   public tableDesc getTableInfo() {
-    return this.tableInfo;
+    return tableInfo;
   }
+
   public void setTableInfo(final tableDesc tableInfo) {
     this.tableInfo = tableInfo;
   }
 
-  @explain(displayName="compressed")
+  @explain(displayName = "compressed")
   public boolean getCompressed() {
     return compressed;
   }
@@ -78,25 +77,29 @@ public class fileSinkDesc implements Serializable {
   public void setCompressed(boolean compressed) {
     this.compressed = compressed;
   }
-  
-  @explain(displayName="GlobalTableId")
+
+  @explain(displayName = "GlobalTableId")
   public int getDestTableId() {
     return destTableId;
   }
-  
+
   public void setDestTableId(int destTableId) {
     this.destTableId = destTableId;
   }
+
   public String getCompressCodec() {
     return compressCodec;
   }
+
   public void setCompressCodec(String intermediateCompressorCodec) {
-    this.compressCodec = intermediateCompressorCodec;
+    compressCodec = intermediateCompressorCodec;
   }
+
   public String getCompressType() {
     return compressType;
   }
+
   public void setCompressType(String intermediateCompressType) {
-    this.compressType = intermediateCompressType;
+    compressType = intermediateCompressType;
   }
 }

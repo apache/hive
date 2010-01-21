@@ -30,9 +30,10 @@ import org.apache.hadoop.util.Progressable;
 
 /**
  * <code>HiveOutputFormat</code> describes the output-specification for Hive's
- * operators. It has a method {@link #getHiveRecordWriter(JobConf, Path, Class, 
- * boolean, Properties, Progressable)}, with various parameters used to create 
- * the final out file and get some specific settings.
+ * operators. It has a method
+ * {@link #getHiveRecordWriter(JobConf, Path, Class, boolean, Properties, Progressable)}
+ * , with various parameters used to create the final out file and get some
+ * specific settings.
  * 
  * @see org.apache.hadoop.mapred.OutputFormat
  * @see RecordWriter

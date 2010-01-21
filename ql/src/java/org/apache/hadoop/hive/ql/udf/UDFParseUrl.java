@@ -27,10 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 
-
-
-
-
 /**
  * UDF to extract specfic parts from URL For example,
  * parse_url('http://facebook.com/path/p1.php?query=1', 'HOST') will return
@@ -44,22 +40,17 @@ import org.apache.hadoop.hive.ql.exec.description;
  * HOST,PATH,QUERY,REF,PROTOCOL,AUTHORITY,FILE,USERINFO Also you can get a value
  * of particular key in QUERY, using syntax QUERY:<KEY_NAME> eg: QUERY:k1.
  */
-@description(
-    name = "parse_url",
-    value = "_FUNC_(url, partToExtract[, key]) - extracts a part from a URL",
-    extended = "Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, " +
-    		"USERINFO\nkey specifies which query to extract\n" +
-        "Example:\n" +
-        "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', " +
-        "'HOST') FROM src LIMIT 1;\n" +
-        "  'facebook.com'\n" +
-        "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', " +
-        "'QUERY') FROM src LIMIT 1;\n" +
-        "  'query=1'\n" +
-        "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', " +
-        "'QUERY', 'query') FROM src LIMIT 1;\n" +
-        "  '1'"
-    )
+@description(name = "parse_url", value = "_FUNC_(url, partToExtract[, key]) - extracts a part from a URL", extended = "Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, "
+    + "USERINFO\nkey specifies which query to extract\n"
+    + "Example:\n"
+    + "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', "
+    + "'HOST') FROM src LIMIT 1;\n"
+    + "  'facebook.com'\n"
+    + "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', "
+    + "'QUERY') FROM src LIMIT 1;\n"
+    + "  'query=1'\n"
+    + "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', "
+    + "'QUERY', 'query') FROM src LIMIT 1;\n" + "  '1'")
 public class UDFParseUrl extends UDF {
   private static Log LOG = LogFactory.getLog(UDFParseUrl.class.getName());
 
@@ -67,7 +58,6 @@ public class UDFParseUrl extends UDF {
   private URL url = null;
   private Pattern p = null;
   private String lastKey = null;
-  
 
   public UDFParseUrl() {
   }
@@ -86,42 +76,51 @@ public class UDFParseUrl extends UDF {
     }
     lastUrlStr = urlStr;
 
-    if (partToExtract.equals("HOST"))
+    if (partToExtract.equals("HOST")) {
       return url.getHost();
-    if (partToExtract.equals("PATH"))
+    }
+    if (partToExtract.equals("PATH")) {
       return url.getPath();
-    if (partToExtract.equals("QUERY"))
+    }
+    if (partToExtract.equals("QUERY")) {
       return url.getQuery();
-    if (partToExtract.equals("REF"))
+    }
+    if (partToExtract.equals("REF")) {
       return url.getRef();
-    if (partToExtract.equals("PROTOCOL"))
+    }
+    if (partToExtract.equals("PROTOCOL")) {
       return url.getProtocol();
-    if (partToExtract.equals("FILE"))
+    }
+    if (partToExtract.equals("FILE")) {
       return url.getFile();
-    if (partToExtract.equals("AUTHORITY"))
+    }
+    if (partToExtract.equals("AUTHORITY")) {
       return url.getAuthority();
-    if (partToExtract.equals("USERINFO"))
+    }
+    if (partToExtract.equals("USERINFO")) {
       return url.getUserInfo();
+    }
 
     return null;
   }
 
   public String evaluate(String urlStr, String partToExtract, String key) {
-    if (!partToExtract.equals("QUERY"))
+    if (!partToExtract.equals("QUERY")) {
       return null;
+    }
 
     String query = this.evaluate(urlStr, partToExtract);
-    if (query == null)
+    if (query == null) {
       return null;
-
-   
-    if (!key.equals(lastKey)){
-      p = Pattern.compile("(&|^)"+key+"=([^&]*)");
     }
-     
+
+    if (!key.equals(lastKey)) {
+      p = Pattern.compile("(&|^)" + key + "=([^&]*)");
+    }
+
     lastKey = key;
     Matcher m = p.matcher(query);
-    if (m.find()){
+    if (m.find()) {
       return m.group(2);
     }
     return null;

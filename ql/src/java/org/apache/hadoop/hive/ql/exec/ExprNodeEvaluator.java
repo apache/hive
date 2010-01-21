@@ -24,16 +24,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public abstract class ExprNodeEvaluator {
 
   /**
-   * Initialize should be called once and only once.
-   * Return the ObjectInspector for the return value, given the rowInspector.
+   * Initialize should be called once and only once. Return the ObjectInspector
+   * for the return value, given the rowInspector.
    */
-  public abstract ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException;
+  public abstract ObjectInspector initialize(ObjectInspector rowInspector)
+      throws HiveException;
 
   /**
-   * Evaluate the expression given the row.
-   * This method should use the rowInspector passed in from initialize to 
-   * inspect the row object.
-   * The return value will be inspected by the return value of initialize. 
+   * Evaluate the expression given the row. This method should use the
+   * rowInspector passed in from initialize to inspect the row object. The
+   * return value will be inspected by the return value of initialize.
    */
   public abstract Object evaluate(Object row) throws HiveException;
 

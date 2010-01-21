@@ -46,8 +46,9 @@ public class PhysicalOptimizer {
    */
   private void initialize(HiveConf hiveConf) {
     resolvers = new ArrayList<PhysicalPlanResolver>();
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN))
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
       resolvers.add(new SkewJoinResolver());
+    }
   }
 
   /**
@@ -57,8 +58,9 @@ public class PhysicalOptimizer {
    * @throws HiveException
    */
   public PhysicalContext optimize() throws SemanticException {
-    for (PhysicalPlanResolver r : resolvers)
+    for (PhysicalPlanResolver r : resolvers) {
       pctx = r.resolve(pctx);
+    }
     return pctx;
   }
 

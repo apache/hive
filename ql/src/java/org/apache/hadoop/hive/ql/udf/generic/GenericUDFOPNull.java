@@ -26,10 +26,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
-@description(
-    name = "isnull",
-    value = "_FUNC_ a - Returns true if a is NULL and false otherwise"
-)
+@description(name = "isnull", value = "_FUNC_ a - Returns true if a is NULL and false otherwise")
 public class GenericUDFOPNull extends GenericUDF {
 
   BooleanWritable result = new BooleanWritable();

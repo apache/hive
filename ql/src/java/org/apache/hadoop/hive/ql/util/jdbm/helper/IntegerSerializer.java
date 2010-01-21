@@ -68,52 +68,43 @@ import java.io.IOException;
 
 /**
  * Optimized serializer for integers.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: IntegerSerializer.java,v 1.2 2003/09/21 15:47:00 boisvert Exp $
  */
-public class IntegerSerializer
-    implements Serializer
-{
+public class IntegerSerializer implements Serializer {
 
-    
-    public static final IntegerSerializer INSTANCE = new IntegerSerializer();
-    
-    
-    /**
-     * Construct an IntegerSerializer.
-     */
-    public IntegerSerializer()
-    {
-        // no op
-    }
+  public static final IntegerSerializer INSTANCE = new IntegerSerializer();
 
-    
-    /**
-     * Serialize the content of an object into a byte array.
-     *
-     * @param obj Object to serialize
-     * @return a byte array representing the object's state
-     */
-     public byte[] serialize( Object obj )
-        throws IOException
-     {
-         Integer number = (Integer) obj;
-         return Conversion.convertToByteArray( number.intValue() );
-     }
-        
-        
-    /**
-     * Deserialize the content of an object from a byte array.
-     *
-     * @param serialized Byte array representation of the object
-     * @return deserialized object
-     */
-     public Object deserialize( byte[] serialized )
-        throws IOException
-     {
-         int number = Conversion.convertToInt( serialized );
-         return new Integer( number );
-     }
+  /**
+   * Construct an IntegerSerializer.
+   */
+  public IntegerSerializer() {
+    // no op
+  }
+
+  /**
+   * Serialize the content of an object into a byte array.
+   * 
+   * @param obj
+   *          Object to serialize
+   * @return a byte array representing the object's state
+   */
+  public byte[] serialize(Object obj) throws IOException {
+    Integer number = (Integer) obj;
+    return Conversion.convertToByteArray(number.intValue());
+  }
+
+  /**
+   * Deserialize the content of an object from a byte array.
+   * 
+   * @param serialized
+   *          Byte array representation of the object
+   * @return deserialized object
+   */
+  public Object deserialize(byte[] serialized) throws IOException {
+    int number = Conversion.convertToInt(serialized);
+    return new Integer(number);
+  }
 
 }

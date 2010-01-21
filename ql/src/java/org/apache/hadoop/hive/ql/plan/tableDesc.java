@@ -22,10 +22,10 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.mapred.InputFormat;
 
 public class tableDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
@@ -34,82 +34,101 @@ public class tableDesc implements Serializable, Cloneable {
   private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
-  public tableDesc() { }
-  public tableDesc(
-      final Class<? extends Deserializer> serdeClass,
+
+  public tableDesc() {
+  }
+
+  public tableDesc(final Class<? extends Deserializer> serdeClass,
       final Class<? extends InputFormat> inputFileFormatClass,
-      final Class<?> class1,
-      final java.util.Properties properties) {
-    this.deserializerClass = serdeClass;
+      final Class<?> class1, final java.util.Properties properties) {
+    deserializerClass = serdeClass;
     this.inputFileFormatClass = inputFileFormatClass;
-    this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
+    outputFileFormatClass = HiveFileFormatUtils
+        .getOutputFormatSubstitute(class1);
     this.properties = properties;
-    this.serdeClassName = properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);;
+    serdeClassName = properties
+        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+    ;
   }
-  
+
   public Class<? extends Deserializer> getDeserializerClass() {
-    return this.deserializerClass;
+    return deserializerClass;
   }
-  public void setDeserializerClass(final Class<? extends Deserializer> serdeClass) {
-    this.deserializerClass = serdeClass;
+
+  public void setDeserializerClass(
+      final Class<? extends Deserializer> serdeClass) {
+    deserializerClass = serdeClass;
   }
+
   public Class<? extends InputFormat> getInputFileFormatClass() {
-    return this.inputFileFormatClass;
+    return inputFileFormatClass;
   }
+
   /**
    * Return a deserializer object corresponding to the tableDesc
    */
   public Deserializer getDeserializer() throws Exception {
-    Deserializer de = this.deserializerClass.newInstance();
+    Deserializer de = deserializerClass.newInstance();
     de.initialize(null, properties);
     return de;
   }
-  public void setInputFileFormatClass(final Class<? extends InputFormat> inputFileFormatClass) {
-    this.inputFileFormatClass=inputFileFormatClass;
+
+  public void setInputFileFormatClass(
+      final Class<? extends InputFormat> inputFileFormatClass) {
+    this.inputFileFormatClass = inputFileFormatClass;
   }
+
   public Class<? extends HiveOutputFormat> getOutputFileFormatClass() {
-    return this.outputFileFormatClass;
+    return outputFileFormatClass;
   }
+
   public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
-    this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(outputFileFormatClass);
+    this.outputFileFormatClass = HiveFileFormatUtils
+        .getOutputFormatSubstitute(outputFileFormatClass);
   }
-  
-  @explain(displayName="properties", normalExplain=false)
+
+  @explain(displayName = "properties", normalExplain = false)
   public java.util.Properties getProperties() {
-    return this.properties;
+    return properties;
   }
+
   public void setProperties(final java.util.Properties properties) {
     this.properties = properties;
   }
+
   /**
    * @return the serdeClassName
    */
-  @explain(displayName="serde")
+  @explain(displayName = "serde")
   public String getSerdeClassName() {
-    return this.serdeClassName;
+    return serdeClassName;
   }
+
   /**
-   * @param serdeClassName the serde Class Name to set
+   * @param serdeClassName
+   *          the serde Class Name to set
    */
   public void setSerdeClassName(String serdeClassName) {
     this.serdeClassName = serdeClassName;
   }
-  
-  @explain(displayName="name")
+
+  @explain(displayName = "name")
   public String getTableName() {
-    return this.properties.getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
+    return properties
+        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
   }
-  
-  @explain(displayName="input format")
+
+  @explain(displayName = "input format")
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();
   }
-  
-  @explain(displayName="output format")
+
+  @explain(displayName = "output format")
   public String getOutputFileFormatClassName() {
     return getOutputFileFormatClass().getName();
   }
-  
+
+  @Override
   public Object clone() {
     tableDesc ret = new tableDesc();
     ret.setSerdeClassName(serdeClassName);
@@ -117,7 +136,7 @@ public class tableDesc implements Serializable, Cloneable {
     ret.setInputFileFormatClass(inputFileFormatClass);
     ret.setOutputFileFormatClass(outputFileFormatClass);
     Properties newProp = new Properties();
-    Enumeration<Object> keysProp = properties.keys(); 
+    Enumeration<Object> keysProp = properties.keys();
     while (keysProp.hasMoreElements()) {
       Object key = keysProp.nextElement();
       newProp.put(key, properties.get(key));

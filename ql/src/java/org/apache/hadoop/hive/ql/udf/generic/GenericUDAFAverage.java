@@ -40,82 +40,82 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
-@description(
-    name = "avg",
-    value = "_FUNC_(x) - Returns the mean of a set of numbers"
-)
+@description(name = "avg", value = "_FUNC_(x) - Returns the mean of a set of numbers")
 public class GenericUDAFAverage implements GenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFAverage.class.getName());
-  
+
   @Override
-  public GenericUDAFEvaluator getEvaluator(
-      TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+      throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
     }
-    
+
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
-          "Only primitive type arguments are accepted but " + parameters[0].getTypeName() + " is passed.");
+          "Only primitive type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
-    switch (((PrimitiveTypeInfo)parameters[0]).getPrimitiveCategory()) {
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case FLOAT:
-      case DOUBLE:
-      case STRING:
-        return new GenericUDAFAverageEvaluator();
-      case BOOLEAN:
-      default:
-        throw new UDFArgumentTypeException(0,
-            "Only numeric or string type arguments are accepted but " + parameters[0].getTypeName() + " is passed.");
+    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case FLOAT:
+    case DOUBLE:
+    case STRING:
+      return new GenericUDAFAverageEvaluator();
+    case BOOLEAN:
+    default:
+      throw new UDFArgumentTypeException(0,
+          "Only numeric or string type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
   }
-  
+
   public static class GenericUDAFAverageEvaluator extends GenericUDAFEvaluator {
 
     // For PARTIAL1 and COMPLETE
     PrimitiveObjectInspector inputOI;
-    
+
     // For PARTIAL2 and FINAL
     StructObjectInspector soi;
     StructField countField;
     StructField sumField;
     LongObjectInspector countFieldOI;
     DoubleObjectInspector sumFieldOI;
-    
+
     // For PARTIAL1 and PARTIAL2
     Object[] partialResult;
-    
+
     // For FINAL and COMPLETE
     DoubleWritable result;
-    
+
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
         throws HiveException {
-      assert(parameters.length == 1);
+      assert (parameters.length == 1);
       super.init(m, parameters);
-      
+
       // init input
-      if (mode == mode.PARTIAL1 || mode == mode.COMPLETE) {
-        inputOI = (PrimitiveObjectInspector)parameters[0];
+      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+        inputOI = (PrimitiveObjectInspector) parameters[0];
       } else {
-        soi = (StructObjectInspector)parameters[0];
+        soi = (StructObjectInspector) parameters[0];
         countField = soi.getStructFieldRef("count");
         sumField = soi.getStructFieldRef("sum");
-        countFieldOI = (LongObjectInspector)countField.getFieldObjectInspector();
-        sumFieldOI = (DoubleObjectInspector)sumField.getFieldObjectInspector();
+        countFieldOI = (LongObjectInspector) countField
+            .getFieldObjectInspector();
+        sumFieldOI = (DoubleObjectInspector) sumField.getFieldObjectInspector();
       }
-      
+
       // init output
-      if (mode == mode.PARTIAL1 || mode == mode.PARTIAL2) {
+      if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
         // The output of a partial aggregation is a struct containing
-        // a "long" count and a "double" sum. 
-        
+        // a "long" count and a "double" sum.
+
         ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
@@ -125,9 +125,9 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
         partialResult = new Object[2];
         partialResult[0] = new LongWritable(0);
         partialResult[1] = new DoubleWritable(0);
-        return ObjectInspectorFactory.getStandardStructObjectInspector(
-            fname, foi);
-        
+        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
+            foi);
+
       } else {
         result = new DoubleWritable(0);
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
@@ -148,29 +148,31 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      AverageAgg myagg = (AverageAgg)agg;
+      AverageAgg myagg = (AverageAgg) agg;
       myagg.count = 0;
-      myagg.sum = 0;      
+      myagg.sum = 0;
     }
-    
+
     boolean warned = false;
-    
+
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      assert(parameters.length == 1);
+    public void iterate(AggregationBuffer agg, Object[] parameters)
+        throws HiveException {
+      assert (parameters.length == 1);
       Object p = parameters[0];
       if (p != null) {
-        AverageAgg myagg = (AverageAgg)agg;
+        AverageAgg myagg = (AverageAgg) agg;
         try {
-          double v = PrimitiveObjectInspectorUtils.getDouble(p, 
-            (PrimitiveObjectInspector)inputOI);
-          myagg.count ++;
+          double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
+          myagg.count++;
           myagg.sum += v;
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
-            LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
-            LOG.warn(getClass().getSimpleName() + " ignoring similar exceptions.");
+            LOG.warn(getClass().getSimpleName() + " "
+                + StringUtils.stringifyException(e));
+            LOG.warn(getClass().getSimpleName()
+                + " ignoring similar exceptions.");
           }
         }
       }
@@ -178,16 +180,17 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      AverageAgg myagg = (AverageAgg)agg;
-      ((LongWritable)partialResult[0]).set(myagg.count);
-      ((DoubleWritable)partialResult[1]).set(myagg.sum);
+      AverageAgg myagg = (AverageAgg) agg;
+      ((LongWritable) partialResult[0]).set(myagg.count);
+      ((DoubleWritable) partialResult[1]).set(myagg.sum);
       return partialResult;
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial)
+        throws HiveException {
       if (partial != null) {
-        AverageAgg myagg = (AverageAgg)agg;
+        AverageAgg myagg = (AverageAgg) agg;
         Object partialCount = soi.getStructFieldData(partial, countField);
         Object partialSum = soi.getStructFieldData(partial, sumField);
         myagg.count += countFieldOI.get(partialCount);
@@ -197,7 +200,7 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      AverageAgg myagg = (AverageAgg)agg;
+      AverageAgg myagg = (AverageAgg) agg;
       if (myagg.count == 0) {
         return null;
       } else {

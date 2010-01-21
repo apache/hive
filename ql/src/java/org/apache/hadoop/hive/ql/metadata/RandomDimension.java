@@ -21,18 +21,21 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.Random;
 
 /**
- * A random dimension is an abstract dimension.
- * It is implicitly associated with every row in data and has a random value
- *
+ * A random dimension is an abstract dimension. It is implicitly associated with
+ * every row in data and has a random value
+ * 
  **/
 public class RandomDimension extends Dimension {
 
-    Random r;
+  Random r;
 
-    public RandomDimension(Class t, String id) {
-        super(t, id);
-        r = new Random();
-    }
+  public RandomDimension(Class t, String id) {
+    super(t, id);
+    r = new Random();
+  }
 
-    public int hashCode(Object o) { return r.nextInt(); }
+  @Override
+  public int hashCode(Object o) {
+    return r.nextInt();
+  }
 }

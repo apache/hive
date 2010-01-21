@@ -19,16 +19,18 @@
 package org.apache.hadoop.hive.ql.lib;
 
 import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Rule interface for Operators
- * Used in operator dispatching to dispatch process/visitor functions for operators
+ * Rule interface for Operators Used in operator dispatching to dispatch
+ * process/visitor functions for operators
  */
 public interface Rule {
 
   /**
-   * @return the cost of the rule - the lower the cost, the better the rule matches
+   * @return the cost of the rule - the lower the cost, the better the rule
+   *         matches
    * @throws SemanticException
    */
   public int cost(Stack<Node> stack) throws SemanticException;

@@ -24,6 +24,8 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface description {
   String value() default "_FUNC_ is undocumented";
+
   String extended() default "";
+
   String name() default "";
 }

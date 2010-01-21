@@ -24,26 +24,21 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(
-    name = "exp",
-    value = "_FUNC_(x) - Returns e to the power of x",
-    extended = "Example:\n " +
-        "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-        "  1"
-    )
+@description(name = "exp", value = "_FUNC_(x) - Returns e to the power of x", extended = "Example:\n "
+    + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  1")
 public class UDFExp extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFExp.class.getName());
 
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFExp() {
   }
 
   /**
-   * Raise e (the base of natural logarithm) to the power of a. 
+   * Raise e (the base of natural logarithm) to the power of a.
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {
       return null;
     } else {

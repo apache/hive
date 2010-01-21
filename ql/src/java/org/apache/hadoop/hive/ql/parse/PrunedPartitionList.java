@@ -27,51 +27,59 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
  */
 public class PrunedPartitionList {
   // confirmed partitions - satisfy the partition criteria
-  private Set<Partition>  confirmedPartns;
+  private Set<Partition> confirmedPartns;
 
   // unknown partitions - may/may not satisfy the partition criteria
-  private Set<Partition>  unknownPartns;
+  private Set<Partition> unknownPartns;
 
   // denied partitions - do not satisfy the partition criteria
-  private Set<Partition> deniedPartns;
+  private final Set<Partition> deniedPartns;
 
   /**
-   * @param confirmedPartns  confirmed paritions
-   * @param unknownPartns    unknown partitions
+   * @param confirmedPartns
+   *          confirmed paritions
+   * @param unknownPartns
+   *          unknown partitions
    */
-  public PrunedPartitionList(Set<Partition> confirmedPartns, Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
-    this.confirmedPartns  = confirmedPartns;
-    this.unknownPartns    = unknownPartns;
-    this.deniedPartns     = deniedPartns;
+  public PrunedPartitionList(Set<Partition> confirmedPartns,
+      Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
+    this.confirmedPartns = confirmedPartns;
+    this.unknownPartns = unknownPartns;
+    this.deniedPartns = deniedPartns;
   }
 
   /**
    * get confirmed partitions
-   * @return confirmedPartns  confirmed paritions
+   * 
+   * @return confirmedPartns confirmed paritions
    */
-  public Set<Partition>  getConfirmedPartns() {
+  public Set<Partition> getConfirmedPartns() {
     return confirmedPartns;
   }
 
   /**
    * get unknown partitions
-   * @return unknownPartns  unknown paritions
+   * 
+   * @return unknownPartns unknown paritions
    */
-  public Set<Partition>  getUnknownPartns() {
+  public Set<Partition> getUnknownPartns() {
     return unknownPartns;
   }
 
   /**
    * get denied partitions
-   * @return deniedPartns  denied paritions
+   * 
+   * @return deniedPartns denied paritions
    */
-  public Set<Partition>  getDeniedPartns() {
+  public Set<Partition> getDeniedPartns() {
     return deniedPartns;
   }
 
   /**
    * set confirmed partitions
-   * @param confirmedPartns  confirmed paritions
+   * 
+   * @param confirmedPartns
+   *          confirmed paritions
    */
   public void setConfirmedPartns(Set<Partition> confirmedPartns) {
     this.confirmedPartns = confirmedPartns;
@@ -79,9 +87,11 @@ public class PrunedPartitionList {
 
   /**
    * set unknown partitions
-   * @param unknownPartns    unknown partitions
+   * 
+   * @param unknownPartns
+   *          unknown partitions
    */
   public void setUnknownPartns(Set<Partition> unknownPartns) {
-    this.unknownPartns   = unknownPartns;
+    this.unknownPartns = unknownPartns;
   }
 }

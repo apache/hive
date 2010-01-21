@@ -32,34 +32,35 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public abstract class GenericUDTF {
   Collector collector = null;
-  
+
   /**
-   * Initialize this GenericUDTF. This will be called only once per
-   * instance.
+   * Initialize this GenericUDTF. This will be called only once per instance.
    * 
-   * @param args    An array of ObjectInspectors for the arguments
-   * @return        A StructObjectInspector for output. The output struct
-   *                represents a row of the table where the fields of the stuct
-   *                are the columns. The field names are unimportant as they
-   *                will be overridden by user supplied column aliases. 
+   * @param args
+   *          An array of ObjectInspectors for the arguments
+   * @return A StructObjectInspector for output. The output struct represents a
+   *         row of the table where the fields of the stuct are the columns. The
+   *         field names are unimportant as they will be overridden by user
+   *         supplied column aliases.
    */
-  public abstract StructObjectInspector initialize(ObjectInspector [] argOIs) 
-  throws UDFArgumentException;
-  
+  public abstract StructObjectInspector initialize(ObjectInspector[] argOIs)
+      throws UDFArgumentException;
+
   /**
    * Give a set of arguments for the UDTF to process.
    * 
-   * @param o       object array of arguments
+   * @param o
+   *          object array of arguments
    */
-  public abstract void process(Object [] args) throws HiveException;
-  
+  public abstract void process(Object[] args) throws HiveException;
+
   /**
-   * Called to notify the UDTF that there are no more rows to process. Note
-   * that forward() should not be called in this function. Only clean up code
-   * should be run.
+   * Called to notify the UDTF that there are no more rows to process. Note that
+   * forward() should not be called in this function. Only clean up code should
+   * be run.
    */
   public abstract void close() throws HiveException;
-  
+
   /**
    * Associates a collector with this UDTF. Can't be specified in the
    * constructor as the UDTF may be initialized before the collector has been
@@ -70,7 +71,7 @@ public abstract class GenericUDTF {
   public final void setCollector(Collector collector) {
     this.collector = collector;
   }
-  
+
   /**
    * Passes an output row to the collector
    * 

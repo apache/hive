@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-/**                                                                                     
+/**
  * exception class, thrown when udf argument have something wrong.
  */
 public class UDFArgumentException extends SemanticException {
@@ -28,13 +28,13 @@ public class UDFArgumentException extends SemanticException {
   public UDFArgumentException() {
     super();
   }
-  
+
   public UDFArgumentException(String message) {
     super(message);
   }
-  
+
   public UDFArgumentException(Throwable cause) {
     super(cause);
   }
-  
+
 }

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 /**
  * General collection of helper functions
- *
+ * 
  */
 public class HiveUtils {
 
@@ -31,7 +31,6 @@ public class HiveUtils {
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
   public static final String LINE_SEP = System.getProperty("line.separator");
-
 
   public static String escapeString(String str) {
     int length = str.length();
@@ -78,12 +77,11 @@ public class HiveUtils {
         } else {
           escape.append(c);
         }
-      break;
+        break;
       }
     }
     return (escape.toString());
   }
-
 
   public static String lightEscapeString(String str) {
     int length = str.length();
@@ -106,7 +104,7 @@ public class HiveUtils {
         break;
       default:
         escape.append(c);
-      break;
+        break;
       }
     }
     return (escape.toString());

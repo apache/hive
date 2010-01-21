@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.Map;
 
 /**
- * Contains the information needed to add a partition. 
+ * Contains the information needed to add a partition.
  */
 public class AddPartitionDesc {
 
@@ -28,12 +28,16 @@ public class AddPartitionDesc {
   String dbName;
   String location;
   Map<String, String> partSpec;
-  
+
   /**
-   * @param dbName database to add to.
-   * @param tableName table to add to.
-   * @param partSpec partition specification.
-   * @param location partition location, relative to table location. 
+   * @param dbName
+   *          database to add to.
+   * @param tableName
+   *          table to add to.
+   * @param partSpec
+   *          partition specification.
+   * @param location
+   *          partition location, relative to table location.
    */
   public AddPartitionDesc(String dbName, String tableName,
       Map<String, String> partSpec, String location) {
@@ -52,12 +56,13 @@ public class AddPartitionDesc {
   }
 
   /**
-   * @param dbName database name
+   * @param dbName
+   *          database name
    */
   public void setDbName(String dbName) {
     this.dbName = dbName;
   }
-  
+
   /**
    * @return the table we're going to add the partitions to.
    */
@@ -66,7 +71,8 @@ public class AddPartitionDesc {
   }
 
   /**
-   * @param tableName the table we're going to add the partitions to.
+   * @param tableName
+   *          the table we're going to add the partitions to.
    */
   public void setTableName(String tableName) {
     this.tableName = tableName;
@@ -80,7 +86,8 @@ public class AddPartitionDesc {
   }
 
   /**
-   * @param location location of partition in relation to table
+   * @param location
+   *          location of partition in relation to table
    */
   public void setLocation(String location) {
     this.location = location;
@@ -94,7 +101,8 @@ public class AddPartitionDesc {
   }
 
   /**
-   * @param partSpec partition specification
+   * @param partSpec
+   *          partition specification
    */
   public void setPartSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;

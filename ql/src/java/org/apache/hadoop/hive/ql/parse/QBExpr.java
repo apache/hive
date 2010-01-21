@@ -23,13 +23,17 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Implementation of the query block expression
- *
+ * 
  **/
 
 public class QBExpr {
 
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.QBExpr");
-  public static enum Opcode { NULLOP, UNION, INTERSECT, DIFF };
+
+  public static enum Opcode {
+    NULLOP, UNION, INTERSECT, DIFF
+  };
+
   private Opcode opcode;
   private QBExpr qbexpr1;
   private QBExpr qbexpr2;
@@ -49,7 +53,7 @@ public class QBExpr {
   }
 
   public QBExpr(QB qb) {
-    this.opcode = Opcode.NULLOP;
+    opcode = Opcode.NULLOP;
     this.qb = qb;
   }
 
@@ -68,15 +72,15 @@ public class QBExpr {
   }
 
   public void setQBExpr1(QBExpr qbexpr) {
-    this.qbexpr1 = qbexpr;
+    qbexpr1 = qbexpr;
   }
 
   public void setQBExpr2(QBExpr qbexpr) {
-    this.qbexpr2 = qbexpr;
+    qbexpr2 = qbexpr;
   }
 
   public QB getQB() {
-    return this.qb;
+    return qb;
   }
 
   public Opcode getOpcode() {
@@ -94,15 +98,14 @@ public class QBExpr {
   public void print(String msg) {
     if (opcode == Opcode.NULLOP) {
       LOG.info(msg + "start qb = " + qb);
-      qb.print(msg+" ");
+      qb.print(msg + " ");
       LOG.info(msg + "end qb = " + qb);
-    }
-    else {
+    } else {
       LOG.info(msg + "start qbexpr1 = " + qbexpr1);
-      qbexpr1.print(msg+" ");
+      qbexpr1.print(msg + " ");
       LOG.info(msg + "end qbexpr1 = " + qbexpr1);
       LOG.info(msg + "start qbexpr2 = " + qbexpr2);
-      qbexpr2.print(msg+" ");
+      qbexpr2.print(msg + " ");
       LOG.info(msg + "end qbexpr2 = " + qbexpr2);
     }
   }

@@ -18,19 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
-import java.util.*;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.util.StringUtils;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * TaskRunner implementation
@@ -51,6 +41,7 @@ public class TaskRunner extends Thread {
     return tsk;
   }
 
+  @Override
   public void run() {
     SessionState.start(ss);
     runSequential();
@@ -64,6 +55,5 @@ public class TaskRunner extends Thread {
     int exitVal = tsk.executeTask();
     result.setExitVal(exitVal);
   }
-
 
 }

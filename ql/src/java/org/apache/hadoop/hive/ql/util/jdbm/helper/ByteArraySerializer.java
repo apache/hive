@@ -66,55 +66,48 @@ package org.apache.hadoop.hive.ql.util.jdbm.helper;
 
 import java.io.IOException;
 
-
 /**
- * Serializer for byte arrays -- simple returns the byte array itself.  No actual
+ * Serializer for byte arrays -- simple returns the byte array itself. No actual
  * serialization is performed.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
- * @version $Id: ByteArraySerializer.java,v 1.1 2003/03/21 02:48:42 boisvert Exp $
+ * @version $Id: ByteArraySerializer.java,v 1.1 2003/03/21 02:48:42 boisvert Exp
+ *          $
  */
-public final class ByteArraySerializer
-    implements Serializer
-{
+public final class ByteArraySerializer implements Serializer {
 
-    /**
-     * Version id for serialization.
-     */
-    final static long serialVersionUID = 1L;
+  /**
+   * Version id for serialization.
+   */
+  final static long serialVersionUID = 1L;
 
+  /**
+   * Static instance.
+   */
+  public static final ByteArraySerializer INSTANCE = new ByteArraySerializer();
 
-    /**
-     * Static instance.
-     */
-    public static final ByteArraySerializer INSTANCE = new ByteArraySerializer();
-    
-    
-    /** 
-     * Serialize the content of an object into a byte array.
-     *
-     * @param obj Object to serialize
-     * @return a byte array representing the object's state
-     *
-     */
-    public byte[] serialize( Object obj ) 
-        throws IOException
-    {
-        return (byte[]) obj;
-    }
+  /**
+   * Serialize the content of an object into a byte array.
+   * 
+   * @param obj
+   *          Object to serialize
+   * @return a byte array representing the object's state
+   * 
+   */
+  public byte[] serialize(Object obj) throws IOException {
+    return (byte[]) obj;
+  }
 
-    
-    /**
-     * Deserialize the content of an object from a byte array.
-     *
-     * @param serialized Byte array representation of the object
-     * @return deserialized object
-     *
-     */
-    public Object deserialize( byte[] serialized ) 
-        throws IOException
-    {
-        return serialized;
-    }    
+  /**
+   * Deserialize the content of an object from a byte array.
+   * 
+   * @param serialized
+   *          Byte array representation of the object
+   * @return deserialized object
+   * 
+   */
+  public Object deserialize(byte[] serialized) throws IOException {
+    return serialized;
+  }
 
 }

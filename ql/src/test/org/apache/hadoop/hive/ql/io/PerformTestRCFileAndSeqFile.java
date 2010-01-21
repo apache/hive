@@ -20,7 +20,7 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 
 public class PerformTestRCFileAndSeqFile extends TestCase {
 
-  private Configuration conf = new Configuration();
+  private final Configuration conf = new Configuration();
 
   private Path testRCFile;
   private Path testSeqFile;
@@ -35,23 +35,24 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
   public PerformTestRCFileAndSeqFile(boolean local, String file)
       throws IOException {
-    if (local)
+    if (local) {
       fs = FileSystem.getLocal(conf);
-    else
+    } else {
       fs = FileSystem.get(conf);
+    }
     conf.setInt(RCFile.Writer.COLUMNS_BUFFER_SIZE_CONF_STR, 1 * 1024 * 1024);
     if (file == null) {
       Path dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
-      this.testRCFile = new Path(dir, "test_rcfile");
-      this.testSeqFile = new Path(dir, "test_seqfile");
+      testRCFile = new Path(dir, "test_rcfile");
+      testSeqFile = new Path(dir, "test_seqfile");
     } else {
-      this.testRCFile = new Path(file + "-rcfile");
-      this.testSeqFile = new Path(file + "-seqfile");
+      testRCFile = new Path(file + "-rcfile");
+      testSeqFile = new Path(file + "-seqfile");
     }
     fs.delete(testRCFile, true);
-    fs.delete(this.testSeqFile, true);
-    System.out.println("RCFile:" + this.testRCFile.toString());
-    System.out.println("SequenceFile:" + this.testSeqFile.toString());
+    fs.delete(testSeqFile, true);
+    System.out.println("RCFile:" + testRCFile.toString());
+    System.out.println("SequenceFile:" + testSeqFile.toString());
   }
 
   private void writeSeqenceFileTest(FileSystem fs, int rowCount, Path file,
@@ -115,10 +116,11 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
   private void nextRandomRow(byte[][] row, BytesRefArrayWritable bytes) {
     bytes.resetValid(row.length);
     for (int i = 0; i < row.length; i++) {
-      int len = Math.abs(randColLenGenerator.nextInt(this.columnMaxSize));
+      int len = Math.abs(randColLenGenerator.nextInt(columnMaxSize));
       row[i] = new byte[len];
-      for (int j = 0; j < len; j++)
-        row[i][j] = getRandomChar(this.randomCharGenerator);
+      for (int j = 0; j < len; j++) {
+        row[i][j] = getRandomChar(randomCharGenerator);
+      }
       bytes.get(i).set(row[i], 0, len);
     }
   }
@@ -130,13 +132,11 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     do {
       b = (byte) random.nextInt(CHAR_END);
     } while ((b < 65));
-    if (b > 90)
+    if (b > 90) {
       b += 7;
+    }
     return b;
   }
-
-  private static String usage = "Usage: PerformTestRCFileAndSeqFile "
-      + "[-count N]" + " [file]";
 
   public static void main(String[] args) throws Exception {
     int count = 1000;
@@ -191,9 +191,9 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     // sequence file write
     start = System.currentTimeMillis();
-    writeSeqenceFileTest(fs, rowCount, this.testSeqFile, columnNum, codec);
+    writeSeqenceFileTest(fs, rowCount, testSeqFile, columnNum, codec);
     cost = System.currentTimeMillis() - start;
-    fileLen = fs.getFileStatus(this.testSeqFile).getLen();
+    fileLen = fs.getFileStatus(testSeqFile).getLen();
     System.out.println("Write SequenceFile with " + columnNum
         + " random string columns and " + rowCount + " rows cost " + cost
         + " milliseconds. And the file's on disk size is " + fileLen);
@@ -206,13 +206,14 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     System.out.println("Read only one column of a RCFile with " + columnNum
         + " random string columns and " + rowCount + " rows cost " + cost
         + " milliseconds.");
-    if (rowCount != readRows)
+    if (rowCount != readRows) {
       throw new IllegalStateException("Compare read and write row count error.");
+    }
     assertEquals("", rowCount, readRows);
 
     if (isLocalFileSystem() && !checkCorrect) {
       // make some noisy to avoid disk caches data.
-      performSequenceFileRead(fs, rowCount, this.testSeqFile);
+      performSequenceFileRead(fs, rowCount, testSeqFile);
     }
 
     start = System.currentTimeMillis();
@@ -222,13 +223,14 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     System.out.println("Read only first and last columns of a RCFile with "
         + columnNum + " random string columns and " + rowCount + " rows cost "
         + cost + " milliseconds.");
-    if (rowCount != readRows)
+    if (rowCount != readRows) {
       throw new IllegalStateException("Compare read and write row count error.");
+    }
     assertEquals("", rowCount, readRows);
 
     if (isLocalFileSystem() && !checkCorrect) {
       // make some noisy to avoid disk caches data.
-      performSequenceFileRead(fs, rowCount, this.testSeqFile);
+      performSequenceFileRead(fs, rowCount, testSeqFile);
     }
 
     start = System.currentTimeMillis();
@@ -237,13 +239,14 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     System.out.println("Read all columns of a RCFile with " + columnNum
         + " random string columns and " + rowCount + " rows cost " + cost
         + " milliseconds.");
-    if (rowCount != readRows)
+    if (rowCount != readRows) {
       throw new IllegalStateException("Compare read and write row count error.");
+    }
     assertEquals("", rowCount, readRows);
 
     // sequence file read
     start = System.currentTimeMillis();
-    performSequenceFileRead(fs, rowCount, this.testSeqFile);
+    performSequenceFileRead(fs, rowCount, testSeqFile);
     cost = System.currentTimeMillis() - start;
     System.out.println("Read SequenceFile with " + columnNum
         + "  random string columns and " + rowCount + " rows cost " + cost
@@ -259,8 +262,9 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, file, conf);
     ByteWritable key = new ByteWritable();
     BytesRefArrayWritable val = new BytesRefArrayWritable();
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++) {
       reader.next(key, val);
+    }
   }
 
   public int performRCFileReadFirstColumnTest(FileSystem fs, Path file,
@@ -269,7 +273,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     byte[][] checkBytes = null;
     BytesRefArrayWritable checkRow = new BytesRefArrayWritable(allColumnsNumber);
     if (chechCorrect) {
-      this.resetRandomGenerators();
+      resetRandomGenerators();
       checkBytes = new byte[allColumnsNumber][];
     }
 
@@ -286,11 +290,12 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
       reader.getCurrentRow(cols);
       boolean ok = true;
       if (chechCorrect) {
-        this.nextRandomRow(checkBytes, checkRow);
+        nextRandomRow(checkBytes, checkRow);
         ok = ok && (checkRow.get(0).equals(cols.get(0)));
       }
-      if (!ok)
+      if (!ok) {
         throw new IllegalStateException("Compare read and write error.");
+      }
       actualReadCount++;
     }
     return actualReadCount;
@@ -302,7 +307,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     byte[][] checkBytes = null;
     BytesRefArrayWritable checkRow = new BytesRefArrayWritable(allColumnsNumber);
     if (chechCorrect) {
-      this.resetRandomGenerators();
+      resetRandomGenerators();
       checkBytes = new byte[allColumnsNumber][];
     }
 
@@ -320,14 +325,15 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
       reader.getCurrentRow(cols);
       boolean ok = true;
       if (chechCorrect) {
-        this.nextRandomRow(checkBytes, checkRow);
+        nextRandomRow(checkBytes, checkRow);
         ok = ok && (checkRow.get(0).equals(cols.get(0)));
         ok = ok
             && checkRow.get(allColumnsNumber - 1).equals(
                 cols.get(allColumnsNumber - 1));
       }
-      if (!ok)
+      if (!ok) {
         throw new IllegalStateException("Compare read and write error.");
+      }
       actualReadCount++;
     }
     return actualReadCount;
@@ -339,7 +345,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     byte[][] checkBytes = null;
     BytesRefArrayWritable checkRow = new BytesRefArrayWritable(allColumnsNumber);
     if (chechCorrect) {
-      this.resetRandomGenerators();
+      resetRandomGenerators();
       checkBytes = new byte[allColumnsNumber][];
     }
 
@@ -354,11 +360,12 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
       reader.getCurrentRow(cols);
       boolean ok = true;
       if (chechCorrect) {
-        this.nextRandomRow(checkBytes, checkRow);
+        nextRandomRow(checkBytes, checkRow);
         ok = ok && checkRow.equals(cols);
       }
-      if (!ok)
+      if (!ok) {
         throw new IllegalStateException("Compare read and write error.");
+      }
       actualReadCount++;
     }
     return actualReadCount;

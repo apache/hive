@@ -19,16 +19,16 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
 import org.apache.hadoop.fs.Path;
 
-@explain(displayName="Describe Function")
-public class descFunctionDesc extends ddlDesc implements Serializable
-{
+@explain(displayName = "Describe Function")
+public class descFunctionDesc extends ddlDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String     name;
-  Path       resFile;
-  boolean    isExtended;
-  
+  String name;
+  Path resFile;
+  boolean isExtended;
+
   public boolean isExtended() {
     return isExtended;
   }
@@ -36,7 +36,7 @@ public class descFunctionDesc extends ddlDesc implements Serializable
   public void setExtended(boolean isExtended) {
     this.isExtended = isExtended;
   }
-  
+
   /**
    * table name for the result of show tables
    */
@@ -53,7 +53,7 @@ public class descFunctionDesc extends ddlDesc implements Serializable
   public String getSchema() {
     return schema;
   }
-  
+
   /**
    * @param resFile
    */
@@ -63,7 +63,8 @@ public class descFunctionDesc extends ddlDesc implements Serializable
   }
 
   /**
-   * @param name of the function to describe
+   * @param name
+   *          of the function to describe
    */
   public descFunctionDesc(Path resFile, String name, boolean isExtended) {
     this.isExtended = isExtended;
@@ -74,13 +75,14 @@ public class descFunctionDesc extends ddlDesc implements Serializable
   /**
    * @return the name
    */
-  @explain(displayName="name")
+  @explain(displayName = "name")
   public String getName() {
     return name;
   }
 
   /**
-   * @param name is the function name
+   * @param name
+   *          is the function name
    */
   public void setName(String name) {
     this.name = name;
@@ -93,12 +95,14 @@ public class descFunctionDesc extends ddlDesc implements Serializable
     return resFile;
   }
 
-  @explain(displayName="result file", normalExplain=false)
+  @explain(displayName = "result file", normalExplain = false)
   public String getResFileString() {
     return getResFile().getName();
   }
+
   /**
-   * @param resFile the resFile to set
+   * @param resFile
+   *          the resFile to set
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;

@@ -31,12 +31,14 @@ public interface GraphWalker {
   /**
    * starting point for walking.
    * 
-   * @param startNodes list of starting operators
-   * @param nodeOutput If this parameter is not null, the call to the function returns the 
-   * map from node to objects returned by the processors.
+   * @param startNodes
+   *          list of starting operators
+   * @param nodeOutput
+   *          If this parameter is not null, the call to the function returns
+   *          the map from node to objects returned by the processors.
    * @throws SemanticException
    */
-  public void startWalking(Collection<Node> startNodes, HashMap<Node, Object> nodeOutput)
-      throws SemanticException;
+  public void startWalking(Collection<Node> startNodes,
+      HashMap<Node, Object> nodeOutput) throws SemanticException;
 
 }

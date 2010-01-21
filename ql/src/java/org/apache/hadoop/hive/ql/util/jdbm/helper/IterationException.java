@@ -65,51 +65,45 @@
 
 package org.apache.hadoop.hive.ql.util.jdbm.helper;
 
-
 /**
  * Iteration exception.
- *
+ * 
  * @author <a href="boisvert@intalio.com">Alex Boisvert</a>
  * @version $Revision: 1.2 $
  */
-public class IterationException
-    extends WrappedRuntimeException
-{
+public class IterationException extends WrappedRuntimeException {
 
-    /**
-     * Construct a new iteration exception wrapping an underlying exception
-     * and providing a message.
-     *
-     * @param message The exception message
-     * @param except The underlying exception
-     */
-    public IterationException( String message, Exception except )
-    {
-        super( message, except );
-    }
+  /**
+   * Construct a new iteration exception wrapping an underlying exception and
+   * providing a message.
+   * 
+   * @param message
+   *          The exception message
+   * @param except
+   *          The underlying exception
+   */
+  public IterationException(String message, Exception except) {
+    super(message, except);
+  }
 
+  /**
+   * Construct a new iteration exception with a message.
+   * 
+   * @param message
+   *          The exception message
+   */
+  public IterationException(String message) {
+    super(message, null);
+  }
 
-    /**
-     * Construct a new iteration exception with a message.
-     *
-     * @param message The exception message
-     */
-    public IterationException( String message )
-    {
-        super( message, null );
-    }
-
-
-    /**
-     * Construct a new iteration exception wrapping an underlying exception.
-     *
-     * @param except The underlying exception
-     */
-    public IterationException( Exception except )
-    {
-        super( except );
-    }
+  /**
+   * Construct a new iteration exception wrapping an underlying exception.
+   * 
+   * @param except
+   *          The underlying exception
+   */
+  public IterationException(Exception except) {
+    super(except);
+  }
 
 }
-
-

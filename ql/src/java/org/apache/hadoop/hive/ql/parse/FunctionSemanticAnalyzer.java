@@ -21,39 +21,39 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
 
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
-  private static final Log LOG =
-    LogFactory.getLog("hive.ql.parse.FunctionSemanticAnalyzer");
-  
+  private static final Log LOG = LogFactory
+      .getLog("hive.ql.parse.FunctionSemanticAnalyzer");
+
   public FunctionSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
   }
-  
+
+  @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    if (ast.getToken().getType() == HiveParser.TOK_CREATEFUNCTION)
+    if (ast.getToken().getType() == HiveParser.TOK_CREATEFUNCTION) {
       analyzeCreateFunction(ast);
-    if (ast.getToken().getType() == HiveParser.TOK_DROPFUNCTION)
+    }
+    if (ast.getToken().getType() == HiveParser.TOK_DROPFUNCTION) {
       analyzeDropFunction(ast);
+    }
 
     LOG.info("analyze done");
   }
-  
-  private void analyzeCreateFunction(ASTNode ast) 
-      throws SemanticException {
+
+  private void analyzeCreateFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
     createFunctionDesc desc = new createFunctionDesc(functionName, className);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
-  
-  private void analyzeDropFunction(ASTNode ast) 
-      throws SemanticException {
+
+  private void analyzeDropFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     dropFunctionDesc desc = new dropFunctionDesc(functionName);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));

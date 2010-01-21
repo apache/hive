@@ -30,41 +30,41 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "second",
-    value = "_FUNC_(date) - Returns the second of date",
-    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or " +
-        "'HH:mm:ss'.\n" +
-        "Example:\n " +
-        "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n" +
-        "  59\n" +
-        "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" +
-        "  59"
-    )
+@description(name = "second", value = "_FUNC_(date) - Returns the second of date", extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
+    + "'HH:mm:ss'.\n"
+    + "Example:\n "
+    + "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n"
+    + "  59\n"
+    + "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" + "  59")
 public class UDFSecond extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFSecond.class.getName());
 
-  private SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-  private SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");
-  private Calendar calendar = Calendar.getInstance();
+  private final SimpleDateFormat formatter1 = new SimpleDateFormat(
+      "yyyy-MM-dd HH:mm:ss");
+  private final SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");
+  private final Calendar calendar = Calendar.getInstance();
 
   IntWritable result = new IntWritable();
+
   public UDFSecond() {
   }
 
   /**
    * Get the minute from a date string.
    * 
-   * @param dateString the dateString in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
-   * @return an int from 0 to 59. null if the dateString is not a valid date string.
+   * @param dateString
+   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
+   *          "yyyy-MM-dd".
+   * @return an int from 0 to 59. null if the dateString is not a valid date
+   *         string.
    */
-  public IntWritable evaluate(Text dateString)  {
-    
+  public IntWritable evaluate(Text dateString) {
+
     if (dateString == null) {
       return null;
     }
-    
+
     try {
       Date date = null;
       try {

@@ -18,30 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.Text;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-@description(
-    name = "regexp_replace",
-    value = "_FUNC_(str, regexp, rep) - replace all substrings of str that " +
-    		"match regexp with rep",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_('100-200', '(\\d+)', 'num') FROM src LIMIT 1;\n" +
-        "  'num-num'"
-    )
+@description(name = "regexp_replace", value = "_FUNC_(str, regexp, rep) - replace all substrings of str that "
+    + "match regexp with rep", extended = "Example:\n"
+    + "  > SELECT _FUNC_('100-200', '(\\d+)', 'num') FROM src LIMIT 1;\n"
+    + "  'num-num'")
 public class UDFRegExpReplace extends UDF {
 
-  private Text lastRegex = new Text();
+  private final Text lastRegex = new Text();
   private Pattern p = null;
-  
-  private Text lastReplacement = new Text();
-  private String replacementString = ""; 
+
+  private final Text lastReplacement = new Text();
+  private String replacementString = "";
 
   Text result = new Text();
+
   public UDFRegExpReplace() {
   }
 
@@ -60,15 +57,15 @@ public class UDFRegExpReplace extends UDF {
       lastReplacement.set(replacement);
       replacementString = replacement.toString();
     }
-    
+
     StringBuffer sb = new StringBuffer();
     while (m.find()) {
       m.appendReplacement(sb, replacementString);
     }
     m.appendTail(sb);
-    
+
     result.set(sb.toString());
-    return result;    
+    return result;
   }
 
 }

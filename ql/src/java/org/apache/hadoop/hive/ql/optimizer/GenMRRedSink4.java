@@ -18,21 +18,20 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Stack;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
 
 /**
  * Processor for the rule - map join followed by reduce sink
@@ -43,45 +42,56 @@ public class GenMRRedSink4 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered 
-   * @param nd the reduce sink operator encountered
-   * @param opProcCtx context
+   * Reduce Scan encountered
+   * 
+   * @param nd
+   *          the reduce sink operator encountered
+   * @param opProcCtx
+   *          context
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
-    ReduceSinkOperator op = (ReduceSinkOperator)nd;
-    GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+      Object... nodeOutputs) throws SemanticException {
+    ReduceSinkOperator op = (ReduceSinkOperator) nd;
+    GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
 
-    ParseContext parseCtx = ctx.getParseCtx();
+    ctx.getParseCtx();
 
-    // map-join consisted on a bunch of map-only jobs, and it has been split after the mapjoin
+    // map-join consisted on a bunch of map-only jobs, and it has been split
+    // after the mapjoin
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+        .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
-    Task<? extends Serializable> currTask    = mapredCtx.getCurrTask();
+    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     mapredWork plan = (mapredWork) currTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+        .getOpTaskMap();
     Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
-    
+
     ctx.setCurrTask(currTask);
 
     // If the plan for this reducer does not exist, initialize the plan
     if (opMapTask == null) {
       // When the reducer is encountered for the first time
-      if (plan.getReducer() == null)
+      if (plan.getReducer() == null) {
         GenMapRedUtils.initMapJoinPlan(op, ctx, true, false, true, -1);
-      // When mapjoin is followed by a multi-table insert
-      else
+        // When mapjoin is followed by a multi-table insert
+      } else {
         GenMapRedUtils.splitPlan(op, ctx);
+      }
     }
-    // There is a join after mapjoin. One of the branches of mapjoin has already been initialized.
+    // There is a join after mapjoin. One of the branches of mapjoin has already
+    // been initialized.
     // Initialize the current branch, and join with the original plan.
     else {
       assert plan.getReducer() != reducer;
-      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, false, true, false);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, false, true,
+          false);
     }
 
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
-    
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+        ctx.getCurrAliasId()));
+
     // the mapjoin operator has been processed
     ctx.setCurrMapJoinOp(null);
     return null;

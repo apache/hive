@@ -20,23 +20,19 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.plan.loadDesc;
-
 public class loadFileDesc extends loadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String targetDir;
   private boolean isDfsDir;
   // list of columns, comma separated
-  private String  columns;
-  private String  columnTypes;
+  private String columns;
+  private String columnTypes;
 
-  public loadFileDesc() { }
-  public loadFileDesc(
-    final String sourceDir,
-    final String targetDir,
-    final boolean isDfsDir, 
-    final String  columns,
-    final String  columnTypes) {
+  public loadFileDesc() {
+  }
+
+  public loadFileDesc(final String sourceDir, final String targetDir,
+      final boolean isDfsDir, final String columns, final String columnTypes) {
 
     super(sourceDir);
     this.targetDir = targetDir;
@@ -44,44 +40,50 @@ public class loadFileDesc extends loadDesc implements Serializable {
     this.columns = columns;
     this.columnTypes = columnTypes;
   }
-  
-  @explain(displayName="destination")
+
+  @explain(displayName = "destination")
   public String getTargetDir() {
-    return this.targetDir;
+    return targetDir;
   }
+
   public void setTargetDir(final String targetDir) {
-    this.targetDir=targetDir;
+    this.targetDir = targetDir;
   }
-  
-  @explain(displayName="hdfs directory")
+
+  @explain(displayName = "hdfs directory")
   public boolean getIsDfsDir() {
-    return this.isDfsDir;
+    return isDfsDir;
   }
+
   public void setIsDfsDir(final boolean isDfsDir) {
     this.isDfsDir = isDfsDir;
   }
-  
-	/**
-	 * @return the columns
-	 */
-	public String getColumns() {
-		return columns;
-	}
-	
-	/**
-	 * @param columns the columns to set
-	 */
-	public void setColumns(String columns) {
-		this.columns = columns;
-	}
+
+  /**
+   * @return the columns
+   */
+  public String getColumns() {
+    return columns;
+  }
+
+  /**
+   * @param columns
+   *          the columns to set
+   */
+  public void setColumns(String columns) {
+    this.columns = columns;
+  }
+
   /**
    * @return the columnTypes
    */
   public String getColumnTypes() {
     return columnTypes;
   }
+
   /**
-   * @param columnTypes the columnTypes to set
+   * @param columnTypes
+   *          the columnTypes to set
    */
   public void setColumnTypes(String columnTypes) {
     this.columnTypes = columnTypes;

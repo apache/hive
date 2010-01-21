@@ -18,25 +18,29 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
-@explain(displayName="Map Reduce")
+@explain(displayName = "Map Reduce")
 public class mapredWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String command;
   // map side work
-  //   use LinkedHashMap to make sure the iteration order is
-  //   deterministic, to ease testing
-  private LinkedHashMap<String,ArrayList<String>> pathToAliases;
-  
-  private LinkedHashMap<String,partitionDesc> pathToPartitionInfo;
-  
-  private LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork;
-  
+  // use LinkedHashMap to make sure the iteration order is
+  // deterministic, to ease testing
+  private LinkedHashMap<String, ArrayList<String>> pathToAliases;
+
+  private LinkedHashMap<String, partitionDesc> pathToPartitionInfo;
+
+  private LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork;
+
   private LinkedHashMap<String, partitionDesc> aliasToPartnInfo;
 
   // map<->reduce interface
@@ -47,117 +51,125 @@ public class mapredWork implements Serializable {
   private List<tableDesc> tagToValueDesc;
 
   private Operator<?> reducer;
-  
+
   private Integer numReduceTasks;
-  
+
   private boolean needsTagging;
   private mapredLocalWork mapLocalWork;
 
-  public mapredWork() { 
-    this.aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
+  public mapredWork() {
+    aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
   }
 
   public mapredWork(
-    final String command,
-    final LinkedHashMap<String,ArrayList<String>> pathToAliases,
-    final LinkedHashMap<String,partitionDesc> pathToPartitionInfo,
-    final LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork,
-    final tableDesc keyDesc,
-    List<tableDesc> tagToValueDesc,
-    final Operator<?> reducer,
-    final Integer numReduceTasks,
-    final mapredLocalWork mapLocalWork) {
-      this.command = command;
-      this.pathToAliases = pathToAliases;
-      this.pathToPartitionInfo = pathToPartitionInfo;
-      this.aliasToWork = aliasToWork;
-      this.keyDesc = keyDesc;
-      this.tagToValueDesc = tagToValueDesc;
-      this.reducer = reducer;
-      this.numReduceTasks = numReduceTasks;
-      this.mapLocalWork = mapLocalWork;
-      this.aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
+      final String command,
+      final LinkedHashMap<String, ArrayList<String>> pathToAliases,
+      final LinkedHashMap<String, partitionDesc> pathToPartitionInfo,
+      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
+      final tableDesc keyDesc, List<tableDesc> tagToValueDesc,
+      final Operator<?> reducer, final Integer numReduceTasks,
+      final mapredLocalWork mapLocalWork) {
+    this.command = command;
+    this.pathToAliases = pathToAliases;
+    this.pathToPartitionInfo = pathToPartitionInfo;
+    this.aliasToWork = aliasToWork;
+    this.keyDesc = keyDesc;
+    this.tagToValueDesc = tagToValueDesc;
+    this.reducer = reducer;
+    this.numReduceTasks = numReduceTasks;
+    this.mapLocalWork = mapLocalWork;
+    aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
   }
 
   public String getCommand() {
-    return this.command;
+    return command;
   }
+
   public void setCommand(final String command) {
     this.command = command;
   }
 
-  @explain(displayName="Path -> Alias", normalExplain=false)
-  public LinkedHashMap<String,ArrayList<String>> getPathToAliases() {
-    return this.pathToAliases;
+  @explain(displayName = "Path -> Alias", normalExplain = false)
+  public LinkedHashMap<String, ArrayList<String>> getPathToAliases() {
+    return pathToAliases;
   }
-  public void setPathToAliases(final LinkedHashMap<String,ArrayList<String>> pathToAliases) {
+
+  public void setPathToAliases(
+      final LinkedHashMap<String, ArrayList<String>> pathToAliases) {
     this.pathToAliases = pathToAliases;
   }
 
-  @explain(displayName="Path -> Partition", normalExplain=false)
-  public LinkedHashMap<String,partitionDesc> getPathToPartitionInfo() {
-    return this.pathToPartitionInfo;
+  @explain(displayName = "Path -> Partition", normalExplain = false)
+  public LinkedHashMap<String, partitionDesc> getPathToPartitionInfo() {
+    return pathToPartitionInfo;
   }
 
-  public void setPathToPartitionInfo(final LinkedHashMap<String,partitionDesc> pathToPartitionInfo) {
+  public void setPathToPartitionInfo(
+      final LinkedHashMap<String, partitionDesc> pathToPartitionInfo) {
     this.pathToPartitionInfo = pathToPartitionInfo;
   }
-  
+
   /**
    * @return the aliasToPartnInfo
    */
   public LinkedHashMap<String, partitionDesc> getAliasToPartnInfo() {
     return aliasToPartnInfo;
   }
-  
+
   /**
-   * @param aliasToPartnInfo the aliasToPartnInfo to set
+   * @param aliasToPartnInfo
+   *          the aliasToPartnInfo to set
    */
   public void setAliasToPartnInfo(
       LinkedHashMap<String, partitionDesc> aliasToPartnInfo) {
     this.aliasToPartnInfo = aliasToPartnInfo;
   }
-  
-  @explain(displayName="Alias -> Map Operator Tree")
+
+  @explain(displayName = "Alias -> Map Operator Tree")
   public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
-    return this.aliasToWork;
-  }
-  public void setAliasToWork(final LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork) {
-    this.aliasToWork=aliasToWork;
+    return aliasToWork;
   }
 
+  public void setAliasToWork(
+      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
+    this.aliasToWork = aliasToWork;
+  }
 
   /**
    * @return the mapredLocalWork
    */
-  @explain(displayName="Local Work")
+  @explain(displayName = "Local Work")
   public mapredLocalWork getMapLocalWork() {
     return mapLocalWork;
   }
 
   /**
-   * @param mapLocalWork the mapredLocalWork to set
+   * @param mapLocalWork
+   *          the mapredLocalWork to set
    */
   public void setMapLocalWork(final mapredLocalWork mapLocalWork) {
     this.mapLocalWork = mapLocalWork;
   }
 
   public tableDesc getKeyDesc() {
-    return this.keyDesc;
+    return keyDesc;
   }
+
   public void setKeyDesc(final tableDesc keyDesc) {
     this.keyDesc = keyDesc;
   }
+
   public List<tableDesc> getTagToValueDesc() {
     return tagToValueDesc;
   }
+
   public void setTagToValueDesc(final List<tableDesc> tagToValueDesc) {
     this.tagToValueDesc = tagToValueDesc;
   }
 
-  @explain(displayName="Reduce Operator Tree")
+  @explain(displayName = "Reduce Operator Tree")
   public Operator<?> getReducer() {
-    return this.reducer;
+    return reducer;
   }
 
   public void setReducer(final Operator<?> reducer) {
@@ -165,59 +177,62 @@ public class mapredWork implements Serializable {
   }
 
   /**
-   * If the number of reducers is -1, the runtime will automatically 
-   * figure it out by input data size.
+   * If the number of reducers is -1, the runtime will automatically figure it
+   * out by input data size.
    * 
-   * The number of reducers will be a positive number only in case the
-   * target table is bucketed into N buckets (through CREATE TABLE).
-   * This feature is not supported yet, so the number of reducers will 
-   * always be -1 for now.
+   * The number of reducers will be a positive number only in case the target
+   * table is bucketed into N buckets (through CREATE TABLE). This feature is
+   * not supported yet, so the number of reducers will always be -1 for now.
    */
   public Integer getNumReduceTasks() {
-    return this.numReduceTasks;
+    return numReduceTasks;
   }
+
   public void setNumReduceTasks(final Integer numReduceTasks) {
     this.numReduceTasks = numReduceTasks;
   }
+
   @SuppressWarnings("nls")
-  public void  addMapWork(String path, String alias, Operator<?> work, partitionDesc pd) {
-    ArrayList<String> curAliases = this.pathToAliases.get(path);
-    if(curAliases == null) {
-      assert(this.pathToPartitionInfo.get(path) == null);
-      curAliases = new ArrayList<String> ();
-      this.pathToAliases.put(path, curAliases);
-      this.pathToPartitionInfo.put(path, pd);
+  public void addMapWork(String path, String alias, Operator<?> work,
+      partitionDesc pd) {
+    ArrayList<String> curAliases = pathToAliases.get(path);
+    if (curAliases == null) {
+      assert (pathToPartitionInfo.get(path) == null);
+      curAliases = new ArrayList<String>();
+      pathToAliases.put(path, curAliases);
+      pathToPartitionInfo.put(path, pd);
     } else {
-      assert(this.pathToPartitionInfo.get(path) != null);
+      assert (pathToPartitionInfo.get(path) != null);
     }
 
-    for(String oneAlias: curAliases) {
-      if(oneAlias.equals(alias)) {
-        throw new RuntimeException ("Multiple aliases named: " + alias + " for path: " + path);
+    for (String oneAlias : curAliases) {
+      if (oneAlias.equals(alias)) {
+        throw new RuntimeException("Multiple aliases named: " + alias
+            + " for path: " + path);
       }
     }
     curAliases.add(alias);
 
-    if(this.aliasToWork.get(alias) != null) {
-      throw new RuntimeException ("Existing work for alias: " + alias);
+    if (aliasToWork.get(alias) != null) {
+      throw new RuntimeException("Existing work for alias: " + alias);
     }
-    this.aliasToWork.put(alias, work);
+    aliasToWork.put(alias, work);
   }
 
   @SuppressWarnings("nls")
-  public String isInvalid () {
-    if((getNumReduceTasks() >= 1) && (getReducer() == null)) {
+  public String isInvalid() {
+    if ((getNumReduceTasks() >= 1) && (getReducer() == null)) {
       return "Reducers > 0 but no reduce operator";
     }
 
-    if((getNumReduceTasks() == 0) && (getReducer() != null)) {
+    if ((getNumReduceTasks() == 0) && (getReducer() != null)) {
       return "Reducers == 0 but reduce operator specified";
     }
 
     return null;
   }
 
-  public String toXML () {
+  public String toXML() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     Utilities.serializeMapRedWork(this, baos);
     return (baos.toString());
@@ -226,13 +241,13 @@ public class mapredWork implements Serializable {
   // non bean
 
   /**
-   * For each map side operator - stores the alias the operator is working on behalf
-   * of in the operator runtime state. This is used by reducesink operator - but could
-   * be useful for debugging as well.
+   * For each map side operator - stores the alias the operator is working on
+   * behalf of in the operator runtime state. This is used by reducesink
+   * operator - but could be useful for debugging as well.
    */
-  private void setAliases () {
-    for(String oneAlias: this.aliasToWork.keySet()) {
-      this.aliasToWork.get(oneAlias).setAlias(oneAlias);
+  private void setAliases() {
+    for (String oneAlias : aliasToWork.keySet()) {
+      aliasToWork.get(oneAlias).setAlias(oneAlias);
     }
   }
 
@@ -240,24 +255,24 @@ public class mapredWork implements Serializable {
    * Derive additional attributes to be rendered by EXPLAIN.
    */
   public void deriveExplainAttributes() {
-    if (this.pathToPartitionInfo == null) {
+    if (pathToPartitionInfo == null) {
       return;
     }
-    for (Map.Entry<String,partitionDesc> entry
-           : this.pathToPartitionInfo.entrySet()) {
+    for (Map.Entry<String, partitionDesc> entry : pathToPartitionInfo
+        .entrySet()) {
       entry.getValue().deriveBaseFileName(entry.getKey());
     }
   }
 
-  public void initialize () {
+  public void initialize() {
     setAliases();
   }
 
-  @explain(displayName="Needs Tagging", normalExplain=false)
+  @explain(displayName = "Needs Tagging", normalExplain = false)
   public boolean getNeedsTagging() {
-    return this.needsTagging;
+    return needsTagging;
   }
-  
+
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
   }

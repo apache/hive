@@ -18,23 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
-import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-
+import org.apache.hadoop.hive.ql.exec.ExecMapper.reportStats;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.exec.ExecMapper.reportStats;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -43,12 +40,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reducer;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.ReflectionUtils;
 
 public class ExecReducer extends MapReduceBase implements Reducer {
 
   private JobConf jc;
-  private OutputCollector<?,?> oc;
+  private OutputCollector<?, ?> oc;
   private Operator<?> reducer;
   private Reporter rp;
   private boolean abort = false;
@@ -56,101 +58,108 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private long cntr = 0;
   private long nextCntr = 1;
 
-  private static String [] fieldNames;
+  private static String[] fieldNames;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
-  
+
   // used to log memory usage periodically
   private MemoryMXBean memoryMXBean;
-  
+
   // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
-  // Input value serde needs to be an array to support different SerDe 
+  // Input value serde needs to be an array to support different SerDe
   // for different tags
-  private SerDe[] inputValueDeserializer = new SerDe[Byte.MAX_VALUE];
+  private final SerDe[] inputValueDeserializer = new SerDe[Byte.MAX_VALUE];
   static {
-    ArrayList<String> fieldNameArray =  new ArrayList<String> ();
-    for(Utilities.ReduceField r: Utilities.ReduceField.values()) {
+    ArrayList<String> fieldNameArray = new ArrayList<String>();
+    for (Utilities.ReduceField r : Utilities.ReduceField.values()) {
       fieldNameArray.add(r.toString());
     }
-    fieldNames = fieldNameArray.toArray(new String [0]);
+    fieldNames = fieldNameArray.toArray(new String[0]);
   }
 
   tableDesc keyTableDesc;
   tableDesc[] valueTableDesc;
-  
+
+  @Override
   public void configure(JobConf job) {
     ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    // Allocate the bean at the beginning - 
+    // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
-    
+
     try {
-      l4j.info("conf classpath = " 
-          + Arrays.asList(((URLClassLoader)job.getClassLoader()).getURLs()));
-      l4j.info("thread classpath = " 
-          + Arrays.asList(((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs()));
+      l4j.info("conf classpath = "
+          + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
+      l4j.info("thread classpath = "
+          + Arrays.asList(((URLClassLoader) Thread.currentThread()
+              .getContextClassLoader()).getURLs()));
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
     jc = job;
     mapredWork gWork = Utilities.getMapRedWork(job);
     reducer = gWork.getReducer();
-    reducer.setParentOperators(null); // clear out any parents as reducer is the root
+    reducer.setParentOperators(null); // clear out any parents as reducer is the
+                                      // root
     isTagged = gWork.getNeedsTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
-      inputKeyDeserializer = (SerDe)ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
+      inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
+          .getDeserializerClass(), null);
       inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
-      valueTableDesc = new tableDesc[gWork.getTagToValueDesc().size()]; 
-      for(int tag=0; tag<gWork.getTagToValueDesc().size(); tag++) {
+      valueTableDesc = new tableDesc[gWork.getTagToValueDesc().size()];
+      for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
-        inputValueDeserializer[tag] = (SerDe)ReflectionUtils.newInstance(valueTableDesc[tag].getDeserializerClass(), null);
-        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag].getProperties());
-        valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
-        
+        inputValueDeserializer[tag] = (SerDe) ReflectionUtils.newInstance(
+            valueTableDesc[tag].getDeserializerClass(), null);
+        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag]
+            .getProperties());
+        valueObjectInspector[tag] = inputValueDeserializer[tag]
+            .getObjectInspector();
+
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector[tag]);
         ois.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
-        rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
-            Arrays.asList(fieldNames), ois);
+        rowObjectInspector[tag] = ObjectInspectorFactory
+            .getStandardStructObjectInspector(Arrays.asList(fieldNames), ois);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    
-    //initialize reduce operator tree
+
+    // initialize reduce operator tree
     try {
       l4j.info(reducer.dump(0));
       reducer.initialize(jc, rowObjectInspector);
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory 
-        throw (OutOfMemoryError) e; 
+        // Don't create a new object if we are already out of memory
+        throw (OutOfMemoryError) e;
       } else {
-        throw new RuntimeException ("Reduce operator initialization failed", e);
+        throw new RuntimeException("Reduce operator initialization failed", e);
       }
     }
   }
 
   private Object keyObject;
-  private Object[] valueObject = new Object[Byte.MAX_VALUE];
-  
+  private final Object[] valueObject = new Object[Byte.MAX_VALUE];
+
   private BytesWritable groupKey;
-  
+
   ArrayList<Object> row = new ArrayList<Object>(3);
   ByteWritable tag = new ByteWritable();
-  public void reduce(Object key, Iterator values,
-                     OutputCollector output,
-                     Reporter reporter) throws IOException {
 
-    if(oc == null) {
+  public void reduce(Object key, Iterator values, OutputCollector output,
+      Reporter reporter) throws IOException {
+
+    if (oc == null) {
       // propagete reporter and output collector to all operators
       oc = output;
       rp = reporter;
@@ -159,34 +168,35 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     }
 
     try {
-      BytesWritable keyWritable = (BytesWritable)key;
-      tag.set((byte)0);
+      BytesWritable keyWritable = (BytesWritable) key;
+      tag.set((byte) 0);
       if (isTagged) {
         // remove the tag
         int size = keyWritable.getSize() - 1;
-        tag.set(keyWritable.get()[size]); 
+        tag.set(keyWritable.get()[size]);
         keyWritable.setSize(size);
       }
-      
+
       if (!keyWritable.equals(groupKey)) {
         // If a operator wants to do some work at the beginning of a group
-        if (groupKey == null) { //the first group
+        if (groupKey == null) { // the first group
           groupKey = new BytesWritable();
         } else {
           // If a operator wants to do some work at the end of a group
           l4j.trace("End Group");
           reducer.endGroup();
         }
-        
+
         try {
           keyObject = inputKeyDeserializer.deserialize(keyWritable);
         } catch (Exception e) {
-          throw new HiveException("Unable to deserialize reduce input key from " + 
-              Utilities.formatBinaryString(keyWritable.get(), 0, keyWritable.getSize())
-              + " with properties " + keyTableDesc.getProperties(),
-              e);
+          throw new HiveException(
+              "Unable to deserialize reduce input key from "
+                  + Utilities.formatBinaryString(keyWritable.get(), 0,
+                      keyWritable.getSize()) + " with properties "
+                  + keyTableDesc.getProperties(), e);
         }
-        
+
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
         l4j.trace("Start Group");
         reducer.startGroup();
@@ -195,15 +205,18 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {
         BytesWritable valueWritable = (BytesWritable) values.next();
-        //System.err.print(who.getHo().toString());
+        // System.err.print(who.getHo().toString());
         try {
-          valueObject[tag.get()] = inputValueDeserializer[tag.get()].deserialize(valueWritable);
+          valueObject[tag.get()] = inputValueDeserializer[tag.get()]
+              .deserialize(valueWritable);
         } catch (SerDeException e) {
-          throw new HiveException("Unable to deserialize reduce input value (tag=" + tag.get()
-              + ") from " + 
-              Utilities.formatBinaryString(valueWritable.get(), 0, valueWritable.getSize())
-              + " with properties " + valueTableDesc[tag.get()].getProperties(),
-              e);
+          throw new HiveException(
+              "Unable to deserialize reduce input value (tag="
+                  + tag.get()
+                  + ") from "
+                  + Utilities.formatBinaryString(valueWritable.get(), 0,
+                      valueWritable.getSize()) + " with properties "
+                  + valueTableDesc[tag.get()].getProperties(), e);
         }
         row.clear();
         row.add(keyObject);
@@ -214,7 +227,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           cntr++;
           if (cntr == nextCntr) {
             long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
-            l4j.info("ExecReducer: processing " + cntr + " rows: used memory = " + used_memory);
+            l4j.info("ExecReducer: processing " + cntr
+                + " rows: used memory = " + used_memory);
             nextCntr = getNextCntr(cntr);
           }
         }
@@ -224,27 +238,30 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory 
-        throw (OutOfMemoryError) e; 
+        // Don't create a new object if we are already out of memory
+        throw (OutOfMemoryError) e;
       } else {
-        throw new IOException (e);
+        throw new IOException(e);
       }
     }
   }
 
   private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by the reducer. It dumps
+    // A very simple counter to keep track of number of rows processed by the
+    // reducer. It dumps
     // every 1 million times, and quickly before that
-    if (cntr >= 1000000)
+    if (cntr >= 1000000) {
       return cntr + 1000000;
-    
+    }
+
     return 10 * cntr;
   }
 
+  @Override
   public void close() {
 
     // No row was processed
-    if(oc == null) {
+    if (oc == null) {
       l4j.trace("Close called no row");
     }
 
@@ -255,18 +272,20 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         reducer.endGroup();
       }
       if (l4j.isInfoEnabled()) {
-        l4j.info("ExecReducer: processed " + cntr + " rows: used memory = " + memoryMXBean.getHeapMemoryUsage().getUsed());
+        l4j.info("ExecReducer: processed " + cntr + " rows: used memory = "
+            + memoryMXBean.getHeapMemoryUsage().getUsed());
       }
-      
+
       reducer.close(abort);
-      reportStats rps = new reportStats (rp);
+      reportStats rps = new reportStats(rp);
       reducer.preorderMap(rps);
       return;
     } catch (Exception e) {
-      if(!abort) {
+      if (!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException ("Error while closing operators: " + e.getMessage(), e);
+        throw new RuntimeException("Error while closing operators: "
+            + e.getMessage(), e);
       }
     }
   }

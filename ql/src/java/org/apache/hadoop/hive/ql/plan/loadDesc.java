@@ -24,18 +24,20 @@ public class loadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String sourceDir;
 
-  public loadDesc() { }
-  public loadDesc(
-    final String sourceDir) {
+  public loadDesc() {
+  }
+
+  public loadDesc(final String sourceDir) {
 
     this.sourceDir = sourceDir;
   }
-  
-  @explain(displayName="source", normalExplain=false)
+
+  @explain(displayName = "source", normalExplain = false)
   public String getSourceDir() {
-    return this.sourceDir;
+    return sourceDir;
   }
+
   public void setSourceDir(final String source) {
-    this.sourceDir = source;
+    sourceDir = source;
   }
 }

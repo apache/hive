@@ -66,48 +66,48 @@
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
 /**
- *  A physical rowid is nothing else than a pointer to a physical location
- *  in a file - a (block, offset) tuple.
- *  <P>
- *  <B>Note</B>: The fact that the offset is modelled as a short limits 
- *  the block size to 32k.
+ * A physical rowid is nothing else than a pointer to a physical location in a
+ * file - a (block, offset) tuple.
+ * <P>
+ * <B>Note</B>: The fact that the offset is modelled as a short limits the block
+ * size to 32k.
  */
 class PhysicalRowId {
-    // offsets
-    private static final short O_BLOCK = 0; // long block
-    private static final short O_OFFSET = Magic.SZ_LONG; // short offset
-    static final int SIZE = O_OFFSET + Magic.SZ_SHORT;
-    
-    // my block and the position within the block
-    BlockIo block;
-    short pos;
+  // offsets
+  private static final short O_BLOCK = 0; // long block
+  private static final short O_OFFSET = Magic.SZ_LONG; // short offset
+  static final int SIZE = O_OFFSET + Magic.SZ_SHORT;
 
-    /**
-     *  Constructs a physical rowid from the indicated data starting at
-     *  the indicated position.
-     */
-    PhysicalRowId(BlockIo block, short pos) {
-        this.block = block;
-        this.pos = pos;
-    }
-    
-    /** Returns the block number */
-    long getBlock() {
-        return block.readLong(pos + O_BLOCK);
-    }
-    
-    /** Sets the block number */
-    void setBlock(long value) {
-        block.writeLong(pos + O_BLOCK, value);
-    }
-    
-    /** Returns the offset */
-    short getOffset() {
-        return block.readShort(pos + O_OFFSET);
-    }
-    
-    /** Sets the offset */
-    void setOffset(short value) {
-        block.writeShort(pos + O_OFFSET, value);
-    }
+  // my block and the position within the block
+  BlockIo block;
+  short pos;
+
+  /**
+   * Constructs a physical rowid from the indicated data starting at the
+   * indicated position.
+   */
+  PhysicalRowId(BlockIo block, short pos) {
+    this.block = block;
+    this.pos = pos;
+  }
+
+  /** Returns the block number */
+  long getBlock() {
+    return block.readLong(pos + O_BLOCK);
+  }
+
+  /** Sets the block number */
+  void setBlock(long value) {
+    block.writeLong(pos + O_BLOCK, value);
+  }
+
+  /** Returns the offset */
+  short getOffset() {
+    return block.readShort(pos + O_OFFSET);
+  }
+
+  /** Sets the offset */
+  void setOffset(short value) {
+    block.writeShort(pos + O_OFFSET, value);
+  }
 }

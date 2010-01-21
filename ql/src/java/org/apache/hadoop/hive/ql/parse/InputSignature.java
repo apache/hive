@@ -19,47 +19,48 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.lang.Class;
-import java.lang.Object;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * The input signature of a function or operator. The signature basically consists
- * of name, list of parameter types.
- *
+ * The input signature of a function or operator. The signature basically
+ * consists of name, list of parameter types.
+ * 
  **/
 
 public class InputSignature {
-  private String name;
-  private ArrayList<TypeInfo> typeArray;
+  private final String name;
+  private final ArrayList<TypeInfo> typeArray;
 
   @SuppressWarnings("unused")
-  private static final Log LOG = LogFactory.getLog(InputSignature.class.getName());
+  private static final Log LOG = LogFactory.getLog(InputSignature.class
+      .getName());
 
   public InputSignature(String name) {
     this.name = name;
     typeArray = new ArrayList<TypeInfo>();
   }
 
-  public InputSignature(String name, TypeInfo ... classList) {
+  public InputSignature(String name, TypeInfo... classList) {
     this(name);
-    
+
     if (classList.length != 0) {
-      for(TypeInfo cl: classList) {
+      for (TypeInfo cl : classList) {
         typeArray.add(cl);
       }
     }
   }
 
-  public InputSignature(String name, Class<?> ... classList) {
+  public InputSignature(String name, Class<?>... classList) {
     this(name);
-    
+
     if (classList.length != 0) {
-      for(Class<?> cl: classList) {
-        typeArray.add(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(cl));
+      for (Class<?> cl : classList) {
+        typeArray.add(TypeInfoFactory
+            .getPrimitiveTypeInfoFromPrimitiveWritable(cl));
       }
     }
   }
@@ -76,6 +77,7 @@ public class InputSignature {
     return typeArray;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (obj == null) {
       return false;
@@ -83,9 +85,8 @@ public class InputSignature {
 
     InputSignature other = null;
     try {
-      other = (InputSignature)obj;
-    }
-    catch (ClassCastException cce) {
+      other = (InputSignature) obj;
+    } catch (ClassCastException cce) {
       return false;
     }
 
@@ -93,16 +94,18 @@ public class InputSignature {
         && (other.typeArray.equals(typeArray));
   }
 
+  @Override
   public int hashCode() {
     return toString().hashCode();
   }
 
+  @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
     sb.append(getName());
     sb.append("(");
     boolean isfirst = true;
-    for(TypeInfo cls: getTypeArray()) {
+    for (TypeInfo cls : getTypeArray()) {
       if (!isfirst) {
         sb.append(",");
       }

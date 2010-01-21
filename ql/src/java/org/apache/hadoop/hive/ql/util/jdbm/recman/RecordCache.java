@@ -68,31 +68,31 @@ package org.apache.hadoop.hive.ql.util.jdbm.recman;
 import java.io.IOException;
 
 /**
- *  This interface is used for synchronization.
- *  <p>
- *  RecordManager ensures that the cache has the up-to-date information
- *  by way of an invalidation protocol.
+ * This interface is used for synchronization.
+ * <p>
+ * RecordManager ensures that the cache has the up-to-date information by way of
+ * an invalidation protocol.
  */
 public interface RecordCache {
 
-    /**
-     * Notification to flush content related to a given record.
-     */
-    public void flush(long recid) throws IOException;
+  /**
+   * Notification to flush content related to a given record.
+   */
+  public void flush(long recid) throws IOException;
 
-    /**
-     * Notification to flush data all of records.
-     */
-    public void flushAll() throws IOException;
+  /**
+   * Notification to flush data all of records.
+   */
+  public void flushAll() throws IOException;
 
-    /**
-     * Notification to invalidate content related to given record.
-     */
-    public void invalidate(long recid) throws IOException;
+  /**
+   * Notification to invalidate content related to given record.
+   */
+  public void invalidate(long recid) throws IOException;
 
-    /**
-     * Notification to invalidate content of all records.
-     */
-    public void invalidateAll() throws IOException;
+  /**
+   * Notification to invalidate content of all records.
+   */
+  public void invalidateAll() throws IOException;
 
 }

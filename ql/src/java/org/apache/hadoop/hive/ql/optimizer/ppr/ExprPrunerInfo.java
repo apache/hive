@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
 /**
- * The processor context for partition pruner. This contains the table
- * alias that is being currently processed.
+ * The processor context for partition pruner. This contains the table alias
+ * that is being currently processed.
  */
 public class ExprPrunerInfo implements NodeProcessorCtx {
 
@@ -30,11 +30,11 @@ public class ExprPrunerInfo implements NodeProcessorCtx {
    * The table alias that is being currently processed.
    */
   String tabAlias;
-  
+
   public String getTabAlias() {
     return tabAlias;
   }
-  
+
   public void setTabAlias(String tabAlias) {
     this.tabAlias = tabAlias;
   }

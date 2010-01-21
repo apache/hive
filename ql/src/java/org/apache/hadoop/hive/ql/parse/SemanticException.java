@@ -26,22 +26,22 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class SemanticException extends HiveException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    public SemanticException() {
-        super();
-    }
-    
-    public SemanticException(String message) {
-        super(message);
-    }
-    
-    public SemanticException(Throwable cause) {
-        super(cause);
-    }
-    
-    public SemanticException(String message, Throwable cause) {
-        super(message, cause);
-    }
-    
+  public SemanticException() {
+    super();
+  }
+
+  public SemanticException(String message) {
+    super(message);
+  }
+
+  public SemanticException(Throwable cause) {
+    super(cause);
+  }
+
+  public SemanticException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
 }

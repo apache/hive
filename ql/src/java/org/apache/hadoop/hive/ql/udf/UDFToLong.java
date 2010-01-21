@@ -32,138 +32,147 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class UDFToLong extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToLong.class.getName());
 
   LongWritable longWritable = new LongWritable();
-  
+
   public UDFToLong() {
   }
 
   /**
    * Convert from void to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The void value to convert
+   * 
+   * @param i
+   *          The void value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(NullWritable i)  {
+  public LongWritable evaluate(NullWritable i) {
     return null;
   }
 
   /**
    * Convert from boolean to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The boolean value to convert
+   * 
+   * @param i
+   *          The boolean value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(BooleanWritable i)  {
+  public LongWritable evaluate(BooleanWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set(i.get()? (long)1 : (long) 0);
+      longWritable.set(i.get() ? (long) 1 : (long) 0);
       return longWritable;
     }
   }
 
   /**
    * Convert from byte to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The byte value to convert
+   * 
+   * @param i
+   *          The byte value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(ByteWritable i)  {
+  public LongWritable evaluate(ByteWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)i.get());
+      longWritable.set(i.get());
       return longWritable;
     }
   }
-  
+
   /**
    * Convert from short to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The short value to convert
+   * 
+   * @param i
+   *          The short value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(ShortWritable i)  {
+  public LongWritable evaluate(ShortWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)i.get());
+      longWritable.set(i.get());
       return longWritable;
     }
   }
-  
+
   /**
    * Convert from integer to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The integer value to convert
+   * 
+   * @param i
+   *          The integer value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(IntWritable i)  {
+  public LongWritable evaluate(IntWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)i.get());
+      longWritable.set(i.get());
       return longWritable;
     }
   }
 
   /**
    * Convert from long to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The long value to convert
+   * 
+   * @param i
+   *          The long value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(LongWritable i)  {
+  public LongWritable evaluate(LongWritable i) {
     return i;
   }
 
   /**
    * Convert from float to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The float value to convert
+   * 
+   * @param i
+   *          The float value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(FloatWritable i)  {
+  public LongWritable evaluate(FloatWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)i.get());
+      longWritable.set((long) i.get());
       return longWritable;
     }
   }
-  
+
   /**
    * Convert from double to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The double value to convert
+   * 
+   * @param i
+   *          The double value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(DoubleWritable i)  {
+  public LongWritable evaluate(DoubleWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)i.get());
+      longWritable.set((long) i.get());
       return longWritable;
     }
   }
-  
+
   /**
    * Convert from string to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The string value to convert
+   * 
+   * @param i
+   *          The string value to convert
    * @return LongWritable
    */
-  public LongWritable evaluate(Text i)  {
+  public LongWritable evaluate(Text i) {
     if (i == null) {
       return null;
     } else {
       try {
-        longWritable.set(LazyLong.parseLong(i.getBytes(), 0 , i.getLength(), 10));
+        longWritable
+            .set(LazyLong.parseLong(i.getBytes(), 0, i.getLength(), 10));
         return longWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
@@ -173,5 +182,5 @@ public class UDFToLong extends UDF {
       }
     }
   }
-  
+
 }

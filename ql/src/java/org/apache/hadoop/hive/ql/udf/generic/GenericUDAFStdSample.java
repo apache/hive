@@ -26,63 +26,61 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * Compute the sample standard deviation by extending GenericUDAFVariance and 
+ * Compute the sample standard deviation by extending GenericUDAFVariance and
  * overriding the terminate() method of the evaluator.
- *
+ * 
  */
-@description(
-    name = "stddev_samp",
-    value = "_FUNC_(x) - Returns the sample standard deviation of a set of " +
-		"numbers"
-)
+@description(name = "stddev_samp", value = "_FUNC_(x) - Returns the sample standard deviation of a set of "
+    + "numbers")
 public class GenericUDAFStdSample extends GenericUDAFVariance {
-  
+
   @Override
-  public GenericUDAFEvaluator getEvaluator(
-      TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+      throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
     }
-    
+
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
-          "Only primitive type arguments are accepted but " 
-          + parameters[0].getTypeName() + " is passed.");
+          "Only primitive type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
-    switch (((PrimitiveTypeInfo)parameters[0]).getPrimitiveCategory()) {
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case FLOAT:
-      case DOUBLE:
-      case STRING:
-        return new GenericUDAFStdSampleEvaluator();
-      case BOOLEAN:
-      default:
-        throw new UDFArgumentTypeException(0,
-            "Only numeric or string type arguments are accepted but " 
-            + parameters[0].getTypeName() + " is passed.");
+    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case FLOAT:
+    case DOUBLE:
+    case STRING:
+      return new GenericUDAFStdSampleEvaluator();
+    case BOOLEAN:
+    default:
+      throw new UDFArgumentTypeException(0,
+          "Only numeric or string type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
   }
-  
+
   /**
-   * Compute the sample standard deviation by extending 
+   * Compute the sample standard deviation by extending
    * GenericUDAFVarianceEvaluator and overriding the terminate() method of the
-   * evaluator 
+   * evaluator
    */
-  public static class GenericUDAFStdSampleEvaluator extends GenericUDAFVarianceEvaluator {
+  public static class GenericUDAFStdSampleEvaluator extends
+      GenericUDAFVarianceEvaluator {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      StdAgg myagg = (StdAgg)agg;
-      
+      StdAgg myagg = (StdAgg) agg;
+
       if (myagg.count == 0) { // SQL standard - return null for zero elements
         return null;
       } else {
-        if(myagg.count > 1) { 
-          result.set(Math.sqrt(myagg.variance / (myagg.count-1))); 
+        if (myagg.count > 1) {
+          result.set(Math.sqrt(myagg.variance / (myagg.count - 1)));
         } else { // for one element the variance is always 0
           result.set(0);
         }

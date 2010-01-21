@@ -66,28 +66,24 @@
 package org.apache.hadoop.hive.ql.util.jdbm.helper;
 
 /**
- *  Exception that occurs during eviction of an object in the cache.
- *
- *  @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
- *  @version $Id: CacheEvictionException.java,v 1.4 2003/10/21 15:43:20 boisvert Exp $
+ * Exception that occurs during eviction of an object in the cache.
+ * 
+ * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
+ * @version $Id: CacheEvictionException.java,v 1.4 2003/10/21 15:43:20 boisvert
+ *          Exp $
  */
-public class CacheEvictionException
-    extends Exception
-{
+public class CacheEvictionException extends Exception {
 
-    /**
-     * Nested exception -- the original exception that occured, if any.
-     */
-    protected Exception _nested;
+  /**
+   * Nested exception -- the original exception that occured, if any.
+   */
+  protected Exception _nested;
 
+  public CacheEvictionException(Exception nested) {
+    _nested = nested;
+  }
 
-    public CacheEvictionException( Exception nested )
-    {
-        _nested = nested;
-    }
-
-    public Exception getNestedException()
-    {
-        return _nested;
-    }
+  public Exception getNestedException() {
+    return _nested;
+  }
 }

@@ -20,28 +20,25 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Create Table")
-public class createTableLikeDesc extends ddlDesc implements Serializable 
-{
+@explain(displayName = "Create Table")
+public class createTableLikeDesc extends ddlDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String              tableName;
-  boolean             isExternal;
-  String              location;
-  boolean             ifNotExists;
-  String              likeTableName;
-  
-  public createTableLikeDesc(String tableName, boolean isExternal, 
-                         String location,
-                         boolean ifNotExists,
-                         String likeTableName) {
-    this.tableName       = tableName;
-    this.isExternal      = isExternal;
-    this.location        = location;
-    this.ifNotExists     = ifNotExists;
-    this.likeTableName   = likeTableName;
+  String tableName;
+  boolean isExternal;
+  String location;
+  boolean ifNotExists;
+  String likeTableName;
+
+  public createTableLikeDesc(String tableName, boolean isExternal,
+      String location, boolean ifNotExists, String likeTableName) {
+    this.tableName = tableName;
+    this.isExternal = isExternal;
+    this.location = location;
+    this.ifNotExists = ifNotExists;
+    this.likeTableName = likeTableName;
   }
 
-  @explain(displayName="if not exists")
+  @explain(displayName = "if not exists")
   public boolean getIfNotExists() {
     return ifNotExists;
   }
@@ -50,7 +47,7 @@ public class createTableLikeDesc extends ddlDesc implements Serializable
     this.ifNotExists = ifNotExists;
   }
 
-  @explain(displayName="name")
+  @explain(displayName = "name")
   public String getTableName() {
     return tableName;
   }
@@ -59,7 +56,7 @@ public class createTableLikeDesc extends ddlDesc implements Serializable
     this.tableName = tableName;
   }
 
-  @explain(displayName="location")
+  @explain(displayName = "location")
   public String getLocation() {
     return location;
   }
@@ -68,7 +65,7 @@ public class createTableLikeDesc extends ddlDesc implements Serializable
     this.location = location;
   }
 
-  @explain(displayName="isExternal")
+  @explain(displayName = "isExternal")
   public boolean isExternal() {
     return isExternal;
   }
@@ -77,7 +74,7 @@ public class createTableLikeDesc extends ddlDesc implements Serializable
     this.isExternal = isExternal;
   }
 
-  @explain(displayName="like")
+  @explain(displayName = "like")
   public String getLikeTableName() {
     return likeTableName;
   }
@@ -86,5 +83,4 @@ public class createTableLikeDesc extends ddlDesc implements Serializable
     this.likeTableName = likeTableName;
   }
 
-  
 }

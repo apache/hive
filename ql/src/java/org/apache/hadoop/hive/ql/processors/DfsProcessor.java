@@ -32,7 +32,7 @@ public class DfsProcessor implements CommandProcessor {
   public static final Log LOG = LogFactory.getLog(DfsProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
 
-  private FsShell dfs;
+  private final FsShell dfs;
 
   public DfsProcessor(Configuration conf) {
     dfs = new FsShell(conf);
@@ -40,7 +40,7 @@ public class DfsProcessor implements CommandProcessor {
 
   public void init() {
   }
-  
+
   public int run(String command) {
     String[] tokens = command.split("\\s+");
 
@@ -48,12 +48,12 @@ public class DfsProcessor implements CommandProcessor {
       SessionState ss = SessionState.get();
       PrintStream oldOut = System.out;
 
-      if(ss != null && ss.out != null) {
+      if (ss != null && ss.out != null) {
         System.setOut(ss.out);
       }
 
       int ret = dfs.run(tokens);
-      if(ret != 0) {
+      if (ret != 0) {
         console.printError("Command failed with exit code = " + ret);
       }
 
@@ -61,8 +61,9 @@ public class DfsProcessor implements CommandProcessor {
       return (ret);
 
     } catch (Exception e) {
-      console.printError("Exception raised from DFSShell.run " + e.getLocalizedMessage(),
-                    org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError("Exception raised from DFSShell.run "
+          + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
+          .stringifyException(e));
       return 1;
     }
   }

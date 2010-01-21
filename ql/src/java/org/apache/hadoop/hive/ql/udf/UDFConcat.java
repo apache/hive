@@ -22,14 +22,10 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "concat",
-    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN",
-    extended = "Returns NULL if any argument is NULL.\n" +
-    		"Example:\n" +
-    		"  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n" +
-    		"  'abcdef'"
-    )
+@description(name = "concat", value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN", extended = "Returns NULL if any argument is NULL.\n"
+    + "Example:\n"
+    + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
+    + "  'abcdef'")
 public class UDFConcat extends UDF {
 
   public UDFConcat() {
@@ -37,14 +33,13 @@ public class UDFConcat extends UDF {
 
   Text text = new Text();
 
-
   public Text evaluate(Text... args) {
     text.clear();
-    for(int i=0; i<args.length; i++) {
-      if (args[i] == null) {
+    for (Text arg : args) {
+      if (arg == null) {
         return null;
       }
-      text.append(args[i].getBytes(), 0, args[i].getLength());
+      text.append(arg.getBytes(), 0, arg.getLength());
     }
     return text;
   }

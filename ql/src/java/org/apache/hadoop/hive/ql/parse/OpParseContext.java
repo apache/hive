@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-
 /**
  * Implementation of the Operator Parse Context. It maintains the parse context
  * that may be needed by an operator. Currently, it only maintains the row
@@ -26,13 +25,14 @@ package org.apache.hadoop.hive.ql.parse;
  **/
 
 public class OpParseContext {
-  private RowResolver rr;  // row resolver for the operator
+  private RowResolver rr; // row resolver for the operator
 
-  public OpParseContext() {  
+  public OpParseContext() {
   }
-  
+
   /**
-   * @param rr row resolver
+   * @param rr
+   *          row resolver
    */
   public OpParseContext(RowResolver rr) {
     this.rr = rr;
@@ -46,7 +46,8 @@ public class OpParseContext {
   }
 
   /**
-   * @param rr the row resolver to set
+   * @param rr
+   *          the row resolver to set
    */
   public void setRR(RowResolver rr) {
     this.rr = rr;

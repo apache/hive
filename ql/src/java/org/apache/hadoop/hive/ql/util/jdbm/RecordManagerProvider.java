@@ -66,36 +66,38 @@
 
 package org.apache.hadoop.hive.ql.util.jdbm;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
- *  Provider of RecordManager implementation.  Classes implementing this
- *  interface act as a factory to provide implementations of RecordManager.
- *
+ * Provider of RecordManager implementation. Classes implementing this interface
+ * act as a factory to provide implementations of RecordManager.
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
- * @version $Id: RecordManagerProvider.java,v 1.2 2005/06/25 23:12:31 doomdark Exp $
+ * @version $Id: RecordManagerProvider.java,v 1.2 2005/06/25 23:12:31 doomdark
+ *          Exp $
  */
-public interface RecordManagerProvider
-{
+public interface RecordManagerProvider {
 
-    /**
-     * Create a record manager.
-     *
-     * @param filename Base filename of the record file.
-     * @param options Record manager options.
-     * @throws IOException if an I/O related exception occurs while creating
-     *                    or opening the record manager.
-     * @throws UnsupportedOperationException if some options are not supported by the
-     *                                      implementation.
-     * @throws IllegalArgumentException if some options are invalid.
-     */
-    public RecordManager createRecordManager( String filename,
-                                              Properties options )
-        throws IOException;
-    
-    public RecordManager createRecordManager( File file,
-                                              Properties options )
-        throws IOException;
+  /**
+   * Create a record manager.
+   * 
+   * @param filename
+   *          Base filename of the record file.
+   * @param options
+   *          Record manager options.
+   * @throws IOException
+   *           if an I/O related exception occurs while creating or opening the
+   *           record manager.
+   * @throws UnsupportedOperationException
+   *           if some options are not supported by the implementation.
+   * @throws IllegalArgumentException
+   *           if some options are invalid.
+   */
+  public RecordManager createRecordManager(String filename, Properties options)
+      throws IOException;
+
+  public RecordManager createRecordManager(File file, Properties options)
+      throws IOException;
 }

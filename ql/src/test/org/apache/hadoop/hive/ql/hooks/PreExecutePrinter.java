@@ -19,35 +19,36 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
-import org.apache.hadoop.security.UserGroupInformation;
+
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
- * Implementation of a pre execute hook that simply prints out its
- * parameters to standard output.
+ * Implementation of a pre execute hook that simply prints out its parameters to
+ * standard output.
  */
 public class PreExecutePrinter implements PreExecute {
 
   @Override
   public void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi)
-    throws Exception {
+      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception {
 
     LogHelper console = SessionState.getConsole();
 
-    if (console == null)
+    if (console == null) {
       return;
+    }
 
     if (sess != null) {
       console.printError("PREHOOK: query: " + sess.getCmd().trim());
       console.printError("PREHOOK: type: " + sess.getCommandType());
     }
 
-    for(ReadEntity re: inputs) {
+    for (ReadEntity re : inputs) {
       console.printError("PREHOOK: Input: " + re.toString());
     }
-    for(WriteEntity we: outputs) {
+    for (WriteEntity we : outputs) {
       console.printError("PREHOOK: Output: " + we.toString());
     }
   }

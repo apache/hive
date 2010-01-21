@@ -25,32 +25,37 @@ import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
- * Table Scan Operator
- * If the data is coming from the map-reduce framework, just forward it.
- * This will be needed as part of local work when data is not being read as part of map-reduce framework
+ * Table Scan Operator If the data is coming from the map-reduce framework, just
+ * forward it. This will be needed as part of local work when data is not being
+ * read as part of map-reduce framework
  **/
-public class TableScanOperator extends Operator<tableScanDesc> implements Serializable {
+public class TableScanOperator extends Operator<tableScanDesc> implements
+    Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
-   * Currently, the table scan operator does not do anything special other than just forwarding the row. Since the 
-   * table data is always read as part of the map-reduce framework by the mapper. But, this assumption is not true,
-   * i.e table data is not only read by the mapper, this operator will be enhanced to read the table.
+   * Currently, the table scan operator does not do anything special other than
+   * just forwarding the row. Since the table data is always read as part of the
+   * map-reduce framework by the mapper. But, this assumption is not true, i.e
+   * table data is not only read by the mapper, this operator will be enhanced
+   * to read the table.
    **/
   @Override
-  public void processOp(Object row, int tag)
-      throws HiveException {
-    forward(row, inputObjInspectors[tag]);    
+  public void processOp(Object row, int tag) throws HiveException {
+    forward(row, inputObjInspectors[tag]);
   }
 
   /**
-   * The operator name for this operator type. This is used to construct the rule for an operator
+   * The operator name for this operator type. This is used to construct the
+   * rule for an operator
+   * 
    * @return the operator name
    **/
+  @Override
   public String getName() {
     return new String("TS");
   }
-  
+
   // this 'neededColumnIDs' field is included in this operator class instead of
   // its desc class.The reason is that 1)tableScanDesc can not be instantiated,
   // and 2) it will fail some join and union queries if this is added forcibly
@@ -58,13 +63,14 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
   java.util.ArrayList<Integer> neededColumnIDs;
 
   public void setNeededColumnIDs(java.util.ArrayList<Integer> orign_columns) {
-    this.neededColumnIDs = orign_columns;
+    neededColumnIDs = orign_columns;
   }
 
   public java.util.ArrayList<Integer> getNeededColumnIDs() {
     return neededColumnIDs;
   }
 
+  @Override
   public int getType() {
     return OperatorType.TABLESCAN;
   }

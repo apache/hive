@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.RecordTypes;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
 
@@ -35,10 +35,10 @@ public class HiveHistoryViewer implements
   String sessionId;
 
   // Job Hash Map
-  private HashMap<String, QueryInfo> jobInfoMap = new HashMap<String, QueryInfo>();
+  private final HashMap<String, QueryInfo> jobInfoMap = new HashMap<String, QueryInfo>();
 
   // Task Hash Map
-  private HashMap<String, TaskInfo> taskInfoMap = new HashMap<String, TaskInfo>();
+  private final HashMap<String, TaskInfo> taskInfoMap = new HashMap<String, TaskInfo>();
 
   public HiveHistoryViewer(String path) {
     historyFile = path;
@@ -81,7 +81,8 @@ public class HiveHistoryViewer implements
 
     if (recType == RecordTypes.SessionStart) {
       sessionId = values.get(Keys.SESSION_ID.name());
-    } else if (recType == RecordTypes.QueryStart || recType == RecordTypes.QueryEnd) {
+    } else if (recType == RecordTypes.QueryStart
+        || recType == RecordTypes.QueryEnd) {
       String key = values.get(Keys.QUERY_ID.name());
       QueryInfo ji;
       if (jobInfoMap.containsKey(key)) {

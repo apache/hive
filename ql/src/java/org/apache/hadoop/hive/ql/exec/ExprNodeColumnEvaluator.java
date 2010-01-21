@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
@@ -33,10 +30,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
 
   protected exprNodeColumnDesc expr;
-  
+
   transient StructObjectInspector[] inspectors;
   transient StructField[] fields;
-  
+
   public ExprNodeColumnEvaluator(exprNodeColumnDesc expr) {
     this.expr = expr;
   }
@@ -45,27 +42,28 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
   public ObjectInspector initialize(ObjectInspector rowInspector)
       throws HiveException {
 
-    // We need to support field names like KEY.0, VALUE.1 between 
+    // We need to support field names like KEY.0, VALUE.1 between
     // map-reduce boundary.
     String[] names = expr.getColumn().split("\\.");
     inspectors = new StructObjectInspector[names.length];
     fields = new StructField[names.length];
-    
-    for(int i=0; i<names.length; i++) {
-      if (i==0) {
+
+    for (int i = 0; i < names.length; i++) {
+      if (i == 0) {
         inspectors[0] = (StructObjectInspector) rowInspector;
       } else {
-        inspectors[i] = (StructObjectInspector) fields[i-1].getFieldObjectInspector();
+        inspectors[i] = (StructObjectInspector) fields[i - 1]
+            .getFieldObjectInspector();
       }
       fields[i] = inspectors[i].getStructFieldRef(names[i]);
     }
-    return fields[names.length-1].getFieldObjectInspector();
+    return fields[names.length - 1].getFieldObjectInspector();
   }
-  
+
   @Override
   public Object evaluate(Object row) throws HiveException {
     Object o = row;
-    for(int i=0; i<fields.length; i++) {
+    for (int i = 0; i < fields.length; i++) {
       o = inspectors[i].getStructFieldData(o, fields[i]);
     }
     return o;

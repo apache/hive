@@ -32,27 +32,34 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * Filter operator implementation
  **/
-public class FilterOperator extends Operator <filterDesc> implements Serializable {
+public class FilterOperator extends Operator<filterDesc> implements
+    Serializable {
 
   private static final long serialVersionUID = 1L;
-  public static enum Counter {FILTERED, PASSED}
+
+  public static enum Counter {
+    FILTERED, PASSED
+  }
+
   transient private final LongWritable filtered_count, passed_count;
   transient private ExprNodeEvaluator conditionEvaluator;
-  transient private PrimitiveObjectInspector conditionInspector;  
+  transient private PrimitiveObjectInspector conditionInspector;
   transient private int consecutiveFails;
-  transient int      heartbeatInterval;
-  
-  public FilterOperator () {
+  transient int heartbeatInterval;
+
+  public FilterOperator() {
     super();
     filtered_count = new LongWritable();
     passed_count = new LongWritable();
     consecutiveFails = 0;
   }
 
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
-      heartbeatInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESENDHEARTBEAT);
-      this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
+      heartbeatInterval = HiveConf.getIntVar(hconf,
+          HiveConf.ConfVars.HIVESENDHEARTBEAT);
+      conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;
@@ -62,24 +69,29 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     initializeChildren(hconf);
   }
 
+  @Override
   public void processOp(Object row, int tag) throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (conditionInspector == null) {
-      conditionInspector = (PrimitiveObjectInspector)conditionEvaluator.initialize(rowInspector);
+      conditionInspector = (PrimitiveObjectInspector) conditionEvaluator
+          .initialize(rowInspector);
     }
     Object condition = conditionEvaluator.evaluate(row);
-    Boolean ret = (Boolean)conditionInspector.getPrimitiveJavaObject(condition);
+    Boolean ret = (Boolean) conditionInspector
+        .getPrimitiveJavaObject(condition);
     if (Boolean.TRUE.equals(ret)) {
       forward(row, rowInspector);
-      passed_count.set(passed_count.get()+1);
+      passed_count.set(passed_count.get() + 1);
       consecutiveFails = 0;
     } else {
-      filtered_count.set(filtered_count.get()+1);
+      filtered_count.set(filtered_count.get() + 1);
       consecutiveFails++;
-      
-      // In case of a lot of consecutive failures, send a heartbeat in order to avoid timeout
-      if (((consecutiveFails % heartbeatInterval) == 0) && (reporter != null))
+
+      // In case of a lot of consecutive failures, send a heartbeat in order to
+      // avoid timeout
+      if (((consecutiveFails % heartbeatInterval) == 0) && (reporter != null)) {
         reporter.progress();
+      }
     }
   }
 
@@ -91,6 +103,7 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     return new String("FIL");
   }
 
+  @Override
   public int getType() {
     return OperatorType.FILTER;
   }

@@ -67,14 +67,14 @@ package org.apache.hadoop.hive.ql.util.jdbm.htree;
 import java.io.Serializable;
 
 /**
- *  Abstract class for Hashtable directory nodes
- *
- *  @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
- *  @version $Id: HashNode.java,v 1.2 2003/03/21 02:54:58 boisvert Exp $
+ * Abstract class for Hashtable directory nodes
+ * 
+ * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
+ * @version $Id: HashNode.java,v 1.2 2003/03/21 02:54:58 boisvert Exp $
  */
 class HashNode implements Serializable {
 
-    // Empty, there's no common functionality.  We use this abstract
-    // class for typing only.
+  // Empty, there's no common functionality. We use this abstract
+  // class for typing only.
 
 }

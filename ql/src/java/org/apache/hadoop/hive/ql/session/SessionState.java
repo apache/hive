@@ -18,29 +18,33 @@
 
 package org.apache.hadoop.hive.ql.session;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.*;
-import java.net.URL;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * SessionState encapsulates common data associated with a session
- *
- * Also provides support for a thread static session object that can
- * be accessed from any point in the code to interact with the user
- * and to retrieve configuration information
+ * 
+ * Also provides support for a thread static session object that can be accessed
+ * from any point in the code to interact with the user and to retrieve
+ * configuration information
  */
 public class SessionState {
 
@@ -55,7 +59,7 @@ public class SessionState {
   protected boolean isSilent;
 
   /*
-   *  HiveHistory Object
+   * HiveHistory Object
    */
   protected HiveHistory hiveHist;
   /**
@@ -70,8 +74,9 @@ public class SessionState {
    */
   private String commandType;
 
-
-  public HiveConf getConf() { return conf; }
+  public HiveConf getConf() {
+    return conf;
+  }
 
   public void setConf(HiveConf conf) {
     this.conf = conf;
@@ -89,7 +94,7 @@ public class SessionState {
     this(null);
   }
 
-  public SessionState (HiveConf conf) {
+  public SessionState(HiveConf conf) {
     this.conf = conf;
 
   }
@@ -102,7 +107,6 @@ public class SessionState {
     return (conf.getVar(HiveConf.ConfVars.HIVEQUERYSTRING));
   }
 
-
   public String getQueryId() {
     return (conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
@@ -113,15 +117,15 @@ public class SessionState {
 
   /**
    * Singleton Session object per thread.
-   *
+   * 
    **/
-  private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState> ();
+  private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState>();
 
   /**
    * start a new session and set it to current session
    */
   public static SessionState start(HiveConf conf) {
-    SessionState ss = new SessionState (conf);
+    SessionState ss = new SessionState(conf);
     ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
     ss.hiveHist = new HiveHistory(ss);
     tss.set(ss);
@@ -129,18 +133,20 @@ public class SessionState {
   }
 
   /**
-   * set current session to existing session object
-   * if a thread is running multiple sessions - it must call this method with the new
-   * session object when switching from one session to another
+   * set current session to existing session object if a thread is running
+   * multiple sessions - it must call this method with the new session object
+   * when switching from one session to another
    */
   public static SessionState start(SessionState startSs) {
 
     tss.set(startSs);
-    if(StringUtils.isEmpty(startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID))) {
-      startSs.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    if (StringUtils.isEmpty(startSs.getConf().getVar(
+        HiveConf.ConfVars.HIVESESSIONID))) {
+      startSs.getConf()
+          .setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
     }
 
-    if (startSs.hiveHist == null){
+    if (startSs.hiveHist == null) {
       startSs.hiveHist = new HiveHistory(startSs);
     }
     return startSs;
@@ -153,34 +159,32 @@ public class SessionState {
     return tss.get();
   }
 
-
   /**
    * get hiveHitsory object which does structured logging
+   * 
    * @return The hive history object
    */
-  public HiveHistory getHiveHistory(){
+  public HiveHistory getHiveHistory() {
     return hiveHist;
   }
-
 
   private static String makeSessionId() {
     GregorianCalendar gc = new GregorianCalendar();
     String userid = System.getProperty("user.name");
 
-    return userid + "_" +
-      String.format("%1$4d%2$02d%3$02d%4$02d%5$02d", gc.get(Calendar.YEAR),
-                    gc.get(Calendar.MONTH) + 1,
-                    gc.get(Calendar.DAY_OF_MONTH),
-                    gc.get(Calendar.HOUR_OF_DAY),
-                    gc.get(Calendar.MINUTE));
+    return userid
+        + "_"
+        + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d", gc.get(Calendar.YEAR),
+            gc.get(Calendar.MONTH) + 1, gc.get(Calendar.DAY_OF_MONTH), gc
+                .get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE));
   }
 
   public static final String HIVE_L4J = "hive-log4j.properties";
 
-  public static void initHiveLog4j () {
+  public static void initHiveLog4j() {
     // allow hive log4j to override any normal initialized one
     URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
-    if(hive_l4j == null) {
+    if (hive_l4j == null) {
       System.out.println(HIVE_L4J + " not found");
     } else {
       LogManager.resetConfiguration();
@@ -189,14 +193,17 @@ public class SessionState {
   }
 
   /**
-   * This class provides helper routines to emit informational and error messages to the user
-   * and log4j files while obeying the current session's verbosity levels.
-   *
-   * NEVER write directly to the SessionStates standard output other than to emit result data
-   * DO use printInfo and printError provided by LogHelper to emit non result data strings
-   *
-   * It is perfectly acceptable to have global static LogHelper objects (for example - once per module)
-   * LogHelper always emits info/error to current session as required.
+   * This class provides helper routines to emit informational and error
+   * messages to the user and log4j files while obeying the current session's
+   * verbosity levels.
+   * 
+   * NEVER write directly to the SessionStates standard output other than to
+   * emit result data DO use printInfo and printError provided by LogHelper to
+   * emit non result data strings
+   * 
+   * It is perfectly acceptable to have global static LogHelper objects (for
+   * example - once per module) LogHelper always emits info/error to current
+   * session as required.
    */
   public static class LogHelper {
 
@@ -233,7 +240,7 @@ public class SessionState {
     }
 
     public void printInfo(String info, String detail) {
-      if(!getIsSilent()) {
+      if (!getIsSilent()) {
         getErrStream().println(info);
       }
       LOG.info(info + StringUtils.defaultString(detail));
@@ -250,11 +257,12 @@ public class SessionState {
   }
 
   private static LogHelper _console;
+
   /**
    * initialize or retrieve console object for SessionState
    */
   public static LogHelper getConsole() {
-    if(_console == null) {
+    if (_console == null) {
       Log LOG = LogFactory.getLog("SessionState");
       _console = new LogHelper(LOG);
     }
@@ -267,15 +275,16 @@ public class SessionState {
     Configuration conf = (ss == null) ? new Configuration() : ss.getConf();
 
     try {
-      if(Utilities.realFile(newFile, conf) != null)
+      if (Utilities.realFile(newFile, conf) != null) {
         return newFile;
-      else {
+      } else {
         console.printError(newFile + " does not exist");
         return null;
       }
     } catch (IOException e) {
-      console.printError("Unable to validate " + newFile + "\nException: " + e.getMessage(),
-                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError("Unable to validate " + newFile + "\nException: "
+          + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return null;
     }
   }
@@ -289,8 +298,9 @@ public class SessionState {
       console.printInfo("Added " + newJar + " to class path");
       return true;
     } catch (Exception e) {
-      console.printError("Unable to register " + newJar + "\nException: " + e.getMessage(),
-                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError("Unable to register " + newJar + "\nException: "
+          + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return false;
     }
   }
@@ -302,39 +312,54 @@ public class SessionState {
       console.printInfo("Deleted " + jarsToUnregister + " from class path");
       return true;
     } catch (Exception e) {
-      console.printError("Unable to unregister " + jarsToUnregister + "\nException: " + e.getMessage(),
-                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      console.printError("Unable to unregister " + jarsToUnregister
+          + "\nException: " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return false;
     }
   }
 
   public static interface ResourceHook {
     public String preHook(Set<String> cur, String s);
+
     public boolean postHook(Set<String> cur, String s);
   }
 
   public static enum ResourceType {
-    FILE(new ResourceHook () {
-        public String preHook(Set<String> cur, String s) { return validateFile(cur, s); }
-        public boolean postHook(Set<String> cur, String s) { return true; }
-      }),
+    FILE(new ResourceHook() {
+      public String preHook(Set<String> cur, String s) {
+        return validateFile(cur, s);
+      }
 
-    JAR(new ResourceHook () {
-        public String preHook(Set<String> cur, String s) {
-          String newJar = validateFile(cur, s);
-          if(newJar != null) {
-            return (registerJar(newJar) ? newJar : null);
-          } else {
-            return null;
-          }
+      public boolean postHook(Set<String> cur, String s) {
+        return true;
+      }
+    }),
+
+    JAR(new ResourceHook() {
+      public String preHook(Set<String> cur, String s) {
+        String newJar = validateFile(cur, s);
+        if (newJar != null) {
+          return (registerJar(newJar) ? newJar : null);
+        } else {
+          return null;
         }
-        public boolean postHook(Set<String> cur, String s) { return unregisterJar(s); }
-      }),
+      }
 
-    ARCHIVE(new ResourceHook () {
-        public String preHook(Set<String> cur, String s) { return validateFile(cur, s); }
-        public boolean postHook(Set<String> cur, String s) { return true; }
-      });
+      public boolean postHook(Set<String> cur, String s) {
+        return unregisterJar(s);
+      }
+    }),
+
+    ARCHIVE(new ResourceHook() {
+      public String preHook(Set<String> cur, String s) {
+        return validateFile(cur, s);
+      }
+
+      public boolean postHook(Set<String> cur, String s) {
+        return true;
+      }
+    });
 
     public ResourceHook hook;
 
@@ -353,8 +378,8 @@ public class SessionState {
     }
 
     // try singular
-    if(s.endsWith("S")) {
-      s = s.substring(0, s.length()-1);
+    if (s.endsWith("S")) {
+      s = s.substring(0, s.length() - 1);
     } else {
       return null;
     }
@@ -366,44 +391,46 @@ public class SessionState {
     return null;
   }
 
-  private HashMap<ResourceType, HashSet<String>> resource_map = new HashMap<ResourceType, HashSet<String>> ();
+  private final HashMap<ResourceType, HashSet<String>> resource_map = new HashMap<ResourceType, HashSet<String>>();
 
   public void add_resource(ResourceType t, String value) {
-    if(resource_map.get(t) == null) {
-      resource_map.put(t, new HashSet<String> ());
+    if (resource_map.get(t) == null) {
+      resource_map.put(t, new HashSet<String>());
     }
 
     String fnlVal = value;
-    if(t.hook != null) {
+    if (t.hook != null) {
       fnlVal = t.hook.preHook(resource_map.get(t), value);
-      if(fnlVal == null)
+      if (fnlVal == null) {
         return;
+      }
     }
     resource_map.get(t).add(fnlVal);
   }
 
   public boolean delete_resource(ResourceType t, String value) {
-    if(resource_map.get(t) == null) {
+    if (resource_map.get(t) == null) {
       return false;
     }
-    if(t.hook != null) {
-      if(!t.hook.postHook(resource_map.get(t), value))
+    if (t.hook != null) {
+      if (!t.hook.postHook(resource_map.get(t), value)) {
         return false;
+      }
     }
     return (resource_map.get(t).remove(value));
   }
 
   public Set<String> list_resource(ResourceType t, List<String> filter) {
-    if(resource_map.get(t) == null) {
+    if (resource_map.get(t) == null) {
       return null;
     }
     Set<String> orig = resource_map.get(t);
-    if(filter == null) {
+    if (filter == null) {
       return orig;
     } else {
-      Set<String> fnl = new HashSet<String> ();
-      for(String one: orig) {
-        if(filter.contains(one)) {
+      Set<String> fnl = new HashSet<String>();
+      for (String one : orig) {
+        if (filter.contains(one)) {
           fnl.add(one);
         }
       }
@@ -412,11 +439,11 @@ public class SessionState {
   }
 
   public void delete_resource(ResourceType t) {
-    if(resource_map.get(t) != null) {
-      for(String value : resource_map.get(t)) {
+    if (resource_map.get(t) != null) {
+      for (String value : resource_map.get(t)) {
         delete_resource(t, value);
       }
-      resource_map.remove (t);
+      resource_map.remove(t);
     }
   }
 

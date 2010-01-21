@@ -18,42 +18,46 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.collectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Buffers rows emitted by other operators
  **/
-public class CollectOperator extends Operator <collectDesc> implements Serializable {
+public class CollectOperator extends Operator<collectDesc> implements
+    Serializable {
 
   private static final long serialVersionUID = 1L;
   transient protected ArrayList<Object> rowList;
   transient protected ObjectInspector standardRowInspector;
   transient int maxSize;
 
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    rowList = new ArrayList<Object> ();
+    rowList = new ArrayList<Object>();
     maxSize = conf.getBufferSize().intValue();
   }
 
   boolean firstRow = true;
-  public void processOp(Object row, int tag)
-      throws HiveException {
+
+  @Override
+  public void processOp(Object row, int tag) throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (firstRow) {
       firstRow = false;
       // Get the standard ObjectInspector of the row
-      this.standardRowInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
+      standardRowInspector = ObjectInspectorUtils
+          .getStandardObjectInspector(rowInspector);
     }
-    
+
     if (rowList.size() < maxSize) {
       // Create a standard copy of the object.
       Object o = ObjectInspectorUtils.copyToStandardObject(row, rowInspector);
@@ -61,9 +65,9 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
     }
     forward(row, rowInspector);
   }
-  
+
   public void retrieve(InspectableObject result) {
-    assert(result != null);
+    assert (result != null);
     if (rowList.isEmpty()) {
       result.o = null;
       result.oi = null;
@@ -72,6 +76,5 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
       result.oi = standardRowInspector;
     }
   }
-
 
 }

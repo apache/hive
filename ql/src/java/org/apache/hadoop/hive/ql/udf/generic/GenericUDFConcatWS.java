@@ -30,53 +30,51 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.io.Text;
 
 /**
- * Generic UDF for string function <code>CONCAT_WS(sep,str1,str2,str3,...)</code>.
- * This mimics the function from MySQL
- * http://dev.mysql.com/doc/refman/5.0/en/string-functions.html#function_concat-ws
- *
+ * Generic UDF for string function
+ * <code>CONCAT_WS(sep,str1,str2,str3,...)</code>. This mimics the function from
+ * MySQL http://dev.mysql.com/doc/refman/5.0/en/string-functions.html#
+ * function_concat-ws
+ * 
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
-@description(
-    name = "concat_ws",
-    value = "_FUNC_(separator, str1, str2, ...) - " +
-            "returns the concatenation of the strings separated by the separator.",
-    extended = "Example:\n" +
-      "  > SELECT _FUNC_('ce', 'fa', 'book') FROM src LIMIT 1;\n" +
-      "  'facebook'")
-
+@description(name = "concat_ws", value = "_FUNC_(separator, str1, str2, ...) - "
+    + "returns the concatenation of the strings separated by the separator.", extended = "Example:\n"
+    + "  > SELECT _FUNC_('ce', 'fa', 'book') FROM src LIMIT 1;\n"
+    + "  'facebook'")
 public class GenericUDFConcatWS extends GenericUDF {
 
   ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
-    throws UDFArgumentException {
+      throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
-        "The function CONCAT_WS(separator,str1,str2,str3,...) needs at least two arguments.");
+          "The function CONCAT_WS(separator,str1,str2,str3,...) needs at least two arguments.");
     }
 
     for (int i = 0; i < arguments.length; i++) {
-      if(arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
-         && arguments[i].getTypeName() != Constants.VOID_TYPE_NAME) {
-        throw new UDFArgumentTypeException(i,
-                                           "Argument " + (i +1 )  + " of function CONCAT_WS must be \"" + Constants.STRING_TYPE_NAME
-                                           + "\", but \"" + arguments[i].getTypeName() + "\" was found.");
+      if (arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
+          && arguments[i].getTypeName() != Constants.VOID_TYPE_NAME) {
+        throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
+            + " of function CONCAT_WS must be \"" + Constants.STRING_TYPE_NAME
+            + "\", but \"" + arguments[i].getTypeName() + "\" was found.");
       }
     }
 
-    this.argumentOIs = arguments;
+    argumentOIs = arguments;
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
-  private Text resultText = new Text();
+  private final Text resultText = new Text();
+
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     if (arguments[0].get() == null) {
       return null;
     }
-    String separator =
-      ((StringObjectInspector)argumentOIs[0]).getPrimitiveJavaObject(arguments[0].get());
+    String separator = ((StringObjectInspector) argumentOIs[0])
+        .getPrimitiveJavaObject(arguments[0].get());
 
     StringBuilder sb = new StringBuilder();
     boolean first = true;
@@ -87,7 +85,8 @@ public class GenericUDFConcatWS extends GenericUDF {
         } else {
           sb.append(separator);
         }
-        sb.append(((StringObjectInspector)argumentOIs[i]).getPrimitiveJavaObject(arguments[i].get()));
+        sb.append(((StringObjectInspector) argumentOIs[i])
+            .getPrimitiveJavaObject(arguments[i].get()));
       }
     }
 

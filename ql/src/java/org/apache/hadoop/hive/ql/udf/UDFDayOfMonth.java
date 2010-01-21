@@ -30,38 +30,37 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "day,dayofmonth",
-    value = "_FUNC_(date) - Returns the date of the month of date",
-    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or " +
-    		"'yyyy-MM-dd'.\n" +
-        "Example:\n " +
-        "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" +
-        "  30"
-    )
+@description(name = "day,dayofmonth", value = "_FUNC_(date) - Returns the date of the month of date", extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
+    + "'yyyy-MM-dd'.\n"
+    + "Example:\n "
+    + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" + "  30")
 public class UDFDayOfMonth extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFDayOfMonth.class.getName());
 
-  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private Calendar calendar = Calendar.getInstance();
+  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private final Calendar calendar = Calendar.getInstance();
 
   IntWritable result = new IntWritable();
+
   public UDFDayOfMonth() {
   }
 
   /**
    * Get the day of month from a date string.
    * 
-   * @param dateString the dateString in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
-   * @return an int from 1 to 31. null if the dateString is not a valid date string.
+   * @param dateString
+   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
+   *          "yyyy-MM-dd".
+   * @return an int from 1 to 31. null if the dateString is not a valid date
+   *         string.
    */
-  public IntWritable evaluate(Text dateString)  {
-    
+  public IntWritable evaluate(Text dateString) {
+
     if (dateString == null) {
       return null;
     }
-    
+
     try {
       Date date = formatter.parse(dateString.toString());
       calendar.setTime(date);

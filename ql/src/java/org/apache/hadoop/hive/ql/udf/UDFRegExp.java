@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -25,26 +28,19 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-@description(
-    name = "rlike,regexp",
-    value = "str _FUNC_ regexp - Returns true if str matches regexp and " +
-    		"false otherwise",
-    extended = "Example:\n" +
-        "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" +
-        "  true"
-    )
+@description(name = "rlike,regexp", value = "str _FUNC_ regexp - Returns true if str matches regexp and "
+    + "false otherwise", extended = "Example:\n"
+    + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
 public class UDFRegExp extends UDF {
 
   static final Log LOG = LogFactory.getLog(UDFRegExp.class.getName());
-  
-  private Text lastRegex = new Text();
+
+  private final Text lastRegex = new Text();
   private Pattern p = null;
   boolean warned = false;
 
   BooleanWritable result = new BooleanWritable();
+
   public UDFRegExp() {
   }
 
@@ -52,11 +48,11 @@ public class UDFRegExp extends UDF {
     if (s == null || regex == null) {
       return null;
     }
-    if(regex.getLength()==0) {
-      if(!warned) {
+    if (regex.getLength() == 0) {
+      if (!warned) {
         warned = true;
-        LOG.warn(getClass().getSimpleName() + " regex is empty. Additional " +
-            "warnings for an empty regex will be suppressed.");
+        LOG.warn(getClass().getSimpleName() + " regex is empty. Additional "
+            + "warnings for an empty regex will be suppressed.");
       }
       result.set(false);
       return result;

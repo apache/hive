@@ -18,47 +18,52 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 
-@explain(displayName="Map Reduce Local Work")
+@explain(displayName = "Map Reduce Local Work")
 public class mapredLocalWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork;
   private LinkedHashMap<String, fetchWork> aliasToFetchWork;
 
-  public mapredLocalWork() { }
+  public mapredLocalWork() {
+  }
 
-  public mapredLocalWork(final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
-                         final LinkedHashMap<String, fetchWork> aliasToFetchWork) {
+  public mapredLocalWork(
+      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
+      final LinkedHashMap<String, fetchWork> aliasToFetchWork) {
     this.aliasToWork = aliasToWork;
     this.aliasToFetchWork = aliasToFetchWork;
   }
 
-  @explain(displayName="Alias -> Map Local Operator Tree")
+  @explain(displayName = "Alias -> Map Local Operator Tree")
   public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
     return aliasToWork;
   }
 
-  public void setAliasToWork(final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
+  public void setAliasToWork(
+      final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
     this.aliasToWork = aliasToWork;
   }
 
   /**
    * @return the aliasToFetchWork
    */
-  @explain(displayName="Alias -> Map Local Tables")
+  @explain(displayName = "Alias -> Map Local Tables")
   public LinkedHashMap<String, fetchWork> getAliasToFetchWork() {
     return aliasToFetchWork;
   }
 
   /**
-   * @param aliasToFetchWork the aliasToFetchWork to set
+   * @param aliasToFetchWork
+   *          the aliasToFetchWork to set
    */
-  public void setAliasToFetchWork(final LinkedHashMap<String, fetchWork> aliasToFetchWork) {
+  public void setAliasToFetchWork(
+      final LinkedHashMap<String, fetchWork> aliasToFetchWork) {
     this.aliasToFetchWork = aliasToFetchWork;
   }
 }

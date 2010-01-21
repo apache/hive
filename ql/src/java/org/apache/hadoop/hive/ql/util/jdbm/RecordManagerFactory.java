@@ -66,82 +66,82 @@
 
 package org.apache.hadoop.hive.ql.util.jdbm;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
  * This is the factory class to use for instantiating {@link RecordManager}
  * instances.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @author <a href="cg@cdegroot.com">Cees de Groot</a>
- * @version $Id: RecordManagerFactory.java,v 1.2 2005/06/25 23:12:31 doomdark Exp $
+ * @version $Id: RecordManagerFactory.java,v 1.2 2005/06/25 23:12:31 doomdark
+ *          Exp $
  */
-public final class RecordManagerFactory
-{
+public final class RecordManagerFactory {
 
-    /**
-     * Create a record manager.
-     *
-     * @param name Name of the record file.
-     * @throws IOException if an I/O related exception occurs while creating
-     *                    or opening the record manager.
-     * @throws UnsupportedOperationException if some options are not supported by the
-     *                                      implementation.
-     * @throws IllegalArgumentException if some options are invalid.
-     */
-    public static RecordManager createRecordManager( String name )
-        throws IOException
-    {
-        return createRecordManager( name, new Properties() );
+  /**
+   * Create a record manager.
+   * 
+   * @param name
+   *          Name of the record file.
+   * @throws IOException
+   *           if an I/O related exception occurs while creating or opening the
+   *           record manager.
+   * @throws UnsupportedOperationException
+   *           if some options are not supported by the implementation.
+   * @throws IllegalArgumentException
+   *           if some options are invalid.
+   */
+  public static RecordManager createRecordManager(String name)
+      throws IOException {
+    return createRecordManager(name, new Properties());
+  }
+
+  /**
+   * Create a record manager.
+   * 
+   * @param name
+   *          Name of the record file.
+   * @param options
+   *          Record manager options.
+   * @throws IOException
+   *           if an I/O related exception occurs while creating or opening the
+   *           record manager.
+   * @throws UnsupportedOperationException
+   *           if some options are not supported by the implementation.
+   * @throws IllegalArgumentException
+   *           if some options are invalid.
+   */
+  public static RecordManager createRecordManager(String name,
+      Properties options) throws IOException {
+    RecordManagerProvider factory = getFactory(options);
+    return factory.createRecordManager(name, options);
+  }
+
+  public static RecordManager createRecordManager(File file, Properties options)
+      throws IOException {
+    RecordManagerProvider factory = getFactory(options);
+    return factory.createRecordManager(file, options);
+  }
+
+  private static RecordManagerProvider getFactory(Properties options) {
+    String provider;
+    Class clazz;
+    RecordManagerProvider factory;
+
+    provider = options.getProperty(RecordManagerOptions.PROVIDER_FACTORY,
+        "org.apache.hadoop.hive.ql.util.jdbm.recman.Provider");
+
+    try {
+      clazz = Class.forName(provider);
+      factory = (RecordManagerProvider) clazz.newInstance();
+    } catch (Exception except) {
+      throw new IllegalArgumentException("Invalid record manager provider: "
+          + provider + "\n[" + except.getClass().getName() + ": "
+          + except.getMessage() + "]");
     }
-
-
-    /**
-     * Create a record manager.
-     *
-     * @param name Name of the record file.
-     * @param options Record manager options.
-     * @throws IOException if an I/O related exception occurs while creating
-     *                    or opening the record manager.
-     * @throws UnsupportedOperationException if some options are not supported by the
-     *                                      implementation.
-     * @throws IllegalArgumentException if some options are invalid.
-     */
-    public static RecordManager createRecordManager( String name,
-                                                     Properties options )
-        throws IOException
-    {
-      RecordManagerProvider factory = getFactory(options);
-      return factory.createRecordManager( name, options );
-    }
-    
-    public static RecordManager createRecordManager( File file, Properties options)
-        throws IOException
-    {
-      RecordManagerProvider factory = getFactory(options);
-      return factory.createRecordManager( file, options );
-    }
-      
-    private static RecordManagerProvider getFactory(Properties options)  {
-        String                 provider;
-        Class                  clazz;
-        RecordManagerProvider  factory;
-
-        provider = options.getProperty( RecordManagerOptions.PROVIDER_FACTORY,
-                                        "org.apache.hadoop.hive.ql.util.jdbm.recman.Provider" );
-
-        try {
-            clazz = Class.forName( provider );
-            factory = (RecordManagerProvider) clazz.newInstance();
-        } catch ( Exception except ) {
-            throw new IllegalArgumentException( "Invalid record manager provider: "
-                                                + provider
-                                                + "\n[" + except.getClass().getName()
-                                                + ": " + except.getMessage()
-                                                + "]" );
-        }
-        return factory;
-    }
+    return factory;
+  }
 }

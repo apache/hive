@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -35,24 +34,24 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class UDFToString extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToString.class.getName());
 
   Text t = new Text();
   ByteStream.Output out = new ByteStream.Output();
-  
+
   public UDFToString() {
   }
 
-  public Text evaluate(NullWritable i)  {
+  public Text evaluate(NullWritable i) {
     return null;
   }
 
-  byte[] trueBytes = {'T', 'R', 'U', 'E'};
-  byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
-  public Text evaluate(BooleanWritable i)  {
+  byte[] trueBytes = { 'T', 'R', 'U', 'E' };
+  byte[] falseBytes = { 'F', 'A', 'L', 'S', 'E' };
+
+  public Text evaluate(BooleanWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -61,30 +60,8 @@ public class UDFToString extends UDF {
       return t;
     }
   }
-  
-  public Text evaluate(ByteWritable i)  {
-    if (i == null) {
-      return null;
-    } else {
-      out.reset();
-      LazyInteger.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
-      return t;
-    }
-  }
-  
-  public Text evaluate(ShortWritable i)  {
-    if (i == null) {
-      return null;
-    } else {
-      out.reset();
-      LazyInteger.writeUTF8NoException(out, i.get());
-      t.set(out.getData(), 0, out.getCount());
-      return t;
-    }
-  }
-    
-  public Text evaluate(IntWritable i)  {
+
+  public Text evaluate(ByteWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -95,7 +72,29 @@ public class UDFToString extends UDF {
     }
   }
 
-  public Text evaluate(LongWritable i)  {
+  public Text evaluate(ShortWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      out.reset();
+      LazyInteger.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
+    }
+  }
+
+  public Text evaluate(IntWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      out.reset();
+      LazyInteger.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
+    }
+  }
+
+  public Text evaluate(LongWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -105,8 +104,8 @@ public class UDFToString extends UDF {
       return t;
     }
   }
-  
-  public Text evaluate(FloatWritable i)  {
+
+  public Text evaluate(FloatWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -114,8 +113,8 @@ public class UDFToString extends UDF {
       return t;
     }
   }
-  
-  public Text evaluate(DoubleWritable i)  {
+
+  public Text evaluate(DoubleWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -123,5 +122,5 @@ public class UDFToString extends UDF {
       return t;
     }
   }
-  
+
 }

@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.plan.explainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
-
 /**
  * ExplainTask implementation
  * 
@@ -47,52 +46,53 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
   public ExplainTask() {
     super();
   }
-  
+
+  @Override
   public int execute() {
-    
+
     try {
-      OutputStream outS = work.getResFile().getFileSystem(conf).create(work.getResFile());
+      OutputStream outS = work.getResFile().getFileSystem(conf).create(
+          work.getResFile());
       PrintStream out = new PrintStream(outS);
-    	
+
       // Print out the parse AST
       outputAST(work.getAstStringTree(), out, 0);
       out.println();
-      
+
       outputDependencies(out, work.getRootTasks(), 0);
       out.println();
-      
+
       // Go over all the tasks and dump out the plans
       outputStagePlans(out, work.getRootTasks(), 0);
       out.close();
-      
+
       return (0);
-    }
-    catch (Exception e) {
-      console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
+    } catch (Exception e) {
+      console.printError("Failed with exception " + e.getMessage(), "\n"
+          + StringUtils.stringifyException(e));
       return (1);
     }
   }
 
   private String indentString(int indent) {
     StringBuilder sb = new StringBuilder();
-    for(int i=0; i<indent; ++i) {
+    for (int i = 0; i < indent; ++i) {
       sb.append(" ");
     }
-    
+
     return sb.toString();
   }
 
-  private void outputMap(Map<?, ?> mp, String header,
-                         PrintStream out, boolean extended, int indent) 
-    throws Exception {
+  private void outputMap(Map<?, ?> mp, String header, PrintStream out,
+      boolean extended, int indent) throws Exception {
 
     boolean first_el = true;
-    for(Entry<?,?> ent: mp.entrySet()) {
+    for (Entry<?, ?> ent : mp.entrySet()) {
       if (first_el) {
         out.println(header);
       }
       first_el = false;
-              
+
       // Print the key
       out.print(indentString(indent));
       out.printf("%s ", ent.getKey().toString());
@@ -105,78 +105,74 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
         out.println();
       } else if (ent.getValue() instanceof Serializable) {
         out.println();
-        outputPlan((Serializable)ent.getValue(), out, extended, indent+2);
-      } 
+        outputPlan((Serializable) ent.getValue(), out, extended, indent + 2);
+      }
     }
   }
 
-  private void outputList(List<?> l, String header,
-                          PrintStream out, boolean extended, int indent) 
-    throws Exception {
-  
+  private void outputList(List<?> l, String header, PrintStream out,
+      boolean extended, int indent) throws Exception {
+
     boolean first_el = true;
     boolean nl = false;
-    for(Object o: l) {
+    for (Object o : l) {
       if (first_el) {
         out.print(header);
       }
-              
+
       if (isPrintable(o)) {
         if (!first_el) {
           out.print(", ");
         } else {
           out.print(" ");
         }
-                
+
         out.print(o);
         nl = true;
-      }
-      else if (o instanceof Serializable) {
+      } else if (o instanceof Serializable) {
         if (first_el) {
           out.println();
         }
-        outputPlan((Serializable)o, out, extended, indent+2);
+        outputPlan((Serializable) o, out, extended, indent + 2);
       }
-              
+
       first_el = false;
     }
-            
+
     if (nl) {
       out.println();
     }
   }
 
   private boolean isPrintable(Object val) {
-    if (val instanceof Boolean ||
-        val instanceof String ||
-        val instanceof Integer ||
-        val instanceof Byte ||
-        val instanceof Float ||
-        val instanceof Double) {
+    if (val instanceof Boolean || val instanceof String
+        || val instanceof Integer || val instanceof Byte
+        || val instanceof Float || val instanceof Double) {
       return true;
     }
 
     if (val.getClass().isPrimitive()) {
       return true;
     }
-    
+
     return false;
   }
 
-  private void outputPlan(Serializable work, PrintStream out, boolean extended, int indent) 
-    throws Exception {
+  private void outputPlan(Serializable work, PrintStream out, boolean extended,
+      int indent) throws Exception {
     // Check if work has an explain annotation
     Annotation note = work.getClass().getAnnotation(explain.class);
-    
+
     if (note instanceof explain) {
-      explain xpl_note = (explain)note;
+      explain xpl_note = (explain) note;
       if (extended || xpl_note.normalExplain()) {
         out.print(indentString(indent));
         out.println(xpl_note.displayName());
       }
     }
 
-    // If this is an operator then we need to call the plan generation on the conf and then
+    // If this is an operator then we need to call the plan generation on the
+    // conf and then
     // the children
     if (work instanceof Operator) {
       Operator<? extends Serializable> operator = (Operator<? extends Serializable>) work;
@@ -184,42 +180,42 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
         outputPlan(operator.getConf(), out, extended, indent);
       }
       if (operator.getChildOperators() != null) {
-        for(Operator<? extends Serializable> op: operator.getChildOperators()) {
-          outputPlan(op, out, extended, indent+2);
+        for (Operator<? extends Serializable> op : operator.getChildOperators()) {
+          outputPlan(op, out, extended, indent + 2);
         }
       }
       return;
     }
-    
+
     // We look at all methods that generate values for explain
     Method[] methods = work.getClass().getMethods();
     Arrays.sort(methods, new MethodComparator());
 
-    for(Method m: methods) {
-      int prop_indents = indent+2;
+    for (Method m : methods) {
+      int prop_indents = indent + 2;
       note = m.getAnnotation(explain.class);
 
       if (note instanceof explain) {
-        explain xpl_note = (explain)note;
+        explain xpl_note = (explain) note;
 
         if (extended || xpl_note.normalExplain()) {
-          
+
           Object val = m.invoke(work);
 
           if (val == null) {
             continue;
           }
-          
+
           String header = null;
-          if (!xpl_note.displayName().equals("")){
-            header = indentString(prop_indents) + xpl_note.displayName() +":";
+          if (!xpl_note.displayName().equals("")) {
+            header = indentString(prop_indents) + xpl_note.displayName() + ":";
           } else {
             prop_indents = indent;
             header = indentString(prop_indents);
           }
 
           if (isPrintable(val)) {
-            
+
             out.printf("%s ", header);
             out.println(val);
             continue;
@@ -227,98 +223,100 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
           // Try this as a map
           try {
             // Go through the map and print out the stuff
-            Map<?,?> mp = (Map<?,?>)val;
-            outputMap(mp, header, out, extended, prop_indents+2);
+            Map<?, ?> mp = (Map<?, ?>) val;
+            outputMap(mp, header, out, extended, prop_indents + 2);
             continue;
-          }
-          catch (ClassCastException ce) {
+          } catch (ClassCastException ce) {
             // Ignore - all this means is that this is not a map
           }
 
           // Try this as a list
           try {
-            List<?> l = (List<?>)val;
-            outputList(l, header, out, extended, prop_indents+2);
-            
+            List<?> l = (List<?>) val;
+            outputList(l, header, out, extended, prop_indents + 2);
+
             continue;
-          }
-          catch (ClassCastException ce) {
+          } catch (ClassCastException ce) {
             // Ignore
           }
-          
 
           // Finally check if it is serializable
           try {
-            Serializable s = (Serializable)val;
+            Serializable s = (Serializable) val;
             out.println(header);
-            outputPlan(s, out, extended, prop_indents+2);
-            
+            outputPlan(s, out, extended, prop_indents + 2);
+
             continue;
-          }
-          catch (ClassCastException ce) {
+          } catch (ClassCastException ce) {
             // Ignore
           }
         }
       }
     }
   }
-  
-  private void outputPlan(Task<? extends Serializable> task, PrintStream out, 
-                          boolean extended, HashSet<Task<? extends Serializable>> displayedSet,
-                          int indent) 
-    throws Exception {
-  
+
+  private void outputPlan(Task<? extends Serializable> task, PrintStream out,
+      boolean extended, HashSet<Task<? extends Serializable>> displayedSet,
+      int indent) throws Exception {
+
     if (displayedSet.contains(task)) {
       return;
     }
     displayedSet.add(task);
-    
+
     out.print(indentString(indent));
     out.printf("Stage: %s\n", task.getId());
-    // Start by getting the work part of the task and call the output plan for the work
-    outputPlan(task.getWork(), out, extended, indent+2);
+    // Start by getting the work part of the task and call the output plan for
+    // the work
+    outputPlan(task.getWork(), out, extended, indent + 2);
     out.println();
-    if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
-      for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+    if (task instanceof ConditionalTask
+        && ((ConditionalTask) task).getListTasks() != null) {
+      for (Task<? extends Serializable> con : ((ConditionalTask) task)
+          .getListTasks()) {
         outputPlan(con, out, extended, displayedSet, indent);
       }
     }
     if (task.getChildTasks() != null) {
-      for(Task<? extends Serializable> child: task.getChildTasks()) {
+      for (Task<? extends Serializable> child : task.getChildTasks()) {
         outputPlan(child, out, extended, displayedSet, indent);
       }
     }
   }
 
-  private Set<Task<? extends Serializable>> dependeciesTaskSet = new HashSet<Task<? extends Serializable>>();
-  private void outputDependencies(Task<? extends Serializable> task, PrintStream out, int indent, boolean rootTskCandidate) 
-    throws Exception {
-    
-    if(dependeciesTaskSet.contains(task))
+  private final Set<Task<? extends Serializable>> dependeciesTaskSet = new HashSet<Task<? extends Serializable>>();
+
+  private void outputDependencies(Task<? extends Serializable> task,
+      PrintStream out, int indent, boolean rootTskCandidate) throws Exception {
+
+    if (dependeciesTaskSet.contains(task)) {
       return;
+    }
     dependeciesTaskSet.add(task);
-    
+
     out.print(indentString(indent));
     out.printf("%s", task.getId());
     if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
-      if(rootTskCandidate)
+      if (rootTskCandidate) {
         out.print(" is a root stage");
-    }
-    else {
+      }
+    } else {
       out.print(" depends on stages: ");
       boolean first = true;
-      for(Task<? extends Serializable> parent: task.getParentTasks()) {
+      for (Task<? extends Serializable> parent : task.getParentTasks()) {
         if (!first) {
           out.print(", ");
         }
         first = false;
         out.print(parent.getId());
       }
-      
-      if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
+
+      if (task instanceof ConditionalTask
+          && ((ConditionalTask) task).getListTasks() != null) {
         out.print(" , consists of ");
         first = true;
-        for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+        for (Task<? extends Serializable> con : ((ConditionalTask) task)
+            .getListTasks()) {
           if (!first) {
             out.print(", ");
           }
@@ -326,63 +324,63 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
           out.print(con.getId());
         }
       }
-      
+
     }
     out.println();
-    
-    if(task instanceof ConditionalTask && ((ConditionalTask)task).getListTasks() != null) {
-      for(Task<? extends Serializable> con: ((ConditionalTask)task).getListTasks()) {
+
+    if (task instanceof ConditionalTask
+        && ((ConditionalTask) task).getListTasks() != null) {
+      for (Task<? extends Serializable> con : ((ConditionalTask) task)
+          .getListTasks()) {
         outputDependencies(con, out, indent, false);
       }
     }
-    
+
     if (task.getChildTasks() != null) {
-      for(Task<? extends Serializable> child: task.getChildTasks()) {
+      for (Task<? extends Serializable> child : task.getChildTasks()) {
         outputDependencies(child, out, indent, true);
       }
     }
-    
+
   }
 
   public void outputAST(String treeString, PrintStream out, int indent) {
     out.print(indentString(indent));
     out.println("ABSTRACT SYNTAX TREE:");
-    out.print(indentString(indent+2));
-    out.println(treeString);    
+    out.print(indentString(indent + 2));
+    out.println(treeString);
   }
 
-  public void outputDependencies(PrintStream out, 
-                                 List<Task<? extends Serializable>> rootTasks,
-                                 int indent) 
-    throws Exception {
+  public void outputDependencies(PrintStream out,
+      List<Task<? extends Serializable>> rootTasks, int indent)
+      throws Exception {
     out.print(indentString(indent));
     out.println("STAGE DEPENDENCIES:");
-    for(Task<? extends Serializable> rootTask: rootTasks) {
-      outputDependencies(rootTask, out, indent+2, true);
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      outputDependencies(rootTask, out, indent + 2, true);
     }
   }
 
-  public void outputStagePlans(PrintStream out, 
-                               List<Task<? extends Serializable>> rootTasks,
-                               int indent) 
-    throws Exception {
+  public void outputStagePlans(PrintStream out,
+      List<Task<? extends Serializable>> rootTasks, int indent)
+      throws Exception {
     out.print(indentString(indent));
     out.println("STAGE PLANS:");
     HashSet<Task<? extends Serializable>> displayedSet = new HashSet<Task<? extends Serializable>>();
-    for(Task<? extends Serializable> rootTask: rootTasks) {
-      outputPlan(rootTask, out, work.getExtended(),
-                 displayedSet, indent+2);
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      outputPlan(rootTask, out, work.getExtended(), displayedSet, indent + 2);
     }
   }
 
   public static class MethodComparator implements Comparator {
     public int compare(Object o1, Object o2) {
-      Method m1 = (Method)o1;
-      Method m2 = (Method)o2;
+      Method m1 = (Method) o1;
+      Method m2 = (Method) o2;
       return m1.getName().compareTo(m2.getName());
     }
   }
 
+  @Override
   public int getType() {
     return StageType.EXPLAIN;
   }

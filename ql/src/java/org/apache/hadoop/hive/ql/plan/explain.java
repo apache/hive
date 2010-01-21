@@ -24,5 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface explain {
   String displayName() default "";
+
   boolean normalExplain() default true;
 }

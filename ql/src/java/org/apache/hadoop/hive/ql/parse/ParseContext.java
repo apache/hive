@@ -25,18 +25,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
 
 /**
@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
  * populated. Note that since the parse context contains the operator tree, it
  * can be easily retrieved by the next optimization step or finally for task
  * generation after the plan has been completely optimized.
- *
+ * 
  **/
 
 public class ParseContext {
@@ -66,13 +66,18 @@ public class ParseContext {
   private HashMap<String, String> idToTableNameMap;
   private int destTableId;
   private UnionProcContext uCtx;
-  private List<MapJoinOperator> listMapJoinOpsNoReducer;  // list of map join operators with no reducer
+  private List<MapJoinOperator> listMapJoinOpsNoReducer; // list of map join
+                                                         // operators with no
+                                                         // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
 
-  // is set to true if the expression only contains partitioning columns and not any other column reference.
-  // This is used to optimize select * from table where ... scenario, when the where condition only references
-  // partitioning columns - the partitions are identified and streamed directly to the client without requiring
+  // is set to true if the expression only contains partitioning columns and not
+  // any other column reference.
+  // This is used to optimize select * from table where ... scenario, when the
+  // where condition only references
+  // partitioning columns - the partitions are identified and streamed directly
+  // to the client without requiring
   // a map-reduce job
   private boolean hasNonPartCols;
 
@@ -93,21 +98,28 @@ public class ParseContext {
    * @param opParseCtx
    *          operator parse context - contains a mapping from operator to
    *          operator parse state (row resolver etc.)
-   * @param joinContext context needed join processing (map join specifically)
-   * @param topToTable the top tables being processed
+   * @param joinContext
+   *          context needed join processing (map join specifically)
+   * @param topToTable
+   *          the top tables being processed
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
    *          list of destination files being loaded
-   * @param ctx parse context
+   * @param ctx
+   *          parse context
    * @param idToTableNameMap
    * @param destTableId
    * @param uCtx
    * @param listMapJoinOpsNoReducer
    *          list of map join operators with no reducer
-   * @param opToSamplePruner operator to sample pruner map
+   * @param opToSamplePruner
+   *          operator to sample pruner map
    */
-  public ParseContext(HiveConf conf, QB qb, ASTNode ast,
+  public ParseContext(
+      HiveConf conf,
+      QB qb,
+      ASTNode ast,
       HashMap<TableScanOperator, exprNodeDesc> opToPartPruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
@@ -115,8 +127,8 @@ public class ParseContext {
       Map<JoinOperator, QBJoinTree> joinContext,
       HashMap<TableScanOperator, Table> topToTable,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
-      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx,
-      List<MapJoinOperator> listMapJoinOpsNoReducer,
+      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
+      UnionProcContext uCtx, List<MapJoinOperator> listMapJoinOpsNoReducer,
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
@@ -136,7 +148,7 @@ public class ParseContext {
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
-    this.hasNonPartCols = false;
+    hasNonPartCols = false;
     this.groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
@@ -214,7 +226,8 @@ public class ParseContext {
    * @param opToPartPruner
    *          the opToPartPruner to set
    */
-  public void setOpToPartPruner(HashMap<TableScanOperator, exprNodeDesc> opToPartPruner) {
+  public void setOpToPartPruner(
+      HashMap<TableScanOperator, exprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
   }
 
@@ -342,7 +355,8 @@ public class ParseContext {
   }
 
   /**
-   * @param joinContext the joinContext to set
+   * @param joinContext
+   *          the joinContext to set
    */
   public void setJoinContext(Map<JoinOperator, QBJoinTree> joinContext) {
     this.joinContext = joinContext;
@@ -356,7 +370,8 @@ public class ParseContext {
   }
 
   /**
-   * @param listMapJoinOpsNoReducer the listMapJoinOpsNoReducer to set
+   * @param listMapJoinOpsNoReducer
+   *          the listMapJoinOpsNoReducer to set
    */
   public void setListMapJoinOpsNoReducer(
       List<MapJoinOperator> listMapJoinOpsNoReducer) {
@@ -365,17 +380,18 @@ public class ParseContext {
 
   /**
    * Sets the hasNonPartCols flag
+   * 
    * @param val
    */
   public void setHasNonPartCols(boolean val) {
-    this.hasNonPartCols = val;
+    hasNonPartCols = val;
   }
 
   /**
    * Gets the value of the hasNonPartCols flag
    */
   public boolean getHasNonPartCols() {
-    return this.hasNonPartCols;
+    return hasNonPartCols;
   }
 
   /**
@@ -389,7 +405,8 @@ public class ParseContext {
    * @param opToSamplePruner
    *          the opToSamplePruner to set
    */
-  public void setOpToSamplePruner(HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+  public void setOpToSamplePruner(
+      HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
     this.opToSamplePruner = opToSamplePruner;
   }
 

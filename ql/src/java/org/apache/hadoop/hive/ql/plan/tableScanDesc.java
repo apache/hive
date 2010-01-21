@@ -21,28 +21,29 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 /**
- * Table Scan Descriptor
- * Currently, data is only read from a base source as part of map-reduce framework. So, nothing is stored in the 
- * descriptor. But, more things will be added here as table scan is invoked as part of local work.
+ * Table Scan Descriptor Currently, data is only read from a base source as part
+ * of map-reduce framework. So, nothing is stored in the descriptor. But, more
+ * things will be added here as table scan is invoked as part of local work.
  **/
-@explain(displayName="TableScan")
+@explain(displayName = "TableScan")
 public class tableScanDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private String alias;
-  
+
   @SuppressWarnings("nls")
-  public tableScanDesc() { }
-  
+  public tableScanDesc() {
+  }
+
   public tableScanDesc(final String alias) {
     this.alias = alias;
   }
-  
-  @explain(displayName="alias")
+
+  @explain(displayName = "alias")
   public String getAlias() {
     return alias;
   }
-  
+
   public void setAlias(String alias) {
     this.alias = alias;
   }

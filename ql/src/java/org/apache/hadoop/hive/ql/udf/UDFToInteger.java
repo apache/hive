@@ -32,33 +32,34 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class UDFToInteger extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToInteger.class.getName());
 
   IntWritable intWritable = new IntWritable();
-  
+
   public UDFToInteger() {
   }
 
   /**
    * Convert from void to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The void value to convert
+   * 
+   * @param i
+   *          The void value to convert
    * @return Integer
    */
-  public IntWritable evaluate(NullWritable i)  {
+  public IntWritable evaluate(NullWritable i) {
     return null;
   }
 
   /**
    * Convert from boolean to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The boolean value to convert
+   * 
+   * @param i
+   *          The boolean value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(BooleanWritable i)  {
+  public IntWritable evaluate(BooleanWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -66,94 +67,101 @@ public class UDFToInteger extends UDF {
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from byte to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The byte value to convert
+   * 
+   * @param i
+   *          The byte value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(ByteWritable i)  {
+  public IntWritable evaluate(ByteWritable i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int)i.get());
+      intWritable.set(i.get());
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from short to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The short value to convert
+   * 
+   * @param i
+   *          The short value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(ShortWritable i)  {
+  public IntWritable evaluate(ShortWritable i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int)i.get());
+      intWritable.set(i.get());
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from long to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The long value to convert
+   * 
+   * @param i
+   *          The long value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(LongWritable i)  {
+  public IntWritable evaluate(LongWritable i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int)i.get());
+      intWritable.set((int) i.get());
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from float to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The float value to convert
+   * 
+   * @param i
+   *          The float value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(FloatWritable i)  {
+  public IntWritable evaluate(FloatWritable i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int)i.get());
+      intWritable.set((int) i.get());
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from double to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The double value to convert
+   * 
+   * @param i
+   *          The double value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(DoubleWritable i)  {
+  public IntWritable evaluate(DoubleWritable i) {
     if (i == null) {
       return null;
     } else {
-      intWritable.set((int)i.get());
+      intWritable.set((int) i.get());
       return intWritable;
     }
   }
-  
+
   /**
    * Convert from string to an integer. This is called for CAST(... AS INT)
-   *
-   * @param i The string value to convert
+   * 
+   * @param i
+   *          The string value to convert
    * @return IntWritable
    */
-  public IntWritable evaluate(Text i)  {
+  public IntWritable evaluate(Text i) {
     if (i == null) {
       return null;
     } else {
       try {
-        intWritable.set(LazyInteger.parseInt(i.getBytes(), 0 , i.getLength(), 10));
+        intWritable.set(LazyInteger
+            .parseInt(i.getBytes(), 0, i.getLength(), 10));
         return intWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
@@ -163,5 +171,5 @@ public class UDFToInteger extends UDF {
       }
     }
   }
-  
+
 }

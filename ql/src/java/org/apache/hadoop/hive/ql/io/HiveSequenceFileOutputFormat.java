@@ -34,9 +34,8 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
 
 /** A {@link HiveOutputFormat} that writes {@link SequenceFile}s. */
-public class HiveSequenceFileOutputFormat extends
-    SequenceFileOutputFormat implements
-    HiveOutputFormat<WritableComparable, Writable> {
+public class HiveSequenceFileOutputFormat extends SequenceFileOutputFormat
+    implements HiveOutputFormat<WritableComparable, Writable> {
 
   BytesWritable EMPTY_KEY = new BytesWritable();
 
@@ -64,8 +63,7 @@ public class HiveSequenceFileOutputFormat extends
 
     FileSystem fs = finalOutPath.getFileSystem(jc);
     final SequenceFile.Writer outStream = Utilities.createSequenceWriter(jc,
-        fs, finalOutPath, BytesWritable.class, valueClass,
-        isCompressed);
+        fs, finalOutPath, BytesWritable.class, valueClass, isCompressed);
 
     return new RecordWriter() {
       public void write(Writable r) throws IOException {

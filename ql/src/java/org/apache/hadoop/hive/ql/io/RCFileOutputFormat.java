@@ -67,6 +67,7 @@ public class RCFileOutputFormat extends
   }
 
   /** {@inheritDoc} */
+  @Override
   public RecordWriter<WritableComparable, BytesRefArrayWritable> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress)
       throws IOException {
@@ -124,10 +125,11 @@ public class RCFileOutputFormat extends
 
     String[] cols = null;
     String columns = tableProperties.getProperty("columns");
-    if (columns == null || columns.trim().equals(""))
+    if (columns == null || columns.trim().equals("")) {
       cols = new String[0];
-    else
+    } else {
       cols = StringUtils.split(columns, ",");
+    }
 
     RCFileOutputFormat.setColumnNumber(jc, cols.length);
     final RCFile.Writer outWriter = Utilities.createRCFileWriter(jc, FileSystem

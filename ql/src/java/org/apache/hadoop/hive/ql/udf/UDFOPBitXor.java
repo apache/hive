@@ -20,20 +20,14 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "^",
-    value = "a _FUNC_ b - Bitwise exclusive or",
-    extended = "Example:\n" +
-        "  > SELECT 3 _FUNC_ 5 FROM src LIMIT 1;\n" +
-        "  2"
-)
+@description(name = "^", value = "a _FUNC_ b - Bitwise exclusive or", extended = "Example:\n"
+    + "  > SELECT 3 _FUNC_ 5 FROM src LIMIT 1;\n" + "  2")
 public class UDFOPBitXor extends UDFBaseBitOP {
 
   private static Log LOG = LogFactory.getLog(UDFOPBitXor.class.getName());
@@ -45,7 +39,7 @@ public class UDFOPBitXor extends UDFBaseBitOP {
     if (a == null || b == null) {
       return null;
     }
-    byteWritable.set((byte)(a.get() ^ b.get()));
+    byteWritable.set((byte) (a.get() ^ b.get()));
     return byteWritable;
   }
 
@@ -53,10 +47,10 @@ public class UDFOPBitXor extends UDFBaseBitOP {
     if (a == null || b == null) {
       return null;
     }
-    shortWritable.set((short)(a.get() ^ b.get()));
+    shortWritable.set((short) (a.get() ^ b.get()));
     return shortWritable;
   }
-  
+
   public IntWritable evaluate(IntWritable a, IntWritable b) {
     if (a == null || b == null) {
       return null;

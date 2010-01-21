@@ -23,15 +23,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "length",
-    value = "_FUNC_(str) - Returns the length of str ",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" +
-        "  8"
-    )
+@description(name = "length", value = "_FUNC_(str) - Returns the length of str ", extended = "Example:\n"
+    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  8")
 public class UDFLength extends UDF {
-  private IntWritable result = new IntWritable();
+  private final IntWritable result = new IntWritable();
 
   public IntWritable evaluate(Text s) {
     if (s == null) {
@@ -40,12 +35,12 @@ public class UDFLength extends UDF {
 
     byte[] data = s.getBytes();
     int len = 0;
-    for(int i = 0; i < s.getLength(); i++) {
-      if( GenericUDFUtils.isUtfStartByte(data[i]) ) {
+    for (int i = 0; i < s.getLength(); i++) {
+      if (GenericUDFUtils.isUtfStartByte(data[i])) {
         len++;
       }
     }
-    
+
     result.set(len);
     return result;
   }

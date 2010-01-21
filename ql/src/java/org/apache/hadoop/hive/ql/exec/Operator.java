@@ -45,7 +45,8 @@ import org.apache.hadoop.mapred.Reporter;
 /**
  * Base operator implementation
  **/
-public abstract class Operator <T extends Serializable> implements Serializable, Node {
+public abstract class Operator<T extends Serializable> implements Serializable,
+    Node {
 
   // Bean methods
 
@@ -55,42 +56,44 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   protected List<Operator<? extends Serializable>> parentOperators;
   protected String operatorId;
   /**
-   * List of counter names associated with the operator
-   * It contains the following default counters
-   *   NUM_INPUT_ROWS
-   *   NUM_OUTPUT_ROWS
-   *   TIME_TAKEN
+   * List of counter names associated with the operator It contains the
+   * following default counters NUM_INPUT_ROWS NUM_OUTPUT_ROWS TIME_TAKEN
    * Individual operators can add to this list via addToCounterNames methods
    */
   protected ArrayList<String> counterNames;
 
   /**
    * Each operator has its own map of its counter names to disjoint
-   * ProgressCounter - it is populated at compile time and is read in
-   * at run-time while extracting the operator specific counts
+   * ProgressCounter - it is populated at compile time and is read in at
+   * run-time while extracting the operator specific counts
    */
   protected HashMap<String, ProgressCounter> counterNameToEnum;
 
-
   private static int seqId;
 
-  // It can be optimized later so that an operator operator (init/close) is performed
-  // only after that operation has been performed on all the parents. This will require
-  // initializing the whole tree in all the mappers (which might be required for mappers
+  // It can be optimized later so that an operator operator (init/close) is
+  // performed
+  // only after that operation has been performed on all the parents. This will
+  // require
+  // initializing the whole tree in all the mappers (which might be required for
+  // mappers
   // spanning multiple files anyway, in future)
   public static enum State {
-    UNINIT,   // initialize() has not been called
-    INIT,     // initialize() has been called and close() has not been called,
-              // or close() has been called but one of its parent is not closed.
-    CLOSE     // all its parents operators are in state CLOSE and called close()
-              // to children. Note: close() being called and its state being CLOSE is
-              // difference since close() could be called but state is not CLOSE if
-              // one of its parent is not in state CLOSE..
+    UNINIT, // initialize() has not been called
+    INIT, // initialize() has been called and close() has not been called,
+    // or close() has been called but one of its parent is not closed.
+    CLOSE
+    // all its parents operators are in state CLOSE and called close()
+    // to children. Note: close() being called and its state being CLOSE is
+    // difference since close() could be called but state is not CLOSE if
+    // one of its parent is not in state CLOSE..
   };
+
   transient protected State state = State.UNINIT;
 
-  transient static boolean fatalError = false; // fatalError is shared acorss all operators
-  
+  transient static boolean fatalError = false; // fatalError is shared acorss
+                                               // all operators
+
   static {
     seqId = 0;
   }
@@ -102,17 +105,20 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public static void resetId() {
     seqId = 0;
   }
-  
+
   /**
    * Create an operator with a reporter.
-   * @param reporter Used to report progress of certain operators.
+   * 
+   * @param reporter
+   *          Used to report progress of certain operators.
    */
   public Operator(Reporter reporter) {
     this.reporter = reporter;
     id = String.valueOf(seqId++);
   }
 
-  public void setChildOperators(List<Operator<? extends Serializable>> childOperators) {
+  public void setChildOperators(
+      List<Operator<? extends Serializable>> childOperators) {
     this.childOperators = childOperators;
   }
 
@@ -130,14 +136,15 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
 
     Vector<Node> ret_vec = new Vector<Node>();
-    for(Operator<? extends Serializable> op: getChildOperators()) {
+    for (Operator<? extends Serializable> op : getChildOperators()) {
       ret_vec.add(op);
     }
 
     return ret_vec;
   }
 
-  public void setParentOperators(List<Operator<? extends Serializable>> parentOperators) {
+  public void setParentOperators(
+      List<Operator<? extends Serializable>> parentOperators) {
     this.parentOperators = parentOperators;
   }
 
@@ -178,7 +185,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
 
   // non-bean ..
 
-  transient protected HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable> ();
+  transient protected HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
   transient protected OutputCollector out;
   transient protected Log LOG = LogFactory.getLog(this.getClass().getName());
   transient protected String alias;
@@ -190,9 +197,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected ObjectInspector outputObjInspector;
 
   /**
-   * A map of output column name to input expression map. This is used by optimizer
-   * and built during semantic analysis
-   * contains only key elements for reduce sink and group by op
+   * A map of output column name to input expression map. This is used by
+   * optimizer and built during semantic analysis contains only key elements for
+   * reduce sink and group by op
    */
   protected transient Map<String, exprNodeDesc> colExprMap;
 
@@ -201,21 +208,24 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /**
-   * This function is not named getId(), to make sure java serialization
-   * does NOT serialize it.  Some TestParse tests will fail if we serialize
-   * this field, since the Operator ID will change based on the number of
-   * query tests.
+   * This function is not named getId(), to make sure java serialization does
+   * NOT serialize it. Some TestParse tests will fail if we serialize this
+   * field, since the Operator ID will change based on the number of query
+   * tests.
    */
-  public String getIdentifier() { return id; }
+  public String getIdentifier() {
+    return id;
+  }
 
   public void setReporter(Reporter rep) {
     reporter = rep;
 
     // the collector is same across all operators
-    if(childOperators == null)
+    if (childOperators == null) {
       return;
+    }
 
-    for(Operator<? extends Serializable> op: childOperators) {
+    for (Operator<? extends Serializable> op : childOperators) {
       op.setReporter(rep);
     }
   }
@@ -224,10 +234,11 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     this.out = out;
 
     // the collector is same across all operators
-    if(childOperators == null)
+    if (childOperators == null) {
       return;
+    }
 
-    for(Operator<? extends Serializable> op: childOperators) {
+    for (Operator<? extends Serializable> op : childOperators) {
       op.setOutputCollector(out);
     }
   }
@@ -238,31 +249,34 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public void setAlias(String alias) {
     this.alias = alias;
 
-    if(childOperators == null)
+    if (childOperators == null) {
       return;
+    }
 
-    for(Operator<? extends Serializable> op: childOperators) {
+    for (Operator<? extends Serializable> op : childOperators) {
       op.setAlias(alias);
     }
   }
 
   public Map<Enum<?>, Long> getStats() {
-    HashMap<Enum<?>, Long> ret = new HashMap<Enum<?>, Long> ();
-    for(Enum<?> one: statsMap.keySet()) {
+    HashMap<Enum<?>, Long> ret = new HashMap<Enum<?>, Long>();
+    for (Enum<?> one : statsMap.keySet()) {
       ret.put(one, Long.valueOf(statsMap.get(one).get()));
     }
-    return(ret);
+    return (ret);
   }
 
   /**
    * checks whether all parent operators are initialized or not
-   * @return true if there are no parents or all parents are initialized. false otherwise
+   * 
+   * @return true if there are no parents or all parents are initialized. false
+   *         otherwise
    */
   protected boolean areAllParentsInitialized() {
     if (parentOperators == null) {
       return true;
     }
-    for(Operator<? extends Serializable> parent: parentOperators) {
+    for (Operator<? extends Serializable> parent : parentOperators) {
       if (parent.state != State.INIT) {
         return false;
       }
@@ -271,46 +285,51 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /**
-   * Initializes operators only if all parents have been initialized.
-   * Calls operator specific initializer which then initializes child ops.
-   *
+   * Initializes operators only if all parents have been initialized. Calls
+   * operator specific initializer which then initializes child ops.
+   * 
    * @param hconf
-   * @param inputOIs input object inspector array indexes by tag id. null value is ignored.
+   * @param inputOIs
+   *          input object inspector array indexes by tag id. null value is
+   *          ignored.
    * @throws HiveException
    */
-  public void initialize(Configuration hconf, ObjectInspector[] inputOIs) throws HiveException {
+  public void initialize(Configuration hconf, ObjectInspector[] inputOIs)
+      throws HiveException {
     if (state == State.INIT) {
       return;
     }
 
-    if(!areAllParentsInitialized()) {
+    if (!areAllParentsInitialized()) {
       return;
     }
-    
+
     LOG.info("Initializing Self " + id + " " + getName());
 
     if (inputOIs != null) {
       inputObjInspectors = inputOIs;
     }
 
-    // initialize structure to maintain child op info. operator tree changes while
+    // initialize structure to maintain child op info. operator tree changes
+    // while
     // initializing so this need to be done here instead of initialize() method
     if (childOperators != null) {
       childOperatorsArray = new Operator[childOperators.size()];
-      for (int i=0; i<childOperatorsArray.length; i++) {
+      for (int i = 0; i < childOperatorsArray.length; i++) {
         childOperatorsArray[i] = childOperators.get(i);
       }
       childOperatorsTag = new int[childOperatorsArray.length];
-      for (int i=0; i<childOperatorsArray.length; i++) {
-        List<Operator<? extends Serializable>> parentOperators =
-          childOperatorsArray[i].getParentOperators();
+      for (int i = 0; i < childOperatorsArray.length; i++) {
+        List<Operator<? extends Serializable>> parentOperators = childOperatorsArray[i]
+            .getParentOperators();
         if (parentOperators == null) {
           throw new HiveException("Hive internal error: parent is null in "
               + childOperatorsArray[i].getClass() + "!");
         }
         childOperatorsTag[i] = parentOperators.indexOf(this);
         if (childOperatorsTag[i] == -1) {
-          throw new HiveException("Hive internal error: cannot find parent in the child operator!");
+          throw new HiveException(
+              "Hive internal error: cannot find parent in the child operator!");
         }
       }
     }
@@ -333,7 +352,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /**
-   * Calls initialize on each of the children with outputObjetInspector as the output row format
+   * Calls initialize on each of the children with outputObjetInspector as the
+   * output row format
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
@@ -343,45 +363,59 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
     LOG.info("Initializing children of " + id + " " + getName());
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      childOperatorsArray[i].initialize(hconf, outputObjInspector, childOperatorsTag[i]);
-      if ( reporter != null ) {
+      childOperatorsArray[i].initialize(hconf, outputObjInspector,
+          childOperatorsTag[i]);
+      if (reporter != null) {
         childOperatorsArray[i].setReporter(reporter);
       }
     }
   }
 
   /**
-   * Collects all the parent's output object inspectors and calls actual initialization method
+   * Collects all the parent's output object inspectors and calls actual
+   * initialization method
+   * 
    * @param hconf
-   * @param inputOI OI of the row that this parent will pass to this op
-   * @param parentId parent operator id
+   * @param inputOI
+   *          OI of the row that this parent will pass to this op
+   * @param parentId
+   *          parent operator id
    * @throws HiveException
    */
-  private void initialize(Configuration hconf, ObjectInspector inputOI, int parentId) throws HiveException {
+  private void initialize(Configuration hconf, ObjectInspector inputOI,
+      int parentId) throws HiveException {
     LOG.info("Initializing child " + id + " " + getName());
     inputObjInspectors[parentId] = inputOI;
     // call the actual operator initialization function
     initialize(hconf, null);
   }
 
-
-   /**
+  /**
    * Process the row.
-   * @param row  The object representing the row.
-   * @param tag  The tag of the row usually means which parent this row comes from.
-   *             Rows with the same tag should have exactly the same rowInspector all the time.
+   * 
+   * @param row
+   *          The object representing the row.
+   * @param tag
+   *          The tag of the row usually means which parent this row comes from.
+   *          Rows with the same tag should have exactly the same rowInspector
+   *          all the time.
    */
   public abstract void processOp(Object row, int tag) throws HiveException;
 
   /**
    * Process the row.
-   * @param row  The object representing the row.
-   * @param tag  The tag of the row usually means which parent this row comes from.
-   *             Rows with the same tag should have exactly the same rowInspector all the time.
+   * 
+   * @param row
+   *          The object representing the row.
+   * @param tag
+   *          The tag of the row usually means which parent this row comes from.
+   *          Rows with the same tag should have exactly the same rowInspector
+   *          all the time.
    */
   public void process(Object row, int tag) throws HiveException {
-    if ( fatalError ) 
+    if (fatalError) {
       return;
+    }
     preProcessCounter();
     processOp(row, tag);
     postProcessCounter();
@@ -391,15 +425,18 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public void startGroup() throws HiveException {
     LOG.debug("Starting group");
 
-    if (childOperators == null)
+    if (childOperators == null) {
       return;
-    
-    if ( fatalError )
+    }
+
+    if (fatalError) {
       return;
+    }
 
     LOG.debug("Starting group for children:");
-    for (Operator<? extends Serializable> op: childOperators)
+    for (Operator<? extends Serializable> op : childOperators) {
       op.startGroup();
+    }
 
     LOG.debug("Start group Done");
   }
@@ -408,24 +445,26 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public void endGroup() throws HiveException {
     LOG.debug("Ending group");
 
-    if (childOperators == null)
+    if (childOperators == null) {
       return;
+    }
 
-    if ( fatalError )
+    if (fatalError) {
       return;
+    }
 
     LOG.debug("Ending group for children:");
-    for (Operator<? extends Serializable> op: childOperators)
+    for (Operator<? extends Serializable> op : childOperators) {
       op.endGroup();
+    }
 
     LOG.debug("End group Done");
   }
 
   private boolean allInitializedParentsAreClosed() {
     if (parentOperators != null) {
-      for(Operator<? extends Serializable> parent: parentOperators) {
-        if (!(parent.state == State.CLOSE ||
-              parent.state == State.UNINIT)) {
+      for (Operator<? extends Serializable> parent : parentOperators) {
+        if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
       }
@@ -438,12 +477,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   // more than 1 thread should call this close() function.
   public void close(boolean abort) throws HiveException {
 
-    if (state == State.CLOSE)
+    if (state == State.CLOSE) {
       return;
+    }
 
     // check if all parents are finished
-    if (!allInitializedParentsAreClosed())
+    if (!allInitializedParentsAreClosed()) {
       return;
+    }
 
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
@@ -463,10 +504,11 @@ public abstract class Operator <T extends Serializable> implements Serializable,
 
     try {
       logStats();
-      if(childOperators == null)
+      if (childOperators == null) {
         return;
+      }
 
-      for(Operator<? extends Serializable> op: childOperators) {
+      for (Operator<? extends Serializable> op : childOperators) {
         op.close(abort);
       }
 
@@ -478,33 +520,35 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /**
-   * Operator specific close routine. Operators which inherents this
-   * class should overwrite this funtion for their specific cleanup
-   * routine.
+   * Operator specific close routine. Operators which inherents this class
+   * should overwrite this funtion for their specific cleanup routine.
    */
   protected void closeOp(boolean abort) throws HiveException {
   }
 
-
   /**
    * Unlike other operator interfaces which are called from map or reduce task,
    * jobClose is called from the jobclient side once the job has completed
-   *
-   * @param conf Configuration with with which job was submitted
-   * @param success whether the job was completed successfully or not
+   * 
+   * @param conf
+   *          Configuration with with which job was submitted
+   * @param success
+   *          whether the job was completed successfully or not
    */
-  public void jobClose(Configuration conf, boolean success) throws HiveException {
-    if(childOperators == null)
+  public void jobClose(Configuration conf, boolean success)
+      throws HiveException {
+    if (childOperators == null) {
       return;
+    }
 
-    for(Operator<? extends Serializable> op: childOperators) {
+    for (Operator<? extends Serializable> op : childOperators) {
       op.jobClose(conf, success);
     }
   }
 
   /**
-   *  Cache childOperators in an array for faster access. childOperatorsArray is accessed
-   *  per row, so it's important to make the access efficient.
+   * Cache childOperators in an array for faster access. childOperatorsArray is
+   * accessed per row, so it's important to make the access efficient.
    */
   transient protected Operator<? extends Serializable>[] childOperatorsArray = null;
   transient protected int[] childOperatorsTag;
@@ -513,54 +557,69 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient private long cntr = 0;
   transient private long nextCntr = 1;
 
-   /**
-   * Replace one child with another at the same position. The parent of the child is not changed
-   * @param child     the old child
-   * @param newChild  the new child
+  /**
+   * Replace one child with another at the same position. The parent of the
+   * child is not changed
+   * 
+   * @param child
+   *          the old child
+   * @param newChild
+   *          the new child
    */
-  public void  replaceChild(Operator<? extends Serializable> child, Operator<? extends Serializable> newChild) {
+  public void replaceChild(Operator<? extends Serializable> child,
+      Operator<? extends Serializable> newChild) {
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     childOperators.set(childIndex, newChild);
   }
 
-  public void  removeChild(Operator<? extends Serializable> child) {
+  public void removeChild(Operator<? extends Serializable> child) {
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
-    if (childOperators.size() == 1)
+    if (childOperators.size() == 1) {
       childOperators = null;
-    else
+    } else {
       childOperators.remove(childIndex);
+    }
 
     int parentIndex = child.getParentOperators().indexOf(this);
     assert parentIndex != -1;
-    if (child.getParentOperators().size() == 1)
+    if (child.getParentOperators().size() == 1) {
       child.setParentOperators(null);
-    else
+    } else {
       child.getParentOperators().remove(parentIndex);
+    }
   }
 
   /**
-   * Replace one parent with another at the same position. Chilren of the new parent are not updated
-   * @param parent     the old parent
-   * @param newParent  the new parent
+   * Replace one parent with another at the same position. Chilren of the new
+   * parent are not updated
+   * 
+   * @param parent
+   *          the old parent
+   * @param newParent
+   *          the new parent
    */
-  public void  replaceParent(Operator<? extends Serializable> parent, Operator<? extends Serializable> newParent) {
+  public void replaceParent(Operator<? extends Serializable> parent,
+      Operator<? extends Serializable> newParent) {
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     parentOperators.set(parentIndex, newParent);
   }
 
   private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by an operator. It dumps
+    // A very simple counter to keep track of number of rows processed by an
+    // operator. It dumps
     // every 1 million times, and quickly before that
-    if (cntr >= 1000000)
+    if (cntr >= 1000000) {
       return cntr + 1000000;
+    }
 
     return 10 * cntr;
   }
 
-  protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
+  protected void forward(Object row, ObjectInspector rowInspector)
+      throws HiveException {
 
     if ((++outputRows % 1000) == 0) {
       if (counterNameToEnum != null) {
@@ -578,14 +637,17 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
 
     // For debugging purposes:
-    // System.out.println("" + this.getClass() + ": " + SerDeUtils.getJSONString(row, rowInspector));
-    // System.out.println("" + this.getClass() + ">> " + ObjectInspectorUtils.getObjectInspectorName(rowInspector));
+    // System.out.println("" + this.getClass() + ": " +
+    // SerDeUtils.getJSONString(row, rowInspector));
+    // System.out.println("" + this.getClass() + ">> " +
+    // ObjectInspectorUtils.getObjectInspectorName(rowInspector));
 
     if (childOperatorsArray == null && childOperators != null) {
-      throw new HiveException("Internal Hive error during operator initialization.");
+      throw new HiveException(
+          "Internal Hive error during operator initialization.");
     }
 
-    if((childOperatorsArray == null) || (getDone())) {
+    if ((childOperatorsArray == null) || (getDone())) {
       return;
     }
 
@@ -593,7 +655,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     for (int i = 0; i < childOperatorsArray.length; i++) {
       Operator<? extends Serializable> o = childOperatorsArray[i];
       if (o.getDone()) {
-        childrenDone ++;
+        childrenDone++;
       } else {
         o.process(row, childOperatorsTag[i]);
       }
@@ -606,7 +668,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public void resetStats() {
-    for(Enum<?> e: statsMap.keySet()) {
+    for (Enum<?> e : statsMap.keySet()) {
       statsMap.get(e).set(0L);
     }
   }
@@ -615,23 +677,24 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     public void func(Operator<? extends Serializable> op);
   }
 
-  public void preorderMap (OperatorFunc opFunc) {
+  public void preorderMap(OperatorFunc opFunc) {
     opFunc.func(this);
-    if(childOperators != null) {
-      for(Operator<? extends Serializable> o: childOperators) {
+    if (childOperators != null) {
+      for (Operator<? extends Serializable> o : childOperators) {
         o.preorderMap(opFunc);
       }
     }
   }
 
-  public void logStats () {
-    for(Enum<?> e: statsMap.keySet()) {
+  public void logStats() {
+    for (Enum<?> e : statsMap.keySet()) {
       LOG.info(e.toString() + ":" + statsMap.get(e).toString());
     }
   }
 
   /**
    * Implements the getName function for the Node Interface.
+   * 
    * @return the name of the operator
    */
   public String getName() {
@@ -639,8 +702,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /**
-   * Returns a map of output column name to input expression map
-   * Note that currently it returns only key columns for ReduceSink and GroupBy operators
+   * Returns a map of output column name to input expression map Note that
+   * currently it returns only key columns for ReduceSink and GroupBy operators
+   * 
    * @return null if the operator doesn't change columns
    */
   public Map<String, exprNodeDesc> getColumnExprMap() {
@@ -657,7 +721,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
     StringBuilder s = new StringBuilder();
     s.append("\n");
-    while(level > 0) {
+    while (level > 0) {
       s.append("  ");
       level--;
     }
@@ -669,8 +733,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public String dump(int level, HashSet<Integer> seenOpts) {
-    if ( seenOpts.contains(new Integer(id)))
+    if (seenOpts.contains(new Integer(id))) {
       return null;
+    }
     seenOpts.add(new Integer(id));
 
     StringBuilder s = new StringBuilder();
@@ -683,7 +748,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       s.append(ls);
       s.append("  <Children>");
       for (Operator<? extends Serializable> o : childOperators) {
-        s.append(o.dump(level+2, seenOpts));
+        s.append(o.dump(level + 2, seenOpts));
       }
       s.append(ls);
       s.append("  <\\Children>");
@@ -694,7 +759,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       s.append("  <Parent>");
       for (Operator<? extends Serializable> o : parentOperators) {
         s.append("Id = " + o.id + " ");
-        s.append(o.dump(level,seenOpts));
+        s.append(o.dump(level, seenOpts));
       }
       s.append("<\\Parent>");
     }
@@ -711,7 +776,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator[] evals,
       ObjectInspector rowInspector) throws HiveException {
     ObjectInspector[] result = new ObjectInspector[evals.length];
-    for (int i=0; i<evals.length; i++) {
+    for (int i = 0; i < evals.length; i++) {
       result[i] = evals[i].initialize(rowInspector);
     }
     return result;
@@ -722,12 +787,12 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    * StructObjectInspector with integer field names.
    */
   protected static StructObjectInspector initEvaluatorsAndReturnStruct(
-      ExprNodeEvaluator[] evals, List<String> outputColName, ObjectInspector rowInspector)
-      throws HiveException {
-    ObjectInspector[] fieldObjectInspectors = initEvaluators(evals, rowInspector);
+      ExprNodeEvaluator[] evals, List<String> outputColName,
+      ObjectInspector rowInspector) throws HiveException {
+    ObjectInspector[] fieldObjectInspectors = initEvaluators(evals,
+        rowInspector);
     return ObjectInspectorFactory.getStandardStructObjectInspector(
-        outputColName,
-        Arrays.asList(fieldObjectInspectors));
+        outputColName, Arrays.asList(fieldObjectInspectors));
   }
 
   /**
@@ -738,46 +803,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    * TODO This is a hack for hadoop 0.17 which only supports enum counters
    */
   public static enum ProgressCounter {
-    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, 
-    C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, 
-    C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, 
-    C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, 
-    C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, 
-    C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, 
-    C61, C62, C63, C64, C65, C66, C67, C68, C69, C70, 
-    C71, C72, C73, C74, C75, C76, C77, C78, C79, C80,
-    C81, C82, C83, C84, C85, C86, C87, C88, C89, C90, 
-    C91, C92, C93, C94, C95, C96, C97, C98, C99, C100, 
-    C101, C102, C103, C104, C105, C106, C107, C108, C109, C110, 
-    C111, C112, C113, C114, C115, C116, C117, C118, C119, C120, 
-    C121, C122, C123, C124, C125, C126, C127, C128, C129, C130,
-    C131, C132, C133, C134, C135, C136, C137, C138, C139, C140,
-    C141, C142, C143, C144, C145, C146, C147, C148, C149, C150,
-    C151, C152, C153, C154, C155, C156, C157, C158, C159, C160,
-    C161, C162, C163, C164, C165, C166, C167, C168, C169, C170,
-    C171, C172, C173, C174, C175, C176, C177, C178, C179, C180,
-    C181, C182, C183, C184, C185, C186, C187, C188, C189, C190,
-    C191, C192, C193, C194, C195, C196, C197, C198, C199, C200,
-    C201, C202, C203, C204, C205, C206, C207, C208, C209, C210,
-    C211, C212, C213, C214, C215, C216, C217, C218, C219, C220,
-    C221, C222, C223, C224, C225, C226, C227, C228, C229, C230,
-    C231, C232, C233, C234, C235, C236, C237, C238, C239, C240,
-    C241, C242, C243, C244, C245, C246, C247, C248, C249, C250,
-    C251, C252, C253, C254, C255, C256, C257, C258, C259, C260,
-    C261, C262, C263, C264, C265, C266, C267, C268, C269, C270,
-    C271, C272, C273, C274, C275, C276, C277, C278, C279, C280,
-    C281, C282, C283, C284, C285, C286, C287, C288, C289, C290,
-    C291, C292, C293, C294, C295, C296, C297, C298, C299, C300,
-    C301, C302, C303, C304, C305, C306, C307, C308, C309, C310,
-    C311, C312, C313, C314, C315, C316, C317, C318, C319, C320,
-    C321, C322, C323, C324, C325, C326, C327, C328, C329, C330,
-    C331, C332, C333, C334, C335, C336, C337, C338, C339, C340,
-    C341, C342, C343, C344, C345, C346, C347, C348, C349, C350,
-    C351, C352, C353, C354, C355, C356, C357, C358, C359, C360,
-    C361, C362, C363, C364, C365, C366, C367, C368, C369, C370,
-    C371, C372, C373, C374, C375, C376, C377, C378, C379, C380,
-    C381, C382, C383, C384, C385, C386, C387, C388, C389, C390,
-    C391, C392, C393, C394, C395, C396, C397, C398, C399, C400
+    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64, C65, C66, C67, C68, C69, C70, C71, C72, C73, C74, C75, C76, C77, C78, C79, C80, C81, C82, C83, C84, C85, C86, C87, C88, C89, C90, C91, C92, C93, C94, C95, C96, C97, C98, C99, C100, C101, C102, C103, C104, C105, C106, C107, C108, C109, C110, C111, C112, C113, C114, C115, C116, C117, C118, C119, C120, C121, C122, C123, C124, C125, C126, C127, C128, C129, C130, C131, C132, C133, C134, C135, C136, C137, C138, C139, C140, C141, C142, C143, C144, C145, C146, C147, C148, C149, C150, C151, C152, C153, C154, C155, C156, C157, C158, C159, C160, C161, C162, C163, C164, C165, C166, C167, C168, C169, C170, C171, C172, C173, C174, C175, C176, C177, C178, C179, C180, C181, C182, C183, C184, C185, C186, C187, C188, C189, C190, C191, C192, C193, C194, C195, C196, C197, C198, C199, C200, C201, C202, C203, C204, C205, C206, C207, C208, C209, C210, C211, C212, C213, C214, C215, C216, C217, C218, C219, C220, C221, C222, C223, C224, C225, C226, C227, C228, C229, C230, C231, C232, C233, C234, C235, C236, C237, C238, C239, C240, C241, C242, C243, C244, C245, C246, C247, C248, C249, C250, C251, C252, C253, C254, C255, C256, C257, C258, C259, C260, C261, C262, C263, C264, C265, C266, C267, C268, C269, C270, C271, C272, C273, C274, C275, C276, C277, C278, C279, C280, C281, C282, C283, C284, C285, C286, C287, C288, C289, C290, C291, C292, C293, C294, C295, C296, C297, C298, C299, C300, C301, C302, C303, C304, C305, C306, C307, C308, C309, C310, C311, C312, C313, C314, C315, C316, C317, C318, C319, C320, C321, C322, C323, C324, C325, C326, C327, C328, C329, C330, C331, C332, C333, C334, C335, C336, C337, C338, C339, C340, C341, C342, C343, C344, C345, C346, C347, C348, C349, C350, C351, C352, C353, C354, C355, C356, C357, C358, C359, C360, C361, C362, C363, C364, C365, C366, C367, C368, C369, C370, C371, C372, C373, C374, C375, C376, C377, C378, C379, C380, C381, C382, C383, C384, C385, C386, C387, C388, C389, C390, C391, C392, C393, C394, C395, C396, C397, C398, C399, C400
   };
 
   private static int totalNumCntrs = 400;
@@ -788,9 +814,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected Map<String, Long> counters;
 
   /**
-   * keeps track of unique ProgressCounter enums used
-   * this value is used at compile time while assigning ProgressCounter
-   * enums to counter names
+   * keeps track of unique ProgressCounter enums used this value is used at
+   * compile time while assigning ProgressCounter enums to counter names
    */
   private static int lastEnumUsed;
 
@@ -804,15 +829,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   /**
    * this is called before operator process to buffer some counters
    */
-  private void preProcessCounter()
-  {
+  private void preProcessCounter() {
     inputRows++;
 
     if (counterNameToEnum != null) {
       if ((inputRows % 1000) == 0) {
         incrCounter(numInputRowsCntr, inputRows);
         incrCounter(timeTakenCntr, totalTime);
-        inputRows = 0 ;
+        inputRows = 0;
         totalTime = 0;
       }
       beginTime = System.currentTimeMillis();
@@ -822,28 +846,31 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   /**
    * this is called after operator process to buffer some counters
    */
-  private void postProcessCounter()
-  {
-    if (counterNameToEnum != null)
+  private void postProcessCounter() {
+    if (counterNameToEnum != null) {
       totalTime += (System.currentTimeMillis() - beginTime);
+    }
   }
-
 
   /**
    * this is called in operators in map or reduce tasks
+   * 
    * @param name
    * @param amount
    */
-  protected void incrCounter(String name, long amount)
-  {
+  protected void incrCounter(String name, long amount) {
     String counterName = "CNTR_NAME_" + getOperatorId() + "_" + name;
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
-    // Currently, we maintain fixed number of counters per plan - in case of a bigger tree, we may run out of them
-    if (pc == null)
-      LOG.warn("Using too many counters. Increase the total number of counters for " + counterName);
-    else if (reporter != null)
+    // Currently, we maintain fixed number of counters per plan - in case of a
+    // bigger tree, we may run out of them
+    if (pc == null) {
+      LOG
+          .warn("Using too many counters. Increase the total number of counters for "
+              + counterName);
+    } else if (reporter != null) {
       reporter.incrCounter(pc, amount);
+    }
   }
 
   public ArrayList<String> getCounterNames() {
@@ -872,7 +899,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
 
   /**
    * called in ExecDriver.progress periodically
-   * @param ctrs counters from the running job
+   * 
+   * @param ctrs
+   *          counters from the running job
    */
   @SuppressWarnings("unchecked")
   public void updateCounters(Counters ctrs) {
@@ -880,85 +909,101 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       counters = new HashMap<String, Long>();
     }
 
-    // For some old unit tests, the counters will not be populated. Eventually, the old tests should be removed
-    if (counterNameToEnum == null)
+    // For some old unit tests, the counters will not be populated. Eventually,
+    // the old tests should be removed
+    if (counterNameToEnum == null) {
       return;
+    }
 
-    for (Map.Entry<String, ProgressCounter> counter: counterNameToEnum.entrySet()) {
+    for (Map.Entry<String, ProgressCounter> counter : counterNameToEnum
+        .entrySet()) {
       counters.put(counter.getKey(), ctrs.getCounter(counter.getValue()));
     }
     // update counters of child operators
     // this wont be an infinite loop since the operator graph is acyclic
     // but, some operators may be updated more than once and that's ok
     if (getChildren() != null) {
-      for (Node op: getChildren()) {
-        ((Operator<? extends Serializable>)op).updateCounters(ctrs);
+      for (Node op : getChildren()) {
+        ((Operator<? extends Serializable>) op).updateCounters(ctrs);
       }
     }
   }
 
   /**
-   * Recursively check this operator and its descendants to see if the
-   * fatal error counter is set to non-zero.
+   * Recursively check this operator and its descendants to see if the fatal
+   * error counter is set to non-zero.
+   * 
    * @param ctrs
    */
   public boolean checkFatalErrors(Counters ctrs, StringBuffer errMsg) {
-    if ( counterNameToEnum == null )
+    if (counterNameToEnum == null) {
       return false;
-    
+    }
+
     String counterName = "CNTR_NAME_" + getOperatorId() + "_" + fatalErrorCntr;
     ProgressCounter pc = counterNameToEnum.get(counterName);
 
-    // Currently, we maintain fixed number of counters per plan - in case of a bigger tree, we may run out of them
-    if (pc == null)
-      LOG.warn("Using too many counters. Increase the total number of counters for " + counterName);
-    else {
+    // Currently, we maintain fixed number of counters per plan - in case of a
+    // bigger tree, we may run out of them
+    if (pc == null) {
+      LOG
+          .warn("Using too many counters. Increase the total number of counters for "
+              + counterName);
+    } else {
       long value = ctrs.getCounter(pc);
       fatalErrorMessage(errMsg, value);
-      if ( value != 0 ) 
+      if (value != 0) {
         return true;
+      }
     }
-    
+
     if (getChildren() != null) {
-      for (Node op: getChildren()) {
-        if (((Operator<? extends Serializable>)op).checkFatalErrors(ctrs, errMsg)) {
+      for (Node op : getChildren()) {
+        if (((Operator<? extends Serializable>) op).checkFatalErrors(ctrs,
+            errMsg)) {
           return true;
         }
       }
     }
     return false;
   }
-  
-  /** 
+
+  /**
    * Get the fatal error message based on counter's code.
-   * @param errMsg error message should be appended to this output parameter.
-   * @param counterValue input counter code.
+   * 
+   * @param errMsg
+   *          error message should be appended to this output parameter.
+   * @param counterValue
+   *          input counter code.
    */
   protected void fatalErrorMessage(StringBuffer errMsg, long counterValue) {
   }
-  
+
   // A given query can have multiple map-reduce jobs
   public static void resetLastEnumUsed() {
     lastEnumUsed = 0;
   }
 
   /**
-   * Called only in SemanticAnalyzer after all operators have added their
-   * own set of counter names
+   * Called only in SemanticAnalyzer after all operators have added their own
+   * set of counter names
    */
   public void assignCounterNameToEnum() {
     if (counterNameToEnum != null) {
       return;
     }
     counterNameToEnum = new HashMap<String, ProgressCounter>();
-    for (String counterName: getCounterNames()) {
+    for (String counterName : getCounterNames()) {
       ++lastEnumUsed;
 
       // TODO Hack for hadoop-0.17
-      // Currently, only maximum number of 'totalNumCntrs' can be used. If you want
-      // to add more counters, increase the number of counters in ProgressCounter
+      // Currently, only maximum number of 'totalNumCntrs' can be used. If you
+      // want
+      // to add more counters, increase the number of counters in
+      // ProgressCounter
       if (lastEnumUsed > totalNumCntrs) {
-        LOG.warn("Using too many counters. Increase the total number of counters");
+        LOG
+            .warn("Using too many counters. Increase the total number of counters");
         return;
       }
       String enumName = "C" + lastEnumUsed;
@@ -967,10 +1012,10 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
   }
 
-  protected static String numInputRowsCntr  = "NUM_INPUT_ROWS";
+  protected static String numInputRowsCntr = "NUM_INPUT_ROWS";
   protected static String numOutputRowsCntr = "NUM_OUTPUT_ROWS";
-  protected static String timeTakenCntr     = "TIME_TAKEN";
-  protected static String fatalErrorCntr    = "FATAL_ERROR";
+  protected static String timeTakenCntr = "TIME_TAKEN";
+  protected static String fatalErrorCntr = "FATAL_ERROR";
 
   public void initializeCounters() {
     initOperatorId();
@@ -986,32 +1031,32 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   /*
-   * By default, the list is empty - if an operator wants to add more counters, it should override this method
-   * and provide the new list.
-
+   * By default, the list is empty - if an operator wants to add more counters,
+   * it should override this method and provide the new list.
    */
   private List<String> getAdditionalCounters() {
     return null;
   }
- 
+
   public HashMap<String, ProgressCounter> getCounterNameToEnum() {
     return counterNameToEnum;
   }
 
-  public void setCounterNameToEnum(HashMap<String, ProgressCounter> counterNameToEnum) {
+  public void setCounterNameToEnum(
+      HashMap<String, ProgressCounter> counterNameToEnum) {
     this.counterNameToEnum = counterNameToEnum;
   }
 
-   /**
-   * Should be overridden to return the type of the specific operator among
-    * the types in OperatorType
-    *
-    * @return OperatorType.* or -1 if not overridden
-    */
-   public int getType() {
-     assert false;
-     return -1;
-   }
+  /**
+   * Should be overridden to return the type of the specific operator among the
+   * types in OperatorType
+   * 
+   * @return OperatorType.* or -1 if not overridden
+   */
+  public int getType() {
+    assert false;
+    return -1;
+  }
 
   public void setGroupKeyObject(Object keyObject) {
     this.groupKeyObject = keyObject;

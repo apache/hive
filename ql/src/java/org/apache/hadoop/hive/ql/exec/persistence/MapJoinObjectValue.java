@@ -28,18 +28,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.io.Writable;
 
 /**
  * Map Join Object used for both key and value
  */
 public class MapJoinObjectValue implements Externalizable {
 
-  transient protected int     metadataTag;
+  transient protected int metadataTag;
   transient protected RowContainer obj;
   transient protected Configuration conf;
 
@@ -54,21 +53,26 @@ public class MapJoinObjectValue implements Externalizable {
     this.metadataTag = metadataTag;
     this.obj = obj;
   }
-  
+
+  @Override
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectValue) {
-      MapJoinObjectValue mObj = (MapJoinObjectValue)o;
+      MapJoinObjectValue mObj = (MapJoinObjectValue) o;
       if (mObj.getMetadataTag() == metadataTag) {
-        if ((this.obj == null) && (mObj.getObj() == null))
+        if ((obj == null) && (mObj.getObj() == null)) {
           return true;
-        if ((obj != null) && (mObj.getObj() != null) && (mObj.getObj().equals(obj)))
+        }
+        if ((obj != null) && (mObj.getObj() != null)
+            && (mObj.getObj().equals(obj))) {
           return true;
+        }
       }
     }
 
     return false;
   }
 
+  @Override
   public int hashCode() {
     return (obj == null) ? 0 : obj.hashCode();
   }
@@ -77,10 +81,11 @@ public class MapJoinObjectValue implements Externalizable {
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException {
     try {
-      metadataTag   = in.readInt();
+      metadataTag = in.readInt();
 
       // get the tableDesc from the map stored in the mapjoin operator
-      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
+      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(
+          Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
       RowContainer res = new RowContainer(ctx.getConf());
@@ -90,11 +95,10 @@ public class MapJoinObjectValue implements Externalizable {
         Writable val = ctx.getSerDe().getSerializedClass().newInstance();
         val.readFields(in);
 
-        ArrayList<Object> memObj = (ArrayList<Object>)
-          ObjectInspectorUtils.copyToStandardObject(
-              ctx.getSerDe().deserialize(val),
-              ctx.getSerDe().getObjectInspector(),
-              ObjectInspectorCopyOption.WRITABLE);
+        ArrayList<Object> memObj = (ArrayList<Object>) ObjectInspectorUtils
+            .copyToStandardObject(ctx.getSerDe().deserialize(val), ctx
+                .getSerDe().getObjectInspector(),
+                ObjectInspectorCopyOption.WRITABLE);
 
         res.add(memObj);
       }
@@ -111,23 +115,20 @@ public class MapJoinObjectValue implements Externalizable {
       out.writeInt(metadataTag);
 
       // get the tableDesc from the map stored in the mapjoin operator
-      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
+      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(
+          Integer.valueOf(metadataTag));
 
       // Different processing for key and value
       RowContainer<ArrayList<Object>> v = obj;
       out.writeInt(v.size());
 
-      for (ArrayList<Object> row = v.first();
-           row != null;
-           row = v.next() ) {
+      for (ArrayList<Object> row = v.first(); row != null; row = v.next()) {
         Writable outVal = ctx.getSerDe().serialize(row, ctx.getStandardOI());
         outVal.write(out);
       }
-    }
-    catch (SerDeException e) {
+    } catch (SerDeException e) {
       throw new IOException(e);
-    }
-    catch (HiveException e) {
+    } catch (HiveException e) {
       throw new IOException(e);
     }
   }
@@ -140,7 +141,8 @@ public class MapJoinObjectValue implements Externalizable {
   }
 
   /**
-   * @param metadataTag the metadataTag to set
+   * @param metadataTag
+   *          the metadataTag to set
    */
   public void setMetadataTag(int metadataTag) {
     this.metadataTag = metadataTag;
@@ -154,7 +156,8 @@ public class MapJoinObjectValue implements Externalizable {
   }
 
   /**
-   * @param obj the obj to set
+   * @param obj
+   *          the obj to set
    */
   public void setObj(RowContainer obj) {
     this.obj = obj;

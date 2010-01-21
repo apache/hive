@@ -29,9 +29,9 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Processor for the rule - table scan
@@ -41,18 +41,24 @@ public class GenMRTableScan1 implements NodeProcessor {
   }
 
   /**
-   * Table Sink encountered 
-   * @param nd the table sink operator encountered
-   * @param opProcCtx context
+   * Table Sink encountered
+   * 
+   * @param nd
+   *          the table sink operator encountered
+   * @param opProcCtx
+   *          context
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
-    TableScanOperator op = (TableScanOperator)nd;
-    GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+      Object... nodeOutputs) throws SemanticException {
+    TableScanOperator op = (TableScanOperator) nd;
+    GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+        .getMapCurrCtx();
 
-    // create a dummy task 
-    Task<? extends Serializable> currTask  = TaskFactory.get(GenMapRedUtils.getMapRedWork(), parseCtx.getConf());
+    // create a dummy task
+    Task<? extends Serializable> currTask = TaskFactory.get(GenMapRedUtils
+        .getMapRedWork(), parseCtx.getConf());
     Operator<? extends Serializable> currTopOp = op;
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(currTopOp);
@@ -71,4 +77,3 @@ public class GenMRTableScan1 implements NodeProcessor {
   }
 
 }
-

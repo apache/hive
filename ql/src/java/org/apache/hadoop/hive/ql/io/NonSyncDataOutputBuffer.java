@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
  */
 public class NonSyncDataOutputBuffer extends DataOutputStream {
 
-  private NonSyncByteArrayOutputStream buffer;
+  private final NonSyncByteArrayOutputStream buffer;
 
   /** Constructs a new empty buffer. */
   public NonSyncDataOutputBuffer() {
@@ -56,7 +56,7 @@ public class NonSyncDataOutputBuffer extends DataOutputStream {
 
   /** Resets the buffer to empty. */
   public NonSyncDataOutputBuffer reset() {
-    this.written = 0;
+    written = 0;
     buffer.reset();
     return this;
   }
@@ -66,11 +66,13 @@ public class NonSyncDataOutputBuffer extends DataOutputStream {
     buffer.write(in, length);
   }
 
+  @Override
   public void write(int b) throws IOException {
     buffer.write(b);
     incCount(1);
   }
 
+  @Override
   public void write(byte b[], int off, int len) throws IOException {
     buffer.write(b, off, len);
     incCount(len);
@@ -79,7 +81,8 @@ public class NonSyncDataOutputBuffer extends DataOutputStream {
   private void incCount(int value) {
     if (written + value < 0) {
       written = Integer.MAX_VALUE;
-    } else
+    } else {
       written += value;
+    }
   }
 }

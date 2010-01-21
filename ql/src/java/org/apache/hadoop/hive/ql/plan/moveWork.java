@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.*;
+import java.io.Serializable;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import java.util.Set;
 
-
-@explain(displayName="Move Operator")
+@explain(displayName = "Move Operator")
 public class moveWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private loadTableDesc loadTableWork;
@@ -50,36 +49,37 @@ public class moveWork implements Serializable {
     this.outputs = outputs;
   }
 
-  public moveWork(
-    Set<ReadEntity> inputs,
-    Set<WriteEntity> outputs,
-    final loadTableDesc loadTableWork,
-    final loadFileDesc loadFileWork,
-    boolean checkFileFormat) {
+  public moveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+      final loadTableDesc loadTableWork, final loadFileDesc loadFileWork,
+      boolean checkFileFormat) {
     this(inputs, outputs);
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
   }
-  @explain(displayName="tables")
+
+  @explain(displayName = "tables")
   public loadTableDesc getLoadTableWork() {
-    return this.loadTableWork;
+    return loadTableWork;
   }
+
   public void setLoadTableWork(final loadTableDesc loadTableWork) {
     this.loadTableWork = loadTableWork;
   }
 
-  @explain(displayName="files")
+  @explain(displayName = "files")
   public loadFileDesc getLoadFileWork() {
-    return this.loadFileWork;
+    return loadFileWork;
   }
+
   public void setLoadFileWork(final loadFileDesc loadFileWork) {
-    this.loadFileWork=loadFileWork;
+    this.loadFileWork = loadFileWork;
   }
 
   public boolean getCheckFileFormat() {
     return checkFileFormat;
   }
+
   public void setCheckFileFormat(boolean checkFileFormat) {
     this.checkFileFormat = checkFileFormat;
   }

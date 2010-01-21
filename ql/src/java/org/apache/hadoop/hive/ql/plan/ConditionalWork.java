@@ -21,14 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
-@explain(displayName="Conditional Operator")
+@explain(displayName = "Conditional Operator")
 public class ConditionalWork implements Serializable {
   private static final long serialVersionUID = 1L;
   List<? extends Serializable> listWorks;
-  
+
   public ConditionalWork() {
   }
-  
+
   public ConditionalWork(final List<? extends Serializable> listWorks) {
     this.listWorks = listWorks;
   }
@@ -41,7 +41,8 @@ public class ConditionalWork implements Serializable {
   }
 
   /**
-   * @param listWorks the listWorks to set
+   * @param listWorks
+   *          the listWorks to set
    */
   public void setListWorks(List<? extends Serializable> listWorks) {
     this.listWorks = listWorks;

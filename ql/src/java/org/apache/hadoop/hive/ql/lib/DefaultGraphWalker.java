@@ -29,26 +29,29 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * base class for operator graph walker
- * this class takes list of starting ops and walks them one by one. it maintains list of walked
- * operators (dispatchedList) and a list of operators that are discovered but not yet dispatched
+ * base class for operator graph walker this class takes list of starting ops
+ * and walks them one by one. it maintains list of walked operators
+ * (dispatchedList) and a list of operators that are discovered but not yet
+ * dispatched
  */
 public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
-  private List<Node> toWalk = new ArrayList<Node>();
-  private Set<Node> seenList = new HashSet<Node>();
-  private HashMap<Node, Object> retMap = new HashMap<Node, Object>();
-  private Dispatcher dispatcher;
+  private final List<Node> toWalk = new ArrayList<Node>();
+  private final Set<Node> seenList = new HashSet<Node>();
+  private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
+  private final Dispatcher dispatcher;
 
   /**
    * Constructor
-   * @param disp dispatcher to call for each op encountered
+   * 
+   * @param disp
+   *          dispatcher to call for each op encountered
    */
   public DefaultGraphWalker(Dispatcher disp) {
-    this.dispatcher = disp;
+    dispatcher = disp;
     opStack = new Stack<Node>();
- }
+  }
 
   /**
    * @return the toWalk
@@ -66,8 +69,11 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * Dispatch the current operator
-   * @param nd node being walked
-   * @param ndStack stack of nodes encountered
+   * 
+   * @param nd
+   *          node being walked
+   * @param ndStack
+   *          stack of nodes encountered
    * @throws SemanticException
    */
   public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {
@@ -75,22 +81,24 @@ public class DefaultGraphWalker implements GraphWalker {
     if (nd.getChildren() != null) {
       nodeOutputs = new Object[nd.getChildren().size()];
       int i = 0;
-      for(Node child: nd.getChildren()) {
+      for (Node child : nd.getChildren()) {
         nodeOutputs[i++] = retMap.get(child);
       }
     }
-    
+
     Object retVal = dispatcher.dispatch(nd, ndStack, nodeOutputs);
     retMap.put(nd, retVal);
   }
 
   /**
    * starting point for walking
+   * 
    * @throws SemanticException
    */
-  public void startWalking(Collection<Node> startNodes, HashMap<Node, Object> nodeOutput) throws SemanticException {
+  public void startWalking(Collection<Node> startNodes,
+      HashMap<Node, Object> nodeOutput) throws SemanticException {
     toWalk.addAll(startNodes);
-    while(toWalk.size() > 0) {
+    while (toWalk.size() > 0) {
       Node nd = toWalk.remove(0);
       walk(nd);
       if (nodeOutput != null) {
@@ -101,19 +109,23 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * walk the current operator and its descendants
-   * @param nd current operator in the graph
+   * 
+   * @param nd
+   *          current operator in the graph
    * @throws SemanticException
    */
   public void walk(Node nd) throws SemanticException {
-    if (opStack.empty() || nd != opStack.peek())
+    if (opStack.empty() || nd != opStack.peek()) {
       opStack.push(nd);
+    }
 
-    if((nd.getChildren() == null) 
+    if ((nd.getChildren() == null)
         || getDispatchedList().containsAll(nd.getChildren())) {
       // all children are done or no need to walk the children
-      if(getDispatchedList().contains(nd))
+      if (getDispatchedList().contains(nd)) {
         // sanity check
         assert false;
+      }
       dispatch(nd, opStack);
       opStack.pop();
       return;

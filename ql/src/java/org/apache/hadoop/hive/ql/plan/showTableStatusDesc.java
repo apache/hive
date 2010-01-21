@@ -30,7 +30,7 @@ public class showTableStatusDesc extends ddlDesc implements Serializable {
   Path resFile;
   String dbName;
   HashMap<String, String> partSpec;
-  
+
   /**
    * table name for the result of show tables
    */
@@ -60,9 +60,12 @@ public class showTableStatusDesc extends ddlDesc implements Serializable {
 
   /**
    * @param resFile
-   * @param dbName data base name
-   * @param pattern names of tables to show
-   * @param part partition specification
+   * @param dbName
+   *          data base name
+   * @param pattern
+   *          names of tables to show
+   * @param part
+   *          partition specification
    */
   public showTableStatusDesc(Path resFile, String dbName, String pattern,
       HashMap<String, String> partSpec) {
@@ -107,7 +110,7 @@ public class showTableStatusDesc extends ddlDesc implements Serializable {
   public void setResFile(Path resFile) {
     this.resFile = resFile;
   }
-  
+
   /**
    * @return the database name
    */
@@ -123,17 +126,18 @@ public class showTableStatusDesc extends ddlDesc implements Serializable {
   public void setDbName(String dbName) {
     this.dbName = dbName;
   }
-  
+
   /**
    * @return the partSpec
    */
-  @explain(displayName="partition")
+  @explain(displayName = "partition")
   public HashMap<String, String> getPartSpec() {
     return partSpec;
   }
 
   /**
-   * @param partSpec the partSpec to set
+   * @param partSpec
+   *          the partSpec to set
    */
   public void setPartSpecs(HashMap<String, String> partSpec) {
     this.partSpec = partSpec;

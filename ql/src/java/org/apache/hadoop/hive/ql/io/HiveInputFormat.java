@@ -22,9 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,52 +37,52 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-
 /**
- * HiveInputFormat is a parameterized InputFormat which looks at the path name and determine
- * the correct InputFormat for that path name from mapredPlan.pathToPartitionInfo().
- * It can be used to read files with different input format in the same map-reduce job.
+ * HiveInputFormat is a parameterized InputFormat which looks at the path name
+ * and determine the correct InputFormat for that path name from
+ * mapredPlan.pathToPartitionInfo(). It can be used to read files with different
+ * input format in the same map-reduce job.
  */
-public class HiveInputFormat<K extends WritableComparable,
-                             V extends Writable> implements InputFormat<K, V>, JobConfigurable {
+public class HiveInputFormat<K extends WritableComparable, V extends Writable>
+    implements InputFormat<K, V>, JobConfigurable {
 
-  public static final Log LOG =
-    LogFactory.getLog("org.apache.hadoop.hive.ql.io.HiveInputFormat");
+  public static final Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.io.HiveInputFormat");
 
   /**
-   * HiveInputSplit encapsulates an InputSplit with its corresponding inputFormatClass.
-   * The reason that it derives from FileSplit is to make sure "map.input.file" in MapTask.
+   * HiveInputSplit encapsulates an InputSplit with its corresponding
+   * inputFormatClass. The reason that it derives from FileSplit is to make sure
+   * "map.input.file" in MapTask.
    */
-  public static class HiveInputSplit extends FileSplit implements InputSplit, Configurable {
+  public static class HiveInputSplit extends FileSplit implements InputSplit,
+      Configurable {
 
     InputSplit inputSplit;
-    String     inputFormatClassName;
+    String inputFormatClassName;
 
     public HiveInputSplit() {
       // This is the only public constructor of FileSplit
-      super((Path)null, 0, 0, (String[])null);
+      super((Path) null, 0, 0, (String[]) null);
     }
 
     public HiveInputSplit(InputSplit inputSplit, String inputFormatClassName) {
       // This is the only public constructor of FileSplit
-      super((Path)null, 0, 0, (String[])null);
+      super((Path) null, 0, 0, (String[]) null);
       this.inputSplit = inputSplit;
       this.inputFormatClassName = inputFormatClassName;
     }
@@ -92,29 +90,34 @@ public class HiveInputFormat<K extends WritableComparable,
     public InputSplit getInputSplit() {
       return inputSplit;
     }
+
     public String inputFormatClassName() {
       return inputFormatClassName;
     }
 
+    @Override
     public Path getPath() {
       if (inputSplit instanceof FileSplit) {
-        return ((FileSplit)inputSplit).getPath();
+        return ((FileSplit) inputSplit).getPath();
       }
       return new Path("");
     }
 
     /** The position of the first byte in the file to process. */
+    @Override
     public long getStart() {
       if (inputSplit instanceof FileSplit) {
-        return ((FileSplit)inputSplit).getStart();
+        return ((FileSplit) inputSplit).getStart();
       }
       return 0;
     }
 
+    @Override
     public String toString() {
       return inputFormatClassName + ":" + inputSplit.toString();
     }
 
+    @Override
     public long getLength() {
       long r = 0;
       try {
@@ -125,23 +128,27 @@ public class HiveInputFormat<K extends WritableComparable,
       return r;
     }
 
+    @Override
     public String[] getLocations() throws IOException {
       return inputSplit.getLocations();
     }
 
+    @Override
     public void readFields(DataInput in) throws IOException {
       String inputSplitClassName = in.readUTF();
       try {
-        inputSplit = (InputSplit) ReflectionUtils.newInstance(
-            conf.getClassByName(inputSplitClassName), conf);
+        inputSplit = (InputSplit) ReflectionUtils.newInstance(conf
+            .getClassByName(inputSplitClassName), conf);
       } catch (Exception e) {
-        throw new IOException("Cannot create an instance of InputSplit class = "
-            + inputSplitClassName + ":" + e.getMessage());
+        throw new IOException(
+            "Cannot create an instance of InputSplit class = "
+                + inputSplitClassName + ":" + e.getMessage());
       }
       inputSplit.readFields(in);
       inputFormatClassName = in.readUTF();
     }
 
+    @Override
     public void write(DataOutput out) throws IOException {
       out.writeUTF(inputSplit.getClass().getName());
       inputSplit.write(out);
@@ -149,7 +156,7 @@ public class HiveInputFormat<K extends WritableComparable,
     }
 
     Configuration conf;
-    
+
     @Override
     public Configuration getConf() {
       return conf;
@@ -170,19 +177,21 @@ public class HiveInputFormat<K extends WritableComparable,
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class,InputFormat<WritableComparable, Writable>> inputFormats;
-  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass, JobConf job) throws IOException {
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
+
+  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
+      Class inputFormatClass, JobConf job) throws IOException {
     if (inputFormats == null) {
       inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
     }
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance =
-            (InputFormat<WritableComparable, Writable>)ReflectionUtils.newInstance(inputFormatClass, job);
+        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
+            .newInstance(inputFormatClass, job);
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
-        throw new IOException("Cannot create an instance of InputFormat class " + inputFormatClass.getName()
-            + " as specified in mapredWork!");
+        throw new IOException("Cannot create an instance of InputFormat class "
+            + inputFormatClass.getName() + " as specified in mapredWork!");
       }
     }
     return inputFormats.get(inputFormatClass);
@@ -191,7 +200,7 @@ public class HiveInputFormat<K extends WritableComparable,
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
 
-    HiveInputSplit hsplit = (HiveInputSplit)split;
+    HiveInputSplit hsplit = (HiveInputSplit) split;
 
     InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
@@ -203,14 +212,15 @@ public class HiveInputFormat<K extends WritableComparable,
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    //clone a jobConf for setting needed columns for reading
+    // clone a jobConf for setting needed columns for reading
     JobConf cloneJobConf = new JobConf(job);
-    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath().toString(), 
-                      hsplit.getPath().toUri().getPath());
+    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath()
+        .toString(), hsplit.getPath().toUri().getPath());
 
-    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, cloneJobConf);
+    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
+        cloneJobConf);
     return new HiveRecordReader(inputFormat.getRecordReader(inputSplit,
-    		cloneJobConf, reporter));
+        cloneJobConf, reporter));
   }
 
   private Map<String, partitionDesc> pathToPartitionInfo;
@@ -233,16 +243,17 @@ public class HiveInputFormat<K extends WritableComparable,
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();
 
     // for each dir, get the InputFormat, and do getSplits.
-    for(Path dir: dirs) {
-    	partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
-      // create a new InputFormat instance if this is the first time to see this class
+    for (Path dir : dirs) {
+      partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
+      // create a new InputFormat instance if this is the first time to see this
+      // class
       Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
-      InputSplit[] iss = inputFormat.getSplits(newjob, numSplits/dirs.length);
-      for(InputSplit is: iss) {
+      InputSplit[] iss = inputFormat.getSplits(newjob, numSplits / dirs.length);
+      for (InputSplit is : iss) {
         result.add(new HiveInputSplit(is, inputFormatClass.getName()));
       }
     }
@@ -260,10 +271,12 @@ public class HiveInputFormat<K extends WritableComparable,
     JobConf newjob = new JobConf(job);
 
     // for each dir, get the InputFormat, and do validateInput.
-    for (Path dir: dirs) {
+    for (Path dir : dirs) {
       partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
-      // create a new InputFormat instance if this is the first time to see this class
-      InputFormat inputFormat = getInputFormatFromCache(part.getInputFileFormatClass(), job);
+      // create a new InputFormat instance if this is the first time to see this
+      // class
+      InputFormat inputFormat = getInputFormatFromCache(part
+          .getInputFileFormatClass(), job);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
@@ -271,47 +284,53 @@ public class HiveInputFormat<K extends WritableComparable,
     }
   }
 
-	protected static partitionDesc getPartitionDescFromPath(Map<String, partitionDesc> pathToPartitionInfo,
-                                                  Path dir) throws IOException {
+  protected static partitionDesc getPartitionDescFromPath(
+      Map<String, partitionDesc> pathToPartitionInfo, Path dir)
+      throws IOException {
     partitionDesc partDesc = pathToPartitionInfo.get(dir.toString());
     if (partDesc == null) {
       partDesc = pathToPartitionInfo.get(dir.toUri().getPath());
     }
     if (partDesc == null) {
-      throw new IOException("cannot find dir = " + dir.toString() + " in partToPartitionInfo!");
+      throw new IOException("cannot find dir = " + dir.toString()
+          + " in partToPartitionInfo!");
     }
 
     return partDesc;
   }
 
   protected void initColumnsNeeded(JobConf jobConf, Class inputFormatClass,
-                                   String splitPath, String splitPathWithNoSchema) {
-    if (this.mrwork == null)
+      String splitPath, String splitPathWithNoSchema) {
+    if (this.mrwork == null) {
       init(job);
+    }
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Iterator<Entry<String, ArrayList<String>>> iterator = 
-      this.mrwork.getPathToAliases().entrySet().iterator();
+    Iterator<Entry<String, ArrayList<String>>> iterator = this.mrwork
+        .getPathToAliases().entrySet().iterator();
 
     while (iterator.hasNext()) {
       Entry<String, ArrayList<String>> entry = iterator.next();
       String key = entry.getKey();
       if (splitPath.startsWith(key) || splitPathWithNoSchema.startsWith(key)) {
         ArrayList<String> list = entry.getValue();
-        for (String val : list)
+        for (String val : list) {
           aliases.add(val);
+        }
       }
     }
 
     for (String alias : aliases) {
-      Operator<? extends Serializable> op = this.mrwork.getAliasToWork().get(alias);
+      Operator<? extends Serializable> op = this.mrwork.getAliasToWork().get(
+          alias);
       if (op instanceof TableScanOperator) {
         TableScanOperator tableScan = (TableScanOperator) op;
         ArrayList<Integer> list = tableScan.getNeededColumnIDs();
-        if (list != null)
-        	ColumnProjectionUtils.appendReadColumnIDs(jobConf, list);
-        else
-        	ColumnProjectionUtils.setFullyReadColumns(jobConf);
+        if (list != null) {
+          ColumnProjectionUtils.appendReadColumnIDs(jobConf, list);
+        } else {
+          ColumnProjectionUtils.setFullyReadColumns(jobConf);
+        }
       }
     }
   }

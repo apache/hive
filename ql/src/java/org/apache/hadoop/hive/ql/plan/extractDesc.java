@@ -20,18 +20,23 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Extract")
+@explain(displayName = "Extract")
 public class extractDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private exprNodeDesc col;
-  public extractDesc() { }
+
+  public extractDesc() {
+  }
+
   public extractDesc(final exprNodeDesc col) {
     this.col = col;
   }
+
   public exprNodeDesc getCol() {
-    return this.col;
+    return col;
   }
+
   public void setCol(final exprNodeDesc col) {
-    this.col=col;
+    this.col = col;
   }
 }

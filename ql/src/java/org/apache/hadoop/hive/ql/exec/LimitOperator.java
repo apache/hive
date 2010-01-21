@@ -26,36 +26,39 @@ import org.apache.hadoop.hive.ql.plan.limitDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
- * Limit operator implementation
- * Limits the number of rows to be passed on.
+ * Limit operator implementation Limits the number of rows to be passed on.
  **/
 public class LimitOperator extends Operator<limitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   transient protected int limit;
   transient protected int currCount;
 
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     limit = conf.getLimit();
     currCount = 0;
   }
 
+  @Override
   public void processOp(Object row, int tag) throws HiveException {
     if (currCount < limit) {
       forward(row, inputObjInspectors[tag]);
       currCount++;
-    }
-    else
+    } else {
       setDone(true);
+    }
   }
-  
+
+  @Override
   public String getName() {
     return "LIM";
   }
-  
+
+  @Override
   public int getType() {
     return OperatorType.LIMIT;
   }
-  
+
 }

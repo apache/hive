@@ -25,18 +25,18 @@ import org.apache.hadoop.hive.ql.plan.forwardDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
- * Forward Operator
- * Just forwards. Doesn't do anything itself.
+ * Forward Operator Just forwards. Doesn't do anything itself.
  **/
-public class ForwardOperator extends  Operator<forwardDesc>  implements Serializable {
+public class ForwardOperator extends Operator<forwardDesc> implements
+    Serializable {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void processOp(Object row, int tag)
-      throws HiveException {
-    forward(row, inputObjInspectors[tag]);    
+  public void processOp(Object row, int tag) throws HiveException {
+    forward(row, inputObjInspectors[tag]);
   }
-  
+
+  @Override
   public int getType() {
     return OperatorType.FORWARD;
   }

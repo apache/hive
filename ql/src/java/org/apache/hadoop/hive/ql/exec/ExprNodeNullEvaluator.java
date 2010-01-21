@@ -35,7 +35,7 @@ public class ExprNodeNullEvaluator extends ExprNodeEvaluator {
 
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector)
-    throws HiveException {
+      throws HiveException {
     return PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
   }
 

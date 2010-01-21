@@ -16,33 +16,37 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Explosion")
+@explain(displayName = "Explosion")
 public class explosionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String fieldName;
   private int position;
-  public explosionDesc() { }
-  public explosionDesc(
-    final String fieldName,
-    final int position) {
+
+  public explosionDesc() {
+  }
+
+  public explosionDesc(final String fieldName, final int position) {
     this.fieldName = fieldName;
     this.position = position;
   }
+
   public String getFieldName() {
-    return this.fieldName;
+    return fieldName;
   }
+
   public void setFieldName(final String fieldName) {
-    this.fieldName=fieldName;
+    this.fieldName = fieldName;
   }
+
   public int getPosition() {
-    return this.position;
+    return position;
   }
+
   public void setPosition(final int position) {
-    this.position=position;
+    this.position = position;
   }
 }

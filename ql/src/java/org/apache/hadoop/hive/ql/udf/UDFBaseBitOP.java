@@ -25,8 +25,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 /**
- * Base class for numeric operators like +, -, / etc. All these operators
- * share a common method resolver (NumericOpMethodResolver).
+ * Base class for numeric operators like +, -, / etc. All these operators share
+ * a common method resolver (NumericOpMethodResolver).
  */
 public abstract class UDFBaseBitOP extends UDF {
 
@@ -41,5 +41,5 @@ public abstract class UDFBaseBitOP extends UDF {
   protected ShortWritable shortWritable = new ShortWritable();
   protected IntWritable intWritable = new IntWritable();
   protected LongWritable longWritable = new LongWritable();
-  
+
 }

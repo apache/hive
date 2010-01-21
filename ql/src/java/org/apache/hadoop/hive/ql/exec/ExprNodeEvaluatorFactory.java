@@ -21,36 +21,38 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 
 public class ExprNodeEvaluatorFactory {
-  
-  public ExprNodeEvaluatorFactory() {}
+
+  public ExprNodeEvaluatorFactory() {
+  }
 
   public static ExprNodeEvaluator get(exprNodeDesc desc) {
     // Constant node
     if (desc instanceof exprNodeConstantDesc) {
-      return new ExprNodeConstantEvaluator((exprNodeConstantDesc)desc);
+      return new ExprNodeConstantEvaluator((exprNodeConstantDesc) desc);
     }
     // Column-reference node, e.g. a column in the input row
     if (desc instanceof exprNodeColumnDesc) {
-      return new ExprNodeColumnEvaluator((exprNodeColumnDesc)desc);
+      return new ExprNodeColumnEvaluator((exprNodeColumnDesc) desc);
     }
     // Generic Function node, e.g. CASE, an operator or a UDF node
     if (desc instanceof exprNodeGenericFuncDesc) {
-      return new ExprNodeGenericFuncEvaluator((exprNodeGenericFuncDesc)desc);
+      return new ExprNodeGenericFuncEvaluator((exprNodeGenericFuncDesc) desc);
     }
     // Field node, e.g. get a.myfield1 from a
     if (desc instanceof exprNodeFieldDesc) {
-      return new ExprNodeFieldEvaluator((exprNodeFieldDesc)desc);
+      return new ExprNodeFieldEvaluator((exprNodeFieldDesc) desc);
     }
-    // Null node, a constant node with value NULL and no type information 
+    // Null node, a constant node with value NULL and no type information
     if (desc instanceof exprNodeNullDesc) {
-      return new ExprNodeNullEvaluator((exprNodeNullDesc)desc);
+      return new ExprNodeNullEvaluator((exprNodeNullDesc) desc);
     }
 
-    throw new RuntimeException("Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
+    throw new RuntimeException(
+        "Cannot find ExprNodeEvaluator for the exprNodeDesc = " + desc);
   }
 }

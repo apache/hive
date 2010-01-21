@@ -38,38 +38,37 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Implements predicate pushdown. Predicate pushdown is a term borrowed from relational
- * databases even though for Hive it is predicate pushup.
- * The basic idea is to process expressions as early in the plan as possible. The default plan
- * generation adds filters where they are seen but in some instances some of the filter expressions
- * can be pushed nearer to the operator that sees this particular data for the first time. 
- * e.g. 
- *  select a.*, b.* 
- *  from a join b on (a.col1 = b.col1)
- *  where a.col1 > 20 and b.col2 > 40
- *  
- * For the above query, the predicates (a.col1 > 20) and (b.col2 > 40), without predicate pushdown,
- * would be evaluated after the join processing has been done. Suppose the two predicates filter out
- * most of the rows from a and b, the join is unnecessarily processing these rows.
- * With predicate pushdown, these two predicates will be processed before the join.
+ * Implements predicate pushdown. Predicate pushdown is a term borrowed from
+ * relational databases even though for Hive it is predicate pushup. The basic
+ * idea is to process expressions as early in the plan as possible. The default
+ * plan generation adds filters where they are seen but in some instances some
+ * of the filter expressions can be pushed nearer to the operator that sees this
+ * particular data for the first time. e.g. select a.*, b.* from a join b on
+ * (a.col1 = b.col1) where a.col1 > 20 and b.col2 > 40
  * 
- * Predicate pushdown is enabled by setting hive.optimize.ppd to true. It is disable by default.
+ * For the above query, the predicates (a.col1 > 20) and (b.col2 > 40), without
+ * predicate pushdown, would be evaluated after the join processing has been
+ * done. Suppose the two predicates filter out most of the rows from a and b,
+ * the join is unnecessarily processing these rows. With predicate pushdown,
+ * these two predicates will be processed before the join.
  * 
- * The high-level algorithm is describe here
- * - An operator is processed after all its children have been processed
- * - An operator processes its own predicates and then merges (conjunction) with the processed 
- *     predicates of its children. In case of multiple children, there are combined using 
- *     disjunction (OR).
- * - A predicate expression is processed for an operator using the following steps
- *    - If the expr is a constant then it is a candidate for predicate pushdown
- *    - If the expr is a col reference then it is a candidate and its alias is noted
- *    - If the expr is an index and both the array and index expr are treated as children
- *    - If the all child expr are candidates for pushdown and all of the expression reference
- *        only one alias from the operator's  RowResolver then the current expression is also a
- *        candidate
- *   One key thing to note is that some operators (Select, ReduceSink, GroupBy, Join etc) change
- *   the columns as data flows through them. In such cases the column references are replaced by
- *   the corresponding expression in the input data.
+ * Predicate pushdown is enabled by setting hive.optimize.ppd to true. It is
+ * disable by default.
+ * 
+ * The high-level algorithm is describe here - An operator is processed after
+ * all its children have been processed - An operator processes its own
+ * predicates and then merges (conjunction) with the processed predicates of its
+ * children. In case of multiple children, there are combined using disjunction
+ * (OR). - A predicate expression is processed for an operator using the
+ * following steps - If the expr is a constant then it is a candidate for
+ * predicate pushdown - If the expr is a col reference then it is a candidate
+ * and its alias is noted - If the expr is an index and both the array and index
+ * expr are treated as children - If the all child expr are candidates for
+ * pushdown and all of the expression reference only one alias from the
+ * operator's RowResolver then the current expression is also a candidate One
+ * key thing to note is that some operators (Select, ReduceSink, GroupBy, Join
+ * etc) change the columns as data flows through them. In such cases the column
+ * references are replaced by the corresponding expression in the input data.
  */
 public class PredicatePushDown implements Transform {
 
@@ -78,12 +77,12 @@ public class PredicatePushDown implements Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    this.pGraphContext = pctx;
-    this.opToParseCtxMap = pGraphContext.getOpParseCtx();
+    pGraphContext = pctx;
+    opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // create a the context for walking operators
     OpWalkerInfo opWalkerInfo = new OpWalkerInfo(opToParseCtxMap);
-    
+
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", "FIL%"), OpProcFactory.getFilterProc());
     opRules.put(new RuleRegExp("R3", "JOIN%"), OpProcFactory.getJoinProc());
@@ -92,10 +91,12 @@ public class PredicatePushDown implements Transform {
     opRules.put(new RuleRegExp("R6", "SCR%"), OpProcFactory.getSCRProc());
     opRules.put(new RuleRegExp("R6", "LIM%"), OpProcFactory.getLIMProc());
 
-    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(OpProcFactory.getDefaultProc(), opRules, opWalkerInfo);
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(OpProcFactory.getDefaultProc(),
+        opRules, opWalkerInfo);
     GraphWalker ogw = new DefaultGraphWalker(disp);
-    
+
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());

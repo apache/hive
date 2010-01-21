@@ -66,86 +66,84 @@
 
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerProvider;
-
 import org.apache.hadoop.hive.ql.util.jdbm.helper.MRU;
 
 /**
  * Provider of the default RecordManager implementation.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: Provider.java,v 1.3 2005/06/25 23:12:32 doomdark Exp $
  */
-public final class Provider
-    implements RecordManagerProvider
-{
+public final class Provider implements RecordManagerProvider {
 
-    /**
-     * Create a default implementation record manager.
-     *
-     * @param name Name of the record file.
-     * @param options Record manager options.
-     * @throws IOException if an I/O related exception occurs while creating
-     *                    or opening the record manager.
-     * @throws UnsupportedOperationException if some options are not supported by the
-     *                                      implementation.
-     * @throws IllegalArgumentException if some options are invalid.
-     */
-    public RecordManager createRecordManager( String name,
-                                              Properties options )
-        throws IOException
-    {
-        RecordManager  recman;
+  /**
+   * Create a default implementation record manager.
+   * 
+   * @param name
+   *          Name of the record file.
+   * @param options
+   *          Record manager options.
+   * @throws IOException
+   *           if an I/O related exception occurs while creating or opening the
+   *           record manager.
+   * @throws UnsupportedOperationException
+   *           if some options are not supported by the implementation.
+   * @throws IllegalArgumentException
+   *           if some options are invalid.
+   */
+  public RecordManager createRecordManager(String name, Properties options)
+      throws IOException {
+    RecordManager recman;
 
-        recman = new BaseRecordManager( name );
-        recman = getCachedRecordManager(recman, options);
-        return recman;
-    }
-    
-    private RecordManager getCachedRecordManager(RecordManager recman, Properties options)
-    {
-        String         value;
-        int            cacheSize;
-        
-        value = options.getProperty( RecordManagerOptions.DISABLE_TRANSACTIONS, "false" );
-        if ( value.equalsIgnoreCase( "TRUE" ) ) {
-            ( (BaseRecordManager) recman ).disableTransactions();
-        }
+    recman = new BaseRecordManager(name);
+    recman = getCachedRecordManager(recman, options);
+    return recman;
+  }
 
-        value = options.getProperty( RecordManagerOptions.CACHE_SIZE, "1000" );
-        cacheSize = Integer.parseInt( value );
+  private RecordManager getCachedRecordManager(RecordManager recman,
+      Properties options) {
+    String value;
+    int cacheSize;
 
-        value = options.getProperty( RecordManagerOptions.CACHE_TYPE,
-                                     RecordManagerOptions.NORMAL_CACHE );
-        if ( value.equalsIgnoreCase( RecordManagerOptions.NORMAL_CACHE ) ) {
-            MRU cache = new MRU( cacheSize );
-            recman = new CacheRecordManager( recman, cache );
-        } else if ( value.equalsIgnoreCase( RecordManagerOptions.SOFT_REF_CACHE ) ) {
-            throw new IllegalArgumentException( "Soft reference cache not implemented" );
-        } else if ( value.equalsIgnoreCase( RecordManagerOptions.WEAK_REF_CACHE ) ) {
-            throw new IllegalArgumentException( "Weak reference cache not implemented" );
-        } else if ( value.equalsIgnoreCase(RecordManagerOptions.NO_CACHE) ){
-          // do nothing
-        } else {
-            throw new IllegalArgumentException( "Invalid cache type: " + value );
-        } 
-
-        return recman;
+    value = options.getProperty(RecordManagerOptions.DISABLE_TRANSACTIONS,
+        "false");
+    if (value.equalsIgnoreCase("TRUE")) {
+      ((BaseRecordManager) recman).disableTransactions();
     }
 
-    public RecordManager createRecordManager ( File file, 
-                                              Properties options )
-        throws IOException
-    {
-      RecordManager recman = new BaseRecordManager(file);
-      recman = getCachedRecordManager(recman, options);
-      return recman;
+    value = options.getProperty(RecordManagerOptions.CACHE_SIZE, "1000");
+    cacheSize = Integer.parseInt(value);
+
+    value = options.getProperty(RecordManagerOptions.CACHE_TYPE,
+        RecordManagerOptions.NORMAL_CACHE);
+    if (value.equalsIgnoreCase(RecordManagerOptions.NORMAL_CACHE)) {
+      MRU cache = new MRU(cacheSize);
+      recman = new CacheRecordManager(recman, cache);
+    } else if (value.equalsIgnoreCase(RecordManagerOptions.SOFT_REF_CACHE)) {
+      throw new IllegalArgumentException("Soft reference cache not implemented");
+    } else if (value.equalsIgnoreCase(RecordManagerOptions.WEAK_REF_CACHE)) {
+      throw new IllegalArgumentException("Weak reference cache not implemented");
+    } else if (value.equalsIgnoreCase(RecordManagerOptions.NO_CACHE)) {
+      // do nothing
+    } else {
+      throw new IllegalArgumentException("Invalid cache type: " + value);
     }
+
+    return recman;
+  }
+
+  public RecordManager createRecordManager(File file, Properties options)
+      throws IOException {
+    RecordManager recman = new BaseRecordManager(file);
+    recman = getCachedRecordManager(recman, options);
+    return recman;
+  }
 
 }

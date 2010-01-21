@@ -28,72 +28,82 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "-",
-    value = "a _FUNC_ b - Returns the difference a-b"
-)
+@description(name = "-", value = "a _FUNC_ b - Returns the difference a-b")
 public class UDFOPMinus extends UDFBaseNumericOp {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPMinus");
+  private static Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPMinus");
 
   public UDFOPMinus() {
   }
 
   @Override
-  public ByteWritable evaluate(ByteWritable a, ByteWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public ByteWritable evaluate(ByteWritable a, ByteWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
-    byteWritable.set((byte)(a.get() - b.get()));
+    byteWritable.set((byte) (a.get() - b.get()));
     return byteWritable;
   }
 
   @Override
-  public ShortWritable evaluate(ShortWritable a, ShortWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public ShortWritable evaluate(ShortWritable a, ShortWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
-    shortWritable.set((short)(a.get() - b.get()));
+    shortWritable.set((short) (a.get() - b.get()));
     return shortWritable;
   }
 
   @Override
-  public IntWritable evaluate(IntWritable a, IntWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public IntWritable evaluate(IntWritable a, IntWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
-    intWritable.set((int)(a.get() - b.get()));
+    intWritable.set((a.get() - b.get()));
     return intWritable;
   }
 
   @Override
-  public LongWritable evaluate(LongWritable a, LongWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public LongWritable evaluate(LongWritable a, LongWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
     longWritable.set(a.get() - b.get());
     return longWritable;
   }
 
   @Override
-  public FloatWritable evaluate(FloatWritable a, FloatWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public FloatWritable evaluate(FloatWritable a, FloatWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
     floatWritable.set(a.get() - b.get());
     return floatWritable;
   }
-  
+
   @Override
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
+  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
       return null;
+    }
 
     doubleWritable.set(a.get() - b.get());
     return doubleWritable;

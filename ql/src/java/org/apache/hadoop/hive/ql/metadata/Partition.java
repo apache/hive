@@ -43,10 +43,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
@@ -57,16 +54,17 @@ import org.apache.thrift.transport.TMemoryBuffer;
 public class Partition {
 
   @SuppressWarnings("nls")
-  static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Partition");
+  static final private Log LOG = LogFactory
+      .getLog("hive.ql.metadata.Partition");
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
-  
+
   private Deserializer deserializer;
   private Properties schema;
   private Class<? extends InputFormat> inputFormatClass;
   private Class<? extends HiveOutputFormat> outputFormatClass;
-  
+
   /**
    * @return the tPartition
    */
@@ -87,38 +85,44 @@ public class Partition {
   private Path partPath;
   private URI partURI;
 
-  public Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
+  public Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp)
+      throws HiveException {
     initialize(tbl, tp);
   }
 
   /**
    * Create partition object with the given info.
-   * @param tbl Table the partition will be in.
-   * @param partSpec Partition specifications.
-   * @param location Location of the partition, relative to the table.
-   * @throws HiveException Thrown if we could not create the partition.
+   * 
+   * @param tbl
+   *          Table the partition will be in.
+   * @param partSpec
+   *          Partition specifications.
+   * @param location
+   *          Location of the partition, relative to the table.
+   * @throws HiveException
+   *           Thrown if we could not create the partition.
    */
-  public Partition(Table tbl, Map<String, String> partSpec,
-      Path location) throws HiveException {
+  public Partition(Table tbl, Map<String, String> partSpec, Path location)
+      throws HiveException {
 
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       if (val == null) {
-        throw new HiveException("partition spec is invalid. field.getName() does not exist in input.");
+        throw new HiveException(
+            "partition spec is invalid. field.getName() does not exist in input.");
       }
       pvals.add(val);
     }
 
-    org.apache.hadoop.hive.metastore.api.Partition tpart =
-      new org.apache.hadoop.hive.metastore.api.Partition();
+    org.apache.hadoop.hive.metastore.api.Partition tpart = new org.apache.hadoop.hive.metastore.api.Partition();
     tpart.setDbName(tbl.getDbName());
     tpart.setTableName(tbl.getName());
     tpart.setValues(pvals);
 
     StorageDescriptor sd = new StorageDescriptor();
     try {
-      //replace with THRIFT-138
+      // replace with THRIFT-138
       TMemoryBuffer buffer = new TMemoryBuffer(1024);
       TBinaryProtocol prot = new TBinaryProtocol(buffer);
       tbl.getTTable().getSd().write(prot);
@@ -141,22 +145,24 @@ public class Partition {
 
   /**
    * Initializes this object with the given variables
-   * @param tbl Table the partition belongs to
-   * @param tp Thrift Partition object
-   * @throws HiveException Thrown if we cannot initialize the partition
+   * 
+   * @param tbl
+   *          Table the partition belongs to
+   * @param tp
+   *          Thrift Partition object
+   * @throws HiveException
+   *           Thrown if we cannot initialize the partition
    */
   private void initialize(Table tbl,
-      org.apache.hadoop.hive.metastore.api.Partition tp)
-  throws HiveException {
+      org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
 
     table = tbl;
     tPartition = tp;
     partName = "";
 
-    if(tbl.isPartitioned()) {
+    if (tbl.isPartitioned()) {
       try {
-        partName = Warehouse.makePartName(tbl.getPartCols(),
-            tp.getValues());
+        partName = Warehouse.makePartName(tbl.getPartCols(), tp.getValues());
         if (tp.getSd().getLocation() == null) {
           // set default if location is not set
           partPath = new Path(tbl.getDataLocation().toString(), partName);
@@ -187,10 +193,10 @@ public class Partition {
     return table;
   }
 
-  public Path [] getPath() {
-    Path [] ret = new Path [1];
+  public Path[] getPath() {
+    Path[] ret = new Path[1];
     ret[0] = partPath;
-    return(ret);
+    return (ret);
   }
 
   public Path getPartitionPath() {
@@ -200,9 +206,9 @@ public class Partition {
   final public URI getDataLocation() {
     return partURI;
   }
-  
+
   final public Deserializer getDeserializer() {
-    if(deserializer == null) {
+    if (deserializer == null) {
       try {
         initSerDe();
       } catch (HiveException e) {
@@ -211,34 +217,38 @@ public class Partition {
     }
     return deserializer;
   }
-  
+
   /**
-   * @param schema the schema to set
+   * @param schema
+   *          the schema to set
    */
   public void setSchema(Properties schema) {
     this.schema = schema;
   }
-  
+
   public Properties getSchema() {
-  	if(this.schema == null)
-  		this.schema = MetaStoreUtils.getSchema(this.getTPartition(), this.getTable().getTTable());
-  	return this.schema;
+    if (schema == null) {
+      schema = MetaStoreUtils
+          .getSchema(getTPartition(), getTable().getTTable());
+    }
+    return schema;
   }
-  
+
   protected void initSerDe() throws HiveException {
     if (deserializer == null) {
       try {
-        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), this.getTPartition(), this.getTable().getTTable());
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
+            getTPartition(), getTable().getTTable());
       } catch (MetaException e) {
         throw new HiveException(e);
       }
     }
   }
-  
+
   /**
    * @param inputFormatClass
    */
-  public void setInputFormatClass(Class<? extends InputFormat > inputFormatClass) {
+  public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
     this.inputFormatClass = inputFormatClass;
     tPartition.getSd().setInputFormat(inputFormatClass.getName());
   }
@@ -247,78 +257,78 @@ public class Partition {
    * @param class1
    */
   public void setOutputFormatClass(Class<?> class1) {
-    this.outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
+    outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
     tPartition.getSd().setOutputFormat(class1.getName());
   }
 
-  final public Class<? extends InputFormat> getInputFormatClass() throws HiveException{
-  	if(inputFormatClass == null) {
-  		String clsName = getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
+  final public Class<? extends InputFormat> getInputFormatClass()
+      throws HiveException {
+    if (inputFormatClass == null) {
+      String clsName = getSchema().getProperty(
+          org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
           org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName());
-  		try{
-  			setInputFormatClass((Class<? extends InputFormat>)Class.forName(clsName, true, JavaUtils.getClassLoader()));
-  		} catch (ClassNotFoundException e) {
+      try {
+        setInputFormatClass((Class<? extends InputFormat>) Class.forName(
+            clsName, true, JavaUtils.getClassLoader()));
+      } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
-  	}
-    
+    }
+
     return inputFormatClass;
   }
 
-  final public Class<? extends HiveOutputFormat> getOutputFormatClass() throws HiveException {
-		if (outputFormatClass == null) {
-			String clsName = getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-		       HiveSequenceFileOutputFormat.class.getName());
-  		try{
-  			setOutputFormatClass(Class.forName(clsName, true, JavaUtils.getClassLoader()));
-  		} catch (ClassNotFoundException e) {
+  final public Class<? extends HiveOutputFormat> getOutputFormatClass()
+      throws HiveException {
+    if (outputFormatClass == null) {
+      String clsName = getSchema().getProperty(
+          org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
+          HiveSequenceFileOutputFormat.class.getName());
+      try {
+        setOutputFormatClass(Class.forName(clsName, true, JavaUtils
+            .getClassLoader()));
+      } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
-		}
+    }
     return outputFormatClass;
   }
-  
+
   /**
-   * The number of buckets is a property of the partition. However - internally we are just
-   * storing it as a property of the table as a short term measure.
+   * The number of buckets is a property of the partition. However - internally
+   * we are just storing it as a property of the table as a short term measure.
    */
   public int getBucketCount() {
     return table.getNumBuckets();
     /*
-      TODO: Keeping this code around for later use when we will support
-      sampling on tables which are not created with CLUSTERED INTO clause
-
-      // read from table meta data
-      int numBuckets = this.table.getNumBuckets();
-      if (numBuckets == -1) {
-        // table meta data does not have bucket information
-        // check if file system has multiple buckets(files) in this partition
-        String pathPattern = this.partPath.toString() + "/*";
-        try {
-          FileSystem fs = FileSystem.get(this.table.getDataLocation(), Hive.get().getConf());
-          FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
-          numBuckets = srcs.length;
-        }
-        catch (Exception e) {
-          throw new RuntimeException("Cannot get bucket count for table " + this.table.getName(), e);
-        }
-      }
-      return numBuckets;
+     * TODO: Keeping this code around for later use when we will support
+     * sampling on tables which are not created with CLUSTERED INTO clause
+     * 
+     * // read from table meta data int numBuckets = this.table.getNumBuckets();
+     * if (numBuckets == -1) { // table meta data does not have bucket
+     * information // check if file system has multiple buckets(files) in this
+     * partition String pathPattern = this.partPath.toString() + "/*"; try {
+     * FileSystem fs = FileSystem.get(this.table.getDataLocation(),
+     * Hive.get().getConf()); FileStatus srcs[] = fs.globStatus(new
+     * Path(pathPattern)); numBuckets = srcs.length; } catch (Exception e) {
+     * throw new RuntimeException("Cannot get bucket count for table " +
+     * this.table.getName(), e); } } return numBuckets;
      */
   }
 
   public List<String> getBucketCols() {
-    return this.tPartition.getSd().getBucketCols();
+    return tPartition.getSd().getBucketCols();
   }
 
   /**
    * mapping from bucket number to bucket path
    */
-  //TODO: add test case and clean it up
+  // TODO: add test case and clean it up
   @SuppressWarnings("nls")
   public Path getBucketPath(int bucketNum) {
     try {
-      FileSystem fs = FileSystem.get(table.getDataLocation(), Hive.get().getConf());
+      FileSystem fs = FileSystem.get(table.getDataLocation(), Hive.get()
+          .getConf());
       String pathPattern = partPath.toString();
       if (getBucketCount() > 0) {
         pathPattern = pathPattern + "/*";
@@ -326,86 +336,90 @@ public class Partition {
       LOG.info("Path pattern = " + pathPattern);
       FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
       Arrays.sort(srcs);
-      for (FileStatus src: srcs) {
+      for (FileStatus src : srcs) {
         LOG.info("Got file: " + src.getPath());
       }
-      if(srcs.length == 0)
+      if (srcs.length == 0) {
         return null;
+      }
       return srcs[bucketNum].getPath();
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Cannot get bucket path for bucket " + bucketNum, e);
+    } catch (Exception e) {
+      throw new RuntimeException("Cannot get bucket path for bucket "
+          + bucketNum, e);
     }
   }
 
   /**
    * mapping from a Path to the bucket number if any
    */
-  private static Pattern bpattern = Pattern.compile("part-([0-9][0-9][0-9][0-9][0-9])");
+  private static Pattern bpattern = Pattern
+      .compile("part-([0-9][0-9][0-9][0-9][0-9])");
 
   private String partName;
+
   @SuppressWarnings("nls")
   public static int getBucketNum(Path p) {
     Matcher m = bpattern.matcher(p.getName());
-    if(m.find()) {
+    if (m.find()) {
       String bnum_str = m.group(1);
       try {
         return (Integer.parseInt(bnum_str));
       } catch (NumberFormatException e) {
-        throw new RuntimeException("Unexpected error parsing: "+p.getName()+","+bnum_str);
+        throw new RuntimeException("Unexpected error parsing: " + p.getName()
+            + "," + bnum_str);
       }
     }
     return 0;
   }
 
-
   @SuppressWarnings("nls")
-  public Path [] getPath(Sample s) throws HiveException {
-    if(s == null) {
+  public Path[] getPath(Sample s) throws HiveException {
+    if (s == null) {
       return getPath();
     } else {
       int bcount = getBucketCount();
-      if(bcount == 0) {
+      if (bcount == 0) {
         return getPath();
       }
 
       Dimension d = s.getSampleDimension();
-      if(!d.getDimensionId().equals(table.getBucketingDimensionId())) {
+      if (!d.getDimensionId().equals(table.getBucketingDimensionId())) {
         // if the bucket dimension is not the same as the sampling dimension
         // we must scan all the data
         return getPath();
       }
 
       int scount = s.getSampleFraction();
-      ArrayList<Path> ret = new ArrayList<Path> ();
+      ArrayList<Path> ret = new ArrayList<Path>();
 
-      if(bcount == scount) {
-        ret.add(getBucketPath(s.getSampleNum()-1));
+      if (bcount == scount) {
+        ret.add(getBucketPath(s.getSampleNum() - 1));
       } else if (bcount < scount) {
-        if((scount/bcount)*bcount != scount) {
-          throw new HiveException("Sample Count"+scount+" is not a multiple of bucket count " +
-              bcount + " for table " + table.getName());
+        if ((scount / bcount) * bcount != scount) {
+          throw new HiveException("Sample Count" + scount
+              + " is not a multiple of bucket count " + bcount + " for table "
+              + table.getName());
         }
         // undersampling a bucket
-        ret.add(getBucketPath((s.getSampleNum()-1)%bcount));
+        ret.add(getBucketPath((s.getSampleNum() - 1) % bcount));
       } else if (bcount > scount) {
-        if((bcount/scount)*scount != bcount) {
-          throw new HiveException("Sample Count"+scount+" is not a divisor of bucket count " +
-              bcount + " for table " + table.getName());
+        if ((bcount / scount) * scount != bcount) {
+          throw new HiveException("Sample Count" + scount
+              + " is not a divisor of bucket count " + bcount + " for table "
+              + table.getName());
         }
         // sampling multiple buckets
-        for(int i=0; i<bcount/scount; i++) {
-          ret.add(getBucketPath(i*scount + (s.getSampleNum()-1)));
+        for (int i = 0; i < bcount / scount; i++) {
+          ret.add(getBucketPath(i * scount + (s.getSampleNum() - 1)));
         }
       }
-      return(ret.toArray(new Path[ret.size()]));
+      return (ret.toArray(new Path[ret.size()]));
     }
   }
 
   public LinkedHashMap<String, String> getSpec() {
     return spec;
   }
-
 
   @SuppressWarnings("nls")
   @Override
@@ -414,7 +428,8 @@ public class Partition {
     try {
       pn = Warehouse.makePartName(spec);
     } catch (MetaException e) {
-      // ignore as we most probably in an exception path already otherwise this error wouldn't occur
+      // ignore as we most probably in an exception path already otherwise this
+      // error wouldn't occur
     }
     return table.toString() + "(" + pn + ")";
   }
@@ -425,12 +440,13 @@ public class Partition {
 
   /**
    * getProperty
-   *
+   * 
    */
   public String getProperty(String name) {
-    Map<String,String> params = getTPartition().getParameters();
-    if (params == null)
+    Map<String, String> params = getTPartition().getParameters();
+    if (params == null) {
       return null;
+    }
     return params.get(name);
   }
 

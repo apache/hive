@@ -42,10 +42,11 @@ public class SkewJoinProcFactory {
   public static NodeProcessor getJoinProc() {
     return new SkewJoinJoinProcessor();
   }
-  
-  public static class SkewJoinJoinProcessor implements NodeProcessor {  
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
-      SkewJoinProcCtx context = (SkewJoinProcCtx)ctx;
+
+  public static class SkewJoinJoinProcessor implements NodeProcessor {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+        Object... nodeOutputs) throws SemanticException {
+      SkewJoinProcCtx context = (SkewJoinProcCtx) ctx;
       JoinOperator op = (JoinOperator) nd;
       ParseContext parseContext = context.getParseCtx();
       Task<? extends Serializable> currentTsk = context.getCurrentTask();
@@ -53,8 +54,8 @@ public class SkewJoinProcFactory {
       return null;
     }
   }
-  
-  public static class SkewJoinDefaultProcessor implements NodeProcessor{
+
+  public static class SkewJoinDefaultProcessor implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       return null;

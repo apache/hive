@@ -26,20 +26,22 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 public class AddResourceProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(AddResourceProcessor.class.getName());
+  public static final Log LOG = LogFactory.getLog(AddResourceProcessor.class
+      .getName());
   public static final LogHelper console = new LogHelper(LOG);
 
   public void init() {
   }
-  
+
   public int run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
     SessionState.ResourceType t;
-    if (tokens.length < 2 || (t = SessionState.find_resource_type(tokens[0])) == null) {
-      console.printError("Usage: add [" +
-                         StringUtils.join(SessionState.ResourceType.values(),"|") +
-                         "] <value> [<value>]*");
+    if (tokens.length < 2
+        || (t = SessionState.find_resource_type(tokens[0])) == null) {
+      console.printError("Usage: add ["
+          + StringUtils.join(SessionState.ResourceType.values(), "|")
+          + "] <value> [<value>]*");
       return 1;
     }
     for (int i = 1; i < tokens.length; i++) {

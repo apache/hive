@@ -18,75 +18,80 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-
-import org.apache.hadoop.hive.ql.exec.FunctionInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.util.ReflectionUtils;
 
 public class aggregationDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;
-  
+
   /**
    * In case genericUDAFEvaluator is Serializable, we will serialize the object.
    * 
-   * In case genericUDAFEvaluator does not implement Serializable, Java will remember the
-   * class of genericUDAFEvaluator and creates a new instance when deserialized.  This is
-   * exactly what we want.
+   * In case genericUDAFEvaluator does not implement Serializable, Java will
+   * remember the class of genericUDAFEvaluator and creates a new instance when
+   * deserialized. This is exactly what we want.
    */
   private GenericUDAFEvaluator genericUDAFEvaluator;
   private java.util.ArrayList<exprNodeDesc> parameters;
   private boolean distinct;
   private GenericUDAFEvaluator.Mode mode;
-  public aggregationDesc() {}
-  public aggregationDesc(
-    final String genericUDAFName,
-    final GenericUDAFEvaluator genericUDAFEvaluator,
-    final java.util.ArrayList<exprNodeDesc> parameters,
-    final boolean distinct,
-    final GenericUDAFEvaluator.Mode mode) {
+
+  public aggregationDesc() {
+  }
+
+  public aggregationDesc(final String genericUDAFName,
+      final GenericUDAFEvaluator genericUDAFEvaluator,
+      final java.util.ArrayList<exprNodeDesc> parameters,
+      final boolean distinct, final GenericUDAFEvaluator.Mode mode) {
     this.genericUDAFName = genericUDAFName;
     this.genericUDAFEvaluator = genericUDAFEvaluator;
     this.parameters = parameters;
     this.distinct = distinct;
     this.mode = mode;
   }
+
   public void setGenericUDAFName(final String genericUDAFName) {
     this.genericUDAFName = genericUDAFName;
   }
+
   public String getGenericUDAFName() {
     return genericUDAFName;
   }
-  public void setGenericUDAFEvaluator(final GenericUDAFEvaluator genericUDAFEvaluator) {
+
+  public void setGenericUDAFEvaluator(
+      final GenericUDAFEvaluator genericUDAFEvaluator) {
     this.genericUDAFEvaluator = genericUDAFEvaluator;
   }
+
   public GenericUDAFEvaluator getGenericUDAFEvaluator() {
     return genericUDAFEvaluator;
   }
+
   public java.util.ArrayList<exprNodeDesc> getParameters() {
-    return this.parameters;
+    return parameters;
   }
+
   public void setParameters(final java.util.ArrayList<exprNodeDesc> parameters) {
-    this.parameters=parameters;
+    this.parameters = parameters;
   }
+
   public boolean getDistinct() {
-    return this.distinct;
+    return distinct;
   }
+
   public void setDistinct(final boolean distinct) {
     this.distinct = distinct;
   }
+
   public void setMode(final GenericUDAFEvaluator.Mode mode) {
     this.mode = mode;
   }
-  
+
   public GenericUDAFEvaluator.Mode getMode() {
     return mode;
   }
-  
-  @explain(displayName="expr")
+
+  @explain(displayName = "expr")
   public String getExprString() {
     StringBuilder sb = new StringBuilder();
     sb.append(genericUDAFName);
@@ -95,7 +100,7 @@ public class aggregationDesc implements java.io.Serializable {
       sb.append("DISTINCT ");
     }
     boolean first = true;
-    for(exprNodeDesc exp: parameters) {
+    for (exprNodeDesc exp : parameters) {
       if (first) {
         first = false;
       } else {

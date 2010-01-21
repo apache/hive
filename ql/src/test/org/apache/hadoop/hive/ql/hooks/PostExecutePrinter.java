@@ -19,35 +19,36 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
-import org.apache.hadoop.security.UserGroupInformation;
+
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
- * Implementation of a post execute hook that simply prints out its
- * parameters to standard output.
+ * Implementation of a post execute hook that simply prints out its parameters
+ * to standard output.
  */
 public class PostExecutePrinter implements PostExecute {
 
   @Override
   public void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi)
-    throws Exception {
+      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception {
 
     LogHelper console = SessionState.getConsole();
 
-    if (console == null)
+    if (console == null) {
       return;
+    }
 
     if (sess != null) {
       console.printError("POSTHOOK: query: " + sess.getCmd().trim());
       console.printError("POSTHOOK: type: " + sess.getCommandType());
     }
 
-    for(ReadEntity re: inputs) {
+    for (ReadEntity re : inputs) {
       console.printError("POSTHOOK: Input: " + re.toString());
     }
-    for(WriteEntity we: outputs) {
+    for (WriteEntity we : outputs) {
       console.printError("POSTHOOK: Output: " + we.toString());
     }
   }

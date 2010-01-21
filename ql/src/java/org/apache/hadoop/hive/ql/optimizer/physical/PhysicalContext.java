@@ -30,13 +30,13 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
  * physical context used by physical resolvers.
  */
 public class PhysicalContext {
-  
+
   protected HiveConf conf;
   private ParseContext parseContext;
   private Context context;
   protected List<Task<? extends Serializable>> rootTasks;
   protected Task<? extends Serializable> fetchTask;
-  
+
   public PhysicalContext(HiveConf conf, ParseContext parseContext,
       Context context, List<Task<? extends Serializable>> rootTasks,
       Task<? extends Serializable> fetchTask) {

@@ -18,18 +18,18 @@
 
 package org.apache.hadoop.hive.ql.optimizer.unionproc;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
 public class UnionProcContext implements NodeProcessorCtx {
 
   public static class UnionParseContext {
-    transient private boolean[] mapOnlySubq;
-    transient private boolean[] rootTask;
-    transient private boolean[] mapJoinSubq;
+    transient private final boolean[] mapOnlySubq;
+    transient private final boolean[] rootTask;
+    transient private final boolean[] mapJoinSubq;
 
     transient private int numInputs;
     transient private boolean mapJoinQuery;
@@ -37,7 +37,7 @@ public class UnionProcContext implements NodeProcessorCtx {
     public UnionParseContext(int numInputs) {
       this.numInputs = numInputs;
       mapOnlySubq = new boolean[numInputs];
-      rootTask    = new boolean[numInputs];
+      rootTask = new boolean[numInputs];
       mapJoinSubq = new boolean[numInputs];
     }
 
@@ -55,8 +55,9 @@ public class UnionProcContext implements NodeProcessorCtx {
 
     public void setMapJoinSubq(int pos, boolean mapJoinSubq) {
       this.mapJoinSubq[pos] = mapJoinSubq;
-      if (mapJoinSubq)
+      if (mapJoinSubq) {
         mapJoinQuery = true;
+      }
     }
 
     public boolean getMapJoinQuery() {
@@ -91,13 +92,14 @@ public class UnionProcContext implements NodeProcessorCtx {
   }
 
   /**
-   * @param mapOnlySubq the mapOnlySubq to set
+   * @param mapOnlySubq
+   *          the mapOnlySubq to set
    */
   public void setMapOnlySubq(boolean mapOnlySubq) {
     this.mapOnlySubq = mapOnlySubq;
   }
 
-  private Map<UnionOperator, UnionParseContext> uCtxMap;
+  private final Map<UnionOperator, UnionParseContext> uCtxMap;
 
   public UnionProcContext() {
     uCtxMap = new HashMap<UnionOperator, UnionParseContext>();

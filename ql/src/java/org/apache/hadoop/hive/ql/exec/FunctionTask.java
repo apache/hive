@@ -40,17 +40,17 @@ public class FunctionTask extends Task<FunctionWork> {
   private static final Log LOG = LogFactory.getLog("hive.ql.exec.FunctionTask");
 
   transient HiveConf conf;
-  
+
   public FunctionTask() {
     super();
   }
-  
+
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
     super.initialize(conf, queryPlan, ctx);
     this.conf = conf;
   }
-  
+
   @Override
   public int execute() {
     createFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
@@ -68,25 +68,26 @@ public class FunctionTask extends Task<FunctionWork> {
   private int createFunction(createFunctionDesc createFunctionDesc) {
     try {
       Class<?> udfClass = getUdfClass(createFunctionDesc);
-      if(UDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryUDF(createFunctionDesc.getFunctionName(), 
-                                     (Class<? extends UDF>) udfClass, false);
+      if (UDF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryUDF(createFunctionDesc
+            .getFunctionName(), (Class<? extends UDF>) udfClass, false);
         return 0;
-      } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc.getFunctionName(), 
-                                            (Class<? extends GenericUDF>) udfClass);
+      } else if (GenericUDF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc
+            .getFunctionName(), (Class<? extends GenericUDF>) udfClass);
         return 0;
-      } else if(GenericUDTF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDTF(createFunctionDesc.getFunctionName(), 
-            (Class<? extends GenericUDTF>) udfClass);
+      } else if (GenericUDTF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryGenericUDTF(createFunctionDesc
+            .getFunctionName(), (Class<? extends GenericUDTF>) udfClass);
         return 0;
-      } else if(UDAF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryUDAF(createFunctionDesc.getFunctionName(),
-                                      (Class<? extends UDAF>) udfClass);
+      } else if (UDAF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryUDAF(createFunctionDesc
+            .getFunctionName(), (Class<? extends UDAF>) udfClass);
         return 0;
-      } else if(GenericUDAFResolver.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDAF(createFunctionDesc.getFunctionName(),
-            (GenericUDAFResolver)ReflectionUtils.newInstance(udfClass, null));
+      } else if (GenericUDAFResolver.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryGenericUDAF(createFunctionDesc
+            .getFunctionName(), (GenericUDAFResolver) ReflectionUtils
+            .newInstance(udfClass, null));
         return 0;
       }
       return 1;
@@ -99,7 +100,8 @@ public class FunctionTask extends Task<FunctionWork> {
 
   private int dropFunction(dropFunctionDesc dropFunctionDesc) {
     try {
-      FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc.getFunctionName());
+      FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc
+          .getFunctionName());
       return 0;
     } catch (HiveException e) {
       LOG.info("drop function: " + StringUtils.stringifyException(e));
@@ -112,7 +114,8 @@ public class FunctionTask extends Task<FunctionWork> {
       throws ClassNotFoundException {
     return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
   }
-  
+
+  @Override
   public int getType() {
     return StageType.FUNC;
   }

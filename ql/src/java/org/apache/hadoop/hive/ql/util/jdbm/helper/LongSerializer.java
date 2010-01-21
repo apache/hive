@@ -68,52 +68,43 @@ import java.io.IOException;
 
 /**
  * Optimized serializer for long integers.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: LongSerializer.java,v 1.2 2003/09/21 15:47:00 boisvert Exp $
  */
-public class LongSerializer 
-    implements Serializer
-{
+public class LongSerializer implements Serializer {
 
-    
-    public static final LongSerializer INSTANCE = new LongSerializer();
-    
-    
-    /**
-     * Construct a LongSerializer.
-     */
-    public LongSerializer()
-    {
-        // no op
-    }
+  public static final LongSerializer INSTANCE = new LongSerializer();
 
-    
-    /**
-     * Serialize the content of an object into a byte array.
-     *
-     * @param obj Object to serialize
-     * @return a byte array representing the object's state
-     */
-     public byte[] serialize( Object obj )
-        throws IOException
-     {
-         Long number = (Long) obj;
-         return Conversion.convertToByteArray( number.longValue() );
-     }
-        
-        
-    /**
-     * Deserialize the content of an object from a byte array.
-     *
-     * @param serialized Byte array representation of the object
-     * @return deserialized object
-     */
-     public Object deserialize( byte[] serialized )
-        throws IOException
-     {
-         long number = Conversion.convertToLong( serialized );
-         return new Long( number );
-     }
+  /**
+   * Construct a LongSerializer.
+   */
+  public LongSerializer() {
+    // no op
+  }
+
+  /**
+   * Serialize the content of an object into a byte array.
+   * 
+   * @param obj
+   *          Object to serialize
+   * @return a byte array representing the object's state
+   */
+  public byte[] serialize(Object obj) throws IOException {
+    Long number = (Long) obj;
+    return Conversion.convertToByteArray(number.longValue());
+  }
+
+  /**
+   * Deserialize the content of an object from a byte array.
+   * 
+   * @param serialized
+   *          Byte array representation of the object
+   * @return deserialized object
+   */
+  public Object deserialize(byte[] serialized) throws IOException {
+    long number = Conversion.convertToLong(serialized);
+    return new Long(number);
+  }
 
 }

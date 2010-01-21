@@ -18,16 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.lang.Class;
-import java.io.*;
+import java.io.Serializable;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * Implementation for ColumnInfo which contains the internal name for the 
- * column (the one that is used by the operator to access the column) and
- * the type (identified by a java class).
+ * Implementation for ColumnInfo which contains the internal name for the column
+ * (the one that is used by the operator to access the column) and the type
+ * (identified by a java class).
  **/
 
 public class ColumnInfo implements Serializable {
@@ -35,40 +34,41 @@ public class ColumnInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String internalName;
-  
-  private String alias = null; // [optional] alias of the column (external name as seen by the users) 
+
+  private String alias = null; // [optional] alias of the column (external name
+                               // as seen by the users)
 
   /**
    * Store the alias of the table where available.
    */
   private String tabAlias;
-  
+
   /**
    * Indicates whether the column is a partition column.
    */
   private boolean isPartitionCol;
-  
+
   transient private TypeInfo type;
 
   public ColumnInfo() {
   }
 
-  public ColumnInfo(String internalName, TypeInfo type, 
-                    String tabAlias, boolean isPartitionCol) {
+  public ColumnInfo(String internalName, TypeInfo type, String tabAlias,
+      boolean isPartitionCol) {
     this.internalName = internalName;
     this.type = type;
     this.tabAlias = tabAlias;
     this.isPartitionCol = isPartitionCol;
   }
-  
-  public ColumnInfo(String internalName, Class type,
-                    String tabAlias, boolean isPartitionCol) {
+
+  public ColumnInfo(String internalName, Class type, String tabAlias,
+      boolean isPartitionCol) {
     this.internalName = internalName;
     this.type = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(type);
     this.tabAlias = tabAlias;
     this.isPartitionCol = isPartitionCol;
   }
-  
+
   public TypeInfo getType() {
     return type;
   }
@@ -76,7 +76,7 @@ public class ColumnInfo implements Serializable {
   public String getInternalName() {
     return internalName;
   }
-  
+
   public void setType(TypeInfo type) {
     this.type = type;
   }
@@ -86,25 +86,27 @@ public class ColumnInfo implements Serializable {
   }
 
   public String getTabAlias() {
-    return this.tabAlias;
+    return tabAlias;
   }
-  
+
   public boolean getIsPartitionCol() {
-    return this.isPartitionCol;
+    return isPartitionCol;
   }
+
   /**
    * Returns the string representation of the ColumnInfo.
    */
+  @Override
   public String toString() {
     return internalName + ": " + type;
   }
-  
+
   public void setAlias(String col_alias) {
     alias = col_alias;
   }
-  
+
   public String getAlias() {
     return alias;
   }
-  
+
 }

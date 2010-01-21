@@ -22,87 +22,100 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class exprNodeFieldDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   exprNodeDesc desc;
   String fieldName;
-  
-  // Used to support a.b where a is a list of struct that contains a field called b.
-  // a.b will return an array that contains field b of all elements of array a. 
+
+  // Used to support a.b where a is a list of struct that contains a field
+  // called b.
+  // a.b will return an array that contains field b of all elements of array a.
   Boolean isList;
-  
-  public exprNodeFieldDesc() {}
-  public exprNodeFieldDesc(TypeInfo typeInfo, exprNodeDesc desc, String fieldName, Boolean isList) {
+
+  public exprNodeFieldDesc() {
+  }
+
+  public exprNodeFieldDesc(TypeInfo typeInfo, exprNodeDesc desc,
+      String fieldName, Boolean isList) {
     super(typeInfo);
     this.desc = desc;
     this.fieldName = fieldName;
     this.isList = isList;
   }
-  
+
   @Override
   public List<exprNodeDesc> getChildren() {
     List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
     children.add(desc);
     return children;
   }
-  
+
   public exprNodeDesc getDesc() {
-    return this.desc;
+    return desc;
   }
+
   public void setDesc(exprNodeDesc desc) {
     this.desc = desc;
   }
+
   public String getFieldName() {
-    return this.fieldName;
+    return fieldName;
   }
+
   public void setFieldName(String fieldName) {
     this.fieldName = fieldName;
   }
+
   public Boolean getIsList() {
     return isList;
   }
+
   public void setIsList(Boolean isList) {
     this.isList = isList;
   }
-  
+
   @Override
   public String toString() {
-    return this.desc.toString() + "." + this.fieldName;
-  }
-  
-  @explain(displayName="expr")
-  @Override
-  public String getExprString() {
-    return this.desc.getExprString() + "." + this.fieldName;
+    return desc.toString() + "." + fieldName;
   }
 
+  @explain(displayName = "expr")
+  @Override
+  public String getExprString() {
+    return desc.getExprString() + "." + fieldName;
+  }
+
+  @Override
   public List<String> getCols() {
     List<String> colList = new ArrayList<String>();
-    if (desc != null) 
-    	colList = Utilities.mergeUniqElems(colList, desc.getCols());    
+    if (desc != null) {
+      colList = Utilities.mergeUniqElems(colList, desc.getCols());
+    }
     return colList;
   }
+
   @Override
   public exprNodeDesc clone() {
-    return new exprNodeFieldDesc(this.typeInfo, this.desc, this.fieldName, this.isList);
+    return new exprNodeFieldDesc(typeInfo, desc, fieldName, isList);
   }
 
   @Override
   public boolean isSame(Object o) {
-    if (!(o instanceof exprNodeFieldDesc))
+    if (!(o instanceof exprNodeFieldDesc)) {
       return false;
-    exprNodeFieldDesc dest = (exprNodeFieldDesc)o;
-    if (!typeInfo.equals(dest.getTypeInfo()))
+    }
+    exprNodeFieldDesc dest = (exprNodeFieldDesc) o;
+    if (!typeInfo.equals(dest.getTypeInfo())) {
       return false;
-    if (!fieldName.equals(dest.getFieldName()) ||
-        !isList.equals(dest.getIsList()) ||
-        !desc.isSame(dest.getDesc()))
+    }
+    if (!fieldName.equals(dest.getFieldName())
+        || !isList.equals(dest.getIsList()) || !desc.isSame(dest.getDesc())) {
       return false;
-      
-    return true; 
+    }
+
+    return true;
   }
 }

@@ -24,26 +24,21 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(
-    name = "sin",
-    value = "_FUNC_(x) - returns the sine of x (x is in radians)",
-    extended = "Example:\n " +
-        "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-        "  0"
-    )
+@description(name = "sin", value = "_FUNC_(x) - returns the sine of x (x is in radians)", extended = "Example:\n "
+    + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  0")
 public class UDFSin extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFSin.class.getName());
 
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFSin() {
   }
 
   /**
-   * Take Sine of a. 
+   * Take Sine of a.
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {
       return null;
     } else {

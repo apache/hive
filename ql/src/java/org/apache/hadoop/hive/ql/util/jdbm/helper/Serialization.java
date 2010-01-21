@@ -72,43 +72,38 @@ import java.io.ObjectOutputStream;
 
 /**
  * Serialization-related utility methods.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: Serialization.java,v 1.1 2002/05/31 06:33:20 boisvert Exp $
  */
-public final class Serialization
-{
+public final class Serialization {
 
-    /**
-     * Serialize the object into a byte array.
-     */
-    public static byte[] serialize( Object obj )
-        throws IOException
-    {
-        ByteArrayOutputStream  baos;
-        ObjectOutputStream     oos;
+  /**
+   * Serialize the object into a byte array.
+   */
+  public static byte[] serialize(Object obj) throws IOException {
+    ByteArrayOutputStream baos;
+    ObjectOutputStream oos;
 
-        baos = new ByteArrayOutputStream();
-        oos = new ObjectOutputStream( baos );
-        oos.writeObject( obj );
-        oos.close();
+    baos = new ByteArrayOutputStream();
+    oos = new ObjectOutputStream(baos);
+    oos.writeObject(obj);
+    oos.close();
 
-        return baos.toByteArray();
-    }
+    return baos.toByteArray();
+  }
 
+  /**
+   * Deserialize an object from a byte array
+   */
+  public static Object deserialize(byte[] buf) throws ClassNotFoundException,
+      IOException {
+    ByteArrayInputStream bais;
+    ObjectInputStream ois;
 
-    /**
-     * Deserialize an object from a byte array
-     */
-    public static Object deserialize( byte[] buf )
-        throws ClassNotFoundException, IOException
-    {
-        ByteArrayInputStream  bais;
-        ObjectInputStream     ois;
-
-        bais = new ByteArrayInputStream( buf );
-        ois = new ObjectInputStream( bais );
-        return ois.readObject();
-    }
+    bais = new ByteArrayInputStream(buf);
+    ois = new ObjectInputStream(bais);
+    return ois.readObject();
+  }
 
 }

@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -45,14 +44,12 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * An util class for various Hive file format tasks.
- * registerOutputFormatSubstitute(Class, Class) 
- * getOutputFormatSubstitute(Class) are added for backward 
- * compatibility. They return the newly added HiveOutputFormat for the older 
- * ones.
+ * registerOutputFormatSubstitute(Class, Class) getOutputFormatSubstitute(Class)
+ * are added for backward compatibility. They return the newly added
+ * HiveOutputFormat for the older ones.
  * 
  */
 public class HiveFileFormatUtils {
@@ -67,7 +64,7 @@ public class HiveFileFormatUtils {
 
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>> outputFormatSubstituteMap;
-  
+
   /**
    * register a substitute
    * 
@@ -88,8 +85,9 @@ public class HiveFileFormatUtils {
   @SuppressWarnings("unchecked")
   public synchronized static Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
       Class<?> origin) {
-    if (HiveOutputFormat.class.isAssignableFrom(origin))
+    if (HiveOutputFormat.class.isAssignableFrom(origin)) {
       return (Class<? extends HiveOutputFormat>) origin;
+    }
     Class<? extends HiveOutputFormat> result = outputFormatSubstituteMap
         .get(origin);
     return result;
@@ -112,11 +110,13 @@ public class HiveFileFormatUtils {
     }
     return defaultFinalPath;
   }
-  
+
   static {
     inputFormatCheckerMap = new HashMap<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>();
-    HiveFileFormatUtils.registerInputFormatChecker(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class);
-    HiveFileFormatUtils.registerInputFormatChecker(RCFileInputFormat.class, RCFileInputFormat.class);
+    HiveFileFormatUtils.registerInputFormatChecker(
+        SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class);
+    HiveFileFormatUtils.registerInputFormatChecker(RCFileInputFormat.class,
+        RCFileInputFormat.class);
     inputFormatCheckerInstanceCache = new HashMap<Class<? extends InputFormatChecker>, InputFormatChecker>();
   }
 
@@ -139,12 +139,13 @@ public class HiveFileFormatUtils {
     inputFormatCheckerMap.put(format, checker);
   }
 
-	/**
+  /**
    * get an InputFormatChecker for a file format.
    */
   public synchronized static Class<? extends InputFormatChecker> getInputFormatChecker(
       Class<?> inputFormat) {
-    Class<? extends InputFormatChecker> result = inputFormatCheckerMap.get(inputFormat);
+    Class<? extends InputFormatChecker> result = inputFormatCheckerMap
+        .get(inputFormat);
     return result;
   }
 
@@ -157,14 +158,15 @@ public class HiveFileFormatUtils {
       throws HiveException {
     if (files.size() > 0) {
       Class<? extends InputFormatChecker> checkerCls = getInputFormatChecker(inputFormatCls);
-      if(checkerCls==null && inputFormatCls.isAssignableFrom(TextInputFormat.class)) {
+      if (checkerCls == null
+          && inputFormatCls.isAssignableFrom(TextInputFormat.class)) {
         // we get a text input format here, we can not determine a file is text
         // according to its content, so we can do is to test if other file
         // format can accept it. If one other file format can accept this file,
         // we treat this file as text file, although it maybe not.
-       return checkTextInputFormat(fs, conf, files);
+        return checkTextInputFormat(fs, conf, files);
       }
-      
+
       if (checkerCls != null) {
         InputFormatChecker checkerInstance = inputFormatCheckerInstanceCache
             .get(checkerCls);
@@ -190,25 +192,27 @@ public class HiveFileFormatUtils {
         .keySet();
     for (Class<? extends InputFormat> reg : inputFormatter) {
       boolean result = checkInputFormat(fs, conf, reg, files);
-      if (result)
+      if (result) {
         return false;
+      }
     }
     return true;
   }
-  
-  
+
   public static RecordWriter getHiveRecordWriter(JobConf jc,
       tableDesc tableInfo, Class<? extends Writable> outputClass,
       fileSinkDesc conf, Path outPath) throws HiveException {
     try {
-      HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo.getOutputFileFormatClass().newInstance();
+      HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo
+          .getOutputFileFormatClass().newInstance();
       boolean isCompressed = conf.getCompressed();
       JobConf jc_output = jc;
       if (isCompressed) {
         jc_output = new JobConf(jc);
         String codecStr = conf.getCompressCodec();
         if (codecStr != null && !codecStr.trim().equals("")) {
-          Class<? extends CompressionCodec> codec = (Class<? extends CompressionCodec>) Class.forName(codecStr);
+          Class<? extends CompressionCodec> codec = (Class<? extends CompressionCodec>) Class
+              .forName(codecStr);
           FileOutputFormat.setOutputCompressorClass(jc_output, codec);
         }
         String type = conf.getCompressType();
@@ -234,5 +238,5 @@ public class HiveFileFormatUtils {
     }
     return null;
   }
-  
+
 }

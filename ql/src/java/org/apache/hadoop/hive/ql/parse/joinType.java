@@ -18,4 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-public enum joinType {INNER, LEFTOUTER, RIGHTOUTER, FULLOUTER, UNIQUE, LEFTSEMI};
+public enum joinType {
+  INNER, LEFTOUTER, RIGHTOUTER, FULLOUTER, UNIQUE, LEFTSEMI
+};

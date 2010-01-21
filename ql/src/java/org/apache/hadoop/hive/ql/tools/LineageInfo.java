@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.hadoop.hive.ql.tools;
 
 import java.io.IOException;
@@ -29,9 +28,9 @@ import java.util.TreeSet;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -42,13 +41,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * 
- * This class prints out the lineage info. 
- * It takes sql as input and prints lineage info.
- * Currently this prints only input and output tables for a given sql. 
- *  Later we can expand to add join tables etc.
- *
+ * This class prints out the lineage info. It takes sql as input and prints
+ * lineage info. Currently this prints only input and output tables for a given
+ * sql. Later we can expand to add join tables etc.
+ * 
  */
-public class LineageInfo  implements NodeProcessor {
+public class LineageInfo implements NodeProcessor {
 
   /**
    * Stores input tables in sql
@@ -57,11 +55,11 @@ public class LineageInfo  implements NodeProcessor {
   /**
    * Stores output tables in sql
    */
-  TreeSet<String> OutputTableList= new TreeSet<String>();
+  TreeSet<String> OutputTableList = new TreeSet<String>();
 
   /**
    * 
-   * @return java.util.TreeSet 
+   * @return java.util.TreeSet
    */
   public TreeSet<String> getInputTableList() {
     return inputTableList;
@@ -77,18 +75,18 @@ public class LineageInfo  implements NodeProcessor {
   /**
    * Implements the process method for the NodeProcessor interface.
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-  throws SemanticException {
-    ASTNode pt = (ASTNode)nd;
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+      Object... nodeOutputs) throws SemanticException {
+    ASTNode pt = (ASTNode) nd;
 
     switch (pt.getToken().getType()) {
 
     case HiveParser.TOK_TAB:
-      OutputTableList.add(pt.getChild(0).getText()) ;
+      OutputTableList.add(pt.getChild(0).getText());
       break;
 
     case HiveParser.TOK_TABREF:
-      String table_name = ((ASTNode)pt.getChild(0)).getText();
+      String table_name = ((ASTNode) pt.getChild(0)).getText();
       inputTableList.add(table_name);
       break;
     }
@@ -96,14 +94,16 @@ public class LineageInfo  implements NodeProcessor {
   }
 
   /**
-   *  parses given query and gets the lineage info.
+   * parses given query and gets the lineage info.
+   * 
    * @param query
    * @throws ParseException
    */
-  public void getLineageInfo(String query) throws ParseException, SemanticException {
+  public void getLineageInfo(String query) throws ParseException,
+      SemanticException {
 
     /*
-     *  Get the AST tree
+     * Get the AST tree
      */
     ParseDriver pd = new ParseDriver();
     ASTNode tree = pd.parse(query);
@@ -118,11 +118,13 @@ public class LineageInfo  implements NodeProcessor {
     inputTableList.clear();
     OutputTableList.clear();
 
-    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
+    // create a walker which walks the tree in a DFS manner while maintaining
+    // the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(this, rules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
 
@@ -133,7 +135,7 @@ public class LineageInfo  implements NodeProcessor {
   }
 
   public static void main(String[] args) throws IOException, ParseException,
-  SemanticException {
+      SemanticException {
 
     String query = args[0];
 

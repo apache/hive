@@ -69,48 +69,46 @@ import java.util.Comparator;
 
 /**
  * Comparator for java.lang.Long objects.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: LongComparator.java,v 1.4 2002/05/31 06:33:20 boisvert Exp $
  */
-public final class LongComparator
-    implements Comparator, Serializable
-{
+public final class LongComparator implements Comparator, Serializable {
 
-    /**
-     * Version id for serialization.
-     */
-    final static long serialVersionUID = 1L;
+  /**
+   * Version id for serialization.
+   */
+  final static long serialVersionUID = 1L;
 
+  /**
+   * Compare two objects.
+   * 
+   * @param obj1
+   *          First object
+   * @param obj2
+   *          Second object
+   * @return a positive integer if obj1 > obj2, 0 if obj1 == obj2, and a
+   *         negative integer if obj1 < obj2
+   */
+  public int compare(Object obj1, Object obj2) {
+    if (obj1 == null) {
+      throw new IllegalArgumentException("Argument 'obj1' is null");
+    }
 
-    /**
-     * Compare two objects.
-     *
-     * @param obj1 First object
-     * @param obj2 Second object
-     * @return a positive integer if obj1 > obj2, 0 if obj1 == obj2,
-     *         and a negative integer if obj1 < obj2
-     */
-     public int compare( Object obj1, Object obj2 )
-     {
-        if ( obj1 == null ) {
-            throw new IllegalArgumentException( "Argument 'obj1' is null" );
-        }
+    if (obj2 == null) {
+      throw new IllegalArgumentException("Argument 'obj2' is null");
+    }
 
-        if ( obj2 == null ) {
-            throw new IllegalArgumentException( "Argument 'obj2' is null" );
-        }
+    long l1 = ((Long) obj1).longValue();
+    long l2 = ((Long) obj2).longValue();
 
-        long l1 = ( (Long) obj1 ).longValue();
-        long l2 = ( (Long) obj2 ).longValue();
-
-        if ( l1 > l2 ) {
-            return 1;
-        } else if ( l1 == l2 ) {
-            return 0;
-        } else {
-            return -1;
-        }
-     }
+    if (l1 > l2) {
+      return 1;
+    } else if (l1 == l2) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
 
 }

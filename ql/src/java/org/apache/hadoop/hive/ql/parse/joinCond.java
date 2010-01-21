@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.Vector;
-
-import org.apache.hadoop.hive.ql.plan.joinDesc;
 
 /**
  * Join conditions Descriptor implementation.
@@ -32,24 +29,26 @@ public class joinCond {
   private joinType joinType;
   private boolean preserved;
 
-  public joinCond() {  }
+  public joinCond() {
+  }
 
   public joinCond(int left, int right, joinType joinType) {
     this.left = left;
     this.right = right;
     this.joinType = joinType;
   }
-  
+
   /**
    * Constructor for a UNIQUEJOIN cond
    * 
-   * @param p true if table is preserved, false otherwise
+   * @param p
+   *          true if table is preserved, false otherwise
    */
   public joinCond(boolean p) {
-    this.joinType = org.apache.hadoop.hive.ql.parse.joinType.UNIQUE;
-    this.preserved = p;
+    joinType = org.apache.hadoop.hive.ql.parse.joinType.UNIQUE;
+    preserved = p;
   }
-  
+
   /**
    * @return the true if table is preserved, false otherwise
    */

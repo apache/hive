@@ -24,48 +24,43 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "abs",
-    value = "_FUNC_(x) - returns the absolute value of x",
-    extended = "Example:\n" +
-    		"  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-    		"  0\n" +
-    		"  > SELECT _FUNC_(-5) FROM src LIMIT 1;\n" +
-    		"  5"
-    )
-public class UDFAbs extends UDF { 
-  
-  private DoubleWritable resultDouble = new DoubleWritable();
-  private LongWritable resultLong = new LongWritable();
-  private IntWritable resultInt = new IntWritable();
-  
+@description(name = "abs", value = "_FUNC_(x) - returns the absolute value of x", extended = "Example:\n"
+    + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
+    + "  0\n"
+    + "  > SELECT _FUNC_(-5) FROM src LIMIT 1;\n" + "  5")
+public class UDFAbs extends UDF {
+
+  private final DoubleWritable resultDouble = new DoubleWritable();
+  private final LongWritable resultLong = new LongWritable();
+  private final IntWritable resultInt = new IntWritable();
+
   public DoubleWritable evaluate(DoubleWritable n) {
     if (n == null) {
       return null;
     }
-    
+
     resultDouble.set(Math.abs(n.get()));
-      
+
     return resultDouble;
   }
-  
+
   public LongWritable evaluate(LongWritable n) {
     if (n == null) {
       return null;
     }
-    
+
     resultLong.set(Math.abs(n.get()));
-      
+
     return resultLong;
   }
-  
+
   public IntWritable evaluate(IntWritable n) {
     if (n == null) {
       return null;
     }
-    
+
     resultInt.set(Math.abs(n.get()));
-      
+
     return resultInt;
   }
 }

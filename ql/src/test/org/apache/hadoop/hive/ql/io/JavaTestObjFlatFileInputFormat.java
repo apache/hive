@@ -26,11 +26,12 @@ import java.io.Serializable;
 public class JavaTestObjFlatFileInputFormat implements Serializable {
   public String s;
   public int num;
+
   public JavaTestObjFlatFileInputFormat(String s, int num) {
     this.s = s;
     this.num = num;
   }
-  public JavaTestObjFlatFileInputFormat() { 
+
+  public JavaTestObjFlatFileInputFormat() {
   }
 }
-

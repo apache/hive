@@ -66,40 +66,40 @@ import org.apache.hadoop.util.ReflectionUtils;
  * Right now, we use one file per skew key.
  * 
  * <p>
- * For more info, please see
- * https://issues.apache.org/jira/browse/HIVE-964.
+ * For more info, please see https://issues.apache.org/jira/browse/HIVE-964.
  * 
  */
 public class SkewJoinHandler {
-  
-  static final protected Log LOG = LogFactory.getLog(SkewJoinHandler.class.getName());
-  
+
+  static final protected Log LOG = LogFactory.getLog(SkewJoinHandler.class
+      .getName());
+
   public int currBigKeyTag = -1;
-  
+
   private int rowNumber = 0;
   private int currTag = -1;
-  
+
   private int skewKeyDefinition = -1;
-  private Map<Byte,StructObjectInspector> skewKeysTableObjectInspector = null;
-  private Map<Byte,SerDe> tblSerializers = null;
+  private Map<Byte, StructObjectInspector> skewKeysTableObjectInspector = null;
+  private Map<Byte, SerDe> tblSerializers = null;
   private Map<Byte, tableDesc> tblDesc = null;
-  
+
   private Map<Byte, Boolean> bigKeysExistingMap = null;
-  
+
   Configuration hconf = null;
   List<Object> dummyKey = null;
   String taskId;
-  
-  private CommonJoinOperator<? extends Serializable> joinOp;
-  private int numAliases;
-  private joinDesc conf;
-  
+
+  private final CommonJoinOperator<? extends Serializable> joinOp;
+  private final int numAliases;
+  private final joinDesc conf;
+
   public SkewJoinHandler(CommonJoinOperator<? extends Serializable> joinOp) {
     this.joinOp = joinOp;
-    this.numAliases = joinOp.numAliases;
-    this.conf = joinOp.getConf();
+    numAliases = joinOp.numAliases;
+    conf = joinOp.getConf();
   }
-  
+
   public void initiliaze(Configuration hconf) {
     this.hconf = hconf;
     joinDesc desc = joinOp.getConf();
@@ -114,7 +114,7 @@ public class SkewJoinHandler {
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
       List<ObjectInspector> skewTableKeyInspectors = new ArrayList<ObjectInspector>();
-      StructObjectInspector soi = (StructObjectInspector) this.joinOp.inputObjInspectors[alias];
+      StructObjectInspector soi = (StructObjectInspector) joinOp.inputObjInspectors[alias];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
       List<? extends StructField> keyFields = ((StructObjectInspector) sf
@@ -124,7 +124,8 @@ public class SkewJoinHandler {
         skewTableKeyInspectors.add(keyFields.get(k).getFieldObjectInspector());
       }
       tableDesc joinKeyDesc = desc.getKeyTableDesc();
-      List<String> keyColNames = Utilities.getColumnNames(joinKeyDesc.getProperties());
+      List<String> keyColNames = Utilities.getColumnNames(joinKeyDesc
+          .getProperties());
       StructObjectInspector structTblKeyInpector = ObjectInspectorFactory
           .getStandardStructObjectInspector(keyColNames, skewTableKeyInspectors);
 
@@ -135,21 +136,23 @@ public class SkewJoinHandler {
         tblSerializers.put((byte) i, serializer);
       } catch (SerDeException e) {
         LOG.error("Skewjoin will be disabled due to " + e.getMessage(), e);
-        this.joinOp.handleSkewJoin = false;
+        joinOp.handleSkewJoin = false;
         break;
       }
 
-      tableDesc valTblDesc = this.joinOp.getSpillTableDesc(alias);
+      tableDesc valTblDesc = joinOp.getSpillTableDesc(alias);
       List<String> valColNames = new ArrayList<String>();
-      if (valTblDesc != null)
+      if (valTblDesc != null) {
         valColNames = Utilities.getColumnNames(valTblDesc.getProperties());
+      }
       StructObjectInspector structTblValInpector = ObjectInspectorFactory
           .getStandardStructObjectInspector(valColNames,
-              this.joinOp.joinValuesStandardObjectInspectors.get((byte) i));
+              joinOp.joinValuesStandardObjectInspectors.get((byte) i));
 
       StructObjectInspector structTblInpector = ObjectInspectorFactory
-          .getUnionStructObjectInspector(Arrays.asList(new StructObjectInspector[] {
-                  structTblValInpector,structTblKeyInpector }));
+          .getUnionStructObjectInspector(Arrays
+              .asList(new StructObjectInspector[] { structTblValInpector,
+                  structTblKeyInpector }));
       skewKeysTableObjectInspector.put((byte) i, structTblInpector);
     }
 
@@ -165,50 +168,57 @@ public class SkewJoinHandler {
       }
     }
   }
-  
+
   void endGroup() throws IOException, HiveException {
-    if(skewKeyInCurrentGroup) {
-      
-      String specPath = conf.getBigKeysDirMap().get((byte)currBigKeyTag);
-      RowContainer<ArrayList<Object>> bigKey =  joinOp.storage.get(Byte.valueOf((byte)currBigKeyTag));
-      Path outputPath =  getOperatorOutputPath(specPath);
+    if (skewKeyInCurrentGroup) {
+
+      String specPath = conf.getBigKeysDirMap().get((byte) currBigKeyTag);
+      RowContainer<ArrayList<Object>> bigKey = joinOp.storage.get(Byte
+          .valueOf((byte) currBigKeyTag));
+      Path outputPath = getOperatorOutputPath(specPath);
       FileSystem destFs = outputPath.getFileSystem(hconf);
       bigKey.copyToDFSDirecory(destFs, outputPath);
-      
+
       for (int i = 0; i < numAliases; i++) {
-        if (((byte)i) == currBigKeyTag) continue;
-        RowContainer<ArrayList<Object>> values =  joinOp.storage.get(Byte.valueOf((byte)i));
-        if(values != null) {
-          specPath = conf.getSmallKeysDirMap().get((byte)currBigKeyTag).get((byte)i);
+        if (((byte) i) == currBigKeyTag) {
+          continue;
+        }
+        RowContainer<ArrayList<Object>> values = joinOp.storage.get(Byte
+            .valueOf((byte) i));
+        if (values != null) {
+          specPath = conf.getSmallKeysDirMap().get((byte) currBigKeyTag).get(
+              (byte) i);
           values.copyToDFSDirecory(destFs, getOperatorOutputPath(specPath));
         }
       }
     }
     skewKeyInCurrentGroup = false;
   }
-  
+
   boolean skewKeyInCurrentGroup = false;
+
   public void handleSkew(int tag) throws HiveException {
 
-    if(joinOp.newGroupStarted || tag != currTag) {
+    if (joinOp.newGroupStarted || tag != currTag) {
       rowNumber = 0;
       currTag = tag;
     }
-    
-    if(joinOp.newGroupStarted) {
+
+    if (joinOp.newGroupStarted) {
       currBigKeyTag = -1;
       joinOp.newGroupStarted = false;
-      dummyKey = (List<Object>)joinOp.getGroupKeyObject();
+      dummyKey = (List<Object>) joinOp.getGroupKeyObject();
       skewKeyInCurrentGroup = false;
-      
+
       for (int i = 0; i < numAliases; i++) {
-        RowContainer<ArrayList<Object>> rc =  joinOp.storage.get(Byte.valueOf((byte)i));
-        if(rc != null) {
+        RowContainer<ArrayList<Object>> rc = joinOp.storage.get(Byte
+            .valueOf((byte) i));
+        if (rc != null) {
           rc.setKeyObject(dummyKey);
         }
       }
     }
-    
+
     rowNumber++;
     if (currBigKeyTag == -1 && (tag < numAliases - 1)
         && rowNumber >= skewKeyDefinition) {
@@ -216,14 +226,15 @@ public class SkewJoinHandler {
       // table (the last table can always be streamed), we define that we get
       // a skew key now.
       currBigKeyTag = tag;
-      
+
       // right now we assume that the group by is an ArrayList object. It may
       // change in future.
-      if(! (dummyKey instanceof List)) 
+      if (!(dummyKey instanceof List)) {
         throw new RuntimeException("Bug in handle skew key in a seperate job.");
-      
+      }
+
       skewKeyInCurrentGroup = true;
-      bigKeysExistingMap.put(Byte.valueOf((byte)currBigKeyTag), Boolean.TRUE);
+      bigKeysExistingMap.put(Byte.valueOf((byte) currBigKeyTag), Boolean.TRUE);
     }
   }
 
@@ -240,8 +251,9 @@ public class SkewJoinHandler {
 
         // if we did not see a skew key in this table, continue to next
         // table
-        if (!bigKeysExistingMap.get((byte) bigKeyTbl))
+        if (!bigKeysExistingMap.get((byte) bigKeyTbl)) {
           continue;
+        }
 
         try {
           String specPath = conf.getBigKeysDirMap().get((byte) bigKeyTbl);
@@ -249,8 +261,9 @@ public class SkewJoinHandler {
           FileSystem fs = bigKeyPath.getFileSystem(hconf);
           delete(bigKeyPath, fs);
           for (int smallKeyTbl = 0; smallKeyTbl < numAliases; smallKeyTbl++) {
-            if (((byte) smallKeyTbl) == bigKeyTbl)
+            if (((byte) smallKeyTbl) == bigKeyTbl) {
               continue;
+            }
             specPath = conf.getSmallKeysDirMap().get((byte) bigKeyTbl).get(
                 (byte) smallKeyTbl);
             delete(getOperatorOutputPath(specPath), fs);
@@ -272,26 +285,30 @@ public class SkewJoinHandler {
 
   private void commit() throws IOException {
     for (int bigKeyTbl = 0; bigKeyTbl < numAliases; bigKeyTbl++) {
-      
+
       // if we did not see a skew key in this table, continue to next table
       // we are trying to avoid an extra call of FileSystem.exists()
-      Boolean existing = bigKeysExistingMap.get(Byte.valueOf((byte)bigKeyTbl));
-      if (existing == null || !existing)
+      Boolean existing = bigKeysExistingMap.get(Byte.valueOf((byte) bigKeyTbl));
+      if (existing == null || !existing) {
         continue;
-      
-      String specPath = conf.getBigKeysDirMap().get(Byte.valueOf((byte) bigKeyTbl));
+      }
+
+      String specPath = conf.getBigKeysDirMap().get(
+          Byte.valueOf((byte) bigKeyTbl));
       commitOutputPathToFinalPath(specPath, false);
       for (int smallKeyTbl = 0; smallKeyTbl < numAliases; smallKeyTbl++) {
-        if ( smallKeyTbl == bigKeyTbl)
+        if (smallKeyTbl == bigKeyTbl) {
           continue;
-        specPath = conf.getSmallKeysDirMap().get(Byte.valueOf((byte) bigKeyTbl)).get(
-            Byte.valueOf((byte) smallKeyTbl));
+        }
+        specPath = conf.getSmallKeysDirMap()
+            .get(Byte.valueOf((byte) bigKeyTbl)).get(
+                Byte.valueOf((byte) smallKeyTbl));
         // the file may not exist, and we just ignore this
         commitOutputPathToFinalPath(specPath, true);
       }
     }
   }
-  
+
   private void commitOutputPathToFinalPath(String specPath,
       boolean ignoreNonExisting) throws IOException {
     Path outPath = getOperatorOutputPath(specPath);
@@ -304,23 +321,25 @@ public class SkewJoinHandler {
         throw new IOException("Unable to rename output to: " + finalPath);
       }
     } catch (FileNotFoundException e) {
-      if (!ignoreNonExisting)
+      if (!ignoreNonExisting) {
         throw e;
+      }
     } catch (IOException e) {
-      if (!fs.exists(outPath) && ignoreNonExisting)
+      if (!fs.exists(outPath) && ignoreNonExisting) {
         return;
+      }
       throw e;
     }
   }
-  
+
   private Path getOperatorOutputPath(String specPath) throws IOException {
     Path tmpPath = Utilities.toTempPath(specPath);
     return new Path(tmpPath, Utilities.toTempPath(taskId));
   }
-  
+
   private Path getOperatorFinalPath(String specPath) throws IOException {
     Path tmpPath = Utilities.toTempPath(specPath);
     return new Path(tmpPath, taskId);
   }
-  
+
 }

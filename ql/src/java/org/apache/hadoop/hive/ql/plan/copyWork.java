@@ -20,33 +20,35 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Copy")
+@explain(displayName = "Copy")
 public class copyWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String fromPath;
   private String toPath;
 
-  public copyWork() { }
-  public copyWork(
-    final String fromPath,
-    final String toPath) {
+  public copyWork() {
+  }
+
+  public copyWork(final String fromPath, final String toPath) {
     this.fromPath = fromPath;
     this.toPath = toPath;
   }
-  
-  @explain(displayName="source")
+
+  @explain(displayName = "source")
   public String getFromPath() {
-    return this.fromPath;
+    return fromPath;
   }
+
   public void setFromPath(final String fromPath) {
     this.fromPath = fromPath;
   }
-  
-  @explain(displayName="destination")
+
+  @explain(displayName = "destination")
   public String getToPath() {
-    return this.toPath;
+    return toPath;
   }
+
   public void setToPath(final String toPath) {
-    this.toPath=toPath;
+    this.toPath = toPath;
   }
 }

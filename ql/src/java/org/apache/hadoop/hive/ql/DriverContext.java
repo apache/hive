@@ -25,32 +25,34 @@ import java.util.Queue;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 public class DriverContext {
-  
+
   Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
-  
-  public DriverContext( Queue<Task<? extends Serializable>> runnable) {
+
+  public DriverContext(Queue<Task<? extends Serializable>> runnable) {
     this.runnable = runnable;
   }
-  
+
   public Queue<Task<? extends Serializable>> getRunnable() {
-    return this.runnable;
+    return runnable;
   }
-  
+
   /**
    * Checks if a task can be launched
    * 
-   * @param tsk the task to be checked 
-   * @return    true if the task is launchable, false otherwise
+   * @param tsk
+   *          the task to be checked
+   * @return true if the task is launchable, false otherwise
    */
 
   public static boolean isLaunchable(Task<? extends Serializable> tsk) {
-    // A launchable task is one that hasn't been queued, hasn't been initialized, and is runnable.
+    // A launchable task is one that hasn't been queued, hasn't been
+    // initialized, and is runnable.
     return !tsk.getQueued() && !tsk.getInitialized() && tsk.isRunnable();
   }
 
   public void addToRunnable(Task<? extends Serializable> tsk) {
     runnable.add(tsk);
     tsk.setQueued();
- }
+  }
 
 }

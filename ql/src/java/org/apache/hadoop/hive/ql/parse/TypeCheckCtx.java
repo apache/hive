@@ -21,14 +21,14 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
 /**
- * This class implements the context information that is used for typechecking phase
- * in query compilation.
+ * This class implements the context information that is used for typechecking
+ * phase in query compilation.
  */
 public class TypeCheckCtx implements NodeProcessorCtx {
-  
+
   /**
-   * The row resolver of the previous operator. This field is used to generate expression
-   * descriptors from the expression ASTs.
+   * The row resolver of the previous operator. This field is used to generate
+   * expression descriptors from the expression ASTs.
    */
   private RowResolver inputRR;
 
@@ -41,19 +41,21 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    * Potential typecheck error reason.
    */
   private String error;
-  
+
   /**
    * Constructor.
    * 
-   * @param inputRR The input row resolver of the previous operator.
+   * @param inputRR
+   *          The input row resolver of the previous operator.
    */
   public TypeCheckCtx(RowResolver inputRR) {
-    this.setInputRR(inputRR);
-    this.error = null;
+    setInputRR(inputRR);
+    error = null;
   }
 
   /**
-   * @param inputRR the inputRR to set
+   * @param inputRR
+   *          the inputRR to set
    */
   public void setInputRR(RowResolver inputRR) {
     this.inputRR = inputRR;
@@ -67,7 +69,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   }
 
   /**
-   * @param unparseTranslator the unparseTranslator to set
+   * @param unparseTranslator
+   *          the unparseTranslator to set
    */
   public void setUnparseTranslator(UnparseTranslator unparseTranslator) {
     this.unparseTranslator = unparseTranslator;
@@ -79,9 +82,10 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   public UnparseTranslator getUnparseTranslator() {
     return unparseTranslator;
   }
-  
+
   /**
-   * @param error the error to set
+   * @param error
+   *          the error to set
    */
   public void setError(String error) {
     this.error = error;

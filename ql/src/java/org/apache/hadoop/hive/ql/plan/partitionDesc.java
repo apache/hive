@@ -31,163 +31,184 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 
-@explain(displayName="Partition")
+@explain(displayName = "Partition")
 public class partitionDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 2L;
-	private tableDesc table;
+  private tableDesc table;
   private java.util.LinkedHashMap<String, String> partSpec;
-  private java.lang.Class<? extends  org.apache.hadoop.hive.serde2.Deserializer> deserializerClass;
+  private java.lang.Class<? extends org.apache.hadoop.hive.serde2.Deserializer> deserializerClass;
   private Class<? extends InputFormat> inputFileFormatClass;
   private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
   private transient String baseFileName;
 
-  public partitionDesc() { }
+  public partitionDesc() {
+  }
 
-  public partitionDesc(
-    final tableDesc table,
-    final java.util.LinkedHashMap<String, String> partSpec) {
+  public partitionDesc(final tableDesc table,
+      final java.util.LinkedHashMap<String, String> partSpec) {
     this(table, partSpec, null, null, null, null, null);
   }
 
-  public partitionDesc(
-  		final tableDesc table,
-  		final java.util.LinkedHashMap<String, String> partSpec,
+  public partitionDesc(final tableDesc table,
+      final java.util.LinkedHashMap<String, String> partSpec,
       final Class<? extends Deserializer> serdeClass,
       final Class<? extends InputFormat> inputFileFormatClass,
-      final Class<?> outputFormat,
-      final java.util.Properties properties, final String serdeClassName) {
-  	this.table = table;
+      final Class<?> outputFormat, final java.util.Properties properties,
+      final String serdeClassName) {
+    this.table = table;
     this.partSpec = partSpec;
-    this.deserializerClass = serdeClass;
+    deserializerClass = serdeClass;
     this.inputFileFormatClass = inputFileFormatClass;
-		if (outputFormat != null)
-			this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(outputFormat);
+    if (outputFormat != null) {
+      outputFileFormatClass = HiveFileFormatUtils
+          .getOutputFormatSubstitute(outputFormat);
+    }
     this.properties = properties;
-		if (properties != null)
-			this.serdeClassName = properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+    if (properties != null) {
+      this.serdeClassName = properties
+          .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+    }
   }
 
-  public partitionDesc(final org.apache.hadoop.hive.ql.metadata.Partition part)  throws HiveException{
-  	this.table = Utilities.getTableDesc(part.getTable());
-  	this.partSpec = part.getSpec();
-  	this.deserializerClass = part.getDeserializer().getClass();
-  	this.inputFileFormatClass = part.getInputFormatClass();
-  	this.outputFileFormatClass = part.getOutputFormatClass();
-  	this.properties = part.getSchema();
-  	this.serdeClassName = properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);;
+  public partitionDesc(final org.apache.hadoop.hive.ql.metadata.Partition part)
+      throws HiveException {
+    table = Utilities.getTableDesc(part.getTable());
+    partSpec = part.getSpec();
+    deserializerClass = part.getDeserializer().getClass();
+    inputFileFormatClass = part.getInputFormatClass();
+    outputFileFormatClass = part.getOutputFormatClass();
+    properties = part.getSchema();
+    serdeClassName = properties
+        .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
+    ;
   }
 
-  @explain(displayName="")
+  @explain(displayName = "")
   public tableDesc getTableDesc() {
-    return this.table;
+    return table;
   }
+
   public void setTableDesc(final tableDesc table) {
     this.table = table;
   }
 
-  @explain(displayName="partition values")
+  @explain(displayName = "partition values")
   public java.util.LinkedHashMap<String, String> getPartSpec() {
-    return this.partSpec;
+    return partSpec;
   }
+
   public void setPartSpec(final java.util.LinkedHashMap<String, String> partSpec) {
-    this.partSpec=partSpec;
+    this.partSpec = partSpec;
   }
 
-  public java.lang.Class<? extends  org.apache.hadoop.hive.serde2.Deserializer> getDeserializerClass() {
-		if (this.deserializerClass == null && this.table !=null)
-			setDeserializerClass(this.table.getDeserializerClass());
-    return this.deserializerClass;
+  public java.lang.Class<? extends org.apache.hadoop.hive.serde2.Deserializer> getDeserializerClass() {
+    if (deserializerClass == null && table != null) {
+      setDeserializerClass(table.getDeserializerClass());
+    }
+    return deserializerClass;
   }
 
-  public void setDeserializerClass(final java.lang.Class<? extends  org.apache.hadoop.hive.serde2.Deserializer> serdeClass) {
-    this.deserializerClass = serdeClass;
+  public void setDeserializerClass(
+      final java.lang.Class<? extends org.apache.hadoop.hive.serde2.Deserializer> serdeClass) {
+    deserializerClass = serdeClass;
   }
 
   public Class<? extends InputFormat> getInputFileFormatClass() {
-  	if (this.inputFileFormatClass == null && this.table !=null)
-  		setInputFileFormatClass (this.table.getInputFileFormatClass());
-    return this.inputFileFormatClass;
+    if (inputFileFormatClass == null && table != null) {
+      setInputFileFormatClass(table.getInputFileFormatClass());
+    }
+    return inputFileFormatClass;
   }
 
   /**
    * Return a deserializer object corresponding to the tableDesc
    */
   public Deserializer getDeserializer() throws Exception {
-    Deserializer de = this.deserializerClass.newInstance();
+    Deserializer de = deserializerClass.newInstance();
     de.initialize(null, properties);
     return de;
   }
 
-  public void setInputFileFormatClass(final Class<? extends InputFormat> inputFileFormatClass) {
-    this.inputFileFormatClass=inputFileFormatClass;
+  public void setInputFileFormatClass(
+      final Class<? extends InputFormat> inputFileFormatClass) {
+    this.inputFileFormatClass = inputFileFormatClass;
   }
 
   public Class<? extends HiveOutputFormat> getOutputFileFormatClass() {
-  	if (this.outputFileFormatClass == null && this.table !=null)
-  		setOutputFileFormatClass( this.table.getOutputFileFormatClass());
-    return this.outputFileFormatClass;
+    if (outputFileFormatClass == null && table != null) {
+      setOutputFileFormatClass(table.getOutputFileFormatClass());
+    }
+    return outputFileFormatClass;
   }
 
   public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
-    this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(outputFileFormatClass);
+    this.outputFileFormatClass = HiveFileFormatUtils
+        .getOutputFormatSubstitute(outputFileFormatClass);
   }
 
-  @explain(displayName="properties", normalExplain=false)
+  @explain(displayName = "properties", normalExplain = false)
   public java.util.Properties getProperties() {
-    if(this.table !=null)
-      return this.table.getProperties();
-    return this.properties;
+    if (table != null) {
+      return table.getProperties();
+    }
+    return properties;
   }
 
   public void setProperties(final java.util.Properties properties) {
     this.properties = properties;
   }
+
   /**
    * @return the serdeClassName
    */
-  @explain(displayName="serde")
+  @explain(displayName = "serde")
   public String getSerdeClassName() {
-  	if(this.serdeClassName == null && this.table !=null)
-  		setSerdeClassName(this.table.getSerdeClassName());
-    return this.serdeClassName;
+    if (serdeClassName == null && table != null) {
+      setSerdeClassName(table.getSerdeClassName());
+    }
+    return serdeClassName;
   }
+
   /**
-   * @param serdeClassName the serde Class Name to set
+   * @param serdeClassName
+   *          the serde Class Name to set
    */
   public void setSerdeClassName(String serdeClassName) {
     this.serdeClassName = serdeClassName;
   }
 
-  @explain(displayName="name")
+  @explain(displayName = "name")
   public String getTableName() {
-    return getProperties().getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
+    return getProperties().getProperty(
+        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME);
   }
 
-  @explain(displayName="input format")
+  @explain(displayName = "input format")
   public String getInputFileFormatClassName() {
     return getInputFileFormatClass().getName();
   }
 
-  @explain(displayName="output format")
+  @explain(displayName = "output format")
   public String getOutputFileFormatClassName() {
     return getOutputFileFormatClass().getName();
   }
 
-  @explain(displayName="base file name", normalExplain=false)
+  @explain(displayName = "base file name", normalExplain = false)
   public String getBaseFileName() {
-    return this.baseFileName;
+    return baseFileName;
   }
 
+  @Override
   public partitionDesc clone() {
-  	partitionDesc ret = new partitionDesc();
+    partitionDesc ret = new partitionDesc();
 
     ret.setSerdeClassName(serdeClassName);
     ret.setDeserializerClass(deserializerClass);
-    ret.inputFileFormatClass = this.inputFileFormatClass;
-    ret.outputFileFormatClass = this.outputFileFormatClass;
-    if(this.properties != null) {
+    ret.inputFileFormatClass = inputFileFormatClass;
+    ret.outputFileFormatClass = outputFileFormatClass;
+    if (properties != null) {
       Properties newProp = new Properties();
       Enumeration<Object> keysProp = properties.keys();
       while (keysProp.hasMoreElements()) {
@@ -196,23 +217,23 @@ public class partitionDesc implements Serializable, Cloneable {
       }
       ret.setProperties(newProp);
     }
-  	ret.table = (tableDesc)this.table.clone();
+    ret.table = (tableDesc) table.clone();
     // The partition spec is not present
-    if (this.partSpec != null) {
+    if (partSpec != null) {
       ret.partSpec = new java.util.LinkedHashMap<String, String>();
-      ret.partSpec.putAll(this.partSpec);
+      ret.partSpec.putAll(partSpec);
     }
-  	return ret;
+    return ret;
   }
 
   /**
    * Attempt to derive a virtual <code>base file name</code> property from the
-   * path.  If path format is unrecognized, just use the full path.
-   *
-   * @param path URI to the partition file
+   * path. If path format is unrecognized, just use the full path.
+   * 
+   * @param path
+   *          URI to the partition file
    */
-  void deriveBaseFileName(String path)
-  {
+  void deriveBaseFileName(String path) {
     if (path == null) {
       return;
     }

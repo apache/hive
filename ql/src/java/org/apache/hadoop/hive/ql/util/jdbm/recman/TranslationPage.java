@@ -66,44 +66,45 @@
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
 /**
- *  Class describing a page that holds translations from physical rowids
- *  to logical rowids. In fact, the page just holds physical rowids - the
- *  page's block is the block for the logical rowid, the offset serve
- *  as offset for the rowids.
+ * Class describing a page that holds translations from physical rowids to
+ * logical rowids. In fact, the page just holds physical rowids - the page's
+ * block is the block for the logical rowid, the offset serve as offset for the
+ * rowids.
  */
 final class TranslationPage extends PageHeader {
-    // offsets
-    static final short O_TRANS = PageHeader.SIZE; // short count
-    static final short ELEMS_PER_PAGE = 
-        (RecordFile.BLOCK_SIZE - O_TRANS) / PhysicalRowId.SIZE;
-    
-    // slots we returned.
-    final PhysicalRowId[] slots = new PhysicalRowId[ELEMS_PER_PAGE];
+  // offsets
+  static final short O_TRANS = PageHeader.SIZE; // short count
+  static final short ELEMS_PER_PAGE = (RecordFile.BLOCK_SIZE - O_TRANS)
+      / PhysicalRowId.SIZE;
 
-    /**
-     *  Constructs a data page view from the indicated block.
-     */
-    TranslationPage(BlockIo block) {
-        super(block);
-    }
+  // slots we returned.
+  final PhysicalRowId[] slots = new PhysicalRowId[ELEMS_PER_PAGE];
 
-    /**
-     *  Factory method to create or return a data page for the
-     *  indicated block.
-     */
-    static TranslationPage getTranslationPageView(BlockIo block) {
-        BlockView view = block.getView();
-        if (view != null && view instanceof TranslationPage)
-            return (TranslationPage) view;
-        else
-            return new TranslationPage(block);
-    }
+  /**
+   * Constructs a data page view from the indicated block.
+   */
+  TranslationPage(BlockIo block) {
+    super(block);
+  }
 
-    /** Returns the value of the indicated rowid on the page */
-    PhysicalRowId get(short offset) {
-        int slot = (offset - O_TRANS) / PhysicalRowId.SIZE;
-        if (slots[slot] == null) 
-            slots[slot] = new PhysicalRowId(block, offset);
-        return slots[slot];
+  /**
+   * Factory method to create or return a data page for the indicated block.
+   */
+  static TranslationPage getTranslationPageView(BlockIo block) {
+    BlockView view = block.getView();
+    if (view != null && view instanceof TranslationPage) {
+      return (TranslationPage) view;
+    } else {
+      return new TranslationPage(block);
     }
+  }
+
+  /** Returns the value of the indicated rowid on the page */
+  PhysicalRowId get(short offset) {
+    int slot = (offset - O_TRANS) / PhysicalRowId.SIZE;
+    if (slots[slot] == null) {
+      slots[slot] = new PhysicalRowId(block, offset);
+    }
+    return slots[slot];
+  }
 }

@@ -22,20 +22,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.hadoop.mapred.LineRecordReader.LineReader;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-
+import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 
 public class TextRecordReader implements RecordReader {
 
-  private LineReader  lineReader;
+  private LineReader lineReader;
   private InputStream in;
-  private Text        row;
+  private Text row;
 
-  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
+  public void initialize(InputStream in, Configuration conf, Properties tbl)
+      throws IOException {
     lineReader = new LineReader(in, conf);
     this.in = in;
   }
@@ -46,14 +45,16 @@ public class TextRecordReader implements RecordReader {
   }
 
   public int next(Writable row) throws IOException {
-    if (lineReader == null)
+    if (lineReader == null) {
       return -1;
+    }
 
-    return lineReader.readLine((Text)row);
+    return lineReader.readLine((Text) row);
   }
 
   public void close() throws IOException {
-    if (in != null)
+    if (in != null) {
       in.close();
+    }
   }
 }

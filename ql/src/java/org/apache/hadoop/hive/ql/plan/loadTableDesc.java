@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc implements Serializable {
+public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc
+    implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
   private String tmpDir;
@@ -30,13 +31,12 @@ public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc imple
   private org.apache.hadoop.hive.ql.plan.tableDesc table;
   private HashMap<String, String> partitionSpec;
 
-  public loadTableDesc() { }
-  public loadTableDesc(
-    final String sourceDir,
-    final String tmpDir,
-    final org.apache.hadoop.hive.ql.plan.tableDesc table,
-    final HashMap<String, String> partitionSpec,
-    final boolean replace) {
+  public loadTableDesc() {
+  }
+
+  public loadTableDesc(final String sourceDir, final String tmpDir,
+      final org.apache.hadoop.hive.ql.plan.tableDesc table,
+      final HashMap<String, String> partitionSpec, final boolean replace) {
 
     super(sourceDir);
     this.tmpDir = tmpDir;
@@ -44,42 +44,45 @@ public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc imple
     this.partitionSpec = partitionSpec;
     this.replace = replace;
   }
-  public loadTableDesc(
-    final String sourceDir,
-    final String tmpDir,
-    final org.apache.hadoop.hive.ql.plan.tableDesc table,
-    final HashMap<String, String> partitionSpec) {
+
+  public loadTableDesc(final String sourceDir, final String tmpDir,
+      final org.apache.hadoop.hive.ql.plan.tableDesc table,
+      final HashMap<String, String> partitionSpec) {
     this(sourceDir, tmpDir, table, partitionSpec, true);
   }
 
-  @explain(displayName="tmp directory", normalExplain=false)
+  @explain(displayName = "tmp directory", normalExplain = false)
   public String getTmpDir() {
-    return this.tmpDir;
-  }
-  public void setTmpDir(final String tmp) {
-    this.tmpDir = tmp;
+    return tmpDir;
   }
 
-  @explain(displayName="table")
-  public tableDesc getTable() {
-    return this.table;
+  public void setTmpDir(final String tmp) {
+    tmpDir = tmp;
   }
+
+  @explain(displayName = "table")
+  public tableDesc getTable() {
+    return table;
+  }
+
   public void setTable(final org.apache.hadoop.hive.ql.plan.tableDesc table) {
     this.table = table;
   }
-  
-  @explain(displayName="partition")
+
+  @explain(displayName = "partition")
   public HashMap<String, String> getPartitionSpec() {
-    return this.partitionSpec;
+    return partitionSpec;
   }
+
   public void setPartitionSpec(final HashMap<String, String> partitionSpec) {
     this.partitionSpec = partitionSpec;
   }
 
-  @explain(displayName="replace")
+  @explain(displayName = "replace")
   public boolean getReplace() {
     return replace;
   }
+
   public void setReplace(boolean replace) {
     this.replace = replace;
   }

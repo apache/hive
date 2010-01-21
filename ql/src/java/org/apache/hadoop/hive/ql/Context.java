@@ -18,32 +18,27 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.File;
 import java.io.DataInput;
-import java.io.IOException;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Random;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.antlr.runtime.TokenRewriteStream;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 
-import org.apache.hadoop.hive.common.FileUtils;
-
 /**
- * Context for Semantic Analyzers.
- * Usage:
- * not reusable - construct a new one for each query
- * should call clear() at end of use to remove temporary folders
+ * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
+ * each query should call clear() at end of use to remove temporary folders
  */
 public class Context {
   private Path resFile;
@@ -51,22 +46,22 @@ public class Context {
   private FileSystem resFs;
   static final private Log LOG = LogFactory.getLog("hive.ql.Context");
   private Path[] resDirPaths;
-  private int    resDirFilesNum;
+  private int resDirFilesNum;
   boolean initialized;
   private String scratchPath;
   private Path MRScratchDir;
   private Path localScratchDir;
-  private ArrayList<Path> allScratchDirs = new ArrayList<Path> ();
+  private final ArrayList<Path> allScratchDirs = new ArrayList<Path>();
   private HiveConf conf;
-  Random rand = new Random ();
+  Random rand = new Random();
   protected int randomid = Math.abs(rand.nextInt());
   protected int pathid = 10000;
   protected boolean explain = false;
   private TokenRewriteStream tokenRewriteStream;
 
-  public Context() {  
+  public Context() {
   }
-  
+
   public Context(HiveConf conf) {
     this.conf = conf;
     Path tmpPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
@@ -75,7 +70,9 @@ public class Context {
 
   /**
    * Set the context on whether the current query is an explain query
-   * @param value true if the query is an explain query, false if not
+   * 
+   * @param value
+   *          true if the query is an explain query, false if not
    */
   public void setExplain(boolean value) {
     explain = value;
@@ -83,6 +80,7 @@ public class Context {
 
   /**
    * Find out whether the current query is an explain query
+   * 
    * @return true if the query is an explain query, false if not
    */
   public boolean getExplain() {
@@ -95,7 +93,7 @@ public class Context {
   private void makeLocalScratchDir() throws IOException {
     while (true) {
       localScratchDir = new Path(System.getProperty("java.io.tmpdir")
-                                 + File.separator + Math.abs(rand.nextInt()));
+          + File.separator + Math.abs(rand.nextInt()));
       FileSystem fs = FileSystem.getLocal(conf);
       if (fs.mkdirs(localScratchDir)) {
         localScratchDir = fs.makeQualified(localScratchDir);
@@ -106,15 +104,15 @@ public class Context {
   }
 
   /**
-   * Make a tmp directory for MR intermediate data
-   * If URI/Scheme are not supplied - those implied by the default filesystem
-   * will be used (which will typically correspond to hdfs instance on hadoop cluster)
+   * Make a tmp directory for MR intermediate data If URI/Scheme are not
+   * supplied - those implied by the default filesystem will be used (which will
+   * typically correspond to hdfs instance on hadoop cluster)
    */
   private void makeMRScratchDir() throws IOException {
-    while(true) {
-      MRScratchDir = FileUtils.makeQualified
-        (new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR),
-                  Integer.toString(Math.abs(rand.nextInt()))), conf);
+    while (true) {
+      MRScratchDir = FileUtils.makeQualified(new Path(conf
+          .getVar(HiveConf.ConfVars.SCRATCHDIR), Integer.toString(Math.abs(rand
+          .nextInt()))), conf);
 
       if (explain) {
         allScratchDirs.add(MRScratchDir);
@@ -128,20 +126,20 @@ public class Context {
       }
     }
   }
-  
+
   /**
-   * Make a tmp directory on specified URI
-   * Currently will use the same path as implied by SCRATCHDIR config variable
+   * Make a tmp directory on specified URI Currently will use the same path as
+   * implied by SCRATCHDIR config variable
    */
   private Path makeExternalScratchDir(URI extURI) throws IOException {
-    while(true) {
-      String extPath = scratchPath + File.separator + 
-        Integer.toString(Math.abs(rand.nextInt()));
+    while (true) {
+      String extPath = scratchPath + File.separator
+          + Integer.toString(Math.abs(rand.nextInt()));
       Path extScratchDir = new Path(extURI.getScheme(), extURI.getAuthority(),
-                                    extPath);
+          extPath);
 
       if (explain) {
-        allScratchDirs.add(extScratchDir);        
+        allScratchDirs.add(extScratchDir);
         return extScratchDir;
       }
 
@@ -154,26 +152,25 @@ public class Context {
   }
 
   /**
-   * Get a tmp directory on specified URI
-   * Will check if this has already been made
-   * (either via MR or Local FileSystem or some other external URI
+   * Get a tmp directory on specified URI Will check if this has already been
+   * made (either via MR or Local FileSystem or some other external URI
    */
   private String getExternalScratchDir(URI extURI) {
     try {
       // first check if we already made a scratch dir on this URI
-      for (Path p: allScratchDirs) {
+      for (Path p : allScratchDirs) {
         URI pURI = p.toUri();
-        if (strEquals(pURI.getScheme(), extURI.getScheme()) &&
-            strEquals(pURI.getAuthority(), extURI.getAuthority())) {
+        if (strEquals(pURI.getScheme(), extURI.getScheme())
+            && strEquals(pURI.getAuthority(), extURI.getAuthority())) {
           return p.toString();
         }
       }
       return makeExternalScratchDir(extURI).toString();
     } catch (IOException e) {
-      throw new RuntimeException (e);
+      throw new RuntimeException(e);
     }
   }
-  
+
   /**
    * Create a map-reduce scratch directory on demand and return it
    */
@@ -182,10 +179,10 @@ public class Context {
       try {
         makeMRScratchDir();
       } catch (IOException e) {
-        throw new RuntimeException (e);
+        throw new RuntimeException(e);
       } catch (IllegalArgumentException e) {
-        throw new RuntimeException("Error while making MR scratch " + 
-            "directory - check filesystem config (" + e.getCause() + ")", e);
+        throw new RuntimeException("Error while making MR scratch "
+            + "directory - check filesystem config (" + e.getCause() + ")", e);
       }
     }
     return MRScratchDir.toString();
@@ -201,8 +198,8 @@ public class Context {
       } catch (IOException e) {
         throw new RuntimeException(e);
       } catch (IllegalArgumentException e) {
-        throw new RuntimeException("Error while making local scratch " + 
-            "directory - check filesystem config (" + e.getCause() + ")", e);
+        throw new RuntimeException("Error while making local scratch "
+            + "directory - check filesystem config (" + e.getCause() + ")", e);
       }
     }
     return localScratchDir.toString();
@@ -214,17 +211,21 @@ public class Context {
   private void removeScratchDir() {
     if (explain) {
       try {
-        if (localScratchDir != null)
+        if (localScratchDir != null) {
           FileSystem.getLocal(conf).delete(localScratchDir, true);
+        }
       } catch (Exception e) {
-        LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
+        LOG
+            .warn("Error Removing Scratch: "
+                + StringUtils.stringifyException(e));
       }
     } else {
-      for (Path p: allScratchDirs) {
+      for (Path p : allScratchDirs) {
         try {
           p.getFileSystem(conf).delete(p, true);
         } catch (Exception e) {
-          LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
+          LOG.warn("Error Removing Scratch: "
+              + StringUtils.stringifyException(e));
         }
       }
     }
@@ -238,12 +239,13 @@ public class Context {
   private String nextPath(String base) {
     return base + File.separator + Integer.toString(pathid++);
   }
-  
+
   /**
-   * check if path is tmp path. the assumption is that all uri's relative
-   * to scratchdir are temporary
-   * @return true if a uri is a temporary uri for map-reduce intermediate
-   *         data, false otherwise
+   * check if path is tmp path. the assumption is that all uri's relative to
+   * scratchdir are temporary
+   * 
+   * @return true if a uri is a temporary uri for map-reduce intermediate data,
+   *         false otherwise
    */
   public boolean isMRTmpFileURI(String uriStr) {
     return (uriStr.indexOf(scratchPath) != -1);
@@ -251,28 +253,28 @@ public class Context {
 
   /**
    * Get a path to store map-reduce intermediate data in
+   * 
    * @return next available path for map-red intermediate data
    */
   public String getMRTmpFileURI() {
     return nextPath(getMRScratchDir());
   }
 
-
   /**
    * Get a tmp path on local host to store intermediate data
+   * 
    * @return next available tmp path on local fs
    */
   public String getLocalTmpFileURI() {
     return nextPath(getLocalScratchDir());
   }
-  
 
   /**
    * Get a path to store tmp data destined for external URI
-   * @param extURI external URI to which the tmp data has to be 
-   *               eventually moved
-   * @return next available tmp path on the file system corresponding
-   *              extURI
+   * 
+   * @param extURI
+   *          external URI to which the tmp data has to be eventually moved
+   * @return next available tmp path on the file system corresponding extURI
    */
   public String getExternalTmpFileURI(URI extURI) {
     return nextPath(getExternalScratchDir(extURI));
@@ -286,7 +288,8 @@ public class Context {
   }
 
   /**
-   * @param resFile the resFile to set
+   * @param resFile
+   *          the resFile to set
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;
@@ -303,7 +306,8 @@ public class Context {
   }
 
   /**
-   * @param resDir the resDir to set
+   * @param resDir
+   *          the resDir to set
    */
   public void setResDir(Path resDir) {
     this.resDir = resDir;
@@ -311,13 +315,11 @@ public class Context {
 
     resDirFilesNum = 0;
     resDirPaths = null;
-  }  
-  
+  }
+
   public void clear() throws IOException {
-    if (resDir != null)
-    {
-      try
-      {
+    if (resDir != null) {
+      try {
         FileSystem fs = resDir.getFileSystem(conf);
         fs.delete(resDir, true);
       } catch (IOException e) {
@@ -325,12 +327,10 @@ public class Context {
       }
     }
 
-    if (resFile != null)
-    {
-      try
-      {
+    if (resFile != null) {
+      try {
         FileSystem fs = resFile.getFileSystem(conf);
-      	fs.delete(resFile, false);
+        fs.delete(resFile, false);
       } catch (IOException e) {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
       }
@@ -339,30 +339,34 @@ public class Context {
   }
 
   public DataInput getStream() {
-    try
-    {
+    try {
       if (!initialized) {
         initialized = true;
-        if ((resFile == null) && (resDir == null)) return null;
-      
-        if (resFile != null) {
-          return (DataInput)resFile.getFileSystem(conf).open(resFile);
+        if ((resFile == null) && (resDir == null)) {
+          return null;
         }
-        
+
+        if (resFile != null) {
+          return resFile.getFileSystem(conf).open(resFile);
+        }
+
         resFs = resDir.getFileSystem(conf);
         FileStatus status = resFs.getFileStatus(resDir);
         assert status.isDir();
         FileStatus[] resDirFS = resFs.globStatus(new Path(resDir + "/*"));
         resDirPaths = new Path[resDirFS.length];
         int pos = 0;
-        for (FileStatus resFS: resDirFS)
-          if (!resFS.isDir())
+        for (FileStatus resFS : resDirFS) {
+          if (!resFS.isDir()) {
             resDirPaths[pos++] = resFS.getPath();
-        if (pos == 0) return null;
-        
-        return (DataInput)resFs.open(resDirPaths[resDirFilesNum++]);
-      }
-      else {
+          }
+        }
+        if (pos == 0) {
+          return null;
+        }
+
+        return resFs.open(resDirPaths[resDirFilesNum++]);
+      } else {
         return getNextStream();
       }
     } catch (FileNotFoundException e) {
@@ -375,11 +379,11 @@ public class Context {
   }
 
   private DataInput getNextStream() {
-    try
-    {
-      if (resDir != null && resDirFilesNum < resDirPaths.length && 
-          (resDirPaths[resDirFilesNum] != null))
-        return (DataInput)resFs.open(resDirPaths[resDirFilesNum++]);
+    try {
+      if (resDir != null && resDirFilesNum < resDirPaths.length
+          && (resDirPaths[resDirFilesNum] != null)) {
+        return resFs.open(resDirPaths[resDirFilesNum++]);
+      }
     } catch (FileNotFoundException e) {
       LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
       return null;
@@ -387,7 +391,7 @@ public class Context {
       LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
       return null;
     }
-    
+
     return null;
   }
 
@@ -400,25 +404,25 @@ public class Context {
 
   /**
    * Set the token rewrite stream being used to parse the current top-level SQL
-   * statement.  Note that this should <b>not</b> be used for other parsing
-   * activities; for example, when we encounter a reference to a view, we
-   * switch to a new stream for parsing the stored view definition from the
-   * catalog, but we don't clobber the top-level stream in the context.
-   *
-   * @param tokenRewriteStream the stream being used
+   * statement. Note that this should <b>not</b> be used for other parsing
+   * activities; for example, when we encounter a reference to a view, we switch
+   * to a new stream for parsing the stored view definition from the catalog,
+   * but we don't clobber the top-level stream in the context.
+   * 
+   * @param tokenRewriteStream
+   *          the stream being used
    */
   public void setTokenRewriteStream(TokenRewriteStream tokenRewriteStream) {
-    assert(this.tokenRewriteStream == null);
+    assert (this.tokenRewriteStream == null);
     this.tokenRewriteStream = tokenRewriteStream;
   }
 
   /**
-   * @return the token rewrite stream being used to parse the current
-   * top-level SQL statement, or null if it isn't available
-   * (e.g. for parser tests)
+   * @return the token rewrite stream being used to parse the current top-level
+   *         SQL statement, or null if it isn't available (e.g. for parser
+   *         tests)
    */
   public TokenRewriteStream getTokenRewriteStream() {
     return tokenRewriteStream;
   }
 }
-

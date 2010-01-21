@@ -18,26 +18,24 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.*;
-
-import org.apache.hadoop.hive.ql.parse.QBParseInfo;
-import org.apache.hadoop.hive.ql.parse.QBMetaData;
-import org.apache.hadoop.hive.ql.plan.createTableDesc;
+import java.util.HashMap;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.plan.createTableDesc;
 
 /**
  * Implementation of the query block
- *
+ * 
  **/
 
 public class QB {
 
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.QB");
 
-  private int numJoins = 0;
-  private int numGbys = 0;
+  private final int numJoins = 0;
+  private final int numGbys = 0;
   private int numSels = 0;
   private int numSelDi = 0;
   private HashMap<String, String> aliasToTabs;
@@ -47,21 +45,22 @@ public class QB {
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
-  private createTableDesc tblDesc = null;   // table descriptor of the final results
+  private createTableDesc tblDesc = null; // table descriptor of the final
+                                          // results
 
   public void print(String msg) {
     LOG.info(msg + "alias=" + qbp.getAlias());
-    for(String alias: getSubqAliases()) {
+    for (String alias : getSubqAliases()) {
       QBExpr qbexpr = getSubqForAlias(alias);
-      LOG.info(msg+"start subquery " + alias);
-      qbexpr.print(msg+" ");
-      LOG.info(msg+"end subquery " + alias);
+      LOG.info(msg + "start subquery " + alias);
+      qbexpr.print(msg + " ");
+      LOG.info(msg + "end subquery " + alias);
     }
   }
 
-  public QB() {  
+  public QB() {
   }
-  
+
   public QB(String outer_id, String alias, boolean isSubQ) {
     aliasToTabs = new HashMap<String, String>();
     aliasToSubq = new HashMap<String, QBExpr>();
@@ -70,7 +69,7 @@ public class QB {
     }
     qbp = new QBParseInfo(alias, isSubQ);
     qbm = new QBMetaData();
-    this.id = (outer_id == null ? alias : outer_id + ":" + alias);
+    id = (outer_id == null ? alias : outer_id + ":" + alias);
   }
 
   public QBParseInfo getParseInfo() {
@@ -95,8 +94,9 @@ public class QB {
 
   public boolean exists(String alias) {
     alias = alias.toLowerCase();
-    if (aliasToTabs.get(alias) != null || aliasToSubq.get(alias) != null)
+    if (aliasToTabs.get(alias) != null || aliasToSubq.get(alias) != null) {
       return true;
+    }
 
     return false;
   }
@@ -171,7 +171,7 @@ public class QB {
   public boolean isSelectStarQuery() {
     return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS();
   }
-  
+
   public createTableDesc getTableDesc() {
     return tblDesc;
   }
@@ -179,7 +179,7 @@ public class QB {
   public void setTableDesc(createTableDesc desc) {
     tblDesc = desc;
   }
-  
+
   /**
    * Whether this QB is for a CREATE-TABLE-AS-SELECT.
    */

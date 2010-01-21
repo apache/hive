@@ -24,35 +24,36 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
-
 public class DeleteResourceProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(DeleteResourceProcessor.class.getName());
+  public static final Log LOG = LogFactory.getLog(DeleteResourceProcessor.class
+      .getName());
   public static final LogHelper console = new LogHelper(LOG);
 
   public void init() {
   }
-  
+
   public int run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
 
     SessionState.ResourceType t;
-    if(tokens.length < 1 || (t = SessionState.find_resource_type(tokens[0])) == null) {
-      console.printError("Usage: delete [" +
-                         StringUtils.join(SessionState.ResourceType.values(),"|") +
-                         "] <value> [<value>]*");
+    if (tokens.length < 1
+        || (t = SessionState.find_resource_type(tokens[0])) == null) {
+      console.printError("Usage: delete ["
+          + StringUtils.join(SessionState.ResourceType.values(), "|")
+          + "] <value> [<value>]*");
       return 1;
     }
 
     if (tokens.length >= 2) {
-      for(int i = 1; i < tokens.length; i++) {
+      for (int i = 1; i < tokens.length; i++) {
         ss.delete_resource(t, tokens[i]);
       }
     } else {
       ss.delete_resource(t);
     }
-    
+
     return 0;
   }
 }

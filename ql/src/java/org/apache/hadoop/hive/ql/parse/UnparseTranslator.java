@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.TokenRewriteStream;
-
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+
+import org.antlr.runtime.TokenRewriteStream;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 
 /**
  * UnparseTranslator is used to "unparse" objects such as views when their
@@ -55,16 +54,18 @@ class UnparseTranslator {
 
   /**
    * Register a translation to be performed as part of unparse.
-   *
-   * @param node source node whose subtree is to be replaced
-   *
-   * @param replacementText text to use as replacement
+   * 
+   * @param node
+   *          source node whose subtree is to be replaced
+   * 
+   * @param replacementText
+   *          text to use as replacement
    */
   void addTranslation(ASTNode node, String replacementText) {
     if (!enabled) {
       return;
     }
-    
+
     if (node.getOrigin() != null) {
       // This node was parsed while loading the definition of another view
       // being referenced by the one being created, and we don't want
@@ -79,42 +80,42 @@ class UnparseTranslator {
     translation.tokenStopIndex = tokenStopIndex;
     translation.replacementText = replacementText;
 
-    // Sanity check:  no overlap with regions already being expanded
-    assert(tokenStopIndex >= tokenStartIndex);
+    // Sanity check: no overlap with regions already being expanded
+    assert (tokenStopIndex >= tokenStartIndex);
     Map.Entry<Integer, Translation> existingEntry;
     existingEntry = translations.floorEntry(tokenStartIndex);
     if (existingEntry != null) {
       if (existingEntry.getKey() == tokenStartIndex) {
         if (existingEntry.getValue().tokenStopIndex == tokenStopIndex) {
-          if (existingEntry.getValue().replacementText.equals(
-              replacementText)) {
-            // exact match for existing mapping:  somebody is doing something
+          if (existingEntry.getValue().replacementText.equals(replacementText)) {
+            // exact match for existing mapping: somebody is doing something
             // redundant, but we'll let it pass
             return;
           }
         }
       }
-      assert(existingEntry.getValue().tokenStopIndex < tokenStartIndex);
+      assert (existingEntry.getValue().tokenStopIndex < tokenStartIndex);
     }
     existingEntry = translations.ceilingEntry(tokenStartIndex);
     if (existingEntry != null) {
-      assert(existingEntry.getKey() > tokenStopIndex);
+      assert (existingEntry.getKey() > tokenStopIndex);
     }
 
-    // It's all good:  create a new entry in the map
+    // It's all good: create a new entry in the map
     translations.put(tokenStartIndex, translation);
   }
 
   /**
    * Register a translation for an identifier.
-   *
-   * @param node source node (which must be an identifier) to be replaced
+   * 
+   * @param node
+   *          source node (which must be an identifier) to be replaced
    */
   void addIdentifierTranslation(ASTNode identifier) {
     if (!enabled) {
       return;
     }
-    assert(identifier.getToken().getType() == HiveParser.Identifier);
+    assert (identifier.getToken().getType() == HiveParser.Identifier);
     String replacementText = identifier.getText();
     replacementText = BaseSemanticAnalyzer.unescapeIdentifier(replacementText);
     replacementText = HiveUtils.unparseIdentifier(replacementText);
@@ -123,16 +124,14 @@ class UnparseTranslator {
 
   /**
    * Apply translations on the given token stream.
-   *
-   * @param tokenRewriteStream rewrite-capable stream
+   * 
+   * @param tokenRewriteStream
+   *          rewrite-capable stream
    */
   void applyTranslation(TokenRewriteStream tokenRewriteStream) {
-    for (Map.Entry<Integer, Translation> entry
-           : translations.entrySet()) {
-      tokenRewriteStream.replace(
-        entry.getKey(),
-        entry.getValue().tokenStopIndex,
-        entry.getValue().replacementText);
+    for (Map.Entry<Integer, Translation> entry : translations.entrySet()) {
+      tokenRewriteStream.replace(entry.getKey(),
+          entry.getValue().tokenStopIndex, entry.getValue().replacementText);
     }
   }
 
@@ -140,9 +139,9 @@ class UnparseTranslator {
     int tokenStopIndex;
     String replacementText;
 
+    @Override
     public String toString() {
       return "" + tokenStopIndex + " -> " + replacementText;
     }
   }
 }
-

@@ -18,16 +18,16 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class CommandProcessorFactory {
-  
+
   public static CommandProcessor get(String cmd) {
     String cmdl = cmd.toLowerCase();
 
-    if(cmdl.equals("set")) {
+    if (cmdl.equals("set")) {
       return new SetProcessor();
     } else if (cmdl.equals("dfs")) {
       SessionState ss = SessionState.get();

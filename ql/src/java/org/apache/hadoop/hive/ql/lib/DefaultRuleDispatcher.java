@@ -24,36 +24,44 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Dispatches calls to relevant method in processor. The user registers various rules with the dispatcher, and
- * the processor corresponding to closest matching rule is fired.
+ * Dispatches calls to relevant method in processor. The user registers various
+ * rules with the dispatcher, and the processor corresponding to closest
+ * matching rule is fired.
  */
 public class DefaultRuleDispatcher implements Dispatcher {
-  
-  private Map<Rule, NodeProcessor>  procRules;
-  private NodeProcessorCtx          procCtx;
-  private NodeProcessor             defaultProc;
+
+  private final Map<Rule, NodeProcessor> procRules;
+  private final NodeProcessorCtx procCtx;
+  private final NodeProcessor defaultProc;
 
   /**
    * constructor
-   * @param defaultProc default processor to be fired if no rule matches
-   * @param rules operator processor that handles actual processing of the node
-   * @param procCtx operator processor context, which is opaque to the dispatcher
+   * 
+   * @param defaultProc
+   *          default processor to be fired if no rule matches
+   * @param rules
+   *          operator processor that handles actual processing of the node
+   * @param procCtx
+   *          operator processor context, which is opaque to the dispatcher
    */
-  public DefaultRuleDispatcher(NodeProcessor defaultProc, 
-                               Map<Rule, NodeProcessor> rules, NodeProcessorCtx procCtx) {
+  public DefaultRuleDispatcher(NodeProcessor defaultProc,
+      Map<Rule, NodeProcessor> rules, NodeProcessorCtx procCtx) {
     this.defaultProc = defaultProc;
-    this.procRules = rules;
-    this.procCtx   = procCtx;
+    procRules = rules;
+    this.procCtx = procCtx;
   }
 
   /**
    * dispatcher function
-   * @param nd operator to process
-   * @param ndStack the operators encountered so far
+   * 
+   * @param nd
+   *          operator to process
+   * @param ndStack
+   *          the operators encountered so far
    * @throws SemanticException
    */
-  public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs) 
-    throws SemanticException {
+  public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs)
+      throws SemanticException {
 
     // find the firing rule
     // find the rule from the stack specified
@@ -69,17 +77,18 @@ public class DefaultRuleDispatcher implements Dispatcher {
 
     NodeProcessor proc;
 
-    if (rule == null)
+    if (rule == null) {
       proc = defaultProc;
-    else
+    } else {
       proc = procRules.get(rule);
+    }
 
     // Do nothing in case proc is null
     if (proc != null) {
       // Call the process function
       return proc.process(nd, ndStack, procCtx, nodeOutputs);
-    }
-    else
+    } else {
       return null;
+    }
   }
 }

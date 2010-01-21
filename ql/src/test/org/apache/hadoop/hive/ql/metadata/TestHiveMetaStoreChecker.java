@@ -16,8 +16,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.mapred.TextOutputFormat;
-
 import org.apache.thrift.TException;
 
 public class TestHiveMetaStoreChecker extends TestCase {
@@ -26,11 +24,11 @@ public class TestHiveMetaStoreChecker extends TestCase {
   private FileSystem fs;
   private HiveMetaStoreChecker checker = null;
 
-  private String dbName = "dbname";
-  private String tableName = "tablename";
+  private final String dbName = "dbname";
+  private final String tableName = "tablename";
 
-  private String partDateName = "partdate";
-  private String partCityName = "partcity";
+  private final String partDateName = "partdate";
+  private final String partCityName = "partcity";
 
   private List<FieldSchema> partCols;
   private List<Map<String, String>> parts;
@@ -42,10 +40,8 @@ public class TestHiveMetaStoreChecker extends TestCase {
     checker = new HiveMetaStoreChecker(hive);
 
     partCols = new ArrayList<FieldSchema>();
-    partCols.add(new FieldSchema(partDateName, Constants.STRING_TYPE_NAME, 
-        ""));
-    partCols.add(new FieldSchema(partCityName, Constants.STRING_TYPE_NAME, 
-        ""));
+    partCols.add(new FieldSchema(partDateName, Constants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema(partCityName, Constants.STRING_TYPE_NAME, ""));
 
     parts = new ArrayList<Map<String, String>>();
     Map<String, String> part1 = new HashMap<String, String>();
@@ -140,13 +136,13 @@ public class TestHiveMetaStoreChecker extends TestCase {
     assertTrue(result.getTablesNotOnFs().isEmpty());
     assertTrue(result.getPartitionsNotOnFs().isEmpty());
     assertTrue(result.getPartitionsNotInMs().isEmpty());
-    
-    //create a new external table
+
+    // create a new external table
     hive.dropTable(dbName, tableName);
     table.setProperty("EXTERNAL", "TRUE");
     hive.createTable(table);
-    
-    //should return all ok
+
+    // should return all ok
     result = new CheckResult();
     checker.checkMetastore(dbName, null, null, result);
     assertTrue(result.getTablesNotInMs().isEmpty());
@@ -188,7 +184,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
-    result = new CheckResult();    
+    result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
     // missing one partition on fs
     assertTrue(result.getTablesNotInMs().isEmpty());

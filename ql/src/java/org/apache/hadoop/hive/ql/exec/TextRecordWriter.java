@@ -22,19 +22,20 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 public class TextRecordWriter implements RecordWriter {
 
   private OutputStream out;
 
-  public void initialize(OutputStream out, Configuration conf) throws IOException {
+  public void initialize(OutputStream out, Configuration conf)
+      throws IOException {
     this.out = out;
   }
 
   public void write(Writable row) throws IOException {
-    Text text = (Text)row;
+    Text text = (Text) row;
     out.write(text.getBytes(), 0, text.getLength());
     out.write(Utilities.newLineCode);
   }

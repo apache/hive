@@ -21,13 +21,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Operator factory for union processing
@@ -38,8 +38,10 @@ public class UnionProcFactory {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == union;
-    Operator<? extends Serializable> parent = (Operator<? extends Serializable>)stack.get(size - 2);
-    List<Operator<? extends Serializable>> parUnion = union.getParentOperators();
+    Operator<? extends Serializable> parent = (Operator<? extends Serializable>) stack
+        .get(size - 2);
+    List<Operator<? extends Serializable>> parUnion = union
+        .getParentOperators();
     pos = parUnion.indexOf(parent);
     assert pos < parUnion.size();
     return pos;
@@ -53,14 +55,15 @@ public class UnionProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      UnionOperator union = (UnionOperator)nd;
+      UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
-      if (uCtx == null)
+      if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
+      }
 
       ctx.setMapOnlySubq(false);
       uCtx.setMapOnlySubq(pos, false);
@@ -78,14 +81,15 @@ public class UnionProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      UnionOperator union = (UnionOperator)nd;
+      UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
-      if (uCtx == null)
+      if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
+      }
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, true);
@@ -102,14 +106,15 @@ public class UnionProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      UnionOperator union = (UnionOperator)nd;
+      UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
-      if (uCtx == null)
+      if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
+      }
 
       uCtx.setMapJoinSubq(pos, true);
       ctx.setUnionParseContext(union, uCtx);
@@ -125,14 +130,15 @@ public class UnionProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      UnionOperator union = (UnionOperator)nd;
+      UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
-      if (uCtx == null)
+      if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
+      }
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, false);

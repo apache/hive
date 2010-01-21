@@ -25,30 +25,26 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "ceil,ceiling",
-    value = "_FUNC_(x) - Find the smallest integer not smaller than x",
-    extended = "Example:\n" +
-    		"  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n" +
-    		"  0\n" +
-    		"  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" +
-    		"  5"
-    )
+@description(name = "ceil,ceiling", value = "_FUNC_(x) - Find the smallest integer not smaller than x", extended = "Example:\n"
+    + "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n"
+    + "  0\n"
+    + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
 public class UDFCeil extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFCeil.class.getName());
 
   LongWritable longWritable = new LongWritable();
+
   public UDFCeil() {
   }
 
-  public LongWritable evaluate(DoubleWritable i)  {
+  public LongWritable evaluate(DoubleWritable i) {
     if (i == null) {
       return null;
     } else {
-      longWritable.set((long)Math.ceil(i.get()));
+      longWritable.set((long) Math.ceil(i.get()));
       return longWritable;
     }
   }
-  
+
 }

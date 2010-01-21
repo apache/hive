@@ -41,10 +41,10 @@ import org.apache.hadoop.hive.ql.plan.mapredWork;
 
 /**
  * An implementation of PhysicalPlanResolver. It iterator each task with a rule
- * dispatcher for its reducer operator tree, for task with join op in reducer, it
- * will try to add a conditional task associated a list of skew join tasks.
+ * dispatcher for its reducer operator tree, for task with join op in reducer,
+ * it will try to add a conditional task associated a list of skew join tasks.
  */
-public class SkewJoinResolver implements PhysicalPlanResolver{
+public class SkewJoinResolver implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
     Dispatcher disp = new SkewJoinTaskDispatcher(pctx);
@@ -54,37 +54,42 @@ public class SkewJoinResolver implements PhysicalPlanResolver{
     ogw.startWalking(topNodes, null);
     return null;
   }
-  
+
   /**
    * Iterator a task with a rule dispatcher for its reducer operator tree,
    */
-  class SkewJoinTaskDispatcher implements Dispatcher{
-    
+  class SkewJoinTaskDispatcher implements Dispatcher {
+
     private PhysicalContext physicalContext;
 
     public SkewJoinTaskDispatcher(PhysicalContext context) {
       super();
-      this.physicalContext = context;
+      physicalContext = context;
     }
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
-      Task<? extends Serializable> task = (Task<? extends Serializable>)nd;
-      
-      if (!task.isMapRedTask()
-          || task instanceof ConditionalTask ||((mapredWork) task.getWork()).getReducer() == null)
-        return null;
-      
-      SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task, this.physicalContext.getParseContext());
-      
-      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      opRules.put(new RuleRegExp("R1", "JOIN%"), SkewJoinProcFactory.getJoinProc());
+      Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
-      // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(SkewJoinProcFactory.getDefaultProc(), opRules, skewJoinProcContext);
+      if (!task.isMapRedTask() || task instanceof ConditionalTask
+          || ((mapredWork) task.getWork()).getReducer() == null) {
+        return null;
+      }
+
+      SkewJoinProcCtx skewJoinProcContext = new SkewJoinProcCtx(task,
+          physicalContext.getParseContext());
+
+      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      opRules.put(new RuleRegExp("R1", "JOIN%"), SkewJoinProcFactory
+          .getJoinProc());
+
+      // The dispatcher fires the processor corresponding to the closest
+      // matching rule and passes the context along
+      Dispatcher disp = new DefaultRuleDispatcher(SkewJoinProcFactory
+          .getDefaultProc(), opRules, skewJoinProcContext);
       GraphWalker ogw = new DefaultGraphWalker(disp);
-     
+
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
       topNodes.add(((mapredWork) task.getWork()).getReducer());
@@ -100,16 +105,17 @@ public class SkewJoinResolver implements PhysicalPlanResolver{
       this.physicalContext = physicalContext;
     }
   }
-  
+
   /**
-   * A container of current task and parse context. 
+   * A container of current task and parse context.
    */
   public static class SkewJoinProcCtx implements NodeProcessorCtx {
     private Task<? extends Serializable> currentTask;
     private ParseContext parseCtx;
-    
-    public SkewJoinProcCtx(Task<? extends Serializable> task, ParseContext parseCtx) {
-      this.currentTask = task;
+
+    public SkewJoinProcCtx(Task<? extends Serializable> task,
+        ParseContext parseCtx) {
+      currentTask = task;
       this.parseCtx = parseCtx;
     }
 

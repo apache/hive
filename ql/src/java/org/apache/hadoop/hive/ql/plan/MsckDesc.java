@@ -14,16 +14,21 @@ public class MsckDesc {
 
   /**
    * Description of a msck command.
-   * @param tableName Table to check, can be null.
-   * @param partSpecs Partition specification, can be null. 
-   * @param resFile Where to save the output of the command
-   * @param repairPartitions remove stale / add new partitions found during the check
+   * 
+   * @param tableName
+   *          Table to check, can be null.
+   * @param partSpecs
+   *          Partition specification, can be null.
+   * @param resFile
+   *          Where to save the output of the command
+   * @param repairPartitions
+   *          remove stale / add new partitions found during the check
    */
-  public MsckDesc(String tableName, List<Map<String, String>> partSpecs, Path resFile,
-      boolean repairPartitions) {
+  public MsckDesc(String tableName, List<Map<String, String>> partSpecs,
+      Path resFile, boolean repairPartitions) {
     super();
     this.tableName = tableName;
-    this.partitionSpec = partSpecs;
+    partitionSpec = partSpecs;
     this.resFile = resFile;
     this.repairPartitions = repairPartitions;
   }
@@ -36,7 +41,8 @@ public class MsckDesc {
   }
 
   /**
-   * @param tableName the table to check
+   * @param tableName
+   *          the table to check
    */
   public void setTableName(String tableName) {
     this.tableName = tableName;
@@ -50,7 +56,8 @@ public class MsckDesc {
   }
 
   /**
-   * @param partitionSpec partitions to check.
+   * @param partitionSpec
+   *          partitions to check.
    */
   public void setPartitionSpec(List<Map<String, String>> partitionSpec) {
     this.partitionSpec = partitionSpec;
@@ -64,7 +71,8 @@ public class MsckDesc {
   }
 
   /**
-   * @param resFile file to save command output to
+   * @param resFile
+   *          file to save command output to
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;
@@ -78,7 +86,8 @@ public class MsckDesc {
   }
 
   /**
-   * @param remove stale / add new partitions found during the check
+   * @param remove
+   *          stale / add new partitions found during the check
    */
   public void setRepairPartitions(boolean repairPartitions) {
     this.repairPartitions = repairPartitions;

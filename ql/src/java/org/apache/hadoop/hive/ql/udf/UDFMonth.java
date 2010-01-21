@@ -30,31 +30,30 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "month",
-    value = "_FUNC_(date) - Returns the month of date",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_('2009-30-07') FROM src LIMIT 1;\n" +
-        "  7"
-    )
+@description(name = "month", value = "_FUNC_(date) - Returns the month of date", extended = "Example:\n"
+    + "  > SELECT _FUNC_('2009-30-07') FROM src LIMIT 1;\n" + "  7")
 public class UDFMonth extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFMonth.class.getName());
 
-  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private Calendar calendar = Calendar.getInstance();
+  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private final Calendar calendar = Calendar.getInstance();
 
   IntWritable result = new IntWritable();
+
   public UDFMonth() {
   }
 
   /**
    * Get the month from a date string.
    * 
-   * @param dateString the dateString in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
-   * @return an int from 1 to 12. null if the dateString is not a valid date string.
+   * @param dateString
+   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
+   *          "yyyy-MM-dd".
+   * @return an int from 1 to 12. null if the dateString is not a valid date
+   *         string.
    */
-  public IntWritable evaluate(Text dateString)  {
+  public IntWritable evaluate(Text dateString) {
     if (dateString == null) {
       return null;
     }

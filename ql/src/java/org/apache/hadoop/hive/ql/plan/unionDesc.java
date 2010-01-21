@@ -21,17 +21,17 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 /**
- * unionDesc is a empty class currently. 
- * However, union has more than one input (as compared with forward), and therefore, we need a separate class.
+ * unionDesc is a empty class currently. However, union has more than one input
+ * (as compared with forward), and therefore, we need a separate class.
  **/
-@explain(displayName="Union")
+@explain(displayName = "Union")
 public class unionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   transient private int numInputs;
-  
+
   @SuppressWarnings("nls")
-  public unionDesc() { 
+  public unionDesc() {
     numInputs = 2;
   }
 
@@ -43,7 +43,8 @@ public class unionDesc implements Serializable {
   }
 
   /**
-   * @param numInputs the numInputs to set
+   * @param numInputs
+   *          the numInputs to set
    */
   public void setNumInputs(int numInputs) {
     this.numInputs = numInputs;

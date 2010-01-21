@@ -18,11 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.FunctionWork;
+import org.apache.hadoop.hive.ql.plan.copyWork;
+import org.apache.hadoop.hive.ql.plan.explainWork;
+import org.apache.hadoop.hive.ql.plan.fetchWork;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.moveWork;
 
 /**
  * TaskFactory implementation
@@ -46,38 +54,43 @@ public class TaskFactory {
     taskvec.add(new taskTuple<fetchWork>(fetchWork.class, FetchTask.class));
     taskvec.add(new taskTuple<copyWork>(copyWork.class, CopyTask.class));
     taskvec.add(new taskTuple<DDLWork>(DDLWork.class, DDLTask.class));
-    taskvec.add(new taskTuple<FunctionWork>(FunctionWork.class, FunctionTask.class));
-    taskvec.add(new taskTuple<explainWork>(explainWork.class, ExplainTask.class));
-    taskvec.add(new taskTuple<ConditionalWork>(ConditionalWork.class, ConditionalTask.class));
+    taskvec.add(new taskTuple<FunctionWork>(FunctionWork.class,
+        FunctionTask.class));
+    taskvec
+        .add(new taskTuple<explainWork>(explainWork.class, ExplainTask.class));
+    taskvec.add(new taskTuple<ConditionalWork>(ConditionalWork.class,
+        ConditionalTask.class));
     // we are taking this out to allow us to instantiate either MapRedTask or
     // ExecDriver dynamically at run time based on configuration
-    // taskvec.add(new taskTuple<mapredWork>(mapredWork.class, ExecDriver.class));
+    // taskvec.add(new taskTuple<mapredWork>(mapredWork.class,
+    // ExecDriver.class));
   }
 
-  private static ThreadLocal<Integer> tid = new ThreadLocal<Integer> () {
+  private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {
+    @Override
     protected synchronized Integer initialValue() {
-        return new Integer(0);
-      }
+      return new Integer(0);
+    }
   };
 
   public static int getAndIncrementId() {
     int curValue = tid.get().intValue();
-    tid.set(new Integer(curValue+1));
+    tid.set(new Integer(curValue + 1));
     return curValue;
   }
 
-  
   public static void resetId() {
     tid.set(new Integer(0));
   }
-  
+
   @SuppressWarnings("unchecked")
-  public static <T extends Serializable> Task<T> get(Class<T> workClass, HiveConf conf) {
-      
-    for(taskTuple<? extends Serializable> t: taskvec) {
-      if(t.workClass == workClass) {
+  public static <T extends Serializable> Task<T> get(Class<T> workClass,
+      HiveConf conf) {
+
+    for (taskTuple<? extends Serializable> t : taskvec) {
+      if (t.workClass == workClass) {
         try {
-          Task<T> ret = (Task<T>)t.taskClass.newInstance();
+          Task<T> ret = (Task<T>) t.taskClass.newInstance();
           ret.setId("Stage-" + Integer.toString(getAndIncrementId()));
           return ret;
         } catch (Exception e) {
@@ -85,57 +98,58 @@ public class TaskFactory {
         }
       }
     }
-    
-    if(workClass == mapredWork.class) {
+
+    if (workClass == mapredWork.class) {
 
       boolean viachild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
-      
+
       try {
 
         // in local mode - or if otherwise so configured - always submit
         // jobs via separate jvm
         Task<T> ret = null;
-        if(conf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local") || viachild) {
-          ret = (Task<T>)MapRedTask.class.newInstance();
+        if (conf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local") || viachild) {
+          ret = (Task<T>) MapRedTask.class.newInstance();
         } else {
-          ret = (Task<T>)ExecDriver.class.newInstance();
+          ret = (Task<T>) ExecDriver.class.newInstance();
         }
         ret.setId("Stage-" + Integer.toString(getAndIncrementId()));
         return ret;
       } catch (Exception e) {
-        throw new RuntimeException (e.getMessage(), e);
+        throw new RuntimeException(e.getMessage(), e);
       }
 
     }
 
-    throw new RuntimeException ("No task for work class " + workClass.getName());
+    throw new RuntimeException("No task for work class " + workClass.getName());
   }
 
   public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
-             Task<? extends Serializable> ... tasklist) {
-    Task<T> ret = get((Class <T>)work.getClass(), conf);
+      Task<? extends Serializable>... tasklist) {
+    Task<T> ret = get((Class<T>) work.getClass(), conf);
     ret.setWork(work);
-    if(tasklist.length == 0)
+    if (tasklist.length == 0) {
       return (ret);
+    }
 
-    ArrayList<Task<? extends Serializable>> clist = new ArrayList<Task<? extends Serializable>> ();
-    for(Task<? extends Serializable> tsk: tasklist) {
+    ArrayList<Task<? extends Serializable>> clist = new ArrayList<Task<? extends Serializable>>();
+    for (Task<? extends Serializable> tsk : tasklist) {
       clist.add(tsk);
     }
     ret.setChildTasks(clist);
     return (ret);
   }
 
-  public static <T extends Serializable> Task<T> getAndMakeChild(
-          T work, HiveConf conf,
-          Task<? extends Serializable> ... tasklist) {
-    Task<T> ret = get((Class <T>)work.getClass(), conf);
+  public static <T extends Serializable> Task<T> getAndMakeChild(T work,
+      HiveConf conf, Task<? extends Serializable>... tasklist) {
+    Task<T> ret = get((Class<T>) work.getClass(), conf);
     ret.setWork(work);
-    if(tasklist.length == 0)
+    if (tasklist.length == 0) {
       return (ret);
+    }
 
     // Add the new task as child of each of the passed in tasks
-    for(Task<? extends Serializable> tsk: tasklist) {
+    for (Task<? extends Serializable> tsk : tasklist) {
       List<Task<? extends Serializable>> children = tsk.getChildTasks();
       if (children == null) {
         children = new ArrayList<Task<? extends Serializable>>();
@@ -143,7 +157,7 @@ public class TaskFactory {
       children.add(ret);
       tsk.setChildTasks(children);
     }
-    
+
     return (ret);
   }
 

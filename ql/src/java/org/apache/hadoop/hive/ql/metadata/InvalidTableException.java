@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-/**                                                                                     
+/**
  * Generic exception class for Hive
- *                                                                                      
+ * 
  */
 
 public class InvalidTableException extends HiveException {
@@ -30,7 +30,7 @@ public class InvalidTableException extends HiveException {
     super();
     this.tableName = tableName;
   }
-  
+
   public InvalidTableException(String message, String tableName) {
     super(message);
     this.tableName = tableName;

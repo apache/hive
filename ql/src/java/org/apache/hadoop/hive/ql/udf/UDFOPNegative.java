@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -28,12 +27,8 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 
-@description(
-    name = "-",
-    value = "_FUNC_ a - Returns -a"
-)
+@description(name = "-", value = "_FUNC_ a - Returns -a")
 public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   private static Log LOG = LogFactory.getLog(UDFOPNegative.class.getName());
@@ -43,25 +38,25 @@ public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   @Override
   public ByteWritable evaluate(ByteWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
-    byteWritable.set((byte)-a.get());
+    byteWritable.set((byte) -a.get());
     return byteWritable;
   }
 
   @Override
   public ShortWritable evaluate(ShortWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
-    shortWritable.set((short)-a.get());
+    shortWritable.set((short) -a.get());
     return shortWritable;
   }
 
   @Override
   public IntWritable evaluate(IntWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
     intWritable.set(-a.get());
@@ -70,7 +65,7 @@ public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   @Override
   public LongWritable evaluate(LongWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
     longWritable.set(-a.get());
@@ -79,7 +74,7 @@ public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   @Override
   public FloatWritable evaluate(FloatWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
     floatWritable.set(-a.get());
@@ -88,12 +83,11 @@ public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   @Override
   public DoubleWritable evaluate(DoubleWritable a) {
-    if ( a == null ) {
+    if (a == null) {
       return null;
     }
     doubleWritable.set(-a.get());
     return doubleWritable;
   }
-
 
 }

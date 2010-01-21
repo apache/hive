@@ -32,17 +32,16 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
  */
 public class OpWalkerInfo implements NodeProcessorCtx {
   /**
-   * Operator to Pushdown Predicates Map. This keeps track of the final pushdown predicates
-   * for each operator as you walk the Op Graph from child to parent
+   * Operator to Pushdown Predicates Map. This keeps track of the final pushdown
+   * predicates for each operator as you walk the Op Graph from child to parent
    */
-  private HashMap<Operator<? extends Serializable>, ExprWalkerInfo> opToPushdownPredMap;
-  private Map<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
+  private final HashMap<Operator<? extends Serializable>, ExprWalkerInfo> opToPushdownPredMap;
+  private final Map<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
 
-  
   public OpWalkerInfo(
       HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap) {
     this.opToParseCtxMap = opToParseCtxMap;
-    this.opToPushdownPredMap = new HashMap<Operator<? extends Serializable>, ExprWalkerInfo>();
+    opToPushdownPredMap = new HashMap<Operator<? extends Serializable>, ExprWalkerInfo>();
   }
 
   public ExprWalkerInfo getPrunedPreds(Operator<? extends Serializable> op) {

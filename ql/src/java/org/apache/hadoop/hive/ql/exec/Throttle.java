@@ -18,21 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import java.net.MalformedURLException;
-import java.net.InetSocketAddress;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobTracker;
 
 /*
  * Intelligence to make clients wait if the cluster is in a bad state.
@@ -51,14 +43,14 @@ public class Throttle {
   /**
    * fetch http://tracker.om:/gc.jsp?threshold=period
    */
-  static void checkJobTracker(JobConf conf, Log LOG)  {
+  static void checkJobTracker(JobConf conf, Log LOG) {
 
     try {
-      byte buffer[] = new byte[1024]; 
+      byte buffer[] = new byte[1024];
       int threshold = conf.getInt("mapred.throttle.threshold.percent",
-                                  DEFAULT_MEMORY_GC_PERCENT);
+          DEFAULT_MEMORY_GC_PERCENT);
       int retry = conf.getInt("mapred.throttle.retry.period",
-                              DEFAULT_RETRY_PERIOD);
+          DEFAULT_RETRY_PERIOD);
 
       // If the threshold is 100 percent, then there is no throttling
       if (threshold == 100) {
@@ -66,35 +58,35 @@ public class Throttle {
       }
 
       // This is the Job Tracker URL
-      String tracker = JobTrackerURLResolver.getURL(conf) +
-                       "/gc.jsp?threshold=" + threshold;
+      String tracker = JobTrackerURLResolver.getURL(conf)
+          + "/gc.jsp?threshold=" + threshold;
 
       while (true) {
         // read in the first 1K characters from the URL
         URL url = new URL(tracker);
         LOG.debug("Throttle: URL " + tracker);
         InputStream in = url.openStream();
-        int numRead = in.read(buffer);
+        in.read(buffer);
         in.close();
         String fetchString = new String(buffer);
 
         // fetch the xml tag <dogc>xxx</dogc>
-        Pattern dowait = Pattern.compile("<dogc>",
-                         Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+        Pattern dowait = Pattern.compile("<dogc>", Pattern.CASE_INSENSITIVE
+            | Pattern.DOTALL | Pattern.MULTILINE);
         String[] results = dowait.split(fetchString);
         if (results.length != 2) {
-          throw new IOException("Throttle: Unable to parse response of URL " + url + 
-                                ". Get retuned " + fetchString);
+          throw new IOException("Throttle: Unable to parse response of URL "
+              + url + ". Get retuned " + fetchString);
         }
-        dowait = Pattern.compile("</dogc>",
-                         Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+        dowait = Pattern.compile("</dogc>", Pattern.CASE_INSENSITIVE
+            | Pattern.DOTALL | Pattern.MULTILINE);
         results = dowait.split(results[1]);
         if (results.length < 1) {
-          throw new IOException("Throttle: Unable to parse response of URL " + url + 
-                                ". Get retuned " + fetchString);
+          throw new IOException("Throttle: Unable to parse response of URL "
+              + url + ". Get retuned " + fetchString);
         }
 
-        // if the jobtracker signalled that the threshold is not exceeded, 
+        // if the jobtracker signalled that the threshold is not exceeded,
         // then we return immediately.
         if (results[0].trim().compareToIgnoreCase("false") == 0) {
           return;
@@ -102,8 +94,8 @@ public class Throttle {
 
         // The JobTracker has exceeded its threshold and is doing a GC.
         // The client has to wait and retry.
-        LOG.warn("Job is being throttled because of resource crunch on the " +
-                 "JobTracker. Will retry in " + retry + " seconds..");
+        LOG.warn("Job is being throttled because of resource crunch on the "
+            + "JobTracker. Will retry in " + retry + " seconds..");
         Thread.sleep(retry * 1000L);
       }
     } catch (Exception e) {

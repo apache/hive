@@ -31,9 +31,10 @@ import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
  * A thread-not-safe version of Hadoop's DataInputBuffer, which removes all
  * synchronized modifiers.
  */
-public class NonSyncDataInputBuffer extends FilterInputStream implements DataInput {
+public class NonSyncDataInputBuffer extends FilterInputStream implements
+    DataInput {
 
-  private NonSyncByteArrayInputStream buffer;
+  private final NonSyncByteArrayInputStream buffer;
 
   byte[] buff = new byte[16];
 
@@ -77,7 +78,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * 
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
-   *
+   * 
    */
   @Override
   public final int read(byte[] buffer) throws IOException {
@@ -156,8 +157,9 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
 
     while (offset < count) {
       int bytesRead = in.read(buff, offset, count - offset);
-      if (bytesRead == -1)
+      if (bytesRead == -1) {
         return bytesRead;
+      }
       offset += bytesRead;
     }
     return offset;
@@ -464,22 +466,26 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
       int utfSize) throws UTFDataFormatException {
     int count = 0, s = 0, a;
     while (count < utfSize) {
-      if ((out[s] = (char) buf[offset + count++]) < '\u0080')
+      if ((out[s] = (char) buf[offset + count++]) < '\u0080') {
         s++;
-      else if (((a = out[s]) & 0xe0) == 0xc0) {
-        if (count >= utfSize)
+      } else if (((a = out[s]) & 0xe0) == 0xc0) {
+        if (count >= utfSize) {
           throw new UTFDataFormatException();
+        }
         int b = buf[count++];
-        if ((b & 0xC0) != 0x80)
+        if ((b & 0xC0) != 0x80) {
           throw new UTFDataFormatException();
+        }
         out[s++] = (char) (((a & 0x1F) << 6) | (b & 0x3F));
       } else if ((a & 0xf0) == 0xe0) {
-        if (count + 1 >= utfSize)
+        if (count + 1 >= utfSize) {
           throw new UTFDataFormatException();
+        }
         int b = buf[count++];
         int c = buf[count++];
-        if (((b & 0xC0) != 0x80) || ((c & 0xC0) != 0x80))
+        if (((b & 0xC0) != 0x80) || ((c & 0xC0) != 0x80)) {
           throw new UTFDataFormatException();
+        }
         out[s++] = (char) (((a & 0x0F) << 12) | ((b & 0x3F) << 6) | (c & 0x3F));
       } else {
         throw new UTFDataFormatException();

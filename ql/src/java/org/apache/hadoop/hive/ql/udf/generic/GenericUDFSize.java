@@ -31,13 +31,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
-@description(
-    name = "size",
-    value = "_FUNC_(a) - Returns the size of a"
-)
+@description(name = "size", value = "_FUNC_(a) - Returns the size of a")
 public class GenericUDFSize extends GenericUDF {
   private ObjectInspector returnOI;
-  private IntWritable result = new IntWritable(-1);
+  private final IntWritable result = new IntWritable(-1);
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -48,15 +45,15 @@ public class GenericUDFSize extends GenericUDF {
     }
     Category category = arguments[0].getCategory();
     String typeName = arguments[0].getTypeName();
-    if (category != Category.MAP 
-        && category != Category.LIST 
+    if (category != Category.MAP && category != Category.LIST
         && !typeName.equals(Constants.VOID_TYPE_NAME)) {
-      throw new UDFArgumentTypeException(0 ,
-          "\"" + Category.MAP.toString().toLowerCase() 
-          + "\" or \"" + Category.LIST.toString().toLowerCase()  + "\" is expected at function SIZE, "
-          + "but \"" + arguments[0].getTypeName() + "\" is found");
+      throw new UDFArgumentTypeException(0, "\""
+          + Category.MAP.toString().toLowerCase() + "\" or \""
+          + Category.LIST.toString().toLowerCase()
+          + "\" is expected at function SIZE, " + "but \""
+          + arguments[0].getTypeName() + "\" is found");
     }
-    
+
     returnOI = arguments[0];
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
@@ -64,11 +61,11 @@ public class GenericUDFSize extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object data = arguments[0].get();
-    if(returnOI.getCategory() == Category.MAP){
+    if (returnOI.getCategory() == Category.MAP) {
       result.set(((MapObjectInspector) returnOI).getMapSize(data));
-    } else if(returnOI.getCategory() == Category.LIST){
+    } else if (returnOI.getCategory() == Category.LIST) {
       result.set(((ListObjectInspector) returnOI).getListLength(data));
-    } else if(returnOI.getTypeName().equals(Constants.VOID_TYPE_NAME)) {
+    } else if (returnOI.getTypeName().equals(Constants.VOID_TYPE_NAME)) {
       // null
       result.set(-1);
     }
@@ -77,7 +74,7 @@ public class GenericUDFSize extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert(children.length == 1);
+    assert (children.length == 1);
     return "size(" + children[0] + ")";
   }
 }

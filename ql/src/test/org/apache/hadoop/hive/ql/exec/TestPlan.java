@@ -18,21 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 import junit.framework.TestCase;
-import java.io.*;
-import java.util.*;
 
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.TextInputFormat;
-
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-
+import org.apache.hadoop.mapred.JobConf;
 
 public class TestPlan extends TestCase {
 
@@ -43,25 +44,28 @@ public class TestPlan extends TestCase {
 
     try {
       // initialize a complete map reduce configuration
-      exprNodeDesc expr1 = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, F1, "", false);
-      exprNodeDesc expr2 = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, F2, "", false);
-      exprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", expr1, expr2);
+      exprNodeDesc expr1 = new exprNodeColumnDesc(
+          TypeInfoFactory.stringTypeInfo, F1, "", false);
+      exprNodeDesc expr2 = new exprNodeColumnDesc(
+          TypeInfoFactory.stringTypeInfo, F2, "", false);
+      exprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("==", expr1, expr2);
 
       filterDesc filterCtx = new filterDesc(filterExpr, false);
       Operator<filterDesc> op = OperatorFactory.get(filterDesc.class);
       op.setConf(filterCtx);
 
-      ArrayList<String> aliasList = new ArrayList<String> ();
+      ArrayList<String> aliasList = new ArrayList<String>();
       aliasList.add("a");
-      LinkedHashMap<String, ArrayList<String>> pa = new LinkedHashMap<String, ArrayList<String>> ();
+      LinkedHashMap<String, ArrayList<String>> pa = new LinkedHashMap<String, ArrayList<String>>();
       pa.put("/tmp/testfolder", aliasList);
 
       tableDesc tblDesc = Utilities.defaultTd;
       partitionDesc partDesc = new partitionDesc(tblDesc, null);
-      LinkedHashMap<String, partitionDesc> pt = new LinkedHashMap<String, partitionDesc> ();
+      LinkedHashMap<String, partitionDesc> pt = new LinkedHashMap<String, partitionDesc>();
       pt.put("/tmp/testfolder", partDesc);
 
-      LinkedHashMap<String, Operator<? extends Serializable>> ao = new LinkedHashMap<String, Operator<? extends Serializable>> ();
+      LinkedHashMap<String, Operator<? extends Serializable>> ao = new LinkedHashMap<String, Operator<? extends Serializable>>();
       ao.put("a", op);
 
       mapredWork mrwork = new mapredWork();
@@ -70,7 +74,7 @@ public class TestPlan extends TestCase {
       mrwork.setAliasToWork(ao);
 
       // serialize the configuration once ..
-      ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
       Utilities.serializeMapRedWork(mrwork, baos);
       baos.close();
       String v1 = baos.toString();
@@ -82,8 +86,9 @@ public class TestPlan extends TestCase {
       mapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearMapRedWork(job);
 
-      // over here we should have some checks of the deserialized object against the orginal object
-      //System.out.println(v1);
+      // over here we should have some checks of the deserialized object against
+      // the orginal object
+      // System.out.println(v1);
 
       // serialize again
       baos.reset();

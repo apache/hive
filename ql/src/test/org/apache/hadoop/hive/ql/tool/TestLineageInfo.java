@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.tool;
 
 import java.util.TreeSet;
 
-import org.apache.hadoop.hive.ql.tools.LineageInfo;
-
 import junit.framework.TestCase;
+
+import org.apache.hadoop.hive.ql.tools.LineageInfo;
 
 public class TestLineageInfo extends TestCase {
 

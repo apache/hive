@@ -27,18 +27,13 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "round",
-    value = "_FUNC_(x[, d]) - round x to d decimal places",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_(12.3456, 1) FROM src LIMIT 1;\n" +
-        "  12.3'"
-    )
+@description(name = "round", value = "_FUNC_(x[, d]) - round x to d decimal places", extended = "Example:\n"
+    + "  > SELECT _FUNC_(12.3456, 1) FROM src LIMIT 1;\n" + "  12.3'")
 public class UDFRound extends UDF {
 
   DoubleWritable doubleWritable = new DoubleWritable();
   LongWritable longWritable = new LongWritable();
-  
+
   public UDFRound() {
   }
 
@@ -46,7 +41,8 @@ public class UDFRound extends UDF {
     if (n == null) {
       return null;
     }
-    longWritable.set(BigDecimal.valueOf(n.get()).setScale(0, RoundingMode.HALF_UP).longValue());
+    longWritable.set(BigDecimal.valueOf(n.get()).setScale(0,
+        RoundingMode.HALF_UP).longValue());
     return longWritable;
   }
 
@@ -54,8 +50,9 @@ public class UDFRound extends UDF {
     if ((n == null) || (i == null)) {
       return null;
     }
-    doubleWritable.set(BigDecimal.valueOf(n.get()).setScale(i.get(), RoundingMode.HALF_UP).doubleValue());
+    doubleWritable.set(BigDecimal.valueOf(n.get()).setScale(i.get(),
+        RoundingMode.HALF_UP).doubleValue());
     return doubleWritable;
   }
-  
+
 }

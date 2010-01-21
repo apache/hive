@@ -19,36 +19,38 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 /**
- * All member variables should have a setters and getters of the form
- * get<member name> and set<member name> or else they won't be recreated
- * properly at run time.
+ * All member variables should have a setters and getters of the form get<member
+ * name> and set<member name> or else they won't be recreated properly at run
+ * time.
  * 
  */
-@explain(displayName="UDTF Operator")
+@explain(displayName = "UDTF Operator")
 public class udtfDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private GenericUDTF genericUDTF;
-  
-  public udtfDesc() { }
+
+  public udtfDesc() {
+  }
+
   public udtfDesc(final GenericUDTF genericUDTF) {
     this.genericUDTF = genericUDTF;
   }
 
   public GenericUDTF getGenericUDTF() {
-    return this.genericUDTF;
+    return genericUDTF;
   }
+
   public void setGenericUDTF(final GenericUDTF genericUDTF) {
-    this.genericUDTF=genericUDTF;
+    this.genericUDTF = genericUDTF;
   }
-  @explain(displayName="function name")
+
+  @explain(displayName = "function name")
   public String getUDTFName() {
-    return this.genericUDTF.toString();
+    return genericUDTF.toString();
   }
 }

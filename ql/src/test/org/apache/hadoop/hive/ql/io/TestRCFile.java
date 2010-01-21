@@ -31,8 +31,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -97,7 +97,8 @@ public class TestRCFile extends TestCase {
       bytesArray = new byte[][] { "123".getBytes("UTF-8"),
           "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
           "1000".getBytes("UTF-8"), "5.3".getBytes("UTF-8"),
-          "hive and hadoop".getBytes("UTF-8"), new byte[0], "NULL".getBytes("UTF-8") };
+          "hive and hadoop".getBytes("UTF-8"), new byte[0],
+          "NULL".getBytes("UTF-8") };
       s = new BytesRefArrayWritable(bytesArray.length);
       s.set(0, new BytesRefWritable("123".getBytes("UTF-8")));
       s.set(1, new BytesRefWritable("456".getBytes("UTF-8")));
@@ -180,12 +181,14 @@ public class TestRCFile extends TestCase {
       assertEquals("Field size should be 8", 8, fieldRefs.size());
       for (int j = 0; j < fieldRefs.size(); j++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(j));
-        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
-            fieldRefs.get(j).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
-        if (i == 0)
+        Object standardWritableData = ObjectInspectorUtils
+            .copyToStandardObject(fieldData, fieldRefs.get(j)
+                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+        if (i == 0) {
           assertEquals("Field " + i, standardWritableData, expectedRecord_1[j]);
-        else
+        } else {
           assertEquals("Field " + i, standardWritableData, expectedRecord_2[j]);
+        }
       }
     }
 
@@ -307,12 +310,15 @@ public class TestRCFile extends TestCase {
       assertEquals("Field size should be 8", 8, fieldRefs.size());
       for (int i = 0; i < fieldRefs.size(); i++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
-        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
-            fieldRefs.get(i).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+        Object standardWritableData = ObjectInspectorUtils
+            .copyToStandardObject(fieldData, fieldRefs.get(i)
+                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         assertEquals("Field " + i, standardWritableData, expectedFieldsData[i]);
       }
       // Serialize
-      assertEquals("Class of the serialized object should be BytesRefArrayWritable", BytesRefArrayWritable.class, serDe.getSerializedClass());
+      assertEquals(
+          "Class of the serialized object should be BytesRefArrayWritable",
+          BytesRefArrayWritable.class, serDe.getSerializedClass());
       BytesRefArrayWritable serializedText = (BytesRefArrayWritable) serDe
           .serialize(row, oi);
       assertEquals("Serialized data", s, serializedText);
@@ -337,7 +343,7 @@ public class TestRCFile extends TestCase {
 
     LongWritable rowID = new LongWritable();
     BytesRefArrayWritable cols = new BytesRefArrayWritable();
-    
+
     while (reader.next(rowID)) {
       reader.getCurrentRow(cols);
       cols.resetValid(8);
@@ -350,12 +356,16 @@ public class TestRCFile extends TestCase {
 
       for (int i : readCols) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
-        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
-            fieldRefs.get(i).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
-        assertEquals("Field " + i, standardWritableData, expectedPartitalFieldsData[i]);
+        Object standardWritableData = ObjectInspectorUtils
+            .copyToStandardObject(fieldData, fieldRefs.get(i)
+                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+        assertEquals("Field " + i, standardWritableData,
+            expectedPartitalFieldsData[i]);
       }
 
-      assertEquals("Class of the serialized object should be BytesRefArrayWritable", BytesRefArrayWritable.class, serDe.getSerializedClass());
+      assertEquals(
+          "Class of the serialized object should be BytesRefArrayWritable",
+          BytesRefArrayWritable.class, serDe.getSerializedClass());
       BytesRefArrayWritable serializedBytes = (BytesRefArrayWritable) serDe
           .serialize(row, oi);
       assertEquals("Serialized data", patialS, serializedBytes);

@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * Terminal Operator Base Class
  **/
-public abstract class TerminalOperator <T extends Serializable> extends Operator <T>
-  implements Serializable {
+public abstract class TerminalOperator<T extends Serializable> extends
+    Operator<T> implements Serializable {
   private static final long serialVersionUID = 1L;
 
 }

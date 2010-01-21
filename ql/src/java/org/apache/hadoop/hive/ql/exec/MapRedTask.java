@@ -35,22 +35,23 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
- * Alternate implementation (to ExecDriver) of spawning a mapreduce task that runs it from
- * a separate jvm. The primary issue with this is the inability to control logging from
- * a separate jvm in a consistent manner
+ * Alternate implementation (to ExecDriver) of spawning a mapreduce task that
+ * runs it from a separate jvm. The primary issue with this is the inability to
+ * control logging from a separate jvm in a consistent manner
  **/
 public class MapRedTask extends Task<mapredWork> implements Serializable {
-    
+
   private static final long serialVersionUID = 1L;
 
   final static String hadoopMemKey = "HADOOP_HEAPSIZE";
   final static String hadoopOptsKey = "HADOOP_OPTS";
-  final static String HIVE_SYS_PROP[] = {"build.dir", "build.dir.hive"}; 
-  
+  final static String HIVE_SYS_PROP[] = { "build.dir", "build.dir.hive" };
+
   public MapRedTask() {
     super();
   }
-  
+
+  @Override
   public int execute() {
 
     try {
@@ -60,7 +61,8 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
 
       String libJarsOption;
       {
-        String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
+        String addedJars = ExecDriver.getResourceFiles(conf,
+            SessionState.ResourceType.JAR);
         conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
 
         String auxJars = conf.getAuxJars();
@@ -76,14 +78,14 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
             libJarsOption = " -libjars " + addedJars + " ";
           } else {
             libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
-          }   
+          }
         }
       }
 
       // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
       File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
-      
+
       mapredWork plan = getWork();
 
       File planFile = File.createTempFile("plan", ".xml", scratchDir);
@@ -91,21 +93,22 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       FileOutputStream out = new FileOutputStream(planFile);
       Utilities.serializeMapRedWork(plan, out);
 
-      String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent"))
-                        ? "-silent" : "";
+      String isSilent = "true".equalsIgnoreCase(System
+          .getProperty("test.silent")) ? "-silent" : "";
 
       String jarCmd;
-      if(ShimLoader.getHadoopShims().usesJobShell()) {
+      if (ShimLoader.getHadoopShims().usesJobShell()) {
         jarCmd = libJarsOption + hiveJar + " " + ExecDriver.class.getName();
       } else {
         jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
       }
 
-      String cmdLine = hadoopExec + " jar " + jarCmd + 
-        " -plan " + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
-      
-      String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
-      if(!files.isEmpty()) {
+      String cmdLine = hadoopExec + " jar " + jarCmd + " -plan "
+          + planFile.toString() + " " + isSilent + " " + hiveConfArgs;
+
+      String files = ExecDriver.getResourceFiles(conf,
+          SessionState.ResourceType.FILE);
+      if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
       }
 
@@ -117,63 +120,65 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       {
         StringBuilder sb = new StringBuilder();
         Properties p = System.getProperties();
-        for (int k = 0; k < HIVE_SYS_PROP.length; k++) {
-          if (p.containsKey(HIVE_SYS_PROP[k])) {
-            sb.append(" -D" + HIVE_SYS_PROP[k] + "=" + p.getProperty(HIVE_SYS_PROP[k]));
+        for (String element : HIVE_SYS_PROP) {
+          if (p.containsKey(element)) {
+            sb.append(" -D" + element + "=" + p.getProperty(element));
           }
         }
         hadoopOpts = sb.toString();
       }
-      
+
       // Inherit the environment variables
       String[] env;
       {
         Map<String, String> variables = new HashMap(System.getenv());
         // The user can specify the hadoop memory
         int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
-        
+
         if (hadoopMem == 0) {
           variables.remove(hadoopMemKey);
         } else {
           // user specified the memory - only applicable for local mode
           variables.put(hadoopMemKey, String.valueOf(hadoopMem));
         }
-        
+
         if (variables.containsKey(hadoopOptsKey)) {
-          variables.put(hadoopOptsKey, variables.get(hadoopOptsKey) + hadoopOpts);
+          variables.put(hadoopOptsKey, variables.get(hadoopOptsKey)
+              + hadoopOpts);
         } else {
           variables.put(hadoopOptsKey, hadoopOpts);
         }
-        
+
         env = new String[variables.size()];
         int pos = 0;
-        for (Map.Entry<String, String> entry : variables.entrySet()) {  
-          String name = entry.getKey();  
-          String value = entry.getValue();  
-          env[pos++] = name + "=" + value;  
-        }  
+        for (Map.Entry<String, String> entry : variables.entrySet()) {
+          String name = entry.getKey();
+          String value = entry.getValue();
+          env[pos++] = name + "=" + value;
+        }
       }
-      
+
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
-      
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
+          null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
+          null, System.err);
+
       outPrinter.start();
       errPrinter.start();
-    
+
       int exitVal = executor.waitFor();
 
-      if(exitVal != 0) {
+      if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
       } else {
         LOG.info("Execution completed successfully");
       }
 
       return exitVal;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       LOG.error("Exception: " + e.getMessage());
       return (1);
@@ -190,7 +195,8 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
     mapredWork w = getWork();
     return w.getReducer() != null;
   }
-  
+
+  @Override
   public int getType() {
     return StageType.MAPREDLOCAL;
   }

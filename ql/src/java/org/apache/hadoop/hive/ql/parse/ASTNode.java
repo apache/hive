@@ -19,46 +19,53 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Vector;
-import org.antlr.runtime.tree.CommonTree;
+
 import org.antlr.runtime.Token;
+import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
  * @author athusoo
- *
+ * 
  */
 public class ASTNode extends CommonTree implements Node {
 
   private ASTNodeOrigin origin;
-  
-  public ASTNode() {  
+
+  public ASTNode() {
   }
-  
+
   /**
    * Constructor
-   * @param t Token for the CommonTree Node
+   * 
+   * @param t
+   *          Token for the CommonTree Node
    */
   public ASTNode(Token t) {
     super(t);
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
   public Vector<Node> getChildren() {
     if (super.getChildCount() == 0) {
       return null;
     }
-    
+
     Vector<Node> ret_vec = new Vector<Node>();
-    for(int i=0; i<super.getChildCount(); ++i) {
-      ret_vec.add((Node)super.getChild(i));
+    for (int i = 0; i < super.getChildCount(); ++i) {
+      ret_vec.add((Node) super.getChild(i));
     }
-    
+
     return ret_vec;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.hadoop.hive.ql.lib.Node#getName()
    */
   public String getName() {
@@ -66,31 +73,30 @@ public class ASTNode extends CommonTree implements Node {
   }
 
   /**
-   * @return information about the object from which this ASTNode
-   * originated, or null if this ASTNode was not expanded from
-   * an object reference
+   * @return information about the object from which this ASTNode originated, or
+   *         null if this ASTNode was not expanded from an object reference
    */
   public ASTNodeOrigin getOrigin() {
     return origin;
   }
 
   /**
-   * Tag this ASTNode with information about the object from which this
-   * node originated.
+   * Tag this ASTNode with information about the object from which this node
+   * originated.
    */
   public void setOrigin(ASTNodeOrigin origin) {
     this.origin = origin;
   }
-  
+
   public String dump() {
     StringBuffer sb = new StringBuffer();
-    
+
     sb.append('(');
-    sb.append(this.toString());
+    sb.append(toString());
     Vector<Node> children = getChildren();
-    if ( children != null ) {
-      for ( Node node : getChildren() ) {
-        if ( node instanceof ASTNode ) {
+    if (children != null) {
+      for (Node node : getChildren()) {
+        if (node instanceof ASTNode) {
           sb.append(((ASTNode) node).dump());
         } else {
           sb.append("NON-ASTNODE!!");
@@ -100,5 +106,5 @@ public class ASTNode extends CommonTree implements Node {
     sb.append(')');
     return sb.toString();
   }
-  
+
 }

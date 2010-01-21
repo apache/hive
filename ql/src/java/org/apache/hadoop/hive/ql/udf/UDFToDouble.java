@@ -31,33 +31,34 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class UDFToDouble extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToDouble.class.getName());
 
   DoubleWritable doubleWritable = new DoubleWritable();
-  
+
   public UDFToDouble() {
   }
 
   /**
    * Convert from void to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The void value to convert
+   * 
+   * @param i
+   *          The void value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(NullWritable i)  {
+  public DoubleWritable evaluate(NullWritable i) {
     return null;
   }
 
   /**
    * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The boolean value to convert
+   * 
+   * @param i
+   *          The boolean value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(BooleanWritable i)  {
+  public DoubleWritable evaluate(BooleanWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -68,11 +69,12 @@ public class UDFToDouble extends UDF {
 
   /**
    * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The byte value to convert
+   * 
+   * @param i
+   *          The byte value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(ByteWritable i)  {
+  public DoubleWritable evaluate(ByteWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -80,14 +82,15 @@ public class UDFToDouble extends UDF {
       return doubleWritable;
     }
   }
-  
+
   /**
    * Convert from short to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The short value to convert
+   * 
+   * @param i
+   *          The short value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(ShortWritable i)  {
+  public DoubleWritable evaluate(ShortWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -95,14 +98,15 @@ public class UDFToDouble extends UDF {
       return doubleWritable;
     }
   }
-  
+
   /**
    * Convert from integer to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The integer value to convert
+   * 
+   * @param i
+   *          The integer value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(IntWritable i)  {
+  public DoubleWritable evaluate(IntWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -110,14 +114,15 @@ public class UDFToDouble extends UDF {
       return doubleWritable;
     }
   }
-  
+
   /**
    * Convert from long to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The long value to convert
+   * 
+   * @param i
+   *          The long value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(LongWritable i)  {
+  public DoubleWritable evaluate(LongWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -125,14 +130,15 @@ public class UDFToDouble extends UDF {
       return doubleWritable;
     }
   }
- 
+
   /**
    * Convert from float to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The float value to convert
+   * 
+   * @param i
+   *          The float value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(FloatWritable i)  {
+  public DoubleWritable evaluate(FloatWritable i) {
     if (i == null) {
       return null;
     } else {
@@ -140,14 +146,15 @@ public class UDFToDouble extends UDF {
       return doubleWritable;
     }
   }
-  
+
   /**
    * Convert from string to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The string value to convert
+   * 
+   * @param i
+   *          The string value to convert
    * @return DoubleWritable
    */
-  public DoubleWritable evaluate(Text i)  {
+  public DoubleWritable evaluate(Text i) {
     if (i == null) {
       return null;
     } else {
@@ -161,6 +168,5 @@ public class UDFToDouble extends UDF {
       }
     }
   }
-  
-  
+
 }

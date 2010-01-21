@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.*;
+import org.antlr.runtime.BaseRecognizer;
+import org.antlr.runtime.RecognitionException;
 
 /*
  * SemanticException.java
@@ -33,16 +34,16 @@ import org.antlr.runtime.*;
  *
  */
 public class ParseError {
-  private BaseRecognizer br;
-  private RecognitionException re;
-  private String[] tokenNames;
-  
+  private final BaseRecognizer br;
+  private final RecognitionException re;
+  private final String[] tokenNames;
+
   ParseError(BaseRecognizer br, RecognitionException re, String[] tokenNames) {
     this.br = br;
     this.re = re;
     this.tokenNames = tokenNames;
-    }
-  
+  }
+
   BaseRecognizer getBaseRecognizer() {
     return br;
   }
@@ -50,7 +51,7 @@ public class ParseError {
   RecognitionException getRecognitionException() {
     return re;
   }
-  
+
   String[] getTokenNames() {
     return tokenNames;
   }

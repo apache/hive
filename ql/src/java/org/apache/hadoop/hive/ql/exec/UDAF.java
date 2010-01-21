@@ -18,46 +18,36 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.udf.UDFType;
-//import org.apache.hadoop.hive.serde.ReflectionSerDe;
-
 /**
  * Base class for all User-defined Aggregation Function (UDAF) classes.
- *
+ * 
  * UDAF classes are REQUIRED to inherit from this class.
- *
- * Required for a UDAF class:
- * 1. Implement the init() method, which reset the status of the aggregation function.
- * 2. Implement a single method called "aggregate" that returns boolean.  The method should
- *    always return "true" on valid inputs, or the framework will throw an Exception.
- *    Following are some examples:
- *    public boolean aggregate(double a);
- *    public boolean aggregate(int b);
- *    public boolean aggregate(double c, double d);
- * 3. Implement a single method called "evaluate" that returns the FINAL aggregation result.
- *    "evaluate" should never return "null" or an Exception will be thrown.
- *    Following are some examples.
- *    public int evaluate();
- *    public long evaluate();
- *    public double evaluate();
- *    public Double evaluate();
- *    public String evaluate();
- *
- * Optional for a UDAF class (by implementing these 2 methods, the user declares that the
- * UDAF support partial aggregations):
- * 1. Implement a single method called "evaluatePartial" that returns the PARTIAL aggregation
- *    result. "evaluatePartial" should never return "null" or an Exception will be thrown.
- * 2. Implement a single method called "aggregatePartial" that takes a PARTIAL aggregation
- *    result and returns a boolean.  The method should always return "true" on valid inputs,
- *    or the framework will throw an Exception.
- *
- *    Following are some examples:
- *    public int evaluatePartial();
- *    public boolean aggregatePartial(int partial);
- *
- *    public String evaluatePartial();
- *    public boolean aggregatePartial(String partial);
- *
+ * 
+ * Required for a UDAF class: 1. Implement the init() method, which reset the
+ * status of the aggregation function. 2. Implement a single method called
+ * "aggregate" that returns boolean. The method should always return "true" on
+ * valid inputs, or the framework will throw an Exception. Following are some
+ * examples: public boolean aggregate(double a); public boolean aggregate(int
+ * b); public boolean aggregate(double c, double d); 3. Implement a single
+ * method called "evaluate" that returns the FINAL aggregation result.
+ * "evaluate" should never return "null" or an Exception will be thrown.
+ * Following are some examples. public int evaluate(); public long evaluate();
+ * public double evaluate(); public Double evaluate(); public String evaluate();
+ * 
+ * Optional for a UDAF class (by implementing these 2 methods, the user declares
+ * that the UDAF support partial aggregations): 1. Implement a single method
+ * called "evaluatePartial" that returns the PARTIAL aggregation result.
+ * "evaluatePartial" should never return "null" or an Exception will be thrown.
+ * 2. Implement a single method called "aggregatePartial" that takes a PARTIAL
+ * aggregation result and returns a boolean. The method should always return
+ * "true" on valid inputs, or the framework will throw an Exception.
+ * 
+ * Following are some examples: public int evaluatePartial(); public boolean
+ * aggregatePartial(int partial);
+ * 
+ * public String evaluatePartial(); public boolean aggregatePartial(String
+ * partial);
+ * 
  */
 public class UDAF {
 
@@ -65,11 +55,11 @@ public class UDAF {
    * The resolver used for method resolution.
    */
   UDAFEvaluatorResolver rslv;
-  
+
   /**
    * The default constructor.
    */
-  public UDAF() { 
+  public UDAF() {
     rslv = new DefaultUDAFEvaluatorResolver(this.getClass());
   }
 
@@ -79,16 +69,17 @@ public class UDAF {
   public UDAF(UDAFEvaluatorResolver rslv) {
     this.rslv = rslv;
   }
-  
+
   /**
    * Sets the resolver
    * 
-   * @param rslv The method resolver to use for method resolution.
+   * @param rslv
+   *          The method resolver to use for method resolution.
    */
   public void setResolver(UDAFEvaluatorResolver rslv) {
     this.rslv = rslv;
   }
-  
+
   /**
    * Gets the resolver.
    */

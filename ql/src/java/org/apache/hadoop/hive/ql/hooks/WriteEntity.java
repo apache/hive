@@ -18,21 +18,23 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import java.net.URI;
 
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 /**
- * This class encapsulates an object that is being written to
- * by the query. This object may be a table, partition, dfs
- * directory or a local directory.
+ * This class encapsulates an object that is being written to by the query. This
+ * object may be a table, partition, dfs directory or a local directory.
  */
 public class WriteEntity {
 
   /**
    * The type of the write entity.
    */
-  public static enum Type {TABLE, PARTITION, DFS_DIR, LOCAL_DIR};
+  public static enum Type {
+    TABLE, PARTITION, DFS_DIR, LOCAL_DIR
+  };
 
   /**
    * The type.
@@ -42,57 +44,60 @@ public class WriteEntity {
   /**
    * The table. This is null if this is a directory.
    */
-  private Table t;
+  private final Table t;
 
   /**
    * The partition.This is null if this object is not a partition.
    */
-  private Partition p;
+  private final Partition p;
 
   /**
    * The directory if this is a directory.
    */
-  private String d;
+  private final String d;
 
   /**
    * Constructor for a table.
-   *
-   * @param t Table that is written to.
+   * 
+   * @param t
+   *          Table that is written to.
    */
   public WriteEntity(Table t) {
-    this.d = null;
-    this.p = null;
+    d = null;
+    p = null;
     this.t = t;
-    this.typ = Type.TABLE;
+    typ = Type.TABLE;
   }
 
   /**
    * Constructor for a partition.
-   *
-   * @param p Partition that is written to.
+   * 
+   * @param p
+   *          Partition that is written to.
    */
   public WriteEntity(Partition p) {
-    this.d = null;
+    d = null;
     this.p = p;
-    this.t = p.getTable();
-    this.typ = Type.PARTITION;
+    t = p.getTable();
+    typ = Type.PARTITION;
   }
 
   /**
    * Constructor for a file.
-   *
-   * @param d The name of the directory that is being written to.
-   * @param islocal Flag to decide whether this directory is local or in dfs.
+   * 
+   * @param d
+   *          The name of the directory that is being written to.
+   * @param islocal
+   *          Flag to decide whether this directory is local or in dfs.
    */
   public WriteEntity(String d, boolean islocal) {
     this.d = d;
-    this.p = null;
-    this.t = null;
+    p = null;
+    t = null;
     if (islocal) {
-      this.typ = Type.LOCAL_DIR;
-    }
-    else {
-      this.typ = Type.DFS_DIR;
+      typ = Type.LOCAL_DIR;
+    } else {
+      typ = Type.DFS_DIR;
     }
   }
 
@@ -107,14 +112,17 @@ public class WriteEntity {
    * Get the location of the entity.
    */
   public URI getLocation() throws Exception {
-    if (typ == Type.TABLE)
+    if (typ == Type.TABLE) {
       return t.getDataLocation();
+    }
 
-    if (typ == Type.PARTITION)
+    if (typ == Type.PARTITION) {
       return p.getDataLocation();
+    }
 
-    if (typ == Type.DFS_DIR || typ == Type.LOCAL_DIR)
+    if (typ == Type.DFS_DIR || typ == Type.LOCAL_DIR) {
       return new URI(d);
+    }
 
     return null;
   }
@@ -136,8 +144,9 @@ public class WriteEntity {
   /**
    * toString function.
    */
+  @Override
   public String toString() {
-    switch(typ) {
+    switch (typ) {
     case TABLE:
       return t.getDbName() + "@" + t.getName();
     case PARTITION:
@@ -152,15 +161,16 @@ public class WriteEntity {
    */
   @Override
   public boolean equals(Object o) {
-    if (o == null)
+    if (o == null) {
       return false;
+    }
 
     if (o instanceof WriteEntity) {
-      WriteEntity ore = (WriteEntity)o;
+      WriteEntity ore = (WriteEntity) o;
       return (toString().equalsIgnoreCase(ore.toString()));
-    }
-    else
+    } else {
       return false;
+    }
   }
 
   /**

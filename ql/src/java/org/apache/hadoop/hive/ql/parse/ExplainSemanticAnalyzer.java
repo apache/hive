@@ -24,44 +24,43 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.explainWork;
 
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
-  
   public ExplainSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
   }
 
+  @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     ctx.setExplain(true);
 
     // Create a semantic analyzer for the query
-    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode)ast.getChild(0));
-    sem.analyze((ASTNode)ast.getChild(0), ctx);
-    
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode) ast
+        .getChild(0));
+    sem.analyze((ASTNode) ast.getChild(0), ctx);
+
     boolean extended = false;
     if (ast.getChildCount() > 1) {
       extended = true;
     }
-    
+
     ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
     List<Task<? extends Serializable>> tasks = sem.getRootTasks();
     Task<? extends Serializable> fetchTask = sem.getFetchTask();
     if (tasks == null) {
-    	if (fetchTask != null) {
-    		tasks = new ArrayList<Task<? extends Serializable>>();
-    		tasks.add(fetchTask);
-    	}
+      if (fetchTask != null) {
+        tasks = new ArrayList<Task<? extends Serializable>>();
+        tasks.add(fetchTask);
+      }
+    } else if (fetchTask != null) {
+      tasks.add(fetchTask);
     }
-    else if (fetchTask != null)
-    	tasks.add(fetchTask); 
-    		
+
     rootTasks.add(TaskFactory.get(new explainWork(ctx.getResFile(), tasks,
-                                                  ((ASTNode)ast.getChild(0)).toStringTree(),
-                                                  extended), this.conf));
+        ((ASTNode) ast.getChild(0)).toStringTree(), extended), conf));
   }
 }

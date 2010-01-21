@@ -26,8 +26,9 @@ import org.apache.hadoop.io.Text;
  * A UDF for testing, which evaluates the length of a string.
  */
 public class UDFTestLength extends UDF {
-  
+
   IntWritable result = new IntWritable();
+
   public IntWritable evaluate(Text s) {
     if (s == null) {
       return null;

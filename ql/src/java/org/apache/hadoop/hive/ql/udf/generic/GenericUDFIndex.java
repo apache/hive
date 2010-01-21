@@ -23,27 +23,22 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.IntWritable;
 
-@description(
-    name = "index",
-    value = "_FUNC_(a, n) - Returns the n-th element of a "
-)
+@description(name = "index", value = "_FUNC_(a, n) - Returns the n-th element of a ")
 public class GenericUDFIndex extends GenericUDF {
   private MapObjectInspector mapOI;
   private boolean mapKeyPreferWritable;
   private ListObjectInspector listOI;
   private PrimitiveObjectInspector indexOI;
   private ObjectInspector returnOI;
-  private IntWritable result = new IntWritable(-1);
+  private final IntWritable result = new IntWritable(-1);
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -52,51 +47,51 @@ public class GenericUDFIndex extends GenericUDF {
       throw new UDFArgumentLengthException(
           "The function INDEX accepts exactly 2 arguments.");
     }
-    
+
     if (arguments[0] instanceof MapObjectInspector) {
       // index into a map
-      mapOI = (MapObjectInspector)arguments[0];
+      mapOI = (MapObjectInspector) arguments[0];
       listOI = null;
     } else if (arguments[0] instanceof ListObjectInspector) {
       // index into a list
-      listOI = (ListObjectInspector)arguments[0];
+      listOI = (ListObjectInspector) arguments[0];
       mapOI = null;
     } else {
-      throw new UDFArgumentTypeException(0,
-          "\"" + Category.MAP.toString().toLowerCase() 
-          + "\" or \"" + Category.LIST.toString().toLowerCase() 
-          + "\" is expected at function INDEX, but \"" 
+      throw new UDFArgumentTypeException(0, "\""
+          + Category.MAP.toString().toLowerCase() + "\" or \""
+          + Category.LIST.toString().toLowerCase()
+          + "\" is expected at function INDEX, but \""
           + arguments[0].getTypeName() + "\" is found");
     }
-    
+
     // index has to be a primitive
     if (arguments[1] instanceof PrimitiveObjectInspector) {
       indexOI = (PrimitiveObjectInspector) arguments[1];
     } else {
-      throw new UDFArgumentTypeException(1,
-          "Primitive Type is expected but " + arguments[1].getTypeName()
-          + "\" is found");
+      throw new UDFArgumentTypeException(1, "Primitive Type is expected but "
+          + arguments[1].getTypeName() + "\" is found");
     }
 
     if (mapOI != null) {
       returnOI = mapOI.getMapValueObjectInspector();
       ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
-      mapKeyPreferWritable = ((PrimitiveObjectInspector)keyOI).preferWritable();
+      mapKeyPreferWritable = ((PrimitiveObjectInspector) keyOI)
+          .preferWritable();
     } else {
       returnOI = listOI.getListElementObjectInspector();
     }
-    
+
     return returnOI;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    assert(arguments.length == 2);
+    assert (arguments.length == 2);
     Object main = arguments[0].get();
     Object index = arguments[1].get();
 
     if (mapOI != null) {
-      
+
       Object indexObject;
       if (mapKeyPreferWritable) {
         indexObject = indexOI.getPrimitiveWritableObject(index);
@@ -104,10 +99,10 @@ public class GenericUDFIndex extends GenericUDF {
         indexObject = indexOI.getPrimitiveJavaObject(index);
       }
       return mapOI.getMapValueElement(main, indexObject);
-      
+
     } else {
-      
-      assert(listOI != null);
+
+      assert (listOI != null);
       int intIndex = 0;
       try {
         intIndex = PrimitiveObjectInspectorUtils.getInt(index, indexOI);
@@ -119,13 +114,13 @@ public class GenericUDFIndex extends GenericUDF {
         return null;
       }
       return listOI.getListElement(main, intIndex);
-      
+
     }
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    assert(children.length == 2);
+    assert (children.length == 2);
     return children[0] + "[" + children[1] + "]";
   }
 }

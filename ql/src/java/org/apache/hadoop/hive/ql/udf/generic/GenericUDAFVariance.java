@@ -41,73 +41,63 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * Compute the variance. This class is extended by:
- *   GenericUDAFVarianceSample
- *   GenericUDAFStd
- *   GenericUDAFStdSample
- *
+ * Compute the variance. This class is extended by: GenericUDAFVarianceSample
+ * GenericUDAFStd GenericUDAFStdSample
+ * 
  */
-@description(
-    name = "variance,var_pop",
-    value = "_FUNC_(x) - Returns the variance of a set of numbers"
-)
+@description(name = "variance,var_pop", value = "_FUNC_(x) - Returns the variance of a set of numbers")
 public class GenericUDAFVariance implements GenericUDAFResolver {
-  
+
   static final Log LOG = LogFactory.getLog(GenericUDAFVariance.class.getName());
-  
+
   @Override
-  public GenericUDAFEvaluator getEvaluator(
-      TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+      throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
     }
-    
+
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
-          "Only primitive type arguments are accepted but " 
-          + parameters[0].getTypeName() + " is passed.");
+          "Only primitive type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
-    switch (((PrimitiveTypeInfo)parameters[0]).getPrimitiveCategory()) {
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case FLOAT:
-      case DOUBLE:
-      case STRING:
-        return new GenericUDAFVarianceEvaluator();
-      case BOOLEAN:
-      default:
-        throw new UDFArgumentTypeException(0,
-            "Only numeric or string type arguments are accepted but " 
-            + parameters[0].getTypeName() + " is passed.");
+    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case FLOAT:
+    case DOUBLE:
+    case STRING:
+      return new GenericUDAFVarianceEvaluator();
+    case BOOLEAN:
+    default:
+      throw new UDFArgumentTypeException(0,
+          "Only numeric or string type arguments are accepted but "
+              + parameters[0].getTypeName() + " is passed.");
     }
   }
-  
+
   /**
    * Evaluate the variance using the following modification of the formula from
    * The Art of Computer Programming, vol. 2, p. 232:
-   *   
-   *   variance = variance1 + variance2 + n*alpha^2 + m*betha^2
-   *   
-   * where:
-   *   - variance is sum[x-avg^2] (this is actually n times the variance) and is
-   *   updated at every step.
-   *   - n is the count of elements in chunk1
-   *   - m is the count of elements in chunk2
-   *   - alpha = avg-a
-   *   - betha = avg-b
-   *   - avg is the the average of all elements from both chunks
-   *   - a is the average of elements in chunk1
-   *   - b is the average of elements in chunk2
+   * 
+   * variance = variance1 + variance2 + n*alpha^2 + m*betha^2
+   * 
+   * where: - variance is sum[x-avg^2] (this is actually n times the variance)
+   * and is updated at every step. - n is the count of elements in chunk1 - m is
+   * the count of elements in chunk2 - alpha = avg-a - betha = avg-b - avg is
+   * the the average of all elements from both chunks - a is the average of
+   * elements in chunk1 - b is the average of elements in chunk2
    * 
    */
   public static class GenericUDAFVarianceEvaluator extends GenericUDAFEvaluator {
-    
+
     // For PARTIAL1 and COMPLETE
     PrimitiveObjectInspector inputOI;
-    
+
     // For PARTIAL2 and FINAL
     StructObjectInspector soi;
     StructField countField;
@@ -116,60 +106,60 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
     LongObjectInspector countFieldOI;
     DoubleObjectInspector sumFieldOI;
     DoubleObjectInspector varianceFieldOI;
-    
+
     // For PARTIAL1 and PARTIAL2
     Object[] partialResult;
-    
+
     // For FINAL and COMPLETE
     DoubleWritable result;
-    
+
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
         throws HiveException {
-      assert(parameters.length == 1);
+      assert (parameters.length == 1);
       super.init(m, parameters);
-      
+
       // init input
-      if (mode == mode.PARTIAL1 || mode == mode.COMPLETE) {
-        inputOI = (PrimitiveObjectInspector)parameters[0];
+      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+        inputOI = (PrimitiveObjectInspector) parameters[0];
       } else {
-        soi = (StructObjectInspector)parameters[0];
-        
+        soi = (StructObjectInspector) parameters[0];
+
         countField = soi.getStructFieldRef("count");
         sumField = soi.getStructFieldRef("sum");
         varianceField = soi.getStructFieldRef("variance");
-        
-        countFieldOI = 
-          (LongObjectInspector)countField.getFieldObjectInspector();
-        sumFieldOI = (DoubleObjectInspector)sumField.getFieldObjectInspector();
-        varianceFieldOI = 
-          (DoubleObjectInspector)varianceField.getFieldObjectInspector();
+
+        countFieldOI = (LongObjectInspector) countField
+            .getFieldObjectInspector();
+        sumFieldOI = (DoubleObjectInspector) sumField.getFieldObjectInspector();
+        varianceFieldOI = (DoubleObjectInspector) varianceField
+            .getFieldObjectInspector();
       }
-      
+
       // init output
-      if (mode == mode.PARTIAL1 || mode == mode.PARTIAL2) {
+      if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {
         // The output of a partial aggregation is a struct containing
-        // a long count and doubles sum and variance. 
-        
+        // a long count and doubles sum and variance.
+
         ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        
+
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        
+
         ArrayList<String> fname = new ArrayList<String>();
         fname.add("count");
         fname.add("sum");
         fname.add("variance");
-        
+
         partialResult = new Object[3];
         partialResult[0] = new LongWritable(0);
         partialResult[1] = new DoubleWritable(0);
         partialResult[2] = new DoubleWritable(0);
-        
-        return ObjectInspectorFactory.getStandardStructObjectInspector(
-            fname, foi);
-        
+
+        return ObjectInspectorFactory.getStandardStructObjectInspector(fname,
+            foi);
+
       } else {
         result = new DoubleWritable(0);
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
@@ -191,42 +181,44 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      StdAgg myagg = (StdAgg)agg;
+      StdAgg myagg = (StdAgg) agg;
       myagg.count = 0;
-      myagg.sum = 0;     
+      myagg.sum = 0;
       myagg.variance = 0;
     }
-    
+
     boolean warned = false;
-    
+
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) 
-    throws HiveException {
-      assert(parameters.length == 1);
+    public void iterate(AggregationBuffer agg, Object[] parameters)
+        throws HiveException {
+      assert (parameters.length == 1);
       Object p = parameters[0];
       if (p != null) {
-        StdAgg myagg = (StdAgg)agg;
+        StdAgg myagg = (StdAgg) agg;
         try {
-          double v = PrimitiveObjectInspectorUtils.getDouble(p, 
-              (PrimitiveObjectInspector)inputOI);
-         
-          if(myagg.count != 0) { // if count==0 => the variance is going to be 0
-                                // after 1 iteration
-            double alpha = (myagg.sum + v) / (myagg.count+1) 
-                            - myagg.sum / myagg.count;
-            double betha = (myagg.sum + v) / (myagg.count+1) - v;
-            
+          double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
+
+          if (myagg.count != 0) { // if count==0 => the variance is going to be
+                                  // 0
+            // after 1 iteration
+            double alpha = (myagg.sum + v) / (myagg.count + 1) - myagg.sum
+                / myagg.count;
+            double betha = (myagg.sum + v) / (myagg.count + 1) - v;
+
             // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
             // => variance += n*alpha^2 + betha^2
-            myagg.variance += myagg.count*alpha*alpha + betha*betha;
+            myagg.variance += myagg.count * alpha * alpha + betha * betha;
           }
           myagg.count++;
           myagg.sum += v;
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
-            LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
-            LOG.warn(getClass().getSimpleName() + " ignoring similar exceptions.");
+            LOG.warn(getClass().getSimpleName() + " "
+                + StringUtils.stringifyException(e));
+            LOG.warn(getClass().getSimpleName()
+                + " ignoring similar exceptions.");
           }
         }
       }
@@ -234,60 +226,61 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
-      StdAgg myagg = (StdAgg)agg;
-      ((LongWritable)partialResult[0]).set(myagg.count);
-      ((DoubleWritable)partialResult[1]).set(myagg.sum);
-      ((DoubleWritable)partialResult[2]).set(myagg.variance);
+      StdAgg myagg = (StdAgg) agg;
+      ((LongWritable) partialResult[0]).set(myagg.count);
+      ((DoubleWritable) partialResult[1]).set(myagg.sum);
+      ((DoubleWritable) partialResult[2]).set(myagg.variance);
       return partialResult;
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial)
+        throws HiveException {
       if (partial != null) {
-        StdAgg myagg = (StdAgg)agg;
-        
+        StdAgg myagg = (StdAgg) agg;
+
         Object partialCount = soi.getStructFieldData(partial, countField);
         Object partialSum = soi.getStructFieldData(partial, sumField);
         Object partialVariance = soi.getStructFieldData(partial, varianceField);
-        
+
         long n = myagg.count;
         long m = countFieldOI.get(partialCount);
-        
-        if(n == 0) {
+
+        if (n == 0) {
           // Just copy the information since there is nothing so far
           myagg.variance = sumFieldOI.get(partialVariance);
           myagg.count = countFieldOI.get(partialCount);
           myagg.sum = sumFieldOI.get(partialSum);
         }
-        
-        if(m != 0 && n != 0) {
+
+        if (m != 0 && n != 0) {
           // Merge the two partials
-          
+
           double a = myagg.sum;
           double b = sumFieldOI.get(partialSum);
-          
-          double alpha = (a+b)/(n+m) - a/n;
-          double betha = (a+b)/(n+m) - b/m;
-          
+
+          double alpha = (a + b) / (n + m) - a / n;
+          double betha = (a + b) / (n + m) - b / m;
+
           // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
           myagg.variance += sumFieldOI.get(partialVariance)
-                            + (n*alpha*alpha + m*betha*betha);
+              + (n * alpha * alpha + m * betha * betha);
           myagg.count += m;
           myagg.sum += b;
         }
-        
+
       }
     }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      StdAgg myagg = (StdAgg)agg;
-      
+      StdAgg myagg = (StdAgg) agg;
+
       if (myagg.count == 0) { // SQL standard - return null for zero elements
         return null;
       } else {
-        if(myagg.count > 1) { 
-          result.set(myagg.variance / (myagg.count)); 
+        if (myagg.count > 1) {
+          result.set(myagg.variance / (myagg.count));
         } else { // for one element the variance is always 0
           result.set(0);
         }

@@ -21,22 +21,25 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-@explain(displayName="Lateral View Join Operator")
+@explain(displayName = "Lateral View Join Operator")
 public class lateralViewJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private ArrayList<String> outputInternalColNames;
-  public lateralViewJoinDesc() { 
+
+  public lateralViewJoinDesc() {
   }
+
   public lateralViewJoinDesc(ArrayList<String> outputInternalColNames) {
     this.outputInternalColNames = outputInternalColNames;
   }
-  public void setOutputInternalColNames(
-      ArrayList<String> outputInternalColNames) {
+
+  public void setOutputInternalColNames(ArrayList<String> outputInternalColNames) {
     this.outputInternalColNames = outputInternalColNames;
   }
-  @explain(displayName="outputColumnNames")
+
+  @explain(displayName = "outputColumnNames")
   public ArrayList<String> getOutputInternalColNames() {
-    return this.outputInternalColNames;
+    return outputInternalColNames;
   }
 }

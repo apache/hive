@@ -20,19 +20,23 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Collect")
+@explain(displayName = "Collect")
 public class collectDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   Integer bufferSize;
-  public collectDesc() {}
-  public collectDesc(
-    final Integer bufferSize) {
+
+  public collectDesc() {
+  }
+
+  public collectDesc(final Integer bufferSize) {
     this.bufferSize = bufferSize;
   }
+
   public Integer getBufferSize() {
-    return this.bufferSize;
+    return bufferSize;
   }
+
   public void setBufferSize(Integer bufferSize) {
-    this.bufferSize=bufferSize;
+    this.bufferSize = bufferSize;
   }
 }

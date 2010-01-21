@@ -20,20 +20,24 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Limit")
+@explain(displayName = "Limit")
 public class limitDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private int limit;
-  public limitDesc() { }
+
+  public limitDesc() {
+  }
+
   public limitDesc(final int limit) {
     this.limit = limit;
   }
 
   public int getLimit() {
-    return this.limit;
+    return limit;
   }
+
   public void setLimit(final int limit) {
-    this.limit=limit;
+    this.limit = limit;
   }
 
 }

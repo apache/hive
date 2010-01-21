@@ -26,23 +26,26 @@ import org.apache.hadoop.hive.ql.plan.extractDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
- * Extract operator implementation
- * Extracts a subobject and passes that on.
+ * Extract operator implementation Extracts a subobject and passes that on.
  **/
-public class ExtractOperator extends Operator<extractDesc> implements Serializable {
+public class ExtractOperator extends Operator<extractDesc> implements
+    Serializable {
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;
 
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
     outputObjInspector = eval.initialize(inputObjInspectors[0]);
     initializeChildren(hconf);
   }
 
+  @Override
   public void processOp(Object row, int tag) throws HiveException {
     forward(eval.evaluate(row), outputObjInspector);
   }
 
+  @Override
   public int getType() {
     return OperatorType.EXTRACT;
   }

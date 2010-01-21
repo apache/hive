@@ -20,19 +20,19 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Create Function")
+@explain(displayName = "Create Function")
 public class createFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private String functionName;
   private String className;
-  
+
   public createFunctionDesc(String functionName, String className) {
     this.functionName = functionName;
     this.className = className;
   }
 
-  @explain(displayName="name")
+  @explain(displayName = "name")
   public String getFunctionName() {
     return functionName;
   }
@@ -41,7 +41,7 @@ public class createFunctionDesc implements Serializable {
     this.functionName = functionName;
   }
 
-  @explain(displayName="class")
+  @explain(displayName = "class")
   public String getClassName() {
     return className;
   }
@@ -49,5 +49,5 @@ public class createFunctionDesc implements Serializable {
   public void setClassName(String className) {
     this.className = className;
   }
-  
+
 }

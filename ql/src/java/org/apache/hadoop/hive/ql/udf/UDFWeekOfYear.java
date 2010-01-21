@@ -30,24 +30,20 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "yearweek",
-    value = "_FUNC_(date) - Returns the week of the year of the given date. A week " +
-            "is considered to start on a Monday and week 1 is the first week with >3 days.",
-    extended = "Examples:\n" +
-        "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n" +
-        "  8\n" +
-        "  > SELECT _FUNC_('1980-12-31 12:59:59') FROM src LIMIT 1;\n" +
-        "  1"
-    )
+@description(name = "yearweek", value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
+    + "is considered to start on a Monday and week 1 is the first week with >3 days.", extended = "Examples:\n"
+    + "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n"
+    + "  8\n"
+    + "  > SELECT _FUNC_('1980-12-31 12:59:59') FROM src LIMIT 1;\n" + "  1")
 public class UDFWeekOfYear extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFWeekOfYear.class.getName());
 
-  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private Calendar calendar = Calendar.getInstance();
+  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private final Calendar calendar = Calendar.getInstance();
 
   IntWritable result = new IntWritable();
+
   public UDFWeekOfYear() {
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
     calendar.setMinimalDaysInFirstWeek(4);
@@ -56,10 +52,13 @@ public class UDFWeekOfYear extends UDF {
   /**
    * Get the week of the year from a date string.
    * 
-   * @param dateString the dateString in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
-   * @return an int from 1 to 53. null if the dateString is not a valid date string.
+   * @param dateString
+   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
+   *          "yyyy-MM-dd".
+   * @return an int from 1 to 53. null if the dateString is not a valid date
+   *         string.
    */
-  public IntWritable evaluate(Text dateString)  {
+  public IntWritable evaluate(Text dateString) {
     if (dateString == null) {
       return null;
     }

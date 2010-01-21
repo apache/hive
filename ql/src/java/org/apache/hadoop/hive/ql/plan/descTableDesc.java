@@ -23,15 +23,14 @@ import java.util.HashMap;
 
 import org.apache.hadoop.fs.Path;
 
-@explain(displayName="Describe Table")
-public class descTableDesc extends ddlDesc implements Serializable 
-{
+@explain(displayName = "Describe Table")
+public class descTableDesc extends ddlDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   String tableName;
   HashMap<String, String> partSpec;
-  Path              resFile;
-  boolean           isExt;
+  Path resFile;
+  boolean isExt;
   /**
    * table name for the result of describe table
    */
@@ -48,14 +47,15 @@ public class descTableDesc extends ddlDesc implements Serializable
   public String getSchema() {
     return schema;
   }
- 
+
   /**
    * @param isExt
    * @param partSpec
    * @param resFile
    * @param tableName
    */
-  public descTableDesc(Path resFile, String tableName, HashMap<String, String> partSpec, boolean isExt) {
+  public descTableDesc(Path resFile, String tableName,
+      HashMap<String, String> partSpec, boolean isExt) {
     this.isExt = isExt;
     this.partSpec = partSpec;
     this.resFile = resFile;
@@ -70,7 +70,8 @@ public class descTableDesc extends ddlDesc implements Serializable
   }
 
   /**
-   * @param isExt the isExt to set
+   * @param isExt
+   *          the isExt to set
    */
   public void setExt(boolean isExt) {
     this.isExt = isExt;
@@ -79,13 +80,14 @@ public class descTableDesc extends ddlDesc implements Serializable
   /**
    * @return the tableName
    */
-  @explain(displayName="table")
+  @explain(displayName = "table")
   public String getTableName() {
     return tableName;
   }
 
   /**
-   * @param tableName the tableName to set
+   * @param tableName
+   *          the tableName to set
    */
   public void setTableName(String tableName) {
     this.tableName = tableName;
@@ -94,13 +96,14 @@ public class descTableDesc extends ddlDesc implements Serializable
   /**
    * @return the partSpec
    */
-  @explain(displayName="partition")
+  @explain(displayName = "partition")
   public HashMap<String, String> getPartSpec() {
     return partSpec;
   }
 
   /**
-   * @param partSpec the partSpec to set
+   * @param partSpec
+   *          the partSpec to set
    */
   public void setPartSpecs(HashMap<String, String> partSpec) {
     this.partSpec = partSpec;
@@ -113,13 +116,14 @@ public class descTableDesc extends ddlDesc implements Serializable
     return resFile;
   }
 
-  @explain(displayName="result file", normalExplain=false)
+  @explain(displayName = "result file", normalExplain = false)
   public String getResFileString() {
     return getResFile().getName();
   }
-  
+
   /**
-   * @param resFile the resFile to set
+   * @param resFile
+   *          the resFile to set
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;

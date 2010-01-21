@@ -29,47 +29,45 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-@description(
-    name = "explode",
-    value = "_FUNC_(a) - separates the elements of array a into multiple rows "
-)
+@description(name = "explode", value = "_FUNC_(a) - separates the elements of array a into multiple rows ")
 public class GenericUDTFExplode extends GenericUDTF {
 
   ListObjectInspector listOI = null;
-  
+
   @Override
-  public void close() throws HiveException{
+  public void close() throws HiveException {
   }
-  
+
   @Override
-  public StructObjectInspector initialize(ObjectInspector [] args) 
-  throws UDFArgumentException {
-    
+  public StructObjectInspector initialize(ObjectInspector[] args)
+      throws UDFArgumentException {
+
     if (args.length != 1) {
       throw new UDFArgumentException("explode() takes only one argument");
     }
-    
+
     if (args[0].getCategory() != ObjectInspector.Category.LIST) {
       throw new UDFArgumentException("explode() takes an array as a parameter");
     }
-    listOI = (ListObjectInspector)args[0];
-    
+    listOI = (ListObjectInspector) args[0];
+
     ArrayList<String> fieldNames = new ArrayList<String>();
     ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
     fieldNames.add("col");
     fieldOIs.add(listOI.getListElementObjectInspector());
-    return ObjectInspectorFactory.getStandardStructObjectInspector(
-        fieldNames, fieldOIs);
+    return ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames,
+        fieldOIs);
   }
 
   Object forwardObj[] = new Object[1];
+
   @Override
-  public void process(Object [] o) throws HiveException {
-   
+  public void process(Object[] o) throws HiveException {
+
     List<?> list = listOI.getList(o[0]);
     for (Object r : list) {
       forwardObj[0] = r;
-      this.forward(forwardObj);
+      forward(forwardObj);
     }
   }
 

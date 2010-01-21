@@ -23,42 +23,42 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
 public class UDAFWrongArgLengthForTestCase extends UDAF {
 
-  static public class UDAFWrongArgLengthForTestCaseEvaluator implements UDAFEvaluator {
-  
+  static public class UDAFWrongArgLengthForTestCaseEvaluator implements
+      UDAFEvaluator {
+
     private long mCount;
-    
+
     public UDAFWrongArgLengthForTestCaseEvaluator() {
       super();
       init();
     }
-  
+
     public void init() {
       mCount = 0;
     }
-    
+
     Text emptyText = new Text();
-    
+
     public boolean iterate(Object o) {
       if (o != null && !emptyText.equals(o)) {
-        mCount ++;
+        mCount++;
       }
       return true;
     }
-  
+
     public LongWritable terminatePartial() {
       return new LongWritable(mCount);
     }
-  
+
     public boolean merge() {
       return true;
     }
-  
+
     public LongWritable terminate() {
       return new LongWritable(mCount);
     }
   }
-  
+
 }

@@ -34,10 +34,9 @@ public class JobTrackerURLResolver {
     InetSocketAddress infoSocAddr = NetUtils.createSocketAddr(infoAddr);
     int infoPort = infoSocAddr.getPort();
 
-    String tracker = "http://" +
-                     JobTracker.getAddress(conf).getHostName() + ":" +
-                     infoPort;
-    
+    String tracker = "http://" + JobTracker.getAddress(conf).getHostName()
+        + ":" + infoPort;
+
     return tracker;
   }
 }

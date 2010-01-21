@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
-
 public class UDFToDate extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToDate.class.getName());
@@ -30,7 +29,7 @@ public class UDFToDate extends UDF {
   public UDFToDate() {
   }
 
-  public java.sql.Date evaluate(String i)  {
+  public java.sql.Date evaluate(String i) {
     if (i == null) {
       return null;
     } else {
@@ -38,68 +37,63 @@ public class UDFToDate extends UDF {
         // Supported format: "YYYY-MM-DD"
         return java.sql.Date.valueOf(i);
       } catch (IllegalArgumentException e) {
-        // We return NULL when the string is in a wrong format, which is conservative.
+        // We return NULL when the string is in a wrong format, which is
+        // conservative.
         return null;
       }
     }
   }
-  
+
   public java.sql.Date evaluate(Void i) {
     return null;
   }
-  
+
   public java.sql.Date evaluate(Byte i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
   public java.sql.Date evaluate(Short i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
   public java.sql.Date evaluate(Integer i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
   public java.sql.Date evaluate(Long i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
   public java.sql.Date evaluate(Float i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
   public java.sql.Date evaluate(Double i) {
     if (i == null) {
       return null;
-    }
-    else {
+    } else {
       return new java.sql.Date(i.longValue());
     }
   }
-  
+
 }

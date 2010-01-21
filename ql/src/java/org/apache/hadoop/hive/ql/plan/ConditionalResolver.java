@@ -25,15 +25,18 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 /**
- * Conditional task resolution interface. This is invoked at run time to get the task to invoke. 
- * Developers can plug in their own resolvers
+ * Conditional task resolution interface. This is invoked at run time to get the
+ * task to invoke. Developers can plug in their own resolvers
  */
 public interface ConditionalResolver {
-	/**
-	 * All conditional resolvers implement this interface
-	 * @param conf configuration
-	 * @param ctx  opaque context
-	 * @return position of the task
-	 */
-	public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
+  /**
+   * All conditional resolvers implement this interface
+   * 
+   * @param conf
+   *          configuration
+   * @param ctx
+   *          opaque context
+   * @return position of the task
+   */
+  public List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
 }

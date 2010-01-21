@@ -19,113 +19,99 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.Text;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-@description(
-    name = "get_json_object",
-    value = "_FUNC_(json_txt, path) - Extract a json object from path ",
-    extended = "Extract json object from a json string based on json path " +
-    		"specified, and return json string of the extracted json object. It " +
-    		"will return null if the input json string is invalid.\n" +
-        "A limited version of JSONPath supported:\n" +
-        "  $   : Root object\n" +
-        "  .   : Child operator\n" +
-        "  []  : Subscript operator for array\n" +
-        "  *   : Wildcard for []\n" +
-        "Syntax not supported that's worth noticing:\n" +
-        "  ''  : Zero length string as key\n" +
-        "  ..  : Recursive descent\n" +
-        "  &amp;#064;   : Current object/element\n" +
-        "  ()  : Script expression\n" +
-        "  ?() : Filter (script) expression.\n" +
-        "  [,] : Union operator\n" +
-        "  [start:end:step] : array slice operator\n"
-    )
+@description(name = "get_json_object", value = "_FUNC_(json_txt, path) - Extract a json object from path ", extended = "Extract json object from a json string based on json path "
+    + "specified, and return json string of the extracted json object. It "
+    + "will return null if the input json string is invalid.\n"
+    + "A limited version of JSONPath supported:\n"
+    + "  $   : Root object\n"
+    + "  .   : Child operator\n"
+    + "  []  : Subscript operator for array\n"
+    + "  *   : Wildcard for []\n"
+    + "Syntax not supported that's worth noticing:\n"
+    + "  ''  : Zero length string as key\n"
+    + "  ..  : Recursive descent\n"
+    + "  &amp;#064;   : Current object/element\n"
+    + "  ()  : Script expression\n"
+    + "  ?() : Filter (script) expression.\n"
+    + "  [,] : Union operator\n"
+    + "  [start:end:step] : array slice operator\n")
 public class UDFJson extends UDF {
   private static Log LOG = LogFactory.getLog(UDFJson.class.getName());
-  private Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
-  private Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
+  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
+  private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
   // An LRU cache using a linked hash map
-  static class HashCache<K,V> extends LinkedHashMap<K,V> {
-    
-    private static final int   CACHE_SIZE  = 16;
-    private static final int   INIT_SIZE   = 32;
+  static class HashCache<K, V> extends LinkedHashMap<K, V> {
+
+    private static final int CACHE_SIZE = 16;
+    private static final int INIT_SIZE = 32;
     private static final float LOAD_FACTOR = 0.6f;
-    
+
     HashCache() {
-      super(INIT_SIZE,LOAD_FACTOR);
+      super(INIT_SIZE, LOAD_FACTOR);
     }
+
     private static final long serialVersionUID = 1;
-    @Override 
-    protected boolean removeEldestEntry (Map.Entry<K,V> eldest) {
-       return size() > CACHE_SIZE; 
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+      return size() > CACHE_SIZE;
     }
 
   }
-  
-  static Map<String, Object> extractObjectCache = 
-    new HashCache<String, Object>();
-  static Map<String, String[]> pathExprCache = 
-    new HashCache<String, String[]>();
-  static Map<String, ArrayList<String>> indexListCache = 
-    new HashCache<String, ArrayList<String>>();
-  static Map<String, String> mKeyGroup1Cache = 
-    new HashCache<String, String>();
-  static Map<String, Boolean> mKeyMatchesCache =
-    new HashCache<String, Boolean>();
-  
+
+  static Map<String, Object> extractObjectCache = new HashCache<String, Object>();
+  static Map<String, String[]> pathExprCache = new HashCache<String, String[]>();
+  static Map<String, ArrayList<String>> indexListCache = new HashCache<String, ArrayList<String>>();
+  static Map<String, String> mKeyGroup1Cache = new HashCache<String, String>();
+  static Map<String, Boolean> mKeyMatchesCache = new HashCache<String, Boolean>();
+
   Text result = new Text();
-  
+
   public UDFJson() {
   }
 
   /**
-   * Extract json object from a json string based on json path specified,
-   * and return json string of the extracted json object. It will return null
-   * if the input json string is invalid.
-   *
-   * A limited version of JSONPath supported:
-   *    $   : Root object
-   *    .   : Child operator
-   *    []  : Subscript operator for array
-   *    *   : Wildcard for []
-   *
-   * Syntax not supported that's worth noticing:
-   *    ''  : Zero length string as key
-   *    ..  : Recursive descent
-   *    &amp;#064;   : Current object/element
-   *    ()  : Script expression
-   *    ?() : Filter (script) expression.
-   *    [,] : Union operator
-   *    [start:end:step] : array slice operator
-   *
-   * @param jsonString the json string.
-   * @param pathString the json path expression.
+   * Extract json object from a json string based on json path specified, and
+   * return json string of the extracted json object. It will return null if the
+   * input json string is invalid.
+   * 
+   * A limited version of JSONPath supported: $ : Root object . : Child operator
+   * [] : Subscript operator for array * : Wildcard for []
+   * 
+   * Syntax not supported that's worth noticing: '' : Zero length string as key
+   * .. : Recursive descent &amp;#064; : Current object/element () : Script
+   * expression ?() : Filter (script) expression. [,] : Union operator
+   * [start:end:step] : array slice operator
+   * 
+   * @param jsonString
+   *          the json string.
+   * @param pathString
+   *          the json path expression.
    * @return json string or null when an error happens.
    */
   public Text evaluate(String jsonString, String pathString) {
 
-    if(jsonString == null || jsonString == "" ||
-       pathString == null || pathString == "") {
+    if (jsonString == null || jsonString == "" || pathString == null
+        || pathString == "") {
       return null;
     }
-    
+
     try {
       // Cache pathExpr
       String[] pathExpr = pathExprCache.get(pathString);
@@ -133,13 +119,13 @@ public class UDFJson extends UDF {
         pathExpr = pathString.split("\\.", -1);
         pathExprCache.put(pathString, pathExpr);
       }
-      
+
       if (!pathExpr[0].equalsIgnoreCase("$")) {
         return null;
       }
       // Cache extractObject
       Object extractObject = extractObjectCache.get(jsonString);
-      if(extractObject == null) {
+      if (extractObject == null) {
         extractObject = new JSONObject(jsonString);
         extractObjectCache.put(jsonString, extractObject);
       }
@@ -166,7 +152,7 @@ public class UDFJson extends UDF {
     if (!mKeyMatches.booleanValue()) {
       return null;
     }
-    
+
     // Cache mkey.group(1)
     String mKeyGroup1 = mKeyGroup1Cache.get(path);
     if (mKeyGroup1 == null) {
@@ -177,10 +163,10 @@ public class UDFJson extends UDF {
       mKeyGroup1Cache.put(path, mKeyGroup1);
     }
     json = extract_json_withkey(json, mKeyGroup1);
-    
+
     // Cache indexList
     ArrayList<String> indexList = indexListCache.get(path);
-    if(indexList == null) {
+    if (indexList == null) {
       Matcher mIndex = patternIndex.matcher(path);
       indexList = new ArrayList<String>();
       while (mIndex.find()) {
@@ -192,15 +178,15 @@ public class UDFJson extends UDF {
     if (indexList.size() > 0) {
       json = extract_json_withindex(json, indexList);
     }
-  
+
     return json;
   }
 
   ArrayList<Object> jsonList = new ArrayList<Object>();
-  
+
   private Object extract_json_withindex(Object json, ArrayList<String> indexList)
       throws JSONException {
-    
+
     jsonList.clear();
     jsonList.add(json);
     Iterator<String> itr = indexList.iterator();
@@ -208,9 +194,9 @@ public class UDFJson extends UDF {
       String index = itr.next();
       ArrayList<Object> tmp_jsonList = new ArrayList<Object>();
       if (index.equalsIgnoreCase("*")) {
-        for (int i = 0; i < ((ArrayList<Object>) jsonList).size(); i++) {
+        for (int i = 0; i < (jsonList).size(); i++) {
           try {
-            JSONArray array = (JSONArray) ((ArrayList<Object>) jsonList).get(i);
+            JSONArray array = (JSONArray) (jsonList).get(i);
             for (int j = 0; j < array.length(); j++) {
               tmp_jsonList.add(array.get(j));
             }
@@ -220,11 +206,10 @@ public class UDFJson extends UDF {
         }
         jsonList = tmp_jsonList;
       } else {
-        for (int i = 0; i < ((ArrayList<Object>) jsonList).size(); i++) {
+        for (int i = 0; i < (jsonList).size(); i++) {
           try {
-            tmp_jsonList
-                .add(((JSONArray) ((ArrayList<Object>) jsonList).get(i))
-                    .get(Integer.parseInt(index)));
+            tmp_jsonList.add(((JSONArray) (jsonList).get(i)).get(Integer
+                .parseInt(index)));
           } catch (ClassCastException e) {
             continue;
           } catch (JSONException e) {
@@ -234,8 +219,7 @@ public class UDFJson extends UDF {
         }
       }
     }
-    return (jsonList.size() > 1) ? new JSONArray((Collection) jsonList)
-        : jsonList.get(0);
+    return (jsonList.size() > 1) ? new JSONArray(jsonList) : jsonList.get(0);
   }
 
   private Object extract_json_withkey(Object json, String path)

@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.copyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -39,7 +39,8 @@ public class CopyTask extends Task<copyWork> implements Serializable {
   public CopyTask() {
     super();
   }
-  
+
+  @Override
   public int execute() {
     FileSystem dstFs = null;
     Path toPath = null;
@@ -47,42 +48,46 @@ public class CopyTask extends Task<copyWork> implements Serializable {
       Path fromPath = new Path(work.getFromPath());
       toPath = new Path(work.getToPath());
 
-      console.printInfo("Copying data from " + fromPath.toString(), " to " + toPath.toString());
+      console.printInfo("Copying data from " + fromPath.toString(), " to "
+          + toPath.toString());
 
       FileSystem srcFs = fromPath.getFileSystem(conf);
       dstFs = toPath.getFileSystem(conf);
 
-      FileStatus [] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
+      FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
 
-      if(srcs == null || srcs.length == 0) {
+      if (srcs == null || srcs.length == 0) {
         console.printError("No files matching path: " + fromPath.toString());
         return 3;
       }
 
       if (!dstFs.mkdirs(toPath)) {
-        console.printError("Cannot make target directory: " + toPath.toString());
+        console
+            .printError("Cannot make target directory: " + toPath.toString());
         return 2;
-      }      
+      }
 
-      for(FileStatus oneSrc: srcs) {
+      for (FileStatus oneSrc : srcs) {
         LOG.debug("Copying file: " + oneSrc.getPath().toString());
-        if(!FileUtil.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
-                          false, // delete source
-                          true, // overwrite destination
-                          conf)) {
-          console.printError("Failed to copy: '"+ oneSrc.getPath().toString() +
-                    "to: '" + toPath.toString() + "'");
+        if (!FileUtil.copy(srcFs, oneSrc.getPath(), dstFs, toPath, false, // delete
+                                                                          // source
+            true, // overwrite destination
+            conf)) {
+          console.printError("Failed to copy: '" + oneSrc.getPath().toString()
+              + "to: '" + toPath.toString() + "'");
           return 1;
         }
       }
       return 0;
 
     } catch (Exception e) {
-      console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
+      console.printError("Failed with exception " + e.getMessage(), "\n"
+          + StringUtils.stringifyException(e));
       return (1);
     }
   }
-  
+
+  @Override
   public int getType() {
     return StageType.COPY;
   }

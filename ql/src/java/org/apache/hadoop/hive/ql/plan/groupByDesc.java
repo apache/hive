@@ -18,19 +18,24 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-@explain(displayName="Group By Operator")
+@explain(displayName = "Group By Operator")
 public class groupByDesc implements java.io.Serializable {
-  /** Group-by Mode:
-   *  COMPLETE: complete 1-phase aggregation: iterate, terminate
-   *  PARTIAL1: partial aggregation - first phase:  iterate, terminatePartial
-   *  PARTIAL2: partial aggregation - second phase: merge, terminatePartial
-   *  PARTIALS: For non-distinct the same as PARTIAL2, for distinct the same as PARTIAL1
-   *  FINAL: partial aggregation - final phase: merge, terminate
-   *  HASH: For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
-   *  MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct aggregations  
+  /**
+   * Group-by Mode: COMPLETE: complete 1-phase aggregation: iterate, terminate
+   * PARTIAL1: partial aggregation - first phase: iterate, terminatePartial
+   * PARTIAL2: partial aggregation - second phase: merge, terminatePartial
+   * PARTIALS: For non-distinct the same as PARTIAL2, for distinct the same as
+   * PARTIAL1 FINAL: partial aggregation - final phase: merge, terminate HASH:
+   * For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
+   * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
+   * aggregations
    */
   private static final long serialVersionUID = 1L;
-  public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL };
+
+  public static enum Mode {
+    COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL
+  };
+
   private Mode mode;
   private boolean groupKeyNotReductionKey;
   private boolean bucketGroup;
@@ -38,36 +43,41 @@ public class groupByDesc implements java.io.Serializable {
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
   private java.util.ArrayList<java.lang.String> outputColumnNames;
-  public groupByDesc() { }
-  public groupByDesc(
-    final Mode mode,
-    final java.util.ArrayList<java.lang.String> outputColumnNames,
-    final java.util.ArrayList<exprNodeDesc> keys,
-    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
-    final boolean groupKeyNotReductionKey) {
-  	this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey, false);
+
+  public groupByDesc() {
   }
-  
+
   public groupByDesc(
       final Mode mode,
       final java.util.ArrayList<java.lang.String> outputColumnNames,
       final java.util.ArrayList<exprNodeDesc> keys,
       final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
-	    final boolean groupKeyNotReductionKey, final boolean bucketGroup) {
-		this.mode = mode;
-		this.outputColumnNames = outputColumnNames;
-		this.keys = keys;
-		this.aggregators = aggregators;
-		this.groupKeyNotReductionKey = groupKeyNotReductionKey;
-		this.bucketGroup = bucketGroup;
-	}
-  
-  public Mode getMode() {
-    return this.mode;
+      final boolean groupKeyNotReductionKey) {
+    this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
+        false);
   }
-  @explain(displayName="mode")
+
+  public groupByDesc(
+      final Mode mode,
+      final java.util.ArrayList<java.lang.String> outputColumnNames,
+      final java.util.ArrayList<exprNodeDesc> keys,
+      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
+      final boolean groupKeyNotReductionKey, final boolean bucketGroup) {
+    this.mode = mode;
+    this.outputColumnNames = outputColumnNames;
+    this.keys = keys;
+    this.aggregators = aggregators;
+    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
+    this.bucketGroup = bucketGroup;
+  }
+
+  public Mode getMode() {
+    return mode;
+  }
+
+  @explain(displayName = "mode")
   public String getModeString() {
-    switch(mode) {
+    switch (mode) {
     case COMPLETE:
       return "complete";
     case PARTIAL1:
@@ -83,48 +93,57 @@ public class groupByDesc implements java.io.Serializable {
     case MERGEPARTIAL:
       return "mergepartial";
     }
-  
+
     return "unknown";
   }
+
   public void setMode(final Mode mode) {
     this.mode = mode;
   }
-  @explain(displayName="keys")
+
+  @explain(displayName = "keys")
   public java.util.ArrayList<exprNodeDesc> getKeys() {
-    return this.keys;
+    return keys;
   }
+
   public void setKeys(final java.util.ArrayList<exprNodeDesc> keys) {
     this.keys = keys;
   }
-  
-  @explain(displayName="outputColumnNames")
+
+  @explain(displayName = "outputColumnNames")
   public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }
+
   public void setOutputColumnNames(
       java.util.ArrayList<java.lang.String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
   }
-  
-  @explain(displayName="aggregations")
+
+  @explain(displayName = "aggregations")
   public java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> getAggregators() {
-    return this.aggregators;
+    return aggregators;
   }
-  public void setAggregators(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
+
+  public void setAggregators(
+      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
     this.aggregators = aggregators;
   }
 
   public boolean getGroupKeyNotReductionKey() {
-    return this.groupKeyNotReductionKey;
+    return groupKeyNotReductionKey;
   }
+
   public void setGroupKeyNotReductionKey(final boolean groupKeyNotReductionKey) {
     this.groupKeyNotReductionKey = groupKeyNotReductionKey;
   }
-  @explain(displayName="bucketGroup")
-	public boolean getBucketGroup() {
-  	return bucketGroup;
+
+  @explain(displayName = "bucketGroup")
+  public boolean getBucketGroup() {
+    return bucketGroup;
   }
-	public void setBucketGroup(boolean dataSorted) {
-  	this.bucketGroup = dataSorted;
+
+  public void setBucketGroup(boolean dataSorted) {
+    bucketGroup = dataSorted;
   }
 }

@@ -26,16 +26,12 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "|",
-    value = "a _FUNC_ b - Bitwise or",
-    extended = "Example:\n" +
-        "  > SELECT 3 _FUNC_ 5 FROM src LIMIT 1;\n" +
-        "  7"
-)
+@description(name = "|", value = "a _FUNC_ b - Bitwise or", extended = "Example:\n"
+    + "  > SELECT 3 _FUNC_ 5 FROM src LIMIT 1;\n" + "  7")
 public class UDFOPBitOr extends UDFBaseBitOP {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPBitOr");
+  private static Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPBitOr");
 
   public UDFOPBitOr() {
   }
@@ -44,7 +40,7 @@ public class UDFOPBitOr extends UDFBaseBitOP {
     if (a == null || b == null) {
       return null;
     }
-    byteWritable.set((byte)(a.get() | b.get()));
+    byteWritable.set((byte) (a.get() | b.get()));
     return byteWritable;
   }
 
@@ -52,10 +48,10 @@ public class UDFOPBitOr extends UDFBaseBitOP {
     if (a == null || b == null) {
       return null;
     }
-    shortWritable.set((short)(a.get() | b.get()));
+    shortWritable.set((short) (a.get() | b.get()));
     return shortWritable;
   }
-  
+
   public IntWritable evaluate(IntWritable a, IntWritable b) {
     if (a == null || b == null) {
       return null;
@@ -71,6 +67,5 @@ public class UDFOPBitOr extends UDFBaseBitOP {
     longWritable.set(a.get() | b.get());
     return longWritable;
   }
-
 
 }

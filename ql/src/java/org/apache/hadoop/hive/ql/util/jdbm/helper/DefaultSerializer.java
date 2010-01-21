@@ -68,54 +68,45 @@ import java.io.IOException;
 
 /**
  * Default java serializer.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: DefaultSerializer.java,v 1.2 2003/09/21 15:47:00 boisvert Exp $
  */
-public class DefaultSerializer
-    implements Serializer
-{
+public class DefaultSerializer implements Serializer {
 
-    
-    public static final DefaultSerializer INSTANCE = new DefaultSerializer();
-    
-    
-    /**
-     * Construct a DefaultSerializer.
-     */
-    public DefaultSerializer()
-    {
-        // no op
+  public static final DefaultSerializer INSTANCE = new DefaultSerializer();
+
+  /**
+   * Construct a DefaultSerializer.
+   */
+  public DefaultSerializer() {
+    // no op
+  }
+
+  /**
+   * Serialize the content of an object into a byte array.
+   * 
+   * @param obj
+   *          Object to serialize
+   * @return a byte array representing the object's state
+   */
+  public byte[] serialize(Object obj) throws IOException {
+    return Serialization.serialize(obj);
+  }
+
+  /**
+   * Deserialize the content of an object from a byte array.
+   * 
+   * @param serialized
+   *          Byte array representation of the object
+   * @return deserialized object
+   */
+  public Object deserialize(byte[] serialized) throws IOException {
+    try {
+      return Serialization.deserialize(serialized);
+    } catch (ClassNotFoundException except) {
+      throw new WrappedRuntimeException(except);
     }
-
-    
-    /**
-     * Serialize the content of an object into a byte array.
-     *
-     * @param obj Object to serialize
-     * @return a byte array representing the object's state
-     */
-     public byte[] serialize( Object obj )
-        throws IOException
-     {
-         return Serialization.serialize( obj );
-     }
-        
-        
-    /**
-     * Deserialize the content of an object from a byte array.
-     *
-     * @param serialized Byte array representation of the object
-     * @return deserialized object
-     */
-     public Object deserialize( byte[] serialized )
-        throws IOException
-     {
-         try {
-            return Serialization.deserialize( serialized );
-         } catch ( ClassNotFoundException except ) {
-            throw new WrappedRuntimeException( except );
-         }
-     }
+  }
 
 }

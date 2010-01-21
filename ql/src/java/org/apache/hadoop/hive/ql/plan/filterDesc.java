@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
-@explain(displayName="Filter Operator")
+@explain(displayName = "Filter Operator")
 public class filterDesc implements Serializable {
 
   /**
@@ -34,28 +34,25 @@ public class filterDesc implements Serializable {
     // The denominator of the TABLESAMPLE clause
     private int denominator;
 
-    // buckets columns for the table
-    private List<String> tabBucketCols;
-
     // Input files can be pruned
     private boolean inputPruning;
 
     public sampleDesc() {
     }
 
-    public sampleDesc(int numerator, int denominator, List<String> tabBucketCols, boolean inputPruning) {
+    public sampleDesc(int numerator, int denominator,
+        List<String> tabBucketCols, boolean inputPruning) {
       this.numerator = numerator;
       this.denominator = denominator;
-      this.tabBucketCols = tabBucketCols;
       this.inputPruning = inputPruning;
     }
 
     public int getNumerator() {
-      return this.numerator;
+      return numerator;
     }
 
     public int getDenominator() {
-      return this.denominator;
+      return denominator;
     }
 
     public boolean getInputPruning() {
@@ -68,41 +65,49 @@ public class filterDesc implements Serializable {
   private boolean isSamplingPred;
   private transient sampleDesc sampleDescr;
 
-  public filterDesc() { }
-  public filterDesc(
-    final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate, boolean isSamplingPred) {
-    this.predicate = predicate;
-    this.isSamplingPred = isSamplingPred;
-    this.sampleDescr = null;
+  public filterDesc() {
   }
 
   public filterDesc(
-    final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate, boolean isSamplingPred, final sampleDesc sampleDescr) {
+      final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate,
+      boolean isSamplingPred) {
+    this.predicate = predicate;
+    this.isSamplingPred = isSamplingPred;
+    sampleDescr = null;
+  }
+
+  public filterDesc(
+      final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate,
+      boolean isSamplingPred, final sampleDesc sampleDescr) {
     this.predicate = predicate;
     this.isSamplingPred = isSamplingPred;
     this.sampleDescr = sampleDescr;
   }
 
-  @explain(displayName="predicate")
+  @explain(displayName = "predicate")
   public org.apache.hadoop.hive.ql.plan.exprNodeDesc getPredicate() {
-    return this.predicate;
+    return predicate;
   }
-  public void setPredicate(final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate) {
+
+  public void setPredicate(
+      final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate) {
     this.predicate = predicate;
   }
 
-  @explain(displayName="isSamplingPred", normalExplain=false)
+  @explain(displayName = "isSamplingPred", normalExplain = false)
   public boolean getIsSamplingPred() {
-    return this.isSamplingPred;
+    return isSamplingPred;
   }
+
   public void setIsSamplingPred(final boolean isSamplingPred) {
     this.isSamplingPred = isSamplingPred;
   }
 
-  @explain(displayName="sampleDesc", normalExplain=false)
+  @explain(displayName = "sampleDesc", normalExplain = false)
   public sampleDesc getSampleDescr() {
-    return this.sampleDescr;
+    return sampleDescr;
   }
+
   public void setSampleDescr(final sampleDesc sampleDescr) {
     this.sampleDescr = sampleDescr;
   }

@@ -24,20 +24,18 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
-@description(
-    name = "or",
-    value = "a _FUNC_ b - Logical or"
-)
+@description(name = "or", value = "a _FUNC_ b - Logical or")
 public class UDFOPOr extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFOPOr.class.getName());
 
   BooleanWritable result = new BooleanWritable();
+
   public UDFOPOr() {
   }
 
   // Three-value Boolean: NULL stands for unknown
-  public BooleanWritable evaluate(BooleanWritable a, BooleanWritable b)  {
+  public BooleanWritable evaluate(BooleanWritable a, BooleanWritable b) {
     if ((a != null && a.get() == true) || (b != null && b.get() == true)) {
       result.set(true);
       return result;

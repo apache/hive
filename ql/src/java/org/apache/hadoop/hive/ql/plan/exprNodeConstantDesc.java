@@ -30,30 +30,34 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private Object value;
-  
-  public exprNodeConstantDesc() {}
+
+  public exprNodeConstantDesc() {
+  }
+
   public exprNodeConstantDesc(TypeInfo typeInfo, Object value) {
     super(typeInfo);
     this.value = value;
   }
+
   public exprNodeConstantDesc(Object value) {
-    this(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(value.getClass()),
-        value);
+    this(TypeInfoFactory
+        .getPrimitiveTypeInfoFromJavaPrimitive(value.getClass()), value);
   }
 
   public void setValue(Object value) {
     this.value = value;
   }
-  
+
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
+  @Override
   public String toString() {
     return "Const " + typeInfo.toString() + " " + value;
   }
-  
-  @explain(displayName="expr")
+
+  @explain(displayName = "expr")
   @Override
   public String getExprString() {
     if (value == null) {
@@ -62,25 +66,29 @@ public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
 
     if (typeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
       return "'" + value.toString() + "'";
-    }
-    else {
+    } else {
       return value.toString();
     }
   }
+
   @Override
   public exprNodeDesc clone() {
-    return new exprNodeConstantDesc(this.typeInfo, this.value);
+    return new exprNodeConstantDesc(typeInfo, value);
   }
+
   @Override
   public boolean isSame(Object o) {
-    if (!(o instanceof exprNodeConstantDesc))
+    if (!(o instanceof exprNodeConstantDesc)) {
       return false;
-    exprNodeConstantDesc dest = (exprNodeConstantDesc)o;
-    if (!typeInfo.equals(dest.getTypeInfo()))
+    }
+    exprNodeConstantDesc dest = (exprNodeConstantDesc) o;
+    if (!typeInfo.equals(dest.getTypeInfo())) {
       return false;
-    if (!value.equals(dest.getValue()))
+    }
+    if (!value.equals(dest.getValue())) {
       return false;
-        
-    return true; 
+    }
+
+    return true;
   }
 }

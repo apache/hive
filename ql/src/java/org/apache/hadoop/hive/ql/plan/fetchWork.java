@@ -23,16 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
 
-@explain(displayName="Fetch Operator")
+@explain(displayName = "Fetch Operator")
 public class fetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String    tblDir;
+  private String tblDir;
   private tableDesc tblDesc;
 
-  private List<String>        partDir;
+  private List<String> partDir;
   private List<partitionDesc> partDesc;
 
   private int limit;
@@ -42,27 +41,28 @@ public class fetchWork implements Serializable {
    */
   private String serializationNullFormat = "NULL";
 
-  public fetchWork() { }
+  public fetchWork() {
+  }
 
   public fetchWork(String tblDir, tableDesc tblDesc) {
     this(tblDir, tblDesc, -1);
   }
 
-	public fetchWork(String tblDir, tableDesc tblDesc, int limit) {
-		this.tblDir = tblDir;
-		this.tblDesc = tblDesc;
-		this.limit = limit;
-	}
+  public fetchWork(String tblDir, tableDesc tblDesc, int limit) {
+    this.tblDir = tblDir;
+    this.tblDesc = tblDesc;
+    this.limit = limit;
+  }
 
-	public fetchWork(List<String> partDir, List<partitionDesc> partDesc) {
-	  this(partDir, partDesc, -1);
-	}
-	 
-	public fetchWork(List<String> partDir, List<partitionDesc> partDesc, int limit) {
-		this.partDir = partDir;
-		this.partDesc = partDesc;
-		this.limit = limit;
-	}
+  public fetchWork(List<String> partDir, List<partitionDesc> partDesc) {
+    this(partDir, partDesc, -1);
+  }
+
+  public fetchWork(List<String> partDir, List<partitionDesc> partDesc, int limit) {
+    this.partDir = partDir;
+    this.partDesc = partDesc;
+    this.limit = limit;
+  }
 
   public String getSerializationNullFormat() {
     return serializationNullFormat;
@@ -71,123 +71,135 @@ public class fetchWork implements Serializable {
   public void setSerializationNullFormat(String format) {
     serializationNullFormat = format;
   }
-	
-	/**
-	 * @return the tblDir
-	 */
-	public String getTblDir() {
-		return tblDir;
-	}
 
-	 /**
+  /**
+   * @return the tblDir
+   */
+  public String getTblDir() {
+    return tblDir;
+  }
+
+  /**
    * @return the tblDir
    */
   public Path getTblDirPath() {
     return new Path(tblDir);
   }
 
-	/**
-	 * @param tblDir the tblDir to set
-	 */
-	public void setTblDir(String tblDir) {
-		this.tblDir = tblDir;
-	}
-
-	/**
-	 * @return the tblDesc
-	 */
-	public tableDesc getTblDesc() {
-		return tblDesc;
-	}
-
-	/**
-	 * @param tblDesc the tblDesc to set
-	 */
-	public void setTblDesc(tableDesc tblDesc) {
-		this.tblDesc = tblDesc;
-	}
-
-	/**
-	 * @return the partDir
-	 */
-	public List<String> getPartDir() {
-		return partDir;
-	}
-
-
-	public List<Path> getPartDirPath() {
-	  return fetchWork.convertStringToPathArray(partDir);
-	}
-	
-	public static List<String> convertPathToStringArray(List<Path> paths) {
-	   if (paths == null)
-	      return null;
-	    
-	   List<String> pathsStr = new ArrayList<String>();
-	   for (Path path : paths)
-	     pathsStr.add(path.toString());
-	    
-	   return pathsStr;
-	}
-	
-	 public static List<Path> convertStringToPathArray(List<String> paths) {
-     if (paths == null)
-        return null;
-      
-     List<Path> pathsStr = new ArrayList<Path>();
-     for (String path : paths)
-       pathsStr.add(new Path(path));
-      
-     return pathsStr;
+  /**
+   * @param tblDir
+   *          the tblDir to set
+   */
+  public void setTblDir(String tblDir) {
+    this.tblDir = tblDir;
   }
 
-	/**
-	 * @param partDir the partDir to set
-	 */
-	public void setPartDir(List<String> partDir) {
-		this.partDir = partDir;
-	}
+  /**
+   * @return the tblDesc
+   */
+  public tableDesc getTblDesc() {
+    return tblDesc;
+  }
 
-	/**
-	 * @return the partDesc
-	 */
-	public List<partitionDesc> getPartDesc() {
-		return partDesc;
-	}
+  /**
+   * @param tblDesc
+   *          the tblDesc to set
+   */
+  public void setTblDesc(tableDesc tblDesc) {
+    this.tblDesc = tblDesc;
+  }
 
-	/**
-	 * @param partDesc the partDesc to set
-	 */
-	public void setPartDesc(List<partitionDesc> partDesc) {
-		this.partDesc = partDesc;
-	}
+  /**
+   * @return the partDir
+   */
+  public List<String> getPartDir() {
+    return partDir;
+  }
 
-	/**
-	 * @return the limit
-	 */
-  @explain(displayName="limit")
-	public int getLimit() {
-		return limit;
-	}
+  public List<Path> getPartDirPath() {
+    return fetchWork.convertStringToPathArray(partDir);
+  }
 
-	/**
-	 * @param limit the limit to set
-	 */
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-	
-	public String toString() {
-    if (tblDir != null)
-	    return new String ("table = " + tblDir);
-	  
-	  if (partDir == null) 
-	    return "null fetchwork";
-	  	  
-	  String ret = new String("partition = ");
-    for (String part : partDir)
-     ret = ret.concat(part);
-	  
+  public static List<String> convertPathToStringArray(List<Path> paths) {
+    if (paths == null) {
+      return null;
+    }
+
+    List<String> pathsStr = new ArrayList<String>();
+    for (Path path : paths) {
+      pathsStr.add(path.toString());
+    }
+
+    return pathsStr;
+  }
+
+  public static List<Path> convertStringToPathArray(List<String> paths) {
+    if (paths == null) {
+      return null;
+    }
+
+    List<Path> pathsStr = new ArrayList<Path>();
+    for (String path : paths) {
+      pathsStr.add(new Path(path));
+    }
+
+    return pathsStr;
+  }
+
+  /**
+   * @param partDir
+   *          the partDir to set
+   */
+  public void setPartDir(List<String> partDir) {
+    this.partDir = partDir;
+  }
+
+  /**
+   * @return the partDesc
+   */
+  public List<partitionDesc> getPartDesc() {
+    return partDesc;
+  }
+
+  /**
+   * @param partDesc
+   *          the partDesc to set
+   */
+  public void setPartDesc(List<partitionDesc> partDesc) {
+    this.partDesc = partDesc;
+  }
+
+  /**
+   * @return the limit
+   */
+  @explain(displayName = "limit")
+  public int getLimit() {
+    return limit;
+  }
+
+  /**
+   * @param limit
+   *          the limit to set
+   */
+  public void setLimit(int limit) {
+    this.limit = limit;
+  }
+
+  @Override
+  public String toString() {
+    if (tblDir != null) {
+      return new String("table = " + tblDir);
+    }
+
+    if (partDir == null) {
+      return "null fetchwork";
+    }
+
+    String ret = new String("partition = ");
+    for (String part : partDir) {
+      ret = ret.concat(part);
+    }
+
     return ret;
   }
 }

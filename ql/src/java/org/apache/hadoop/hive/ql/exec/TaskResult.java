@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
 
 /**
  * TaskResult implementation
@@ -27,6 +26,7 @@ import java.util.*;
 public class TaskResult {
   protected int exitVal;
   protected boolean runStatus;
+
   public TaskResult() {
     exitVal = -1;
     setRunning(true);

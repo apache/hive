@@ -24,13 +24,14 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
 /**
  * IF(expr1,expr2,expr3) <br>
- * If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2; otherwise it returns expr3. 
- * IF() returns a numeric or string value, depending on the context in which it is used. 
+ * If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2;
+ * otherwise it returns expr3. IF() returns a numeric or string value, depending
+ * on the context in which it is used.
  */
 public class GenericUDFIf extends GenericUDF {
 
@@ -40,7 +41,7 @@ public class GenericUDFIf extends GenericUDF {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
-    this.argumentOIs = arguments;
+    argumentOIs = arguments;
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     if (arguments.length != 3) {
@@ -50,22 +51,23 @@ public class GenericUDFIf extends GenericUDF {
 
     boolean conditionTypeIsOk = (arguments[0].getCategory() == ObjectInspector.Category.PRIMITIVE);
     if (conditionTypeIsOk) {
-      PrimitiveObjectInspector poi = ((PrimitiveObjectInspector)arguments[0]);
-      conditionTypeIsOk = (poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN
-                           || poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VOID);
+      PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) arguments[0]);
+      conditionTypeIsOk = (poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN || poi
+          .getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VOID);
     }
     if (!conditionTypeIsOk) {
       throw new UDFArgumentTypeException(0,
-          "The first argument of function IF should be \"" + Constants.BOOLEAN_TYPE_NAME
-          + "\", but \"" + arguments[0].getTypeName() + "\" is found");
+          "The first argument of function IF should be \""
+              + Constants.BOOLEAN_TYPE_NAME + "\", but \""
+              + arguments[0].getTypeName() + "\" is found");
     }
 
-    if( !(returnOIResolver.update(arguments[1]) 
-         && returnOIResolver.update(arguments[2])) ) {
+    if (!(returnOIResolver.update(arguments[1]) && returnOIResolver
+        .update(arguments[2]))) {
       throw new UDFArgumentTypeException(2,
-          "The second and the third arguments of function IF should have the same type, " +
-          "but they are different: \"" + arguments[1].getTypeName() 
-          + "\" and \"" + arguments[2].getTypeName() + "\"");
+          "The second and the third arguments of function IF should have the same type, "
+              + "but they are different: \"" + arguments[1].getTypeName()
+              + "\" and \"" + arguments[2].getTypeName() + "\"");
     }
 
     return returnOIResolver.get();
@@ -74,7 +76,8 @@ public class GenericUDFIf extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object condition = arguments[0].get();
-    if(condition != null && ((BooleanObjectInspector)argumentOIs[0]).get(condition)) {
+    if (condition != null
+        && ((BooleanObjectInspector) argumentOIs[0]).get(condition)) {
       return returnOIResolver.convertIfNecessary(arguments[1].get(),
           argumentOIs[1]);
     } else {

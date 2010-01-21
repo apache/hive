@@ -22,21 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
 
-@description(
-    name = "/",
-    value = "a _FUNC_ b - Divide a by b",
-    extended = "Example:\n" +
-        "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" +
-        "  1.5"
-)
+@description(name = "/", value = "a _FUNC_ b - Divide a by b", extended = "Example:\n"
+    + "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" + "  1.5")
 /**
  * Note that in SQL, the return type of divide is not necessarily the same 
  * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
@@ -44,16 +33,19 @@ import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
  */
 public class UDFOPDivide extends UDF {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPDivide");
+  private static Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPDivide");
 
   protected DoubleWritable doubleWritable = new DoubleWritable();
- 
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
-      return null;
 
-    doubleWritable.set(a.get()/b.get());
+  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+
+    doubleWritable.set(a.get() / b.get());
     return doubleWritable;
   }
 }

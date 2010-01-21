@@ -20,17 +20,17 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-@explain(displayName="Drop Function")
+@explain(displayName = "Drop Function")
 public class dropFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private String functionName;
-  
+
   public dropFunctionDesc(String functionName) {
     this.functionName = functionName;
   }
 
-  @explain(displayName="name")
+  @explain(displayName = "name")
   public String getFunctionName() {
     return functionName;
   }
@@ -38,5 +38,5 @@ public class dropFunctionDesc implements Serializable {
   public void setFunctionName(String functionName) {
     this.functionName = functionName;
   }
-  
+
 }

@@ -18,20 +18,20 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Stack;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
 
 /**
  * Processor for the rule - table scan followed by reduce sink
@@ -42,22 +42,28 @@ public class GenMRRedSink1 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered 
-   * @param nd the reduce sink operator encountered
-   * @param opProcCtx context
+   * Reduce Scan encountered
+   * 
+   * @param nd
+   *          the reduce sink operator encountered
+   * @param opProcCtx
+   *          context
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
-    ReduceSinkOperator op = (ReduceSinkOperator)nd;
-    GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+      Object... nodeOutputs) throws SemanticException {
+    ReduceSinkOperator op = (ReduceSinkOperator) nd;
+    GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
 
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
-    GenMapRedCtx mapredCtx = mapCurrCtx.get((Operator<? extends Serializable>)stack.get(stack.size()-2));
-    Task<? extends Serializable> currTask    = mapredCtx.getCurrTask();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+        .getMapCurrCtx();
+    GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
+    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     mapredWork currPlan = (mapredWork) currTask.getWork();
-    Operator<? extends Serializable> currTopOp   = mapredCtx.getCurrTopOp();
+    Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+        .getOpTaskMap();
     Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
     ctx.setCurrTopOp(currTopOp);
@@ -66,20 +72,24 @@ public class GenMRRedSink1 implements NodeProcessor {
 
     // If the plan for this reducer does not exist, initialize the plan
     if (opMapTask == null) {
-      if (currPlan.getReducer() == null) 
+      if (currPlan.getReducer() == null) {
         GenMapRedUtils.initPlan(op, ctx);
-      else
+      } else {
         GenMapRedUtils.splitPlan(op, ctx);
+      }
     }
-    // This will happen in case of joins. The current plan can be thrown away after being merged with the
+    // This will happen in case of joins. The current plan can be thrown away
+    // after being merged with the
     // original plan
     else {
-      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
+      GenMapRedUtils
+          .joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }
 
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+        ctx.getCurrAliasId()));
     return null;
   }
 

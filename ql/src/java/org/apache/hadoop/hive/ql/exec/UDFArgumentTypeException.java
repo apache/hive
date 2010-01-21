@@ -18,19 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-
-/**                                                                                     
+/**
  * exception class, thrown when udf arguments have wrong types.
  */
 
 public class UDFArgumentTypeException extends UDFArgumentException {
-  
+
   int argumentId;
-  
+
   public UDFArgumentTypeException() {
     super();
   }
-  
+
   public UDFArgumentTypeException(int argumentId, String message) {
     super(message);
     this.argumentId = argumentId;

@@ -24,18 +24,19 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 
 public class exprNodeNullDesc extends exprNodeDesc implements Serializable {
-  
+
   private static final long serialVersionUID = 1L;
 
   public exprNodeNullDesc() {
-    super(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class));
+    super(TypeInfoFactory
+        .getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class));
   }
 
   public Object getValue() {
     return null;
   }
 
-  @explain(displayName="expr")
+  @explain(displayName = "expr")
   @Override
   public String getExprString() {
     return "null";
@@ -45,14 +46,16 @@ public class exprNodeNullDesc extends exprNodeDesc implements Serializable {
   public exprNodeDesc clone() {
     return new exprNodeNullDesc();
   }
-  
+
   @Override
   public boolean isSame(Object o) {
-    if (!(o instanceof exprNodeNullDesc))
+    if (!(o instanceof exprNodeNullDesc)) {
       return false;
-    if (!typeInfo.equals(((exprNodeNullDesc)o).getTypeInfo()))
+    }
+    if (!typeInfo.equals(((exprNodeNullDesc) o).getTypeInfo())) {
       return false;
-    
-    return true; 
+    }
+
+    return true;
   }
 }

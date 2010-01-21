@@ -33,9 +33,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayWritable>
     implements RecordReader<LongWritable, BytesRefArrayWritable> {
 
-  private Reader in;
-  private long start;
-  private long end;
+  private final Reader in;
+  private final long start;
+  private final long end;
   private boolean more = true;
   protected Configuration conf;
 
@@ -47,8 +47,9 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     this.end = split.getStart() + split.getLength();
     this.conf = conf;
 
-    if (split.getStart() > in.getPosition())
+    if (split.getStart() > in.getPosition()) {
       in.sync(split.getStart()); // sync to start
+    }
 
     this.start = in.getPosition();
     more = start < end;
@@ -76,8 +77,9 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
   @Override
   public boolean next(LongWritable key, BytesRefArrayWritable value)
       throws IOException {
-    if (!more)
+    if (!more) {
       return false;
+    }
     long pos = in.getPosition();
     boolean hasMore = in.next(key);
     if (hasMore) {
@@ -96,8 +98,9 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
   }
 
   protected boolean next(LongWritable key) throws IOException {
-    if (!more)
+    if (!more) {
       return false;
+    }
     long pos = in.getPosition();
     boolean hasMore = in.next(key);
     if (pos >= end && in.syncSeen()) {

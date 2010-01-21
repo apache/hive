@@ -68,33 +68,30 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * Interface used to provide a serialization mechanism other than a class' normal
- * serialization.
- *
+ * Interface used to provide a serialization mechanism other than a class'
+ * normal serialization.
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: Serializer.java,v 1.1 2003/03/21 02:48:42 boisvert Exp $
  */
-public interface Serializer
-    extends Serializable
-{
+public interface Serializer extends Serializable {
 
-    /**
-     * Serialize the content of an object into a byte array.
-     *
-     * @param obj Object to serialize
-     * @return a byte array representing the object's state
-     */
-     public byte[] serialize( Object obj )
-        throws IOException;
-        
-        
-    /**
-     * Deserialize the content of an object from a byte array.
-     *
-     * @param serialized Byte array representation of the object
-     * @return deserialized object
-     */
-     public Object deserialize( byte[] serialized )
-        throws IOException;
+  /**
+   * Serialize the content of an object into a byte array.
+   * 
+   * @param obj
+   *          Object to serialize
+   * @return a byte array representing the object's state
+   */
+  public byte[] serialize(Object obj) throws IOException;
+
+  /**
+   * Deserialize the content of an object from a byte array.
+   * 
+   * @param serialized
+   *          Byte array representation of the object
+   * @return deserialized object
+   */
+  public Object deserialize(byte[] serialized) throws IOException;
 
 }

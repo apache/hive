@@ -24,20 +24,19 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
-@description(
-    name = "not,!",
-    value = "_FUNC_ a - Logical not"
-)
+@description(name = "not,!", value = "_FUNC_ a - Logical not")
 public class UDFOPNot extends UDF {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPNot");
+  private static Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPNot");
 
   BooleanWritable result = new BooleanWritable();
+
   public UDFOPNot() {
   }
 
   // Three-value Boolean: NULL stands for unknown
-  public BooleanWritable evaluate(BooleanWritable a)  {
+  public BooleanWritable evaluate(BooleanWritable a) {
     if (a == null) {
       return null;
     }

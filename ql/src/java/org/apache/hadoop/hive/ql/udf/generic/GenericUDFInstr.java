@@ -31,26 +31,23 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
 /**
- * Generic UDF for string function <code>INSTR(str,substr)</code>.
- * This mimcs the function from MySQL
+ * Generic UDF for string function <code>INSTR(str,substr)</code>. This mimcs
+ * the function from MySQL
  * http://dev.mysql.com/doc/refman/5.1/en/string-functions.html#function_instr
- * <pre> 
+ * 
+ * <pre>
  * usage:
  * INSTR(str, substr)
- * </pre><p>
+ * </pre>
+ * <p>
  */
-@description(
-    name = "instr",
-    value = "_FUNC_(str, substr) - Returns the index of the first occurance " +
-    		"of substr in str",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_('Facebook', 'boo') FROM src LIMIT 1;\n" +
-        "  5"
-    )
-public class GenericUDFInstr extends GenericUDF{
+@description(name = "instr", value = "_FUNC_(str, substr) - Returns the index of the first occurance "
+    + "of substr in str", extended = "Example:\n"
+    + "  > SELECT _FUNC_('Facebook', 'boo') FROM src LIMIT 1;\n" + "  5")
+public class GenericUDFInstr extends GenericUDF {
 
   ObjectInspectorConverters.Converter[] converters;
-  
+
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
@@ -59,40 +56,43 @@ public class GenericUDFInstr extends GenericUDF{
           "The function INSTR accepts exactly 2 arguments.");
     }
 
-    for(int i = 0; i < arguments.length; i++) {
+    for (int i = 0; i < arguments.length; i++) {
       Category category = arguments[i].getCategory();
-      if(category != Category.PRIMITIVE) {
-        throw new UDFArgumentTypeException(i,
-            "The " + GenericUDFUtils.getOrdinal(i + 1) + " argument of function INSTR is expected to a " 
-            + Category.PRIMITIVE.toString().toLowerCase()
-            + " type, but " + category.toString().toLowerCase() + " is found");
+      if (category != Category.PRIMITIVE) {
+        throw new UDFArgumentTypeException(i, "The "
+            + GenericUDFUtils.getOrdinal(i + 1)
+            + " argument of function INSTR is expected to a "
+            + Category.PRIMITIVE.toString().toLowerCase() + " type, but "
+            + category.toString().toLowerCase() + " is found");
       }
     }
 
     converters = new ObjectInspectorConverters.Converter[arguments.length];
-    for(int i = 0; i < arguments.length; i++) {
-        converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
-            PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+    for (int i = 0; i < arguments.length; i++) {
+      converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }
 
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
-  
+
   IntWritable intWritable = new IntWritable(0);
+
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if(arguments[0].get() == null || arguments[1].get() == null)
+    if (arguments[0].get() == null || arguments[1].get() == null) {
       return null;
+    }
 
     Text text = (Text) converters[0].convert(arguments[0].get());
     Text subtext = (Text) converters[1].convert(arguments[1].get());
     intWritable.set(GenericUDFUtils.findText(text, subtext, 0) + 1);
-    return  intWritable;
+    return intWritable;
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    assert(children.length == 2);
+    assert (children.length == 2);
     return "instr(" + children[0] + children[1] + ")";
   }
 }

@@ -18,50 +18,56 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.net.URI;
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import java.util.Map;
-import java.net.URI;
 
 /**
- * This class encapsulates the information on the partition and
- * tables that are read by the query.
+ * This class encapsulates the information on the partition and tables that are
+ * read by the query.
  */
 public class ReadEntity {
 
   /**
    * The partition. This is null for a non partitioned table.
    */
-  private Partition p;
+  private final Partition p;
 
   /**
    * The table.
    */
-  private Table t;
+  private final Table t;
 
   /**
    * Constructor.
-   *
-   * @param t The Table that the query reads from.
+   * 
+   * @param t
+   *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
     this.t = t;
-    this.p = null;
+    p = null;
   }
 
   /**
    * Constructor given a partiton.
-   *
-   * @param p The partition that the query reads from.
+   * 
+   * @param p
+   *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
-    this.t = p.getTable();
+    t = p.getTable();
     this.p = p;
   }
+
   /**
    * Enum that tells what time of a read entity this is.
    */
-  public static enum Type {TABLE, PARTITION};
+  public static enum Type {
+    TABLE, PARTITION
+  };
 
   /**
    * Get the type.
@@ -76,8 +82,7 @@ public class ReadEntity {
   public Map<String, String> getParameters() {
     if (p != null) {
       return p.getTPartition().getParameters();
-    }
-    else {
+    } else {
       return t.getTTable().getParameters();
     }
   }
@@ -88,8 +93,7 @@ public class ReadEntity {
   public URI getLocation() {
     if (p != null) {
       return p.getDataLocation();
-    }
-    else {
+    } else {
       return t.getDataLocation();
     }
   }
@@ -114,9 +118,9 @@ public class ReadEntity {
   @Override
   public String toString() {
     if (p != null) {
-      return p.getTable().getDbName() + "@" + p.getTable().getName() + "@" + p.getName();
-    }
-    else {
+      return p.getTable().getDbName() + "@" + p.getTable().getName() + "@"
+          + p.getName();
+    } else {
       return t.getDbName() + "@" + t.getName();
     }
   }
@@ -126,15 +130,16 @@ public class ReadEntity {
    */
   @Override
   public boolean equals(Object o) {
-    if (o == null)
+    if (o == null) {
       return false;
+    }
 
     if (o instanceof ReadEntity) {
-      ReadEntity ore = (ReadEntity)o;
+      ReadEntity ore = (ReadEntity) o;
       return (toString().equalsIgnoreCase(ore.toString()));
-    }
-    else
+    } else {
       return false;
+    }
   }
 
   /**

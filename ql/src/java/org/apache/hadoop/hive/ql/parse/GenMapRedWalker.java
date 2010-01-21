@@ -32,34 +32,40 @@ public class GenMapRedWalker extends DefaultGraphWalker {
 
   /**
    * constructor of the walker - the dispatcher is passed
-   * @param disp the dispatcher to be called for each node visited
+   * 
+   * @param disp
+   *          the dispatcher to be called for each node visited
    */
   public GenMapRedWalker(Dispatcher disp) {
     super(disp);
   }
-  
+
   /**
    * Walk the given operator
-   * @param nd operator being walked
+   * 
+   * @param nd
+   *          operator being walked
    */
   @Override
   public void walk(Node nd) throws SemanticException {
     List<? extends Node> children = nd.getChildren();
-    
+
     // maintain the stack of operators encountered
     opStack.push(nd);
     dispatch(nd, opStack);
 
     // kids of reduce sink operator need not be traversed again
-    if ((children == null) ||
-        ((nd instanceof ReduceSinkOperator) && (getDispatchedList().containsAll(children)))) {
+    if ((children == null)
+        || ((nd instanceof ReduceSinkOperator) && (getDispatchedList()
+            .containsAll(children)))) {
       opStack.pop();
       return;
     }
 
     // move all the children to the front of queue
-    for (Node ch : children)
+    for (Node ch : children) {
       walk(ch);
+    }
 
     // done with this operator
     opStack.pop();

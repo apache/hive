@@ -29,64 +29,76 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "from_unixtime",
-    value = "_FUNC_(unix_time, format) - returns unix_time in the specified " +
-    		"format",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n" +
-        "  '1970-01-01 00:00:00'"
-    )
+@description(name = "from_unixtime", value = "_FUNC_(unix_time, format) - returns unix_time in the specified "
+    + "format", extended = "Example:\n"
+    + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
+    + "  '1970-01-01 00:00:00'")
 public class UDFFromUnixTime extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFFromUnixTime.class.getName());
 
   private SimpleDateFormat formatter;
-  
+
   Text result = new Text();
   Text lastFormat = new Text();
-    
+
   public UDFFromUnixTime() {
   }
 
   Text defaultFormat = new Text("yyyy-MM-dd HH:mm:ss");
-  public Text evaluate(IntWritable unixtime)  {
+
+  public Text evaluate(IntWritable unixtime) {
     return evaluate(unixtime, defaultFormat);
   }
-  
+
   /**
    * Convert UnixTime to a string format.
-   * @param unixtime  The number of seconds from 1970-01-01 00:00:00
-   * @param format See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
+   * 
+   * @param unixtime
+   *          The number of seconds from 1970-01-01 00:00:00
+   * @param format
+   *          See
+   *          http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat
+   *          .html
    * @return a String in the format specified.
    */
-  public Text evaluate(LongWritable unixtime, Text format)  {
+  public Text evaluate(LongWritable unixtime, Text format) {
     if (unixtime == null || format == null) {
       return null;
     }
-    
+
     return eval(unixtime.get(), format);
   }
 
   /**
    * Convert UnixTime to a string format.
-   * @param unixtime  The number of seconds from 1970-01-01 00:00:00
-   * @param format See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
+   * 
+   * @param unixtime
+   *          The number of seconds from 1970-01-01 00:00:00
+   * @param format
+   *          See
+   *          http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat
+   *          .html
    * @return a String in the format specified.
    */
-  public Text evaluate(IntWritable unixtime, Text format)  {
+  public Text evaluate(IntWritable unixtime, Text format) {
     if (unixtime == null || format == null) {
       return null;
     }
-    
-    return eval((long)unixtime.get(), format);
+
+    return eval(unixtime.get(), format);
   }
 
   /**
-   * Internal evaluation function given the seconds from 1970-01-01 00:00:00
-   * and the output text format.
-   * @param unixtime seconds of type long from 1970-01-01 00:00:00
-   * @param format display format. See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
+   * Internal evaluation function given the seconds from 1970-01-01 00:00:00 and
+   * the output text format.
+   * 
+   * @param unixtime
+   *          seconds of type long from 1970-01-01 00:00:00
+   * @param format
+   *          display format. See
+   *          http://java.sun.com/j2se/1.4.2/docs/api/java/text
+   *          /SimpleDateFormat.html
    * @return elapsed time in the given format.
    */
   private Text eval(long unixtime, Text format) {
@@ -94,7 +106,7 @@ public class UDFFromUnixTime extends UDF {
       formatter = new SimpleDateFormat(format.toString());
       lastFormat.set(format);
     }
-    
+
     // convert seconds to milliseconds
     Date date = new Date(unixtime * 1000L);
     result.set(formatter.format(date));

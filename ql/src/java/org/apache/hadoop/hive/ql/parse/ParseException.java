@@ -30,15 +30,16 @@ public class ParseException extends Exception {
     this.errors = errors;
   }
 
+  @Override
   public String getMessage() {
 
     StringBuilder sb = new StringBuilder();
-    for(ParseError err: errors) {
+    for (ParseError err : errors) {
       sb.append(err.getMessage());
       sb.append("\n");
     }
 
     return sb.toString();
   }
-    
+
 }

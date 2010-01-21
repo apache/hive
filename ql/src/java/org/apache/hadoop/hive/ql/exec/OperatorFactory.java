@@ -18,15 +18,29 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.collectDesc;
+import org.apache.hadoop.hive.ql.plan.extractDesc;
+import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.forwardDesc;
+import org.apache.hadoop.hive.ql.plan.groupByDesc;
+import org.apache.hadoop.hive.ql.plan.joinDesc;
+import org.apache.hadoop.hive.ql.plan.lateralViewJoinDesc;
+import org.apache.hadoop.hive.ql.plan.limitDesc;
+import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.scriptDesc;
+import org.apache.hadoop.hive.ql.plan.selectDesc;
+import org.apache.hadoop.hive.ql.plan.tableScanDesc;
+import org.apache.hadoop.hive.ql.plan.udtfDesc;
+import org.apache.hadoop.hive.ql.plan.unionDesc;
 
 public class OperatorFactory {
-  
+
   public final static class opTuple<T extends Serializable> {
     public Class<T> descClass;
     public Class<? extends Operator<T>> opClass;
@@ -39,32 +53,40 @@ public class OperatorFactory {
 
   public static ArrayList<opTuple> opvec;
   static {
-    opvec = new ArrayList<opTuple> ();
-    opvec.add(new opTuple<filterDesc> (filterDesc.class, FilterOperator.class));
-    opvec.add(new opTuple<selectDesc> (selectDesc.class, SelectOperator.class));
-    opvec.add(new opTuple<forwardDesc> (forwardDesc.class, ForwardOperator.class));
-    opvec.add(new opTuple<fileSinkDesc> (fileSinkDesc.class, FileSinkOperator.class));
-    opvec.add(new opTuple<collectDesc> (collectDesc.class, CollectOperator.class));
-    opvec.add(new opTuple<scriptDesc> (scriptDesc.class, ScriptOperator.class));
-    opvec.add(new opTuple<reduceSinkDesc> (reduceSinkDesc.class, ReduceSinkOperator.class));
-    opvec.add(new opTuple<extractDesc> (extractDesc.class, ExtractOperator.class));
-    opvec.add(new opTuple<groupByDesc> (groupByDesc.class, GroupByOperator.class));
-    opvec.add(new opTuple<joinDesc> (joinDesc.class, JoinOperator.class));
-    opvec.add(new opTuple<mapJoinDesc> (mapJoinDesc.class, MapJoinOperator.class));
-    opvec.add(new opTuple<limitDesc> (limitDesc.class, LimitOperator.class));
-    opvec.add(new opTuple<tableScanDesc> (tableScanDesc.class, TableScanOperator.class));
-    opvec.add(new opTuple<unionDesc> (unionDesc.class, UnionOperator.class));
-    opvec.add(new opTuple<udtfDesc> (udtfDesc.class, UDTFOperator.class));
-    opvec.add(new opTuple<lateralViewJoinDesc>(lateralViewJoinDesc.class, LateralViewJoinOperator.class));
+    opvec = new ArrayList<opTuple>();
+    opvec.add(new opTuple<filterDesc>(filterDesc.class, FilterOperator.class));
+    opvec.add(new opTuple<selectDesc>(selectDesc.class, SelectOperator.class));
+    opvec
+        .add(new opTuple<forwardDesc>(forwardDesc.class, ForwardOperator.class));
+    opvec.add(new opTuple<fileSinkDesc>(fileSinkDesc.class,
+        FileSinkOperator.class));
+    opvec
+        .add(new opTuple<collectDesc>(collectDesc.class, CollectOperator.class));
+    opvec.add(new opTuple<scriptDesc>(scriptDesc.class, ScriptOperator.class));
+    opvec.add(new opTuple<reduceSinkDesc>(reduceSinkDesc.class,
+        ReduceSinkOperator.class));
+    opvec
+        .add(new opTuple<extractDesc>(extractDesc.class, ExtractOperator.class));
+    opvec
+        .add(new opTuple<groupByDesc>(groupByDesc.class, GroupByOperator.class));
+    opvec.add(new opTuple<joinDesc>(joinDesc.class, JoinOperator.class));
+    opvec
+        .add(new opTuple<mapJoinDesc>(mapJoinDesc.class, MapJoinOperator.class));
+    opvec.add(new opTuple<limitDesc>(limitDesc.class, LimitOperator.class));
+    opvec.add(new opTuple<tableScanDesc>(tableScanDesc.class,
+        TableScanOperator.class));
+    opvec.add(new opTuple<unionDesc>(unionDesc.class, UnionOperator.class));
+    opvec.add(new opTuple<udtfDesc>(udtfDesc.class, UDTFOperator.class));
+    opvec.add(new opTuple<lateralViewJoinDesc>(lateralViewJoinDesc.class,
+        LateralViewJoinOperator.class));
   }
-              
 
   public static <T extends Serializable> Operator<T> get(Class<T> opClass) {
-      
-    for(opTuple o: opvec) {
-      if(o.descClass == opClass) {
+
+    for (opTuple o : opvec) {
+      if (o.descClass == opClass) {
         try {
-          Operator<T> op = (Operator<T>)o.opClass.newInstance();
+          Operator<T> op = (Operator<T>) o.opClass.newInstance();
           op.initializeCounters();
           return op;
         } catch (Exception e) {
@@ -73,33 +95,37 @@ public class OperatorFactory {
         }
       }
     }
-    throw new RuntimeException ("No operator for descriptor class " + opClass.getName());
+    throw new RuntimeException("No operator for descriptor class "
+        + opClass.getName());
   }
 
-  public static <T extends Serializable> Operator<T> get(Class<T> opClass, RowSchema rwsch) {
-    
+  public static <T extends Serializable> Operator<T> get(Class<T> opClass,
+      RowSchema rwsch) {
+
     Operator<T> ret = get(opClass);
     ret.setSchema(rwsch);
     return ret;
   }
 
   /**
-   * Returns an operator given the conf and a list of children operators.  
+   * Returns an operator given the conf and a list of children operators.
    */
-  public static <T extends Serializable> Operator<T> get(T conf, Operator<? extends Serializable> ... oplist) {
-    Operator<T> ret = get((Class <T>)conf.getClass());
+  public static <T extends Serializable> Operator<T> get(T conf,
+      Operator<? extends Serializable>... oplist) {
+    Operator<T> ret = get((Class<T>) conf.getClass());
     ret.setConf(conf);
-    if(oplist.length == 0)
+    if (oplist.length == 0) {
       return (ret);
+    }
 
-    ArrayList<Operator<? extends Serializable>> clist = new ArrayList<Operator<? extends Serializable>> ();
-    for(Operator op: oplist) {
+    ArrayList<Operator<? extends Serializable>> clist = new ArrayList<Operator<? extends Serializable>>();
+    for (Operator op : oplist) {
       clist.add(op);
     }
     ret.setChildOperators(clist);
-    
+
     // Add this parent to the children
-    for(Operator op: oplist) {
+    for (Operator op : oplist) {
       List<Operator<? extends Serializable>> parents = op.getParentOperators();
       if (parents == null) {
         parents = new ArrayList<Operator<? extends Serializable>>();
@@ -111,25 +137,28 @@ public class OperatorFactory {
   }
 
   /**
-   * Returns an operator given the conf and a list of children operators.  
+   * Returns an operator given the conf and a list of children operators.
    */
-  public static <T extends Serializable> Operator<T> get(T conf, RowSchema rwsch, Operator ... oplist) {
+  public static <T extends Serializable> Operator<T> get(T conf,
+      RowSchema rwsch, Operator... oplist) {
     Operator<T> ret = get(conf, oplist);
     ret.setSchema(rwsch);
     return (ret);
   }
 
   /**
-   * Returns an operator given the conf and a list of parent operators.  
+   * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends Serializable> Operator<T> getAndMakeChild(T conf, Operator ... oplist) {
-    Operator<T> ret = get((Class <T>)conf.getClass());
+  public static <T extends Serializable> Operator<T> getAndMakeChild(T conf,
+      Operator... oplist) {
+    Operator<T> ret = get((Class<T>) conf.getClass());
     ret.setConf(conf);
-    if(oplist.length == 0)
+    if (oplist.length == 0) {
       return (ret);
+    }
 
     // Add the new operator as child of each of the passed in operators
-    for(Operator op: oplist) {
+    for (Operator op : oplist) {
       List<Operator> children = op.getChildOperators();
       if (children == null) {
         children = new ArrayList<Operator>();
@@ -140,18 +169,20 @@ public class OperatorFactory {
 
     // add parents for the newly created operator
     List<Operator<? extends Serializable>> parent = new ArrayList<Operator<? extends Serializable>>();
-    for(Operator op: oplist)
+    for (Operator op : oplist) {
       parent.add(op);
-    
+    }
+
     ret.setParentOperators(parent);
 
     return (ret);
   }
 
   /**
-   * Returns an operator given the conf and a list of parent operators.  
+   * Returns an operator given the conf and a list of parent operators.
    */
-  public static <T extends Serializable> Operator<T> getAndMakeChild(T conf, RowSchema rwsch, Operator ... oplist) {
+  public static <T extends Serializable> Operator<T> getAndMakeChild(T conf,
+      RowSchema rwsch, Operator... oplist) {
     Operator<T> ret = getAndMakeChild(conf, oplist);
     ret.setSchema(rwsch);
     return (ret);

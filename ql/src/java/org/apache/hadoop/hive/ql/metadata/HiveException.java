@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-/**                                                                                     
+/**
  * Generic exception class for Hive
  */
 
@@ -26,7 +26,7 @@ public class HiveException extends Exception {
   public HiveException() {
     super();
   }
-  
+
   public HiveException(String message) {
     super(message);
   }
@@ -39,4 +39,3 @@ public class HiveException extends Exception {
     super(message, cause);
   }
 }
-

@@ -22,35 +22,35 @@ import java.util.ArrayList;
 
 /**
  * 
- * This class stores all the information specified in the TABLESAMPLE clause. e.g. 
- * for the clause "FROM t TABLESAMPLE(1 OUT OF 2 ON c1) it will store the numerator
- * 1, the denominator 2 and the list of expressions(in this case c1) in the appropriate
- * fields. The afore-mentioned sampling clause causes the 1st bucket to be picked out of
- * the 2 buckets created by hashing on c1.
- *
+ * This class stores all the information specified in the TABLESAMPLE clause.
+ * e.g. for the clause "FROM t TABLESAMPLE(1 OUT OF 2 ON c1) it will store the
+ * numerator 1, the denominator 2 and the list of expressions(in this case c1)
+ * in the appropriate fields. The afore-mentioned sampling clause causes the 1st
+ * bucket to be picked out of the 2 buckets created by hashing on c1.
+ * 
  */
 public class TableSample {
-	
+
   /**
    * The numerator of the TABLESAMPLE clause
    */
   private int numerator;
-  
+
   /**
    * The denominator of the TABLESAMPLE clause
    */
   private int denominator;
-  
+
   /**
-   * The list of expressions following ON part of the TABLESAMPLE clause. This list is
-   * empty in case there are no expressions such as in the clause
+   * The list of expressions following ON part of the TABLESAMPLE clause. This
+   * list is empty in case there are no expressions such as in the clause
    * "FROM t TABLESAMPLE(1 OUT OF 2)". For this expression the sampling is done
-   * on the tables clustering column(as specified when the table was created). In case
-   * the table does not have any clustering column, the usage of a table sample clause
-   * without an ON part is disallowed by the compiler
+   * on the tables clustering column(as specified when the table was created).
+   * In case the table does not have any clustering column, the usage of a table
+   * sample clause without an ON part is disallowed by the compiler
    */
   private ArrayList<ASTNode> exprs;
-  
+
   /**
    * Flag to indicate that input files can be pruned
    */
@@ -60,71 +60,77 @@ public class TableSample {
    * Constructs the TableSample given the numerator, denominator and the list of
    * ON clause expressions
    * 
-   * @param num The numerator
-   * @param den The denominator
-   * @param exprs The list of expressions in the ON part of the TABLESAMPLE clause
+   * @param num
+   *          The numerator
+   * @param den
+   *          The denominator
+   * @param exprs
+   *          The list of expressions in the ON part of the TABLESAMPLE clause
    */
   public TableSample(String num, String den, ArrayList<ASTNode> exprs) {
-    this.numerator = Integer.valueOf(num).intValue();
-    this.denominator = Integer.valueOf(den).intValue();
+    numerator = Integer.valueOf(num).intValue();
+    denominator = Integer.valueOf(den).intValue();
     this.exprs = exprs;
   }
-  
+
   public TableSample(int num, int den) {
-    this.numerator = num;
-    this.denominator = den;
-    this.exprs = null;
+    numerator = num;
+    denominator = den;
+    exprs = null;
   }
-  
+
   /**
    * Gets the numerator
    * 
    * @return int
    */
   public int getNumerator() {
-    return this.numerator;
+    return numerator;
   }
-  
+
   /**
    * Sets the numerator
    * 
-   * @param num The numerator
+   * @param num
+   *          The numerator
    */
   public void setNumerator(int num) {
-    this.numerator = num;
+    numerator = num;
   }
-  
+
   /**
    * Gets the denominator
    * 
    * @return int
    */
   public int getDenominator() {
-    return this.denominator;
+    return denominator;
   }
-  
+
   /**
    * Sets the denominator
    * 
-   * @param den The denominator
+   * @param den
+   *          The denominator
    */
   public void setDenominator(int den) {
-    this.denominator = den;
+    denominator = den;
   }
-  
+
   /**
    * Gets the ON part's expression list
    * 
    * @return ArrayList<ASTNode>
    */
   public ArrayList<ASTNode> getExprs() {
-    return this.exprs;
+    return exprs;
   }
-  
+
   /**
    * Sets the expression list
    * 
-   * @param exprs The expression list
+   * @param exprs
+   *          The expression list
    */
   public void setExprs(ArrayList<ASTNode> exprs) {
     this.exprs = exprs;
@@ -136,15 +142,16 @@ public class TableSample {
    * @return boolean
    */
   public boolean getInputPruning() {
-	  return this.inputPruning;
+    return inputPruning;
   }
- 
+
   /**
    * Sets the flag that indicates whether input pruning is possible or not
    * 
-   * @param inputPruning true if input pruning is possible
+   * @param inputPruning
+   *          true if input pruning is possible
    */
   public void setInputPruning(boolean inputPruning) {
-	  this.inputPruning = inputPruning;
+    this.inputPruning = inputPruning;
   }
 }

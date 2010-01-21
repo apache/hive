@@ -77,8 +77,8 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
 
     final int finalRowSeparator = rowSeparator;
     FileSystem fs = outPath.getFileSystem(jc);
-    final OutputStream outStream = Utilities.createCompressedStream(jc,
-        fs.create(outPath), isCompressed);
+    final OutputStream outStream = Utilities.createCompressedStream(jc, fs
+        .create(outPath), isCompressed);
     return new RecordWriter() {
       public void write(Writable r) throws IOException {
         if (r instanceof Text) {
@@ -102,7 +102,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
   protected static class IgnoreKeyWriter<K extends WritableComparable, V extends Writable>
       implements org.apache.hadoop.mapred.RecordWriter<K, V> {
 
-    private org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
+    private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
 
     public IgnoreKeyWriter(org.apache.hadoop.mapred.RecordWriter<K, V> writer) {
       this.mWriter = writer;
@@ -117,6 +117,7 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
     }
   }
 
+  @Override
   public org.apache.hadoop.mapred.RecordWriter<K, V> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress)
       throws IOException {

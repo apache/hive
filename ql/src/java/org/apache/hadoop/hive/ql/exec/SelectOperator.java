@@ -31,44 +31,47 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 /**
  * Select operator implementation
  **/
-public class SelectOperator extends Operator <selectDesc> implements Serializable {
+public class SelectOperator extends Operator<selectDesc> implements
+    Serializable {
 
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator[] eval;
 
   transient Object[] output;
-  
+
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-    	initializeChildren(hconf);
+      initializeChildren(hconf);
       return;
     }
-    
+
     ArrayList<exprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
-    for(int i=0; i<colList.size(); i++) {
-      assert(colList.get(i) != null);
+    for (int i = 0; i < colList.size(); i++) {
+      assert (colList.get(i) != null);
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
     }
-   
+
     output = new Object[eval.length];
-    LOG.info("SELECT " + ((StructObjectInspector)inputObjInspectors[0]).getTypeName());
+    LOG.info("SELECT "
+        + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf
-          .getOutputColumnNames(), inputObjInspectors[0]);
+        .getOutputColumnNames(), inputObjInspectors[0]);
     initializeChildren(hconf);
   }
 
-  public void processOp(Object row, int tag)
-      throws HiveException {
+  @Override
+  public void processOp(Object row, int tag) throws HiveException {
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       forward(row, inputObjInspectors[tag]);
       return;
     }
-    
-    for(int i=0; i<eval.length; i++) {
+
+    for (int i = 0; i < eval.length; i++) {
       try {
         output[i] = eval[i].evaluate(row);
       } catch (HiveException e) {
@@ -88,7 +91,8 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   public String getName() {
     return new String("SEL");
   }
-  
+
+  @Override
   public int getType() {
     return OperatorType.SELECT;
   }

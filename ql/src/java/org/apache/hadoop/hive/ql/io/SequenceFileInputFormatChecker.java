@@ -31,8 +31,9 @@ public class SequenceFileInputFormatChecker implements InputFormatChecker {
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
       ArrayList<FileStatus> files) throws IOException {
-    if (files.size() <= 0)
+    if (files.size() <= 0) {
       return false;
+    }
     for (int fileId = 0; fileId < files.size(); fileId++) {
       try {
         SequenceFile.Reader reader = new SequenceFile.Reader(fs, files.get(

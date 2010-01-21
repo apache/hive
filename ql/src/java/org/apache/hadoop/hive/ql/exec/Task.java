@@ -18,9 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -31,15 +38,12 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-
 /**
  * Task implementation
  **/
 
-public abstract class Task <T extends Serializable> implements Serializable, Node {
+public abstract class Task<T extends Serializable> implements Serializable,
+    Node {
 
   private static final long serialVersionUID = 1L;
   transient protected boolean started;
@@ -68,7 +72,8 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
     this.taskCounters = new HashMap<String, Long>();
   }
 
-  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
+  public void initialize(HiveConf conf, QueryPlan queryPlan,
+      DriverContext driverContext) {
     this.queryPlan = queryPlan;
     isdone = false;
     started = false;
@@ -76,21 +81,22 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
     this.conf = conf;
 
     try {
-        db = Hive.get(conf);
+      db = Hive.get(conf);
     } catch (HiveException e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
       LOG.error(StringUtils.stringifyException(e));
-      throw new RuntimeException (e);
+      throw new RuntimeException(e);
     }
     this.driverContext = driverContext;
-    
+
     console = new LogHelper(LOG);
   }
 
   /**
-   * This method is called in the Driver on every task. It updates counters
-   * and calls execute(), which is overridden in each task
+   * This method is called in the Driver on every task. It updates counters and
+   * calls execute(), which is overridden in each task
+   * 
    * @return return value of execute()
    */
   public int executeTask() {
@@ -112,32 +118,35 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
   }
 
   /**
-   * This method is overridden in each Task.
-   * TODO execute should return a TaskHandle.
+   * This method is overridden in each Task. TODO execute should return a
+   * TaskHandle.
+   * 
    * @return status of executing the task
    */
   protected abstract int execute();
-  
+
   /**
-   * Update the progress of the task within taskHandle and also
-   * dump the progress information to the history file
-   * @param taskHandle task handle returned by execute
-   * @throws IOException 
+   * Update the progress of the task within taskHandle and also dump the
+   * progress information to the history file
+   * 
+   * @param taskHandle
+   *          task handle returned by execute
+   * @throws IOException
    */
   public void progress(TaskHandle taskHandle) throws IOException {
     // do nothing by default
   }
-  
+
   // dummy method - FetchTask overwrites this
-  public boolean fetch(Vector<String> res) throws IOException { 
+  public boolean fetch(Vector<String> res) throws IOException {
     assert false;
-  	return false;
+    return false;
   }
 
   public void setChildTasks(List<Task<? extends Serializable>> childTasks) {
     this.childTasks = childTasks;
   }
-  
+
   public List<? extends Node> getChildren() {
     return getChildTasks();
   }
@@ -155,7 +164,9 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
   }
 
   /**
-   * Add a dependent task on the current task. Return if the dependency already existed or is this a new one
+   * Add a dependent task on the current task. Return if the dependency already
+   * existed or is this a new one
+   * 
    * @return true if the task got added false if it already existed
    */
   public boolean addDependentTask(Task<? extends Serializable> dependent) {
@@ -178,13 +189,17 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
 
   /**
    * remove the dependent task
-   * @param dependent the task to remove
+   * 
+   * @param dependent
+   *          the task to remove
    */
   public void removeDependentTask(Task<? extends Serializable> dependent) {
     if ((getChildTasks() != null) && (getChildTasks().contains(dependent))) {
       getChildTasks().remove(dependent);
-      if ((dependent.getParentTasks() != null) && (dependent.getParentTasks().contains(this)))
+      if ((dependent.getParentTasks() != null)
+          && (dependent.getParentTasks().contains(this))) {
         dependent.getParentTasks().remove(this);
+      }
     }
   }
 
@@ -223,7 +238,7 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
   public boolean isRunnable() {
     boolean isrunnable = true;
     if (parentTasks != null) {
-      for(Task<? extends Serializable> parent: parentTasks) {
+      for (Task<? extends Serializable> parent : parentTasks) {
         if (!parent.done()) {
           isrunnable = false;
           break;
@@ -269,8 +284,8 @@ public abstract class Task <T extends Serializable> implements Serializable, Nod
   }
 
   /**
-   * Should be overridden to return the type of the specific task among
-   * the types in TaskType
+   * Should be overridden to return the type of the specific task among the
+   * types in TaskType
    * 
    * @return TaskTypeType.* or -1 if not overridden
    */

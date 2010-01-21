@@ -31,25 +31,23 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 /**
- * The reason that we list evaluate methods with all numeric types is for 
- * better performance; otherwise a single method that takes (Number a, Number b)
- * and use a.doubleValue() == b.doubleValue() is enough.
+ * The reason that we list evaluate methods with all numeric types is for better
+ * performance; otherwise a single method that takes (Number a, Number b) and
+ * use a.doubleValue() == b.doubleValue() is enough.
  */
-@description(
-    name = "=,==",
-    value= "a _FUNC_ b - Returns TRUE if a equals b and false otherwise"
-)
+@description(name = "=,==", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
 public class UDFOPEqual extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPEqual.class.getName());
 
   BooleanWritable resultCache;
+
   public UDFOPEqual() {
     resultCache = new BooleanWritable();
   }
 
-  public BooleanWritable evaluate(Text a, Text b)  {
-    BooleanWritable r = this.resultCache;
+  public BooleanWritable evaluate(Text a, Text b) {
+    BooleanWritable r = resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
@@ -59,8 +57,8 @@ public class UDFOPEqual extends UDFBaseCompare {
     return r;
   }
 
-  public BooleanWritable evaluate(ByteWritable a, ByteWritable b)  {
-    BooleanWritable r = this.resultCache;
+  public BooleanWritable evaluate(ByteWritable a, ByteWritable b) {
+    BooleanWritable r = resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
@@ -70,8 +68,8 @@ public class UDFOPEqual extends UDFBaseCompare {
     return r;
   }
 
-  public BooleanWritable evaluate(ShortWritable a, ShortWritable b)  {
-    BooleanWritable r = this.resultCache;
+  public BooleanWritable evaluate(ShortWritable a, ShortWritable b) {
+    BooleanWritable r = resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
@@ -81,8 +79,8 @@ public class UDFOPEqual extends UDFBaseCompare {
     return r;
   }
 
-  public BooleanWritable evaluate(IntWritable a, IntWritable b)  {
-    BooleanWritable r = this.resultCache;
+  public BooleanWritable evaluate(IntWritable a, IntWritable b) {
+    BooleanWritable r = resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
@@ -91,31 +89,32 @@ public class UDFOPEqual extends UDFBaseCompare {
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }
-  
-  public BooleanWritable evaluate(LongWritable a, LongWritable b)  {
-    BooleanWritable r = this.resultCache;
-    if ((a == null) || (b == null)) {
-      r = null;
-    } else {
-      r.set(a.get() == b.get());
-    }
-    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
-    return r;
-  }
-  
-  public BooleanWritable evaluate(FloatWritable a, FloatWritable b)  {
-    BooleanWritable r = this.resultCache;
-    if ((a == null) || (b == null)) {
-      r = null;
-    } else {
-      r.set(a.get() == b.get());
-    }
-    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
-    return r;
-  }  
 
-  public BooleanWritable evaluate(DoubleWritable a, DoubleWritable b)  {
-    BooleanWritable r = this.resultCache;
+  public BooleanWritable evaluate(LongWritable a, LongWritable b) {
+    BooleanWritable r = resultCache;
+    if ((a == null) || (b == null)) {
+      r = null;
+    } else {
+      r.set(a.get() == b.get());
+    }
+    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
+    return r;
+  }
+
+  public BooleanWritable evaluate(FloatWritable a, FloatWritable b) {
+    BooleanWritable r = resultCache;
+    if ((a == null) || (b == null)) {
+      r = null;
+    } else {
+      r.set(a.get() == b.get());
+    }
+    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
+    return r;
+  }
+
+  @Override
+  public BooleanWritable evaluate(DoubleWritable a, DoubleWritable b) {
+    BooleanWritable r = resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {

@@ -68,79 +68,71 @@ package org.apache.hadoop.hive.ql.util.jdbm;
 
 /**
  * Standard options for RecordManager.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @author <a href="cg@cdegroot.com">Cees de Groot</a>
- * @version $Id: RecordManagerOptions.java,v 1.1 2002/05/31 06:33:20 boisvert Exp $
+ * @version $Id: RecordManagerOptions.java,v 1.1 2002/05/31 06:33:20 boisvert
+ *          Exp $
  */
-public class RecordManagerOptions
-{
+public class RecordManagerOptions {
 
-    /**
-     * Option to create a thread-safe record manager.
-     */
-    public static final String PROVIDER_FACTORY = "jdbm.provider";
+  /**
+   * Option to create a thread-safe record manager.
+   */
+  public static final String PROVIDER_FACTORY = "jdbm.provider";
 
+  /**
+   * Option to create a thread-safe record manager.
+   */
+  public static final String THREAD_SAFE = "jdbm.threadSafe";
 
-    /**
-     * Option to create a thread-safe record manager.
-     */
-    public static final String THREAD_SAFE = "jdbm.threadSafe";
+  /**
+   * Option to automatically commit data after each operation.
+   */
+  public static final String AUTO_COMMIT = "jdbm.autoCommit";
 
+  /**
+   * Option to disable transaction (to increase performance at the cost of
+   * potential data loss).
+   */
+  public static final String DISABLE_TRANSACTIONS = "jdbm.disableTransactions";
 
-    /**
-     * Option to automatically commit data after each operation.
-     */
-    public static final String AUTO_COMMIT = "jdbm.autoCommit";
+  /**
+   * Cache type.
+   */
+  public static final String CACHE_TYPE = "jdbm.cache.type";
 
+  /**
+   * Cache size (when applicable)
+   */
+  public static final String CACHE_SIZE = "jdbm.cache.size";
 
-    /**
-     * Option to disable transaction (to increase performance at the cost of
-     * potential data loss).
-     */
-    public static final String DISABLE_TRANSACTIONS = "jdbm.disableTransactions";
+  /**
+   * Use normal (strong) object references for the record cache.
+   */
+  public static final String NORMAL_CACHE = "normal";
 
+  /**
+   * Use soft references {$link java.lang.ref.SoftReference} for the record
+   * cache instead of the default normal object references.
+   * <p>
+   * Soft references are cleared at the discretion of the garbage collector in
+   * response to memory demand.
+   */
+  public static final String SOFT_REF_CACHE = "soft";
 
-    /**
-     * Cache type.
-     */
-    public static final String CACHE_TYPE = "jdbm.cache.type";
+  /**
+   * Use weak references {$link java.lang.ref.WeakReference} for the record
+   * cache instead of the default normal object references.
+   * <p>
+   * Weak references do not prevent their referents from being made finalizable,
+   * finalized, and then reclaimed.
+   */
+  public static final String WEAK_REF_CACHE = "weak";
 
-
-    /**
-     * Cache size (when applicable)
-     */
-    public static final String CACHE_SIZE = "jdbm.cache.size";
-
-
-    /**
-     * Use normal (strong) object references for the record cache.
-     */
-    public static final String NORMAL_CACHE = "normal";
-
-
-    /**
-     * Use soft references {$link java.lang.ref.SoftReference} for the record
-     * cache instead of the default normal object references.
-     * <p>
-     * Soft references are cleared at the discretion of the garbage collector
-     * in response to memory demand.
-     */
-    public static final String SOFT_REF_CACHE = "soft";
-
-
-    /**
-     * Use weak references {$link java.lang.ref.WeakReference} for the record
-     * cache instead of the default normal object references.
-     * <p>
-     * Weak references do not prevent their referents from being made
-     * finalizable, finalized, and then reclaimed.
-     */
-    public static final String WEAK_REF_CACHE = "weak";
-    
-    /**
-     * Disable cache.
-     */
-    public static final String NO_CACHE = "nocache";
+  /**
+   * Disable cache.
+   */
+  public static final String NO_CACHE = "nocache";
 
 }

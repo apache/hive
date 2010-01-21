@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public interface Collector {
   /**
    * Other classes will call collect() with the data that it has.
+   * 
    * @param input
    */
   void collect(Object input) throws HiveException;

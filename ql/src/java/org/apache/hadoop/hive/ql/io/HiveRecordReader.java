@@ -18,44 +18,46 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.ql.exec.ExecMapper;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import java.io.IOException;
 
-public class HiveRecordReader<K extends WritableComparable, V extends Writable>  
-  implements RecordReader<K, V> {
+import org.apache.hadoop.hive.ql.exec.ExecMapper;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.RecordReader;
 
-  private RecordReader recordReader;
-  public HiveRecordReader(RecordReader recordReader){ 
+public class HiveRecordReader<K extends WritableComparable, V extends Writable>
+    implements RecordReader<K, V> {
+
+  private final RecordReader recordReader;
+
+  public HiveRecordReader(RecordReader recordReader) {
     this.recordReader = recordReader;
   }
 
-  public void close() throws IOException { 
-    recordReader.close(); 
+  public void close() throws IOException {
+    recordReader.close();
   }
 
-  public K createKey() { 
-    return (K)recordReader.createKey();
+  public K createKey() {
+    return (K) recordReader.createKey();
   }
 
-  public V createValue() { 
-    return (V)recordReader.createValue();
+  public V createValue() {
+    return (V) recordReader.createValue();
   }
 
-  public long getPos() throws IOException { 
+  public long getPos() throws IOException {
     return recordReader.getPos();
   }
 
-  public float getProgress() throws IOException { 
+  public float getProgress() throws IOException {
     return recordReader.getProgress();
   }
-  
-  public boolean  next(K key, V value) throws IOException { 
-    if (ExecMapper.getDone())
+
+  public boolean next(K key, V value) throws IOException {
+    if (ExecMapper.getDone()) {
       return false;
+    }
     return recordReader.next(key, value);
   }
 }
-

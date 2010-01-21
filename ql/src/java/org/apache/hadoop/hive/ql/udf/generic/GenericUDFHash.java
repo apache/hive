@@ -21,49 +21,42 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
 /**
  * GenericUDF Class for computing hash values.
  */
-@description(
-    name = "hash",
-    value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments"
-)
+@description(name = "hash", value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments")
 public class GenericUDFHash extends GenericUDF {
 
   private static Log LOG = LogFactory.getLog(GenericUDFHash.class.getName());
 
   ObjectInspector[] argumentOIs;
-  
+
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentTypeException {
-    
-    this.argumentOIs = arguments;
+
+    argumentOIs = arguments;
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
   IntWritable result = new IntWritable();
+
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    // See http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html#hashCode()
+    // See
+    // http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html#hashCode()
     int r = 0;
-    for(int i = 0; i < arguments.length; i++) {
-      r = r * 31 + ObjectInspectorUtils.hashCode(arguments[i].get(), argumentOIs[i]);
+    for (int i = 0; i < arguments.length; i++) {
+      r = r * 31
+          + ObjectInspectorUtils.hashCode(arguments[i].get(), argumentOIs[i]);
     }
     result.set(r);
     return result;

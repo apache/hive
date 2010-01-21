@@ -66,30 +66,30 @@
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
 /**
- *  This class extends the physical rowid with a size value to indicated
- *  the size of a free rowid on the free rowid list.
+ * This class extends the physical rowid with a size value to indicated the size
+ * of a free rowid on the free rowid list.
  */
 final class FreePhysicalRowId extends PhysicalRowId {
-    // offsets
-    private static final short O_SIZE = PhysicalRowId.SIZE; // int size
-    static final short SIZE = O_SIZE + Magic.SZ_INT;
+  // offsets
+  private static final short O_SIZE = PhysicalRowId.SIZE; // int size
+  static final short SIZE = O_SIZE + Magic.SZ_INT;
 
-    /**
-     *  Constructs a physical rowid from the indicated data starting at
-     *  the indicated position.
-     */
-    FreePhysicalRowId(BlockIo block, short pos) {
-  super(block, pos);
-    }
+  /**
+   * Constructs a physical rowid from the indicated data starting at the
+   * indicated position.
+   */
+  FreePhysicalRowId(BlockIo block, short pos) {
+    super(block, pos);
+  }
 
-    /** Returns the size */
-    int getSize() {
-  return block.readInt(pos + O_SIZE);
-    }
+  /** Returns the size */
+  int getSize() {
+    return block.readInt(pos + O_SIZE);
+  }
 
-    /** Sets the size */
-    void setSize(int value) {
-  block.writeInt(pos + O_SIZE, value);
-    }
+  /** Sets the size */
+  void setSize(int value) {
+    block.writeInt(pos + O_SIZE, value);
+  }
 
 }

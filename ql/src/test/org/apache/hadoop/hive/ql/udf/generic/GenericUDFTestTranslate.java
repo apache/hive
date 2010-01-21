@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -33,7 +32,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.io.Text;
 
 /**
- * Mimics oracle's function translate(str1, str2, str3) 
+ * Mimics oracle's function translate(str1, str2, str3)
  */
 public class GenericUDFTestTranslate extends GenericUDF {
   ObjectInspector[] argumentOIs;
@@ -43,43 +42,48 @@ public class GenericUDFTestTranslate extends GenericUDF {
    */
   static String getOrdinal(int i) {
     int unit = i % 10;
-    return (i <= 0) ?  ""
-        : (i != 11 && unit == 1) ?  i + "st"
-        : (i != 12 && unit == 2) ?  i + "nd"
-        : (i != 13 && unit == 3) ?  i + "rd"
-        : i + "th";
+    return (i <= 0) ? "" : (i != 11 && unit == 1) ? i + "st"
+        : (i != 12 && unit == 2) ? i + "nd" : (i != 13 && unit == 3) ? i + "rd"
+            : i + "th";
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
-    if(arguments.length != 3) {
+    if (arguments.length != 3) {
       throw new UDFArgumentLengthException(
-          "The function TRANSLATE(expr,from_string,to_string) accepts exactly 3 arguments, but " 
-          + arguments.length + " arguments is found.");
+          "The function TRANSLATE(expr,from_string,to_string) accepts exactly 3 arguments, but "
+              + arguments.length + " arguments is found.");
     }
 
-    for(int i = 0; i < 3; i++) {
-      if(arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
+    for (int i = 0; i < 3; i++) {
+      if (arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
           && arguments[i].getTypeName() != Constants.VOID_TYPE_NAME) {
-        throw new UDFArgumentTypeException(i,
-            "The " + getOrdinal(i + 1) + " argument of function TRANSLATE is expected to \"" + Constants.STRING_TYPE_NAME
-            + "\", but \"" + arguments[i].getTypeName() + "\" is found");
+        throw new UDFArgumentTypeException(i, "The " + getOrdinal(i + 1)
+            + " argument of function TRANSLATE is expected to \""
+            + Constants.STRING_TYPE_NAME + "\", but \""
+            + arguments[i].getTypeName() + "\" is found");
       }
     }
-    
-    this.argumentOIs = arguments;
+
+    argumentOIs = arguments;
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 
-  private Text resultText = new Text();
+  private final Text resultText = new Text();
+
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if(arguments[0].get() == null || arguments[1].get() == null || arguments[2].get() == null)
+    if (arguments[0].get() == null || arguments[1].get() == null
+        || arguments[2].get() == null) {
       return null;
-    String exprString = ((StringObjectInspector)argumentOIs[0]).getPrimitiveJavaObject(arguments[0].get());
-    String fromString = ((StringObjectInspector)argumentOIs[1]).getPrimitiveJavaObject(arguments[1].get());
-    String toString = ((StringObjectInspector)argumentOIs[2]).getPrimitiveJavaObject(arguments[2].get());
+    }
+    String exprString = ((StringObjectInspector) argumentOIs[0])
+        .getPrimitiveJavaObject(arguments[0].get());
+    String fromString = ((StringObjectInspector) argumentOIs[1])
+        .getPrimitiveJavaObject(arguments[1].get());
+    String toString = ((StringObjectInspector) argumentOIs[2])
+        .getPrimitiveJavaObject(arguments[2].get());
 
     char[] expr = exprString.toCharArray();
     char[] from = fromString.toCharArray();
@@ -88,21 +92,23 @@ public class GenericUDFTestTranslate extends GenericUDF {
     System.arraycopy(expr, 0, result, 0, expr.length);
     Set<Character> seen = new HashSet<Character>();
 
-    for(int i = 0; i < from.length; i++) {
-      if(seen.contains(from[i])) 
+    for (int i = 0; i < from.length; i++) {
+      if (seen.contains(from[i])) {
         continue;
+      }
       seen.add(from[i]);
-      for(int j = 0; j < expr.length; j++) {
-        if(expr[j] == from[i]) {
+      for (int j = 0; j < expr.length; j++) {
+        if (expr[j] == from[i]) {
           result[j] = (i < to.length) ? to[i] : 0;
         }
       }
     }
 
     int pos = 0;
-    for(int i = 0; i < result.length; i++) {
-      if(result[i] != 0)
-        result[pos ++] = result[i];
+    for (int i = 0; i < result.length; i++) {
+      if (result[i] != 0) {
+        result[pos++] = result[i];
+      }
     }
     resultText.set(new String(result, 0, pos));
     return resultText;
@@ -110,7 +116,8 @@ public class GenericUDFTestTranslate extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert(children.length == 3);
-    return "translate(" + children[0] + "," + children[1] + "," + children[2] + ")";
+    assert (children.length == 3);
+    return "translate(" + children[0] + "," + children[1] + "," + children[2]
+        + ")";
   }
 }

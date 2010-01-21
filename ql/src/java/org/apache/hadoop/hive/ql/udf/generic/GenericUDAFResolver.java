@@ -18,35 +18,35 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * A Generic User-defined aggregation function (GenericUDAF) for the use with 
+ * A Generic User-defined aggregation function (GenericUDAF) for the use with
  * Hive.
  * 
- * GenericUDAFResolver is used at compile time.  We use GenericUDAFResolver to
+ * GenericUDAFResolver is used at compile time. We use GenericUDAFResolver to
  * find out the GenericUDAFEvaluator for the parameter types.
  * 
  */
 public interface GenericUDAFResolver {
-  
-  /** Get the evaluator for the parameter types.
-   *  
-   *  The reason that this function returns an object instead of a class
-   *  is because it's possible that the object needs some configuration 
-   *  (that can be serialized).  In that case the class of the object has 
-   *  to implement the Serializable interface.  At execution time, we will 
-   *  deserialize the object from the plan and use it to evaluate the
-   *  aggregations.
-   *  
-   *  If the class of the object does not implement Serializable, then
-   *  we will create a new instance of the class at execution time.
-   *  
-   *  @param parameters  The types of the parameters. We need the type 
-   *         information to know which evaluator class to use.  
+
+  /**
+   * Get the evaluator for the parameter types.
+   * 
+   * The reason that this function returns an object instead of a class is
+   * because it's possible that the object needs some configuration (that can be
+   * serialized). In that case the class of the object has to implement the
+   * Serializable interface. At execution time, we will deserialize the object
+   * from the plan and use it to evaluate the aggregations.
+   * 
+   * If the class of the object does not implement Serializable, then we will
+   * create a new instance of the class at execution time.
+   * 
+   * @param parameters
+   *          The types of the parameters. We need the type information to know
+   *          which evaluator class to use.
    */
-  GenericUDAFEvaluator getEvaluator(
-      TypeInfo[] parameters) throws SemanticException;
+  GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+      throws SemanticException;
 }

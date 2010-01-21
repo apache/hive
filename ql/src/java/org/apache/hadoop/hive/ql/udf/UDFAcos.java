@@ -24,29 +24,23 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(
-    name = "acos",
-    value = "_FUNC_(x) - returns the arc cosine of x if -1<=x<=1 or " +
-		"NULL otherwise",
-    extended = "Example:\n" +
-    		"  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" +
-    		"  0\n" +
-    		"  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" +
-    		"  NULL"
-    )
+@description(name = "acos", value = "_FUNC_(x) - returns the arc cosine of x if -1<=x<=1 or "
+    + "NULL otherwise", extended = "Example:\n"
+    + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0\n"
+    + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  NULL")
 public class UDFAcos extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFAcos.class.getName());
 
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFAcos() {
   }
 
   /**
    * Take Arc Cosine of a in radians.
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {
       return null;
     } else {

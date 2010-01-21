@@ -27,22 +27,20 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "rand",
-    value = "_FUNC_([seed]) - Returns a pseudorandom number between 0 and 1"
-)
-@UDFType(deterministic=false)
+@description(name = "rand", value = "_FUNC_([seed]) - Returns a pseudorandom number between 0 and 1")
+@UDFType(deterministic = false)
 public class UDFRand extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFRand.class.getName());
 
   private Random random;
-  
+
   DoubleWritable result = new DoubleWritable();
+
   public UDFRand() {
   }
 
-  public DoubleWritable evaluate()  {
+  public DoubleWritable evaluate() {
     if (random == null) {
       random = new Random();
     }
@@ -50,7 +48,7 @@ public class UDFRand extends UDF {
     return result;
   }
 
-  public DoubleWritable evaluate(LongWritable seed)  {
+  public DoubleWritable evaluate(LongWritable seed) {
     if (random == null) {
       random = new Random(seed.get());
     }

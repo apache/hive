@@ -25,10 +25,10 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
-
 public interface RecordReader {
 
-  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException;
+  public void initialize(InputStream in, Configuration conf, Properties tbl)
+      throws IOException;
 
   public Writable createRow() throws IOException;
 

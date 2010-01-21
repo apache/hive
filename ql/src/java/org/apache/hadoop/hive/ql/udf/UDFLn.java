@@ -24,26 +24,21 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(
-    name = "ln",
-    value = "_FUNC_(x) - Returns the natural logarithm of x",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" +
-        "  0"
-    )
+@description(name = "ln", value = "_FUNC_(x) - Returns the natural logarithm of x", extended = "Example:\n"
+    + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0")
 public class UDFLn extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFLn.class.getName());
 
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFLn() {
   }
 
   /**
    * Returns the natural logarithm of "a".
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null || a.get() <= 0.0) {
       return null;
     } else {

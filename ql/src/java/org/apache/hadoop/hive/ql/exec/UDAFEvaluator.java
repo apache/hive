@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.exec;
 
 /**
- * Interface that encapsulates the evaluation logic of a UDAF. One evaluator is needed
- * for every overloaded form of a UDAF .e.g max and min UDAFs would have evaluators for
- * integer, string and other types. On the other hand avg would have an evaluator only
- * for the double type.
+ * Interface that encapsulates the evaluation logic of a UDAF. One evaluator is
+ * needed for every overloaded form of a UDAF .e.g max and min UDAFs would have
+ * evaluators for integer, string and other types. On the other hand avg would
+ * have an evaluator only for the double type.
  */
 public interface UDAFEvaluator {
 

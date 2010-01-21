@@ -28,6 +28,7 @@ public interface PhysicalPlanResolver {
 
   /**
    * All physical plan resolvers have to implement this entry method.
+   * 
    * @param pctx
    * @return
    */

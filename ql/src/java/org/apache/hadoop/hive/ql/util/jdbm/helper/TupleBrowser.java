@@ -67,33 +67,32 @@ package org.apache.hadoop.hive.ql.util.jdbm.helper;
 import java.io.IOException;
 
 /**
- * Browser to traverse a collection of tuples.  The browser allows for
- * forward and reverse order traversal.
- *
+ * Browser to traverse a collection of tuples. The browser allows for forward
+ * and reverse order traversal.
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: TupleBrowser.java,v 1.2 2001/05/19 14:02:00 boisvert Exp $
  */
 public abstract class TupleBrowser {
 
-    /**
-     * Get the next tuple.
-     *
-     * @param tuple Tuple into which values are copied.
-     * @return True if values have been copied in tuple, or false if there is
-     *         no next tuple.
-     */
-    public abstract boolean getNext( Tuple tuple )
-        throws IOException;
+  /**
+   * Get the next tuple.
+   * 
+   * @param tuple
+   *          Tuple into which values are copied.
+   * @return True if values have been copied in tuple, or false if there is no
+   *         next tuple.
+   */
+  public abstract boolean getNext(Tuple tuple) throws IOException;
 
-
-    /**
-     * Get the previous tuple.
-     *
-     * @param tuple Tuple into which values are copied.
-     * @return True if values have been copied in tuple, or false if there is
-     *         no previous tuple.
-     */
-    public abstract boolean getPrevious( Tuple tuple )
-        throws IOException;
+  /**
+   * Get the previous tuple.
+   * 
+   * @param tuple
+   *          Tuple into which values are copied.
+   * @return True if values have been copied in tuple, or false if there is no
+   *         previous tuple.
+   */
+  public abstract boolean getPrevious(Tuple tuple) throws IOException;
 
 }

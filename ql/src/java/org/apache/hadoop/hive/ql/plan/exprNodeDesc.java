@@ -24,38 +24,43 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-public abstract class exprNodeDesc implements Serializable, Node {  
+public abstract class exprNodeDesc implements Serializable, Node {
   private static final long serialVersionUID = 1L;
   TypeInfo typeInfo;
-  
-  public exprNodeDesc() {}
+
+  public exprNodeDesc() {
+  }
+
   public exprNodeDesc(TypeInfo typeInfo) {
     this.typeInfo = typeInfo;
     if (typeInfo == null) {
       throw new RuntimeException("typeInfo cannot be null!");
     }
   }
-  
+
+  @Override
   public abstract exprNodeDesc clone();
 
   // Cant use equals because the walker depends on them being object equal
-  // The default graph walker processes a node after its kids have been processed. That comparison needs
+  // The default graph walker processes a node after its kids have been
+  // processed. That comparison needs
   // object equality - isSame means that the objects are semantically equal.
   public abstract boolean isSame(Object o);
-  
+
   public TypeInfo getTypeInfo() {
-    return this.typeInfo;
+    return typeInfo;
   }
+
   public void setTypeInfo(TypeInfo typeInfo) {
     this.typeInfo = typeInfo;
   }
 
   public String getExprString() {
-    assert(false);
+    assert (false);
     return null;
   }
-  
-  @explain(displayName="type")
+
+  @explain(displayName = "type")
   public String getTypeString() {
     return typeInfo.getTypeName();
   }
@@ -63,12 +68,12 @@ public abstract class exprNodeDesc implements Serializable, Node {
   public List<String> getCols() {
     return null;
   }
-  
+
   @Override
   public List<exprNodeDesc> getChildren() {
     return null;
   }
-  
+
   @Override
   public String getName() {
     return this.getClass().getName();

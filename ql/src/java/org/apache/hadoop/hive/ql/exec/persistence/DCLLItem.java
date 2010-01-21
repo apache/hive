@@ -19,77 +19,87 @@
 package org.apache.hadoop.hive.ql.exec.persistence;
 
 /**
- *  Doubly circular linked list item.
+ * Doubly circular linked list item.
  */
 public class DCLLItem {
-  
+
   DCLLItem prev;
   DCLLItem next;
-  
+
   DCLLItem() {
     prev = next = this;
   }
-  
+
   /**
    * Get the next item.
+   * 
    * @return the next item.
    */
-  public DCLLItem getNext() { 
-    return next; 
+  public DCLLItem getNext() {
+    return next;
   }
-  
+
   /**
    * Get the previous item.
+   * 
    * @return the previous item.
    */
-  public DCLLItem getPrev() { 
-    return prev; 
+  public DCLLItem getPrev() {
+    return prev;
   }
-  
+
   /**
    * Set the next item as itm.
-   * @param itm the item to be set as next.
+   * 
+   * @param itm
+   *          the item to be set as next.
    */
-  public void setNext(DCLLItem itm) { 
-    next = itm; 
+  public void setNext(DCLLItem itm) {
+    next = itm;
   }
-  
+
   /**
    * Set the previous item as itm
-   * @param itm the item to be set as previous.
+   * 
+   * @param itm
+   *          the item to be set as previous.
    */
-  public void setPrev(DCLLItem itm) { 
-    prev = itm; 
+  public void setPrev(DCLLItem itm) {
+    prev = itm;
   }
-  
+
   /**
    * Remove the current item from the doubly circular linked list.
    */
   public void remove() {
-    next.prev = this.prev;
-    prev.next = this.next;
-    this.prev = this.next = null;
+    next.prev = prev;
+    prev.next = next;
+    prev = next = null;
   }
-  
+
   /**
    * Add v as the previous of the current list item.
-   * @param v inserted item.
+   * 
+   * @param v
+   *          inserted item.
    */
   public void insertBefore(DCLLItem v) {
-    this.prev.next = v;
-    v.prev = this.prev;
+    prev.next = v;
+    v.prev = prev;
     v.next = this;
-    this.prev = v;
+    prev = v;
   }
-  
+
   /**
    * Add v as the previous of the current list item.
-   * @param v inserted item.
+   * 
+   * @param v
+   *          inserted item.
    */
   public void insertAfter(DCLLItem v) {
-    this.next.prev = v;
-    v.next = this.next;
+    next.prev = v;
+    v.next = next;
     v.prev = this;
-    this.next = v;
+    next = v;
   }
 }

@@ -22,32 +22,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "div",
-    value = "a _FUNC_ b - Divide a by b rounded to the long integer",
-    extended = "Example:\n" +
-        "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" +
-        "  1"
-)
+@description(name = "div", value = "a _FUNC_ b - Divide a by b rounded to the long integer", extended = "Example:\n"
+    + "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" + "  1")
 public class UDFOPLongDivide extends UDF {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPLongDivide");
+  private static Log LOG = LogFactory
+      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPLongDivide");
 
   protected LongWritable longWritable = new LongWritable();
-  
-  public LongWritable evaluate(LongWritable a, LongWritable b)  {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
-    if ((a == null) || (b == null))
-      return null;
 
-    longWritable.set((long)a.get()/b.get());
+  public LongWritable evaluate(LongWritable a, LongWritable b) {
+    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
+    // + b);
+    if ((a == null) || (b == null)) {
+      return null;
+    }
+
+    longWritable.set(a.get() / b.get());
     return longWritable;
   }
 }

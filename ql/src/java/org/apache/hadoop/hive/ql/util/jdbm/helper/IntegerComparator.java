@@ -69,55 +69,53 @@ import java.util.Comparator;
 
 /**
  * Comparator for Integer objects.
- *
+ * 
  * @author <a href="mailto:cdaller@iicm.edu">Christof Dallermassl</a>
  * @version $Id: IntegerComparator.java,v 1.2 2002/05/31 06:33:20 boisvert Exp $
  */
-public final class IntegerComparator
-    implements Comparator, Serializable
-{
+public final class IntegerComparator implements Comparator, Serializable {
 
-    /**
-     * Version id for serialization.
-     */
-    final static long serialVersionUID = 1L;
+  /**
+   * Version id for serialization.
+   */
+  final static long serialVersionUID = 1L;
 
-
-    /**
-     * Compare two objects.
-     *
-     * @param obj1 First object
-     * @param obj2 Second object
-     * @return a positive integer if obj1 > obj2, 0 if obj1 == obj2,
-     *         and a negative integer if obj1 < obj2
-     */
-    public int compare( Object obj1, Object obj2 )
-    {
-        if ( obj1 == obj2 ) {
-            return 0;
-        }
-
-        if ( obj1 == null ) {
-            throw new IllegalArgumentException( "Argument 'obj1' is null" );
-        }
-
-        if ( obj2 == null ) {
-            throw new IllegalArgumentException( "Argument 'obj2' is null" );
-        }
-
-        // complicated to avoid usage of Integer.compareTo, as this
-        // method is Java 1.2 only!
-        int int1 = ( (Integer) obj1 ).intValue();
-        int int2 = ( (Integer) obj2 ).intValue();
-        if ( int1 == int2 ) {
-            return 0;
-        }
-
-        if ( int1 < int2 ) {
-          return -1;
-        } else {
-          return 1;
-        }
+  /**
+   * Compare two objects.
+   * 
+   * @param obj1
+   *          First object
+   * @param obj2
+   *          Second object
+   * @return a positive integer if obj1 > obj2, 0 if obj1 == obj2, and a
+   *         negative integer if obj1 < obj2
+   */
+  public int compare(Object obj1, Object obj2) {
+    if (obj1 == obj2) {
+      return 0;
     }
+
+    if (obj1 == null) {
+      throw new IllegalArgumentException("Argument 'obj1' is null");
+    }
+
+    if (obj2 == null) {
+      throw new IllegalArgumentException("Argument 'obj2' is null");
+    }
+
+    // complicated to avoid usage of Integer.compareTo, as this
+    // method is Java 1.2 only!
+    int int1 = ((Integer) obj1).intValue();
+    int int2 = ((Integer) obj2).intValue();
+    if (int1 == int2) {
+      return 0;
+    }
+
+    if (int1 < int2) {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
 
 }

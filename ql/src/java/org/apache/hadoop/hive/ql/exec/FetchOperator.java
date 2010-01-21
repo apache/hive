@@ -30,29 +30,28 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
  * FetchTask implementation
@@ -68,7 +67,7 @@ public class FetchOperator {
 
     this.work = work;
     this.job = job;
-    
+
     currRecReader = null;
     currPath = null;
     currTbl = null;
@@ -79,12 +78,12 @@ public class FetchOperator {
     rowWithPart = new Object[2];
   }
 
-  private fetchWork work;
+  private final fetchWork work;
   private int splitNum;
   private RecordReader<WritableComparable, Writable> currRecReader;
   private InputSplit[] inputSplits;
   private InputFormat inputFormat;
-  private JobConf job;
+  private final JobConf job;
   private WritableComparable key;
   private Writable value;
   private Deserializer serde;
@@ -95,7 +94,7 @@ public class FetchOperator {
   private tableDesc currTbl;
   private boolean tblDataDone;
   private StructObjectInspector rowObjectInspector;
-  private Object[] rowWithPart;
+  private final Object[] rowWithPart;
 
   /**
    * A cache of InputFormat instances.
@@ -111,7 +110,7 @@ public class FetchOperator {
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
-          + inputFormatClass.getName() + " as specified in mapredWork!");
+            + inputFormatClass.getName() + " as specified in mapredWork!");
       }
     }
     return inputFormats.get(inputFormatClass);
@@ -133,7 +132,8 @@ public class FetchOperator {
     for (String key : partKeys) {
       partNames.add(key);
       partValues.add(partSpec.get(key));
-      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      partObjectInspectors
+          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
@@ -164,8 +164,9 @@ public class FetchOperator {
             }
           }
 
-          if (!tblDataDone)
+          if (!tblDataDone) {
             currPath = null;
+          }
           return;
         } else {
           currTbl = null;
@@ -173,7 +174,8 @@ public class FetchOperator {
         }
         return;
       } else {
-        iterPath = fetchWork.convertStringToPathArray(work.getPartDir()).iterator();
+        iterPath = fetchWork.convertStringToPathArray(work.getPartDir())
+            .iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
     }
@@ -199,28 +201,33 @@ public class FetchOperator {
       throws Exception {
     if (currPath == null) {
       getNextPath();
-      if (currPath == null)
+      if (currPath == null) {
         return null;
+      }
 
-      // not using FileInputFormat.setInputPaths() here because it forces a connection
-      // to the default file system - which may or may not be online during pure metadata
+      // not using FileInputFormat.setInputPaths() here because it forces a
+      // connection
+      // to the default file system - which may or may not be online during pure
+      // metadata
       // operations
-      job.set("mapred.input.dir",
-              org.apache.hadoop.util.StringUtils.escapeString(currPath.toString()));
-      
+      job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils
+          .escapeString(currPath.toString()));
+
       tableDesc tmp = currTbl;
-      if (tmp == null)
+      if (tmp == null) {
         tmp = currPart.getTableDesc();
+      }
       inputFormat = getInputFormatFromCache(tmp.getInputFileFormatClass(), job);
       inputSplits = inputFormat.getSplits(job, 1);
       splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
       serde.initialize(job, tmp.getProperties());
       LOG.debug("Creating fetchTask with deserializer typeinfo: "
-        + serde.getObjectInspector().getTypeName());
+          + serde.getObjectInspector().getTypeName());
       LOG.debug("deserializer properties: " + tmp.getProperties());
-      if (!tblDataDone)
+      if (!tblDataDone) {
         setPrtnDesc();
+      }
     }
 
     if (splitNum >= inputSplits.length) {
@@ -241,14 +248,15 @@ public class FetchOperator {
 
   /**
    * Get the next row. The fetch context is modified appropriately.
-   *
+   * 
    **/
   public InspectableObject getNextRow() throws IOException {
     try {
       if (currRecReader == null) {
         currRecReader = getRecordReader();
-        if (currRecReader == null)
+        if (currRecReader == null) {
           return null;
+        }
       }
 
       boolean ret = currRecReader.next(key, value);
@@ -264,10 +272,11 @@ public class FetchOperator {
         currRecReader.close();
         currRecReader = null;
         currRecReader = getRecordReader();
-        if (currRecReader == null)
+        if (currRecReader == null) {
           return null;
-        else
+        } else {
           return getNextRow();
+        }
       }
     } catch (Exception e) {
       throw new IOException(e);
@@ -292,14 +301,12 @@ public class FetchOperator {
 
   public ObjectInspector getOutputObjectInspector() throws HiveException {
     try {
-      ObjectInspector outInspector;
       if (work.getTblDir() != null) {
         tableDesc tbl = work.getTblDesc();
         Deserializer serde = tbl.getDeserializerClass().newInstance();
         serde.initialize(job, tbl.getProperties());
         return serde.getObjectInspector();
-      }
-      else {
+      } else {
         List<partitionDesc> listParts = work.getPartDesc();
         currPart = listParts.get(0);
         serde = currPart.getTableDesc().getDeserializerClass().newInstance();

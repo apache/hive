@@ -24,16 +24,19 @@ public class schemaDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String schema;
 
-  public schemaDesc() { }
+  public schemaDesc() {
+  }
+
   public schemaDesc(final String schema) {
     this.schema = schema;
   }
 
   public String getSchema() {
-    return this.schema;
+    return schema;
   }
+
   public void setSchema(final String schema) {
-    this.schema=schema;
+    this.schema = schema;
   }
 
 }

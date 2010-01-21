@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import java.util.TimeZone;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
@@ -30,30 +29,28 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
-@UDFType(deterministic=false)
-@description(
-    name = "unix_timestamp",
-    value = "_FUNC_([date[, pattern]]) - Returns the UNIX timestamp",
-    extended = "Converts the current or specified time to number of seconds " +
-    		"since 1970-01-01."
-    )
+@UDFType(deterministic = false)
+@description(name = "unix_timestamp", value = "_FUNC_([date[, pattern]]) - Returns the UNIX timestamp", extended = "Converts the current or specified time to number of seconds "
+    + "since 1970-01-01.")
 public class UDFUnixTimeStamp extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFUnixTimeStamp.class.getName());
 
-  //  For now, we just use the default time zone.
-  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  // For now, we just use the default time zone.
+  private final SimpleDateFormat formatter = new SimpleDateFormat(
+      "yyyy-MM-dd HH:mm:ss");
 
   LongWritable result = new LongWritable();
+
   public UDFUnixTimeStamp() {
   }
 
   /**
    * Return current UnixTime.
+   * 
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public LongWritable evaluate()  {
+  public LongWritable evaluate() {
     Date date = new Date();
     result.set(date.getTime() / 1000);
     return result;
@@ -61,16 +58,18 @@ public class UDFUnixTimeStamp extends UDF {
 
   /**
    * Convert time string to UnixTime.
-   * @param dateText Time string in format yyyy-MM-dd HH:mm:ss
+   * 
+   * @param dateText
+   *          Time string in format yyyy-MM-dd HH:mm:ss
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public LongWritable evaluate(Text dateText)  {
+  public LongWritable evaluate(Text dateText) {
     if (dateText == null) {
       return null;
     }
 
     try {
-      Date date = (Date)formatter.parse(dateText.toString());
+      Date date = formatter.parse(dateText.toString());
       result.set(date.getTime() / 1000);
       return result;
     } catch (ParseException e) {
@@ -79,13 +78,17 @@ public class UDFUnixTimeStamp extends UDF {
   }
 
   Text lastPatternText = new Text();
+
   /**
    * Convert time string to UnixTime with user defined pattern.
-   * @param dateText Time string in format patternstring
-   * @param patternText Time patterns string supported by SimpleDateFormat
+   * 
+   * @param dateText
+   *          Time string in format patternstring
+   * @param patternText
+   *          Time patterns string supported by SimpleDateFormat
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public LongWritable evaluate(Text dateText, Text patternText)  {
+  public LongWritable evaluate(Text dateText, Text patternText) {
     if (dateText == null || patternText == null) {
       return null;
     }
@@ -93,7 +96,7 @@ public class UDFUnixTimeStamp extends UDF {
       if (!patternText.equals(lastPatternText)) {
         formatter.applyPattern(patternText.toString());
         lastPatternText.set(patternText);
-      }      
+      }
     } catch (Exception e) {
       return null;
     }

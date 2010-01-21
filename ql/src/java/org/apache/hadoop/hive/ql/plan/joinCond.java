@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Vector;
-import org.apache.hadoop.hive.ql.parse.joinType;
 
 /**
  * Join conditions Descriptor implementation.
@@ -33,58 +31,60 @@ public class joinCond implements Serializable {
   private int type;
   private boolean preserved;
 
-  public joinCond() {}
+  public joinCond() {
+  }
 
   public joinCond(int left, int right, int type) {
-    this.left  = left;
+    this.left = left;
     this.right = right;
-    this.type  = type;
+    this.type = type;
   }
 
   public joinCond(org.apache.hadoop.hive.ql.parse.joinCond condn) {
-    this.left       = condn.getLeft();
-    this.right      = condn.getRight();
-    this.preserved  = condn.getPreserved();
-    switch ( condn.getJoinType() ) {
+    left = condn.getLeft();
+    right = condn.getRight();
+    preserved = condn.getPreserved();
+    switch (condn.getJoinType()) {
     case INNER:
-      this.type = joinDesc.INNER_JOIN;
+      type = joinDesc.INNER_JOIN;
       break;
     case LEFTOUTER:
-      this.type = joinDesc.LEFT_OUTER_JOIN;
+      type = joinDesc.LEFT_OUTER_JOIN;
       break;
     case RIGHTOUTER:
-      this.type = joinDesc.RIGHT_OUTER_JOIN;
+      type = joinDesc.RIGHT_OUTER_JOIN;
       break;
     case FULLOUTER:
-      this.type = joinDesc.FULL_OUTER_JOIN;
+      type = joinDesc.FULL_OUTER_JOIN;
       break;
     case UNIQUE:
-      this.type = joinDesc.UNIQUE_JOIN;
+      type = joinDesc.UNIQUE_JOIN;
       break;
     case LEFTSEMI:
-      this.type = joinDesc.LEFT_SEMI_JOIN;
+      type = joinDesc.LEFT_SEMI_JOIN;
       break;
     default:
       assert false;
     }
   }
-  
+
   /**
    * @return true if table is preserved, false otherwise
    */
   public boolean getPreserved() {
-    return this.preserved;
+    return preserved;
   }
-  
+
   /**
-   * @param preserved if table is preserved, false otherwise
+   * @param preserved
+   *          if table is preserved, false otherwise
    */
   public void setPreserved(final boolean preserved) {
     this.preserved = preserved;
   }
-  
+
   public int getLeft() {
-    return this.left;
+    return left;
   }
 
   public void setLeft(final int left) {
@@ -92,7 +92,7 @@ public class joinCond implements Serializable {
   }
 
   public int getRight() {
-    return this.right;
+    return right;
   }
 
   public void setRight(final int right) {
@@ -100,18 +100,18 @@ public class joinCond implements Serializable {
   }
 
   public int getType() {
-    return this.type;
+    return type;
   }
 
   public void setType(final int type) {
     this.type = type;
   }
-  
+
   @explain
   public String getJoinCondString() {
     StringBuilder sb = new StringBuilder();
-    
-    switch(type) {
+
+    switch (type) {
     case joinDesc.INNER_JOIN:
       sb.append("Inner Join ");
       break;
@@ -134,11 +134,11 @@ public class joinCond implements Serializable {
       sb.append("Unknow Join ");
       break;
     }
-    
+
     sb.append(left);
     sb.append(" to ");
     sb.append(right);
-    
+
     return sb.toString();
   }
 }

@@ -54,7 +54,8 @@ public class TestHiveHistory extends TestCase {
    * intialize the tables
    */
 
-  protected void setUp(){
+  @Override
+  protected void setUp() {
     try {
       conf = new HiveConf(HiveHistory.class);
 
@@ -102,13 +103,13 @@ public class TestHiveHistory extends TestCase {
       e.printStackTrace();
       throw new RuntimeException("Encountered throwable");
     }
-}
+  }
 
   /**
    * check history file output for this query.als
    */
   public void testSimpleQuery() {
-    LineageInfo lep = new LineageInfo();
+    new LineageInfo();
     try {
 
       // NOTE: It is critical to do this here so that log4j is reinitialized
@@ -145,8 +146,7 @@ public class TestHiveHistory extends TestCase {
         fail("jobInfo Map size not 1");
       }
 
-
-      cmd = (String)jobInfoMap.keySet().toArray()[0];
+      cmd = (String) jobInfoMap.keySet().toArray()[0];
       QueryInfo ji = jobInfoMap.get(cmd);
 
       if (!ji.hm.get(Keys.QUERY_NUM_TASKS.name()).equals("1")) {

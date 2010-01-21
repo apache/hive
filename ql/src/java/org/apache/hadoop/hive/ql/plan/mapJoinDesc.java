@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,30 +31,28 @@ import java.util.Map.Entry;
  * Map Join operator Descriptor implementation.
  * 
  */
-@explain(displayName="Common Join Operator")
+@explain(displayName = "Common Join Operator")
 public class mapJoinDesc extends joinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Map<Byte, List<exprNodeDesc>> keys;
   private tableDesc keyTblDesc;
   private List<tableDesc> valueTblDescs;
-  
-  private int posBigTable;
-  
-  private Map<Byte, List<Integer>> retainList;
-  
-  public mapJoinDesc() { }
 
-  public mapJoinDesc(final Map<Byte, List<exprNodeDesc>> keys, 
-                     final tableDesc keyTblDesc, 
-                     final Map<Byte, List<exprNodeDesc>> values,
-                     final List<tableDesc> valueTblDescs,
-                     ArrayList<String> outputColumnNames,
-                     final int posBigTable,
-                     final joinCond[] conds) {
+  private int posBigTable;
+
+  private Map<Byte, List<Integer>> retainList;
+
+  public mapJoinDesc() {
+  }
+
+  public mapJoinDesc(final Map<Byte, List<exprNodeDesc>> keys,
+      final tableDesc keyTblDesc, final Map<Byte, List<exprNodeDesc>> values,
+      final List<tableDesc> valueTblDescs, ArrayList<String> outputColumnNames,
+      final int posBigTable, final joinCond[] conds) {
     super(values, outputColumnNames, conds);
-    this.keys        = keys;
-    this.keyTblDesc  = keyTblDesc;
+    this.keys = keys;
+    this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
     this.posBigTable = posBigTable;
     initRetainExprList();
@@ -76,7 +71,7 @@ public class mapJoinDesc extends joinDesc implements Serializable {
       retainList.put(current.getKey(), list);
     }
   }
-  
+
   public Map<Byte, List<Integer>> getRetainList() {
     return retainList;
   }
@@ -84,17 +79,18 @@ public class mapJoinDesc extends joinDesc implements Serializable {
   public void setRetainList(Map<Byte, List<Integer>> retainList) {
     this.retainList = retainList;
   }
-  
+
   /**
    * @return the keys
    */
-  @explain(displayName="keys")
+  @explain(displayName = "keys")
   public Map<Byte, List<exprNodeDesc>> getKeys() {
     return keys;
   }
 
   /**
-   * @param keys the keys to set
+   * @param keys
+   *          the keys to set
    */
   public void setKeys(Map<Byte, List<exprNodeDesc>> keys) {
     this.keys = keys;
@@ -103,13 +99,14 @@ public class mapJoinDesc extends joinDesc implements Serializable {
   /**
    * @return the position of the big table not in memory
    */
-  @explain(displayName="Position of Big Table")
+  @explain(displayName = "Position of Big Table")
   public int getPosBigTable() {
     return posBigTable;
   }
 
   /**
-   * @param posBigTable the position of the big table not in memory
+   * @param posBigTable
+   *          the position of the big table not in memory
    */
   public void setPosBigTable(int posBigTable) {
     this.posBigTable = posBigTable;
@@ -123,7 +120,8 @@ public class mapJoinDesc extends joinDesc implements Serializable {
   }
 
   /**
-   * @param keyTblDesc the keyTblDesc to set
+   * @param keyTblDesc
+   *          the keyTblDesc to set
    */
   public void setKeyTblDesc(tableDesc keyTblDesc) {
     this.keyTblDesc = keyTblDesc;
@@ -137,7 +135,8 @@ public class mapJoinDesc extends joinDesc implements Serializable {
   }
 
   /**
-   * @param valueTblDescs the valueTblDescs to set
+   * @param valueTblDescs
+   *          the valueTblDescs to set
    */
   public void setValueTblDescs(List<tableDesc> valueTblDescs) {
     this.valueTblDescs = valueTblDescs;

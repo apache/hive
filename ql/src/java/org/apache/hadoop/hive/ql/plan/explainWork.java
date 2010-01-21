@@ -31,49 +31,48 @@ public class explainWork implements Serializable {
   private List<Task<? extends Serializable>> rootTasks;
   private String astStringTree;
   boolean extended;
-  
-  public explainWork() { }
-  
-  public explainWork(Path resFile, 
-                     List<Task<? extends Serializable>> rootTasks,
-                     String astStringTree,
-                     boolean extended) {
+
+  public explainWork() {
+  }
+
+  public explainWork(Path resFile,
+      List<Task<? extends Serializable>> rootTasks, String astStringTree,
+      boolean extended) {
     this.resFile = resFile;
     this.rootTasks = rootTasks;
     this.astStringTree = astStringTree;
     this.extended = extended;
   }
-  
+
   public Path getResFile() {
     return resFile;
   }
-  
+
   public void setResFile(Path resFile) {
     this.resFile = resFile;
   }
-  
+
   public List<Task<? extends Serializable>> getRootTasks() {
     return rootTasks;
   }
-  
+
   public void setRootTasks(List<Task<? extends Serializable>> rootTasks) {
     this.rootTasks = rootTasks;
   }
-  
+
   public String getAstStringTree() {
     return astStringTree;
   }
-  
+
   public void setAstStringTree(String astStringTree) {
     this.astStringTree = astStringTree;
   }
-  
+
   public boolean getExtended() {
     return extended;
   }
-  
+
   public void setExtended(boolean extended) {
     this.extended = extended;
   }
 }
-

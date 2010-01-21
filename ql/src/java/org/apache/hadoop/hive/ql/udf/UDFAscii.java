@@ -23,32 +23,27 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "ascii",
-    value = "_FUNC_(str) - returns the numeric value of the first character" +
-    		" of str",
-    extended = "Returns 0 if str is empty or NULL if str is NULL\n" +
-    		"Example:\n" +
-    		"  > SELECT _FUNC_('222') FROM src LIMIT 1;" +
-    		"  50\n" +
-    		"  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" +
-    		"  50"
-    )
-public class UDFAscii extends UDF { 
-  
-  private IntWritable result = new IntWritable();
-  
+@description(name = "ascii", value = "_FUNC_(str) - returns the numeric value of the first character"
+    + " of str", extended = "Returns 0 if str is empty or NULL if str is NULL\n"
+    + "Example:\n"
+    + "  > SELECT _FUNC_('222') FROM src LIMIT 1;"
+    + "  50\n"
+    + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  50")
+public class UDFAscii extends UDF {
+
+  private final IntWritable result = new IntWritable();
+
   public IntWritable evaluate(Text s) {
     if (s == null) {
       return null;
     }
-    
-    if(s.getLength() > 0) {
-      result.set(s.getBytes()[0]);     
+
+    if (s.getLength() > 0) {
+      result.set(s.getBytes()[0]);
     } else {
       result.set(0);
     }
-      
+
     return result;
   }
 }

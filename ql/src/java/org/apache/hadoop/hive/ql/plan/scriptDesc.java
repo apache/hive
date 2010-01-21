@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 
-@explain(displayName="Transform Operator")
+@explain(displayName = "Transform Operator")
 public class scriptDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String scriptCmd;
@@ -35,63 +35,73 @@ public class scriptDesc implements Serializable {
   private tableDesc scriptInputInfo;
   private Class<? extends RecordReader> outRecordReaderClass;
 
-  public scriptDesc() { }
-  public scriptDesc(
-    final String scriptCmd,
-    final tableDesc scriptInputInfo,
-    final Class<? extends RecordWriter> inRecordWriterClass,
-    final tableDesc scriptOutputInfo,
-    final Class<? extends RecordReader> outRecordReaderClass) {
-    
+  public scriptDesc() {
+  }
+
+  public scriptDesc(final String scriptCmd, final tableDesc scriptInputInfo,
+      final Class<? extends RecordWriter> inRecordWriterClass,
+      final tableDesc scriptOutputInfo,
+      final Class<? extends RecordReader> outRecordReaderClass) {
+
     this.scriptCmd = scriptCmd;
     this.scriptInputInfo = scriptInputInfo;
     this.inRecordWriterClass = inRecordWriterClass;
     this.scriptOutputInfo = scriptOutputInfo;
     this.outRecordReaderClass = outRecordReaderClass;
   }
-  
-  @explain(displayName="command")
+
+  @explain(displayName = "command")
   public String getScriptCmd() {
-    return this.scriptCmd;
+    return scriptCmd;
   }
+
   public void setScriptCmd(final String scriptCmd) {
-    this.scriptCmd=scriptCmd;
+    this.scriptCmd = scriptCmd;
   }
-  
-  @explain(displayName="output info")
+
+  @explain(displayName = "output info")
   public tableDesc getScriptOutputInfo() {
-    return this.scriptOutputInfo;
+    return scriptOutputInfo;
   }
+
   public void setScriptOutputInfo(final tableDesc scriptOutputInfo) {
     this.scriptOutputInfo = scriptOutputInfo;
   }
+
   public tableDesc getScriptInputInfo() {
     return scriptInputInfo;
   }
+
   public void setScriptInputInfo(tableDesc scriptInputInfo) {
     this.scriptInputInfo = scriptInputInfo;
   }
+
   /**
    * @return the outRecordReaderClass
    */
   public Class<? extends RecordReader> getOutRecordReaderClass() {
     return outRecordReaderClass;
   }
+
   /**
-   * @param outRecordReaderClass the outRecordReaderClass to set
+   * @param outRecordReaderClass
+   *          the outRecordReaderClass to set
    */
   public void setOutRecordReaderClass(
       Class<? extends RecordReader> outRecordReaderClass) {
     this.outRecordReaderClass = outRecordReaderClass;
   }
+
   /**
    * @return the inRecordWriterClass
    */
   public Class<? extends RecordWriter> getInRecordWriterClass() {
     return inRecordWriterClass;
   }
+
   /**
-   * @param inRecordWriterClass the inRecordWriterClass to set
+   * @param inRecordWriterClass
+   *          the inRecordWriterClass to set
    */
   public void setInRecordWriterClass(
       Class<? extends RecordWriter> inRecordWriterClass) {

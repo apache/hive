@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
 import org.apache.hadoop.fs.Path;
 
-@explain(displayName="Show Functions")
-public class showFunctionsDesc extends ddlDesc implements Serializable
-{
+@explain(displayName = "Show Functions")
+public class showFunctionsDesc extends ddlDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String     pattern;
-  Path       resFile;
+  String pattern;
+  Path resFile;
   /**
    * table name for the result of show tables
    */
@@ -43,7 +43,7 @@ public class showFunctionsDesc extends ddlDesc implements Serializable
   public String getSchema() {
     return schema;
   }
-  
+
   /**
    * @param resFile
    */
@@ -53,7 +53,8 @@ public class showFunctionsDesc extends ddlDesc implements Serializable
   }
 
   /**
-   * @param pattern names of tables to show
+   * @param pattern
+   *          names of tables to show
    */
   public showFunctionsDesc(Path resFile, String pattern) {
     this.resFile = resFile;
@@ -63,13 +64,14 @@ public class showFunctionsDesc extends ddlDesc implements Serializable
   /**
    * @return the pattern
    */
-  @explain(displayName="pattern")
+  @explain(displayName = "pattern")
   public String getPattern() {
     return pattern;
   }
 
   /**
-   * @param pattern the pattern to set
+   * @param pattern
+   *          the pattern to set
    */
   public void setPattern(String pattern) {
     this.pattern = pattern;
@@ -82,12 +84,14 @@ public class showFunctionsDesc extends ddlDesc implements Serializable
     return resFile;
   }
 
-  @explain(displayName="result file", normalExplain=false)
+  @explain(displayName = "result file", normalExplain = false)
   public String getResFileString() {
     return getResFile().getName();
   }
+
   /**
-   * @param resFile the resFile to set
+   * @param resFile
+   *          the resFile to set
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;

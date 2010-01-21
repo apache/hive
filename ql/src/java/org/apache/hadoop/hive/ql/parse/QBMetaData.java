@@ -18,14 +18,16 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.*;
-import org.apache.hadoop.hive.ql.metadata.*;
+import java.util.HashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
  * Implementation of the metadata information related to a query block
- *
+ * 
  **/
 
 public class QBMetaData {
@@ -37,25 +39,27 @@ public class QBMetaData {
   public static final int DEST_REDUCE = 4;
   public static final int DEST_LOCAL_FILE = 5;
 
-  private HashMap<String, Table> aliasToTable;
-  private HashMap<String, Table> nameToDestTable;
-  private HashMap<String, Partition> nameToDestPartition;
-  private HashMap<String, String> nameToDestFile;
-  private HashMap<String, Integer> nameToDestType;
+  private final HashMap<String, Table> aliasToTable;
+  private final HashMap<String, Table> nameToDestTable;
+  private final HashMap<String, Partition> nameToDestPartition;
+  private final HashMap<String, String> nameToDestFile;
+  private final HashMap<String, Integer> nameToDestType;
 
   @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(QBMetaData.class.getName());
-  
+
   public QBMetaData() {
-    this.aliasToTable = new HashMap<String, Table>();
-    this.nameToDestTable = new HashMap<String, Table>();
-    this.nameToDestPartition = new HashMap<String, Partition>();
-    this.nameToDestFile = new HashMap<String, String>();
-    this.nameToDestType = new HashMap<String, Integer>();
+    aliasToTable = new HashMap<String, Table>();
+    nameToDestTable = new HashMap<String, Table>();
+    nameToDestPartition = new HashMap<String, Partition>();
+    nameToDestFile = new HashMap<String, String>();
+    nameToDestType = new HashMap<String, Integer>();
   }
 
-  // All getXXX needs toLowerCase() because they are directly called from SemanticAnalyzer
-  // All setXXX does not need it because they are called from QB which already lowercases
+  // All getXXX needs toLowerCase() because they are directly called from
+  // SemanticAnalyzer
+  // All setXXX does not need it because they are called from QB which already
+  // lowercases
   // the aliases.
 
   public HashMap<String, Table> getAliasToTable() {
@@ -63,46 +67,46 @@ public class QBMetaData {
   }
 
   public Table getTableForAlias(String alias) {
-    return this.aliasToTable.get(alias.toLowerCase());
+    return aliasToTable.get(alias.toLowerCase());
   }
 
   public void setSrcForAlias(String alias, Table tab) {
-    this.aliasToTable.put(alias, tab);
+    aliasToTable.put(alias, tab);
   }
 
   public void setDestForAlias(String alias, Table tab) {
-    this.nameToDestType.put(alias, Integer.valueOf(DEST_TABLE));
-    this.nameToDestTable.put(alias, tab);
+    nameToDestType.put(alias, Integer.valueOf(DEST_TABLE));
+    nameToDestTable.put(alias, tab);
   }
 
   public void setDestForAlias(String alias, Partition part) {
-    this.nameToDestType.put(alias, Integer.valueOf(DEST_PARTITION));
-    this.nameToDestPartition.put(alias, part);
+    nameToDestType.put(alias, Integer.valueOf(DEST_PARTITION));
+    nameToDestPartition.put(alias, part);
   }
 
   public void setDestForAlias(String alias, String fname, boolean isDfsFile) {
-    this.nameToDestType.put(alias, 
-                       isDfsFile ? Integer.valueOf(DEST_DFS_FILE) : Integer.valueOf(DEST_LOCAL_FILE));
-    this.nameToDestFile.put(alias, fname);
+    nameToDestType.put(alias, isDfsFile ? Integer.valueOf(DEST_DFS_FILE)
+        : Integer.valueOf(DEST_LOCAL_FILE));
+    nameToDestFile.put(alias, fname);
   }
 
   public Integer getDestTypeForAlias(String alias) {
-    return this.nameToDestType.get(alias.toLowerCase());
+    return nameToDestType.get(alias.toLowerCase());
   }
 
   public Table getDestTableForAlias(String alias) {
-    return this.nameToDestTable.get(alias.toLowerCase());
+    return nameToDestTable.get(alias.toLowerCase());
   }
 
   public Partition getDestPartitionForAlias(String alias) {
-    return this.nameToDestPartition.get(alias.toLowerCase());
+    return nameToDestPartition.get(alias.toLowerCase());
   }
 
   public String getDestFileForAlias(String alias) {
-    return this.nameToDestFile.get(alias.toLowerCase());
+    return nameToDestFile.get(alias.toLowerCase());
   }
 
   public Table getSrcForAlias(String alias) {
-    return this.aliasToTable.get(alias.toLowerCase());
+    return aliasToTable.get(alias.toLowerCase());
   }
 }

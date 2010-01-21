@@ -29,11 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
-@description(
-    name = "max",
-    value = "_FUNC_(expr) - Returns the maximum value of expr"
-    )
+@description(name = "max", value = "_FUNC_(expr) - Returns the maximum value of expr")
 public class UDAFMax extends UDAF {
 
   static public class MaxShortEvaluator implements UDAFEvaluator {
@@ -269,6 +265,5 @@ public class UDAFMax extends UDAF {
       return mEmpty ? null : mMax;
     }
   }
-
 
 }

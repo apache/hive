@@ -28,8 +28,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
-
 public class UDAFTestMax extends UDAF {
 
   static public class MaxShortEvaluator implements UDAFEvaluator {
@@ -265,6 +263,5 @@ public class UDAFTestMax extends UDAF {
       return mEmpty ? null : mMax;
     }
   }
-
 
 }

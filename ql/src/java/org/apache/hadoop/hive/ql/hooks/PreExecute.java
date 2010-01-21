@@ -19,27 +19,29 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
-import org.apache.hadoop.security.UserGroupInformation;
+
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
- * The pre execute hook interface. A list of such hooks can
- * be configured to be called after compilation and before 
- * execution.
+ * The pre execute hook interface. A list of such hooks can be configured to be
+ * called after compilation and before execution.
  */
 public interface PreExecute {
 
   /**
-   * The run command that is called just before the execution of the
-   * query.
+   * The run command that is called just before the execution of the query.
    * 
-   * @param sess The session state.
-   * @param inputs The set of input tables and partitions.
-   * @param outputs The set of output tables, partitions, local and hdfs directories.
-   * @param ugi The user group security information.
+   * @param sess
+   *          The session state.
+   * @param inputs
+   *          The set of input tables and partitions.
+   * @param outputs
+   *          The set of output tables, partitions, local and hdfs directories.
+   * @param ugi
+   *          The user group security information.
    */
-  public void run(SessionState sess, Set<ReadEntity> inputs, 
-      Set<WriteEntity> outputs, UserGroupInformation ugi)
-    throws Exception;
-  
+  public void run(SessionState sess, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception;
+
 }

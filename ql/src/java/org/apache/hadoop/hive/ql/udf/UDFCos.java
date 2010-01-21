@@ -24,26 +24,21 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(
-    name = "cos",
-    value = "_FUNC_(x) - returns the cosine of x (x is in radians)",
-    extended = "Example:\n " +
-    		"  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
-    		"  1"
-    )
+@description(name = "cos", value = "_FUNC_(x) - returns the cosine of x (x is in radians)", extended = "Example:\n "
+    + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  1")
 public class UDFCos extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFCos.class.getName());
 
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFCos() {
   }
 
   /**
    * Take Cosine of a
    */
-  public DoubleWritable evaluate(DoubleWritable a)  {
+  public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {
       return null;
     } else {

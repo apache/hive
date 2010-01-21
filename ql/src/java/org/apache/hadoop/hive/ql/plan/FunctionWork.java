@@ -22,9 +22,9 @@ import java.io.Serializable;
 
 public class FunctionWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private createFunctionDesc  createFunctionDesc;
-  private dropFunctionDesc  dropFunctionDesc;
-  
+  private createFunctionDesc createFunctionDesc;
+  private dropFunctionDesc dropFunctionDesc;
+
   public FunctionWork(createFunctionDesc createFunctionDesc) {
     this.createFunctionDesc = createFunctionDesc;
   }
@@ -36,6 +36,7 @@ public class FunctionWork implements Serializable {
   public createFunctionDesc getCreateFunctionDesc() {
     return createFunctionDesc;
   }
+
   public void setCreateFunctionDesc(createFunctionDesc createFunctionDesc) {
     this.createFunctionDesc = createFunctionDesc;
   }
@@ -43,8 +44,9 @@ public class FunctionWork implements Serializable {
   public dropFunctionDesc getDropFunctionDesc() {
     return dropFunctionDesc;
   }
+
   public void setDropFunctionDesc(dropFunctionDesc dropFunctionDesc) {
     this.dropFunctionDesc = dropFunctionDesc;
   }
-  
+
 }

@@ -18,38 +18,37 @@
 
 package org.apache.hadoop.hive.ql;
 
-import junit.framework.TestCase;
-import java.io.*;
-import java.util.*;
+import java.io.File;
 
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
  * Suite for testing running of queries in multi-threaded mode
  */
 public class TestMTQueries extends TestCase {
 
-  private String inpDir = System.getProperty("ql.test.query.clientpositive.dir");
-  private String resDir = System.getProperty("ql.test.results.clientpositive.dir");
-  private String logDir = System.getProperty("test.log.dir") + "/clientpositive";
+  private final String inpDir = System
+      .getProperty("ql.test.query.clientpositive.dir");
+  private final String resDir = System
+      .getProperty("ql.test.results.clientpositive.dir");
+  private final String logDir = System.getProperty("test.log.dir")
+      + "/clientpositive";
 
-  public void testMTQueries1()  throws Exception {
-    String[] testNames = new String [] {"join1.q", "join2.q", "groupby1.q", "groupby2.q", "join3.q", "input1.q", "input19.q"};
-    String [] logDirs = new String [testNames.length];
-    String [] resDirs = new String [testNames.length];
-    File [] qfiles = new File [testNames.length];
-    for(int i=0; i<resDirs.length; i++) {
+  public void testMTQueries1() throws Exception {
+    String[] testNames = new String[] { "join1.q", "join2.q", "groupby1.q",
+        "groupby2.q", "join3.q", "input1.q", "input19.q" };
+    String[] logDirs = new String[testNames.length];
+    String[] resDirs = new String[testNames.length];
+    File[] qfiles = new File[testNames.length];
+    for (int i = 0; i < resDirs.length; i++) {
       logDirs[i] = logDir;
       resDirs[i] = resDir;
       qfiles[i] = new File(inpDir, testNames[i]);
     }
 
     boolean success = QTestUtil.queryListRunner(qfiles, resDirs, logDirs, true);
-    if(!success)
-      fail ("One or more queries failed");
+    if (!success) {
+      fail("One or more queries failed");
+    }
   }
 }

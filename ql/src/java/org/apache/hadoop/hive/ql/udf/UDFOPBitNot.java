@@ -20,20 +20,14 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(
-    name = "~",
-    value = "_FUNC_ n - Bitwise not",
-    extended = "Example:\n" +
-        "  > SELECT _FUNC_ 0 FROM src LIMIT 1;\n" +
-        "  -1"
-)
+@description(name = "~", value = "_FUNC_ n - Bitwise not", extended = "Example:\n"
+    + "  > SELECT _FUNC_ 0 FROM src LIMIT 1;\n" + "  -1")
 public class UDFOPBitNot extends UDFBaseBitOP {
 
   private static Log LOG = LogFactory.getLog(UDFOPBitNot.class.getName());
@@ -45,7 +39,7 @@ public class UDFOPBitNot extends UDFBaseBitOP {
     if (a == null) {
       return null;
     }
-    byteWritable.set((byte)(~a.get()));
+    byteWritable.set((byte) (~a.get()));
     return byteWritable;
   }
 
@@ -53,10 +47,10 @@ public class UDFOPBitNot extends UDFBaseBitOP {
     if (a == null) {
       return null;
     }
-    shortWritable.set((short)(~a.get()));
+    shortWritable.set((short) (~a.get()));
     return shortWritable;
   }
-  
+
   public IntWritable evaluate(IntWritable a) {
     if (a == null) {
       return null;
@@ -72,6 +66,5 @@ public class UDFOPBitNot extends UDFBaseBitOP {
     longWritable.set(~a.get());
     return longWritable;
   }
-
 
 }

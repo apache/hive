@@ -29,10 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(
-    name = "min",
-    value = "_FUNC_(expr) - Returns the minimum value of expr"
-    )
+@description(name = "min", value = "_FUNC_(expr) - Returns the minimum value of expr")
 public class UDAFMin extends UDAF {
 
   static public class MinShortEvaluator implements UDAFEvaluator {

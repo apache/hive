@@ -44,41 +44,44 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
 
   private int maxRows = 100;
   private FetchOperator ftOp;
- 	private LazySimpleSerDe mSerde;
- 	private int totalRows;
-  
- 	public FetchTask() {
- 	  super();
- 	}
- 	
- 	@Override
-  public void initialize (HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
-    super.initialize(conf, queryPlan, ctx);
-    
-   	try {
-       // Create a file system handle  
-       JobConf job = new JobConf(conf, ExecDriver.class);
+  private LazySimpleSerDe mSerde;
+  private int totalRows;
 
-       mSerde = new LazySimpleSerDe();
-       Properties mSerdeProp = new Properties();
-       mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-       mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, ((fetchWork)work).getSerializationNullFormat());
-       mSerde.initialize(job, mSerdeProp);
-       mSerde.setUseJSONSerialize(true);
-       
-       ftOp = new FetchOperator(work, job);
+  public FetchTask() {
+    super();
+  }
+
+  @Override
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext ctx) {
+    super.initialize(conf, queryPlan, ctx);
+
+    try {
+      // Create a file system handle
+      JobConf job = new JobConf(conf, ExecDriver.class);
+
+      mSerde = new LazySimpleSerDe();
+      Properties mSerdeProp = new Properties();
+      mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
+      mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, (work)
+          .getSerializationNullFormat());
+      mSerde.initialize(job, mSerdeProp);
+      mSerde.setUseJSONSerialize(true);
+
+      ftOp = new FetchOperator(work, job);
     } catch (Exception e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
       LOG.error(StringUtils.stringifyException(e));
-      throw new RuntimeException (e);
+      throw new RuntimeException(e);
     }
   }
-  
+
+  @Override
   public int execute() {
     assert false;
     return 0;
   }
+
   /**
    * Return the tableDesc of the fetchWork
    */
@@ -99,41 +102,43 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   public void setMaxRows(int maxRows) {
     this.maxRows = maxRows;
   }
-	
+
+  @Override
   public boolean fetch(Vector<String> res) throws IOException {
     try {
       int numRows = 0;
       int rowsRet = maxRows;
-      if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet))
+      if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet)) {
         rowsRet = work.getLimit() - totalRows;
+      }
       if (rowsRet <= 0) {
         ftOp.clearFetchContext();
         return false;
       }
 
-    	while (numRows < rowsRet) {
-    	  InspectableObject io = ftOp.getNextRow();
-    	  if (io == null) {
-          if (numRows == 0) 
+      while (numRows < rowsRet) {
+        InspectableObject io = ftOp.getNextRow();
+        if (io == null) {
+          if (numRows == 0) {
             return false;
+          }
           totalRows += numRows;
           return true;
-    	  } 
-  	    
-    	  res.add(((Text)mSerde.serialize(io.o, io.oi)).toString());
-   	    numRows++;
-    	}
+        }
+
+        res.add(((Text) mSerde.serialize(io.o, io.oi)).toString());
+        numRows++;
+      }
       totalRows += numRows;
       return true;
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw e;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new IOException(e);
     }
   }
-  
+
+  @Override
   public int getType() {
     return StageType.FETCH;
   }

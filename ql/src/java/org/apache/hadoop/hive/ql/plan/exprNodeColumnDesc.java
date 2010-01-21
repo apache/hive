@@ -37,77 +37,90 @@ public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
    * The alias of the table.
    */
   private String tabAlias;
-  
+
   /**
    * Is the column a partitioned column.
    */
   private boolean isPartitionCol;
-  
-  public exprNodeColumnDesc() {}
-  public exprNodeColumnDesc(TypeInfo typeInfo, String column,
-                            String tabAlias, boolean isPartitionCol) {
+
+  public exprNodeColumnDesc() {
+  }
+
+  public exprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
+      boolean isPartitionCol) {
     super(typeInfo);
     this.column = column;
     this.tabAlias = tabAlias;
     this.isPartitionCol = isPartitionCol;
   }
+
   public exprNodeColumnDesc(Class<?> c, String column, String tabAlias,
-                            boolean isPartitionCol) {
+      boolean isPartitionCol) {
     super(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c));
     this.column = column;
     this.tabAlias = tabAlias;
     this.isPartitionCol = isPartitionCol;
   }
+
   public String getColumn() {
-    return this.column;
+    return column;
   }
+
   public void setColumn(String column) {
     this.column = column;
   }
 
   public String getTabAlias() {
-    return this.tabAlias;
+    return tabAlias;
   }
+
   public void setTabAlias(String tabAlias) {
     this.tabAlias = tabAlias;
   }
 
   public boolean getIsParititonCol() {
-    return this.isPartitionCol;
+    return isPartitionCol;
   }
+
   public void setIsPartitionCol(boolean isPartitionCol) {
     this.isPartitionCol = isPartitionCol;
   }
 
+  @Override
   public String toString() {
     return "Column[" + column + "]";
   }
-  
-  @explain(displayName="expr")
+
+  @explain(displayName = "expr")
   @Override
   public String getExprString() {
     return getColumn();
   }
 
+  @Override
   public List<String> getCols() {
-  	List<String> lst = new ArrayList<String>();
-  	lst.add(column);
-  	return lst;
+    List<String> lst = new ArrayList<String>();
+    lst.add(column);
+    return lst;
   }
+
   @Override
   public exprNodeDesc clone() {
-    return new exprNodeColumnDesc(this.typeInfo, this.column, 
-                                  this.tabAlias, this.isPartitionCol);
+    return new exprNodeColumnDesc(typeInfo, column, tabAlias, isPartitionCol);
   }
+
   @Override
   public boolean isSame(Object o) {
-    if (!(o instanceof exprNodeColumnDesc))
+    if (!(o instanceof exprNodeColumnDesc)) {
       return false;
-    exprNodeColumnDesc dest = (exprNodeColumnDesc)o;
-    if (!column.equals(dest.getColumn()))
+    }
+    exprNodeColumnDesc dest = (exprNodeColumnDesc) o;
+    if (!column.equals(dest.getColumn())) {
       return false;
-    if (!typeInfo.equals(dest.getTypeInfo()))
+    }
+    if (!typeInfo.equals(dest.getTypeInfo())) {
       return false;
-    return true; 
+    }
+    return true;
   }
 }

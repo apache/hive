@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import java.util.*;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -27,64 +27,67 @@ public class SetProcessor implements CommandProcessor {
   private static String prefix = "set: ";
 
   public static boolean getBoolean(String value) {
-    if(value.equals("on") || value.equals("true"))
+    if (value.equals("on") || value.equals("true")) {
       return true;
-    if(value.equals("off") || value.equals("false"))
+    }
+    if (value.equals("off") || value.equals("false")) {
       return false;
-    throw new IllegalArgumentException(prefix + "'" + value + "' is not a boolean");
+    }
+    throw new IllegalArgumentException(prefix + "'" + value
+        + "' is not a boolean");
   }
 
   private void dumpOptions(Properties p) {
     SessionState ss = SessionState.get();
 
     ss.out.println("silent=" + (ss.getIsSilent() ? "on" : "off"));
-    for(Object one: p.keySet()) {
-      String oneProp = (String)one;
+    for (Object one : p.keySet()) {
+      String oneProp = (String) one;
       String oneValue = p.getProperty(oneProp);
-      ss.out.println(oneProp+"="+oneValue);
+      ss.out.println(oneProp + "=" + oneValue);
     }
   }
 
   private void dumpOption(Properties p, String s) {
     SessionState ss = SessionState.get();
-    
-    if(p.getProperty(s) != null) {
-      ss.out.println(s+"="+p.getProperty(s));
+
+    if (p.getProperty(s) != null) {
+      ss.out.println(s + "=" + p.getProperty(s));
     } else {
-      ss.out.println(s+" is undefined");
+      ss.out.println(s + " is undefined");
     }
   }
 
   public void init() {
   }
-  
+
   public int run(String command) {
     SessionState ss = SessionState.get();
 
     String nwcmd = command.trim();
-    if(nwcmd.equals("")) {
+    if (nwcmd.equals("")) {
       dumpOptions(ss.getConf().getChangedProperties());
       return 0;
     }
 
-    if(nwcmd.equals("-v")) {
+    if (nwcmd.equals("-v")) {
       dumpOptions(ss.getConf().getAllProperties());
       return 0;
     }
 
-    String[] part = new String [2];
+    String[] part = new String[2];
 
     int eqIndex = nwcmd.indexOf('=');
-    if(eqIndex == -1) {
+    if (eqIndex == -1) {
       // no equality sign - print the property out
       dumpOption(ss.getConf().getAllProperties(), nwcmd);
       return (0);
-    } else if (eqIndex == nwcmd.length()-1) {
-      part[0] = nwcmd.substring(0, nwcmd.length()-1);
+    } else if (eqIndex == nwcmd.length() - 1) {
+      part[0] = nwcmd.substring(0, nwcmd.length() - 1);
       part[1] = "";
     } else {
       part[0] = nwcmd.substring(0, eqIndex).trim();
-      part[1] = nwcmd.substring(eqIndex+1).trim();
+      part[1] = nwcmd.substring(eqIndex + 1).trim();
     }
 
     try {

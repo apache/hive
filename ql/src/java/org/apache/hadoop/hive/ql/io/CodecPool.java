@@ -29,45 +29,43 @@ import org.apache.hadoop.io.compress.Compressor;
 import org.apache.hadoop.io.compress.Decompressor;
 
 /**
- * A global compressor/decompressor pool used to save and reuse 
- * (possibly native) compression/decompression codecs.
+ * A global compressor/decompressor pool used to save and reuse (possibly
+ * native) compression/decompression codecs.
  */
 public class CodecPool {
   private static final Log LOG = LogFactory.getLog(CodecPool.class);
-  
+
   /**
-   * A global compressor pool used to save the expensive 
+   * A global compressor pool used to save the expensive
    * construction/destruction of (possibly native) decompression codecs.
    */
-  private static final Map<Class<Compressor>, List<Compressor>> compressorPool = 
-    new HashMap<Class<Compressor>, List<Compressor>>();
-  
+  private static final Map<Class<Compressor>, List<Compressor>> compressorPool = new HashMap<Class<Compressor>, List<Compressor>>();
+
   /**
-   * A global decompressor pool used to save the expensive 
+   * A global decompressor pool used to save the expensive
    * construction/destruction of (possibly native) decompression codecs.
    */
-  private static final Map<Class<Decompressor>, List<Decompressor>> decompressorPool = 
-    new HashMap<Class<Decompressor>, List<Decompressor>>();
+  private static final Map<Class<Decompressor>, List<Decompressor>> decompressorPool = new HashMap<Class<Decompressor>, List<Decompressor>>();
 
   private static <T> T borrow(Map<Class<T>, List<T>> pool,
-                             Class<? extends T> codecClass) {
+      Class<? extends T> codecClass) {
     T codec = null;
-    
+
     // Check if an appropriate codec is available
     synchronized (pool) {
       if (pool.containsKey(codecClass)) {
         List<T> codecList = pool.get(codecClass);
-        
+
         if (codecList != null) {
           synchronized (codecList) {
             if (!codecList.isEmpty()) {
-              codec = codecList.remove(codecList.size()-1);
+              codec = codecList.remove(codecList.size() - 1);
             }
           }
         }
       }
     }
-    
+
     return codec;
   }
 
@@ -86,18 +84,19 @@ public class CodecPool {
       }
     }
   }
-  
+
   /**
-   * Get a {@link Compressor} for the given {@link CompressionCodec} from the 
+   * Get a {@link Compressor} for the given {@link CompressionCodec} from the
    * pool or a new one.
-   *
-   * @param codec the <code>CompressionCodec</code> for which to get the 
-   *              <code>Compressor</code>
-   * @return <code>Compressor</code> for the given 
-   *         <code>CompressionCodec</code> from the pool or a new one
+   * 
+   * @param codec
+   *          the <code>CompressionCodec</code> for which to get the
+   *          <code>Compressor</code>
+   * @return <code>Compressor</code> for the given <code>CompressionCodec</code>
+   *         from the pool or a new one
    */
   public static Compressor getCompressor(CompressionCodec codec) {
-    Compressor compressor = (Compressor) borrow(compressorPool, codec.getCompressorType());
+    Compressor compressor = borrow(compressorPool, codec.getCompressorType());
     if (compressor == null) {
       compressor = codec.createCompressor();
       LOG.info("Got brand-new compressor");
@@ -106,18 +105,20 @@ public class CodecPool {
     }
     return compressor;
   }
-  
+
   /**
    * Get a {@link Decompressor} for the given {@link CompressionCodec} from the
    * pool or a new one.
-   *  
-   * @param codec the <code>CompressionCodec</code> for which to get the 
-   *              <code>Decompressor</code>
-   * @return <code>Decompressor</code> for the given 
+   * 
+   * @param codec
+   *          the <code>CompressionCodec</code> for which to get the
+   *          <code>Decompressor</code>
+   * @return <code>Decompressor</code> for the given
    *         <code>CompressionCodec</code> the pool or a new one
    */
   public static Decompressor getDecompressor(CompressionCodec codec) {
-    Decompressor decompressor = (Decompressor) borrow(decompressorPool, codec.getDecompressorType());
+    Decompressor decompressor = borrow(decompressorPool, codec
+        .getDecompressorType());
     if (decompressor == null) {
       decompressor = codec.createDecompressor();
       LOG.info("Got brand-new decompressor");
@@ -126,11 +127,12 @@ public class CodecPool {
     }
     return decompressor;
   }
-  
+
   /**
    * Return the {@link Compressor} to the pool.
    * 
-   * @param compressor the <code>Compressor</code> to be returned to the pool
+   * @param compressor
+   *          the <code>Compressor</code> to be returned to the pool
    */
   public static void returnCompressor(Compressor compressor) {
     if (compressor == null) {
@@ -139,12 +141,12 @@ public class CodecPool {
     compressor.reset();
     payback(compressorPool, compressor);
   }
-  
+
   /**
    * Return the {@link Decompressor} to the pool.
    * 
-   * @param decompressor the <code>Decompressor</code> to be returned to the 
-   *                     pool
+   * @param decompressor
+   *          the <code>Decompressor</code> to be returned to the pool
    */
   public static void returnDecompressor(Decompressor decompressor) {
     if (decompressor == null) {

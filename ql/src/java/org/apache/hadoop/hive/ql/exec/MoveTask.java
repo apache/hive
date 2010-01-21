@@ -51,6 +51,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
     super();
   }
 
+  @Override
   public int execute() {
 
     try {
@@ -64,39 +65,44 @@ public class MoveTask extends Task<moveWork> implements Serializable {
         if (lfd.getIsDfsDir()) {
           // Just do a rename on the URIs, they belong to the same FS
           String mesg = "Moving data to: " + lfd.getTargetDir();
-          String mesg_detail = " from " +  lfd.getSourceDir();
+          String mesg_detail = " from " + lfd.getSourceDir();
           console.printInfo(mesg, mesg_detail);
 
           // delete the output directory if it already exists
           fs.delete(targetPath, true);
           // if source exists, rename. Otherwise, create a empty directory
           if (fs.exists(sourcePath)) {
-            if (!fs.rename(sourcePath, targetPath))
-              throw new HiveException ("Unable to rename: " + sourcePath + " to: "
-                                       + targetPath);
-          } else
-            if (!fs.mkdirs(targetPath))
-              throw new HiveException ("Unable to make directory: " + targetPath);
+            if (!fs.rename(sourcePath, targetPath)) {
+              throw new HiveException("Unable to rename: " + sourcePath
+                  + " to: " + targetPath);
+            }
+          } else if (!fs.mkdirs(targetPath)) {
+            throw new HiveException("Unable to make directory: " + targetPath);
+          }
         } else {
           // This is a local file
           String mesg = "Copying data to local directory " + lfd.getTargetDir();
-          String mesg_detail =  " from " + lfd.getSourceDir();
+          String mesg_detail = " from " + lfd.getSourceDir();
           console.printInfo(mesg, mesg_detail);
 
           // delete the existing dest directory
           LocalFileSystem dstFs = FileSystem.getLocal(conf);
 
-          if(dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
+          if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
             console.printInfo(mesg, mesg_detail);
             // if source exists, rename. Otherwise, create a empty directory
-            if (fs.exists(sourcePath))
+            if (fs.exists(sourcePath)) {
               fs.copyToLocalFile(sourcePath, targetPath);
-            else {
-              if (!dstFs.mkdirs(targetPath))
-                throw new HiveException ("Unable to make local directory: " + targetPath);
+            } else {
+              if (!dstFs.mkdirs(targetPath)) {
+                throw new HiveException("Unable to make local directory: "
+                    + targetPath);
+              }
             }
           } else {
-            throw new AccessControlException("Unable to delete the existing destination directory: " + targetPath);
+            throw new AccessControlException(
+                "Unable to delete the existing destination directory: "
+                    + targetPath);
           }
         }
       }
@@ -104,55 +110,69 @@ public class MoveTask extends Task<moveWork> implements Serializable {
       // Next we do this for tables and partitions
       loadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
-        String mesg = "Loading data to table " + tbd.getTable().getTableName() +
-        ((tbd.getPartitionSpec().size() > 0) ?
-            " partition " + tbd.getPartitionSpec().toString() : "");
+        String mesg = "Loading data to table "
+            + tbd.getTable().getTableName()
+            + ((tbd.getPartitionSpec().size() > 0) ? " partition "
+                + tbd.getPartitionSpec().toString() : "");
         String mesg_detail = " from " + tbd.getSourceDir();
         console.printInfo(mesg, mesg_detail);
-        Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd.getTable().getTableName());
+        Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd
+            .getTable().getTableName());
 
         if (work.getCheckFileFormat()) {
           // Get all files from the src directory
-          FileStatus [] dirs;
+          FileStatus[] dirs;
           ArrayList<FileStatus> files;
           FileSystem fs;
           try {
-            fs = FileSystem.get(table.getDataLocation(),conf);
+            fs = FileSystem.get(table.getDataLocation(), conf);
             dirs = fs.globStatus(new Path(tbd.getSourceDir()));
             files = new ArrayList<FileStatus>();
-            for (int i=0; (dirs != null && i<dirs.length); i++) {
+            for (int i = 0; (dirs != null && i < dirs.length); i++) {
               files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));
-              // We only check one file, so exit the loop when we have at least one.
-              if (files.size()>0) break;
+              // We only check one file, so exit the loop when we have at least
+              // one.
+              if (files.size() > 0) {
+                break;
+              }
             }
           } catch (IOException e) {
-            throw new HiveException("addFiles: filesystem error in check phase", e);
+            throw new HiveException(
+                "addFiles: filesystem error in check phase", e);
           }
 
           // Check if the file format of the file matches that of the table.
-          boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
-          if(!flag)
-            throw new HiveException("Wrong file format. Please check the file's format.");
+          boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd
+              .getTable().getInputFileFormatClass(), files);
+          if (!flag) {
+            throw new HiveException(
+                "Wrong file format. Please check the file's format.");
+          }
         }
 
-        if(tbd.getPartitionSpec().size() == 0) {
-          db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()));
-          if (work.getOutputs() != null)
+        if (tbd.getPartitionSpec().size() == 0) {
+          db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
+              .getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()));
+          if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table));
+          }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
-          db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-              tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()));
-          Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
-          if (work.getOutputs() != null)
+          db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable()
+              .getTableName(), tbd.getPartitionSpec(), tbd.getReplace(),
+              new Path(tbd.getTmpDir()));
+          Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
+              false);
+          if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(partn));
+          }
         }
       }
 
       return 0;
-    }
-    catch (Exception e) {
-      console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
+    } catch (Exception e) {
+      console.printError("Failed with exception " + e.getMessage(), "\n"
+          + StringUtils.stringifyException(e));
       return (1);
     }
   }
@@ -162,21 +182,23 @@ public class MoveTask extends Task<moveWork> implements Serializable {
    */
   public boolean isLocal() {
     loadTableDesc tbd = work.getLoadTableWork();
-    if (tbd != null)
+    if (tbd != null) {
       return false;
+    }
 
     loadFileDesc lfd = work.getLoadFileWork();
     if (lfd != null) {
       if (lfd.getIsDfsDir()) {
         return false;
-      }
-      else
+      } else {
         return true;
+      }
     }
 
     return false;
   }
 
+  @Override
   public int getType() {
     return StageType.MOVE;
   }

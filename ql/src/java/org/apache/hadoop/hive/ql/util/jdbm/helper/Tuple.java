@@ -64,76 +64,70 @@
 
 package org.apache.hadoop.hive.ql.util.jdbm.helper;
 
-
 /**
  * Tuple consisting of a key-value pair.
- *
+ * 
  * @author <a href="mailto:boisvert@intalio.com">Alex Boisvert</a>
  * @version $Id: Tuple.java,v 1.2 2001/05/19 14:02:00 boisvert Exp $
  */
 public final class Tuple {
 
-    /**
-     * Key
-     */
-    private Object _key;
+  /**
+   * Key
+   */
+  private Object _key;
 
+  /**
+   * Value
+   */
+  private Object _value;
 
-    /**
-     * Value
-     */
-    private Object _value;
+  /**
+   * Construct an empty Tuple.
+   */
+  public Tuple() {
+    // empty
+  }
 
+  /**
+   * Construct a Tuple.
+   * 
+   * @param key
+   *          The key.
+   * @param value
+   *          The value.
+   */
+  public Tuple(Object key, Object value) {
+    _key = key;
+    _value = value;
+  }
 
-    /**
-     * Construct an empty Tuple.
-     */
-    public Tuple() {
-        // empty
-    }
+  /**
+   * Get the key.
+   */
+  public Object getKey() {
+    return _key;
+  }
 
+  /**
+   * Set the key.
+   */
+  public void setKey(Object key) {
+    _key = key;
+  }
 
-    /**
-     * Construct a Tuple.
-     *
-     * @param key The key.
-     * @param value The value.
-     */
-    public Tuple( Object key, Object value ) {
-        _key = key;
-        _value = value;
-    }
+  /**
+   * Get the value.
+   */
+  public Object getValue() {
+    return _value;
+  }
 
-
-    /**
-     * Get the key.
-     */
-    public Object getKey() {
-        return _key;
-    }
-
-
-    /**
-     * Set the key.
-     */
-    public void setKey( Object key ) {
-        _key = key;
-    }
-
-
-    /**
-     * Get the value.
-     */
-    public Object getValue() {
-        return _value;
-    }
-
-
-    /**
-     * Set the value.
-     */
-    public void setValue( Object value ) {
-        _value = value;
-    }
+  /**
+   * Set the value.
+   */
+  public void setValue(Object value) {
+    _value = value;
+  }
 
 }

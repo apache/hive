@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
 import org.apache.hadoop.fs.Path;
 
-@explain(displayName="Show Partitions")
-public class showPartitionsDesc extends ddlDesc implements Serializable 
-{
+@explain(displayName = "Show Partitions")
+public class showPartitionsDesc extends ddlDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  String     tabName;
-  Path       resFile;
+  String tabName;
+  Path resFile;
   /**
    * table name for the result of show tables
    */
@@ -43,10 +43,12 @@ public class showPartitionsDesc extends ddlDesc implements Serializable
   public String getSchema() {
     return schema;
   }
-  
+
   /**
-   * @param tabName Name of the table whose partitions need to be listed
-   * @param resFile File to store the results in
+   * @param tabName
+   *          Name of the table whose partitions need to be listed
+   * @param resFile
+   *          File to store the results in
    */
   public showPartitionsDesc(String tabName, Path resFile) {
     this.tabName = tabName;
@@ -56,13 +58,14 @@ public class showPartitionsDesc extends ddlDesc implements Serializable
   /**
    * @return the name of the table
    */
-  @explain(displayName="table")
+  @explain(displayName = "table")
   public String getTabName() {
     return tabName;
   }
 
   /**
-   * @param tabName the table whose partitions have to be listed
+   * @param tabName
+   *          the table whose partitions have to be listed
    */
   public void setTabName(String tabName) {
     this.tabName = tabName;
@@ -75,12 +78,14 @@ public class showPartitionsDesc extends ddlDesc implements Serializable
     return resFile;
   }
 
-  @explain(displayName="result file", normalExplain=false)
+  @explain(displayName = "result file", normalExplain = false)
   public String getResFileString() {
     return getResFile().getName();
   }
+
   /**
-   * @param resFile the results file to be used to return the results
+   * @param resFile
+   *          the results file to be used to return the results
    */
   public void setResFile(Path resFile) {
     this.resFile = resFile;

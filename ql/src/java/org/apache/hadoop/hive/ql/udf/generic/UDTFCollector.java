@@ -22,21 +22,25 @@ import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * UDTFCollector collects data from a GenericUDTF and passes the data to a 
+ * UDTFCollector collects data from a GenericUDTF and passes the data to a
  * UDTFOperator
  */
 public class UDTFCollector implements Collector {
 
-  /* (non-Javadoc)
-   * @see org.apache.hadoop.hive.ql.udf.generic.Collector#collect(java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.hadoop.hive.ql.udf.generic.Collector#collect(java.lang.Object)
    */
   UDTFOperator op = null;
-  
+
   public UDTFCollector(UDTFOperator op) {
     this.op = op;
   }
+
   @Override
-  public void collect(Object input) throws HiveException{
+  public void collect(Object input) throws HiveException {
     op.forwardUDTFOutput(input);
   }
 

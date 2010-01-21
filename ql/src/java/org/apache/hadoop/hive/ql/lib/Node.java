@@ -25,14 +25,15 @@ import java.util.List;
  * These are implemented by the node of the graph that needs to be walked.
  */
 public interface Node {
-  
+
   /**
-   * Gets the vector of children nodes. This is used in the graph walker algorithms.
+   * Gets the vector of children nodes. This is used in the graph walker
+   * algorithms.
    * 
    * @return Vector<Node>
    */
   public List<? extends Node> getChildren();
-  
+
   /**
    * Gets the name of the node. This is used in the rule dispatchers.
    * 
