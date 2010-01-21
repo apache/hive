@@ -19,25 +19,24 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.LongWritable;
 
-
 /**
  * A JavaLongObjectInspector inspects a Java Long Object.
  */
-public class JavaLongObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements SettableLongObjectInspector{
+public class JavaLongObjectInspector extends
+    AbstractPrimitiveJavaObjectInspector implements SettableLongObjectInspector {
 
   JavaLongObjectInspector() {
     super(PrimitiveObjectInspectorUtils.longTypeEntry);
   }
-  
+
   @Override
   public Object getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new LongWritable(((Long)o).longValue());
+    return o == null ? null : new LongWritable(((Long) o).longValue());
   }
 
   @Override
   public long get(Object o) {
-    return ((Long)o).longValue();
+    return ((Long) o).longValue();
   }
 
   @Override

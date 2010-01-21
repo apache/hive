@@ -19,25 +19,25 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.Text;
 
-
 /**
  * A JavaStringObjectInspector inspects a Java String Object.
  */
-public class JavaStringObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements SettableStringObjectInspector{
+public class JavaStringObjectInspector extends
+    AbstractPrimitiveJavaObjectInspector implements
+    SettableStringObjectInspector {
 
   JavaStringObjectInspector() {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
   }
-  
+
   @Override
   public Text getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new Text(((String)o));
+    return o == null ? null : new Text(((String) o));
   }
 
   @Override
   public String getPrimitiveJavaObject(Object o) {
-    return (String)o;
+    return (String) o;
   }
 
   @Override

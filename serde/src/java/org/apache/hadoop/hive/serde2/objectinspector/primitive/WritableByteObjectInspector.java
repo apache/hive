@@ -18,34 +18,33 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.io.BooleanWritable;
-
 
 /**
  * A WritableByteObjectInspector inspects a ByteWritable Object.
  */
-public class WritableByteObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements SettableByteObjectInspector{
+public class WritableByteObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements
+    SettableByteObjectInspector {
 
   WritableByteObjectInspector() {
     super(PrimitiveObjectInspectorUtils.byteTypeEntry);
   }
-  
+
   @Override
   public byte get(Object o) {
-    return ((ByteWritable)o).get();
+    return ((ByteWritable) o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new ByteWritable(((ByteWritable)o).get());
+    return o == null ? null : new ByteWritable(((ByteWritable) o).get());
   }
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    return o == null ? null : Byte.valueOf(((ByteWritable)o).get());
+    return o == null ? null : Byte.valueOf(((ByteWritable) o).get());
   }
-  
+
   @Override
   public Object create(byte value) {
     return new ByteWritable(value);
@@ -53,7 +52,7 @@ implements SettableByteObjectInspector{
 
   @Override
   public Object set(Object o, byte value) {
-    ((ByteWritable)o).set(value);
+    ((ByteWritable) o).set(value);
     return o;
   }
 }

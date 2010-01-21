@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A LongObjectInspector inspects an Object representing a Long.
  */
 public interface LongObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the long data.
    */

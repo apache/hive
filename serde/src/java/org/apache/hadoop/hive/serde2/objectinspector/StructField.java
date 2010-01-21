@@ -21,19 +21,19 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 /**
  * StructField is an empty interface.
  * 
- * Classes implementing this interface are considered to represent 
- * a field of a struct for this serde package.
+ * Classes implementing this interface are considered to represent a field of a
+ * struct for this serde package.
  */
 public interface StructField {
 
   /**
-   * Get the name of the field.  The name should be always in lower-case.
+   * Get the name of the field. The name should be always in lower-case.
    */
   String getFieldName();
-  
+
   /**
    * Get the ObjectInspector for the field.
    */
   ObjectInspector getFieldObjectInspector();
-  
+
 }

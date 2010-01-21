@@ -21,9 +21,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
- * An AbstractPrimitiveObjectInspector is based on ObjectInspectorUtils.PrimitiveTypeEntry. 
+ * An AbstractPrimitiveObjectInspector is based on
+ * ObjectInspectorUtils.PrimitiveTypeEntry.
  */
-public abstract class AbstractPrimitiveObjectInspector implements PrimitiveObjectInspector {
+public abstract class AbstractPrimitiveObjectInspector implements
+    PrimitiveObjectInspector {
 
   PrimitiveTypeEntry typeEntry;
 
@@ -31,11 +33,12 @@ public abstract class AbstractPrimitiveObjectInspector implements PrimitiveObjec
    * Construct a AbstractPrimitiveObjectInspector.
    */
   protected AbstractPrimitiveObjectInspector(PrimitiveTypeEntry typeEntry) {
-    this.typeEntry = typeEntry; 
+    this.typeEntry = typeEntry;
   }
 
   /**
-   * Return the associated Java primitive class for this primitive ObjectInspector.
+   * Return the associated Java primitive class for this primitive
+   * ObjectInspector.
    */
   @Override
   public Class<?> getJavaPrimitiveClass() {
@@ -43,7 +46,8 @@ public abstract class AbstractPrimitiveObjectInspector implements PrimitiveObjec
   }
 
   /**
-   * Return the associated primitive category for this primitive ObjectInspector.
+   * Return the associated primitive category for this primitive
+   * ObjectInspector.
    */
   @Override
   public PrimitiveCategory getPrimitiveCategory() {
@@ -51,7 +55,8 @@ public abstract class AbstractPrimitiveObjectInspector implements PrimitiveObjec
   }
 
   /**
-   * Return the associated primitive Writable class for this primitive ObjectInspector.
+   * Return the associated primitive Writable class for this primitive
+   * ObjectInspector.
    */
   @Override
   public Class<?> getPrimitiveWritableClass() {

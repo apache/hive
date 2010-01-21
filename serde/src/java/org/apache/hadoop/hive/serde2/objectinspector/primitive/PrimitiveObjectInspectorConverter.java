@@ -34,8 +34,9 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableBooleanObjectInspector outputOI;
     Object r;
-    
-    public BooleanConverter(PrimitiveObjectInspector inputOI, SettableBooleanObjectInspector outputOI) {
+
+    public BooleanConverter(PrimitiveObjectInspector inputOI,
+        SettableBooleanObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
       r = outputOI.create(false);
@@ -47,7 +48,8 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getBoolean(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getBoolean(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -61,11 +63,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableByteObjectInspector outputOI;
     Object r;
-    
-    public ByteConverter(PrimitiveObjectInspector inputOI, SettableByteObjectInspector outputOI) {
+
+    public ByteConverter(PrimitiveObjectInspector inputOI,
+        SettableByteObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((byte)0);
+      r = outputOI.create((byte) 0);
     }
 
     @Override
@@ -74,7 +77,8 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getByte(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getByte(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -88,11 +92,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableShortObjectInspector outputOI;
     Object r;
-    
-    public ShortConverter(PrimitiveObjectInspector inputOI, SettableShortObjectInspector outputOI) {
+
+    public ShortConverter(PrimitiveObjectInspector inputOI,
+        SettableShortObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((short)0);
+      r = outputOI.create((short) 0);
     }
 
     @Override
@@ -101,7 +106,8 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getShort(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getShort(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -115,11 +121,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableIntObjectInspector outputOI;
     Object r;
-    
-    public IntConverter(PrimitiveObjectInspector inputOI, SettableIntObjectInspector outputOI) {
+
+    public IntConverter(PrimitiveObjectInspector inputOI,
+        SettableIntObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((int)0);
+      r = outputOI.create(0);
     }
 
     @Override
@@ -128,7 +135,8 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getInt(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getInt(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -142,11 +150,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableLongObjectInspector outputOI;
     Object r;
-    
-    public LongConverter(PrimitiveObjectInspector inputOI, SettableLongObjectInspector outputOI) {
+
+    public LongConverter(PrimitiveObjectInspector inputOI,
+        SettableLongObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((long)0);
+      r = outputOI.create(0);
     }
 
     @Override
@@ -155,13 +164,14 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getLong(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getLong(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
     }
   }
-  
+
   /**
    * A converter for the float type.
    */
@@ -169,11 +179,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableFloatObjectInspector outputOI;
     Object r;
-    
-    public FloatConverter(PrimitiveObjectInspector inputOI, SettableFloatObjectInspector outputOI) {
+
+    public FloatConverter(PrimitiveObjectInspector inputOI,
+        SettableFloatObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((float)0);
+      r = outputOI.create(0);
     }
 
     @Override
@@ -182,13 +193,14 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getFloat(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getFloat(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
     }
   }
-  
+
   /**
    * A converter for the double type.
    */
@@ -196,11 +208,12 @@ public class PrimitiveObjectInspectorConverter {
     PrimitiveObjectInspector inputOI;
     SettableDoubleObjectInspector outputOI;
     Object r;
-    
-    public DoubleConverter(PrimitiveObjectInspector inputOI, SettableDoubleObjectInspector outputOI) {
+
+    public DoubleConverter(PrimitiveObjectInspector inputOI,
+        SettableDoubleObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create((double)0);
+      r = outputOI.create(0);
     }
 
     @Override
@@ -209,92 +222,98 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
       try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getDouble(input, inputOI));
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getDouble(input,
+            inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
     }
   }
-  
+
   /**
-   * A helper class to convert any primitive to Text. 
+   * A helper class to convert any primitive to Text.
    */
   public static class TextConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     Text t = new Text();
     ByteStream.Output out = new ByteStream.Output();
-    
-    static byte[] trueBytes = {'T', 'R', 'U', 'E'};
-    static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
-    
+
+    static byte[] trueBytes = { 'T', 'R', 'U', 'E' };
+    static byte[] falseBytes = { 'F', 'A', 'L', 'S', 'E' };
+
     public TextConverter(PrimitiveObjectInspector inputOI) {
       // The output ObjectInspector is writableStringObjectInspector.
       this.inputOI = inputOI;
     }
-    
-    public Text convert(Object input)  {
+
+    public Text convert(Object input) {
       if (input == null) {
         return null;
       }
-      
-      switch(inputOI.getPrimitiveCategory()) {
-        case VOID: {
-          return null;
-        }
-        case BOOLEAN: {
-          t.set(((BooleanObjectInspector)inputOI).get(input) ? trueBytes : falseBytes);
-          return t;
-        }
-        case BYTE: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector)inputOI).get(input));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case SHORT: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector)inputOI).get(input));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case INT: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((IntObjectInspector)inputOI).get(input));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case LONG:{
-          out.reset();
-          LazyLong.writeUTF8NoException(out, ((LongObjectInspector)inputOI).get(input));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case FLOAT: {
-          t.set(String.valueOf(((FloatObjectInspector)inputOI).get(input)));
-          return t;
-        }
-        case DOUBLE: {
-          t.set(String.valueOf(((DoubleObjectInspector)inputOI).get(input)));
-          return t;
-        }
-        case STRING: {
-          t.set(((StringObjectInspector)inputOI).getPrimitiveJavaObject(input));
-          return t;
-        }
-        default: {
-          throw new RuntimeException("Hive 2 Internal error: type = "
-              + inputOI.getTypeName());
-        }
+
+      switch (inputOI.getPrimitiveCategory()) {
+      case VOID: {
+        return null;
+      }
+      case BOOLEAN: {
+        t.set(((BooleanObjectInspector) inputOI).get(input) ? trueBytes
+            : falseBytes);
+        return t;
+      }
+      case BYTE: {
+        out.reset();
+        LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector) inputOI)
+            .get(input));
+        t.set(out.getData(), 0, out.getCount());
+        return t;
+      }
+      case SHORT: {
+        out.reset();
+        LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector) inputOI)
+            .get(input));
+        t.set(out.getData(), 0, out.getCount());
+        return t;
+      }
+      case INT: {
+        out.reset();
+        LazyInteger.writeUTF8NoException(out, ((IntObjectInspector) inputOI)
+            .get(input));
+        t.set(out.getData(), 0, out.getCount());
+        return t;
+      }
+      case LONG: {
+        out.reset();
+        LazyLong.writeUTF8NoException(out, ((LongObjectInspector) inputOI)
+            .get(input));
+        t.set(out.getData(), 0, out.getCount());
+        return t;
+      }
+      case FLOAT: {
+        t.set(String.valueOf(((FloatObjectInspector) inputOI).get(input)));
+        return t;
+      }
+      case DOUBLE: {
+        t.set(String.valueOf(((DoubleObjectInspector) inputOI).get(input)));
+        return t;
+      }
+      case STRING: {
+        t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+        return t;
+      }
+      default: {
+        throw new RuntimeException("Hive 2 Internal error: type = "
+            + inputOI.getTypeName());
+      }
       }
     }
   }
-  
+
   /**
-   * A helper class to convert any primitive to String. 
+   * A helper class to convert any primitive to String.
    */
   public static class StringConverter implements Converter {
     PrimitiveObjectInspector inputOI;
-    
+
     public StringConverter(PrimitiveObjectInspector inputOI) {
       // The output ObjectInspector is writableStringObjectInspector.
       this.inputOI = inputOI;
@@ -304,6 +323,6 @@ public class PrimitiveObjectInspectorConverter {
     public Object convert(Object input) {
       return PrimitiveObjectInspectorUtils.getString(input, inputOI);
     }
-  }    
-  
+  }
+
 }

@@ -19,25 +19,24 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.IntWritable;
 
-
 /**
  * A JavaIntObjectInspector inspects a Java Integer Object.
  */
-public class JavaIntObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements SettableIntObjectInspector{
+public class JavaIntObjectInspector extends
+    AbstractPrimitiveJavaObjectInspector implements SettableIntObjectInspector {
 
   JavaIntObjectInspector() {
     super(PrimitiveObjectInspectorUtils.intTypeEntry);
   }
-  
+
   @Override
   public Object getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new IntWritable(((Integer)o).intValue());
+    return o == null ? null : new IntWritable(((Integer) o).intValue());
   }
 
   @Override
   public int get(Object o) {
-    return ((Integer)o).intValue();
+    return ((Integer) o).intValue();
   }
 
   @Override

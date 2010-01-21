@@ -19,25 +19,25 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.BooleanWritable;
 
-
 /**
  * A JavaBooleanObjectInspector inspects a Java Boolean Object.
  */
-public class JavaBooleanObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements SettableBooleanObjectInspector{
+public class JavaBooleanObjectInspector extends
+    AbstractPrimitiveJavaObjectInspector implements
+    SettableBooleanObjectInspector {
 
   JavaBooleanObjectInspector() {
     super(PrimitiveObjectInspectorUtils.booleanTypeEntry);
   }
-  
+
   @Override
   public Object getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new BooleanWritable(((Boolean)o).booleanValue());
+    return o == null ? null : new BooleanWritable(((Boolean) o).booleanValue());
   }
 
   @Override
   public boolean get(Object o) {
-    return ((Boolean)o).booleanValue();
+    return ((Boolean) o).booleanValue();
   }
 
   @Override

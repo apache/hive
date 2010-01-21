@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.Text;
 
-
 /**
  * A SettableStringObjectInspector can set a string value to an object.
  */
@@ -28,19 +27,19 @@ public interface SettableStringObjectInspector extends StringObjectInspector {
   /**
    * Set the object with the value. Return the object that has the new value.
    * 
-   * In most cases the returned value should be the same as o, but in case 
-   * o is unmodifiable, this will return a new object with new value.    
+   * In most cases the returned value should be the same as o, but in case o is
+   * unmodifiable, this will return a new object with new value.
    */
   public Object set(Object o, Text value);
-  
+
   /**
    * Set the object with the value. Return the object that has the new value.
    * 
-   * In most cases the returned value should be the same as o, but in case 
-   * o is unmodifiable, this will return a new object with new value.    
+   * In most cases the returned value should be the same as o, but in case o is
+   * unmodifiable, this will return a new object with new value.
    */
   public Object set(Object o, String value);
-  
+
   /**
    * Create an object with the value.
    */

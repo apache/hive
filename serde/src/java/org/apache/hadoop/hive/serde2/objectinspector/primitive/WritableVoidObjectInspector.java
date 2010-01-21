@@ -17,17 +17,16 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-
 /**
  * A WritableVoidObjectInspector inspects a NullWritable Object.
  */
-public class WritableVoidObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements VoidObjectInspector{
+public class WritableVoidObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements VoidObjectInspector {
 
   WritableVoidObjectInspector() {
     super(PrimitiveObjectInspectorUtils.voidTypeEntry);
   }
-  
+
   @Override
   public Object copyObject(Object o) {
     return o;

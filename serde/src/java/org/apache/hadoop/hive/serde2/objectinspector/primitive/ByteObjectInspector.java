@@ -19,15 +19,14 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A ByteObjectInspector inspects an Object representing a Byte object.
  */
 public interface ByteObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the byte data.
    */
   byte get(Object o);
-  
+
 }

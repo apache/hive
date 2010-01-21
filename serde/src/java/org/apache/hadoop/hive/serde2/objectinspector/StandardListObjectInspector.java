@@ -20,21 +20,23 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
- * DefaultListObjectInspector works on list data that is stored as a Java List or Java Array object.
+ * DefaultListObjectInspector works on list data that is stored as a Java List
+ * or Java Array object.
  * 
- * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
- * of directly creating an instance of this class. 
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
 public class StandardListObjectInspector implements SettableListObjectInspector {
 
   ObjectInspector listElementObjectInspector;
-  
-  /** Call ObjectInspectorFactory.getStandardListObjectInspector instead.
+
+  /**
+   * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */
-  protected StandardListObjectInspector(ObjectInspector listElementObjectInspector) {
+  protected StandardListObjectInspector(
+      ObjectInspector listElementObjectInspector) {
     this.listElementObjectInspector = listElementObjectInspector;
   }
 
@@ -46,7 +48,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
   public ObjectInspector getListElementObjectInspector() {
     return listElementObjectInspector;
   }
-  
+
   // with data
   public Object getListElement(Object data, int index) {
     if (data == null) {
@@ -69,7 +71,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
       return list.get(index);
     }
   }
-  
+
   public int getListLength(Object data) {
     if (data == null) {
       return -1;
@@ -85,29 +87,31 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
       return list.size();
     }
   }
-  
+
   public List<?> getList(Object data) {
-    if (data == null) return null;
+    if (data == null) {
+      return null;
+    }
     // We support both List<Object> and Object[]
     // so we have to do differently.
     if (data.getClass().isArray()) {
-      data = java.util.Arrays.asList((Object[])data);
+      data = java.util.Arrays.asList((Object[]) data);
     }
     List<?> list = (List<?>) data;
     return list;
   }
 
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME 
-        + "<" + listElementObjectInspector.getTypeName() + ">";
+    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<"
+        + listElementObjectInspector.getTypeName() + ">";
   }
 
-  ///////////////////////////////
+  // /////////////////////////////
   // SettableListObjectInspector
   @Override
   public Object create(int size) {
     List<Object> a = new ArrayList<Object>(size);
-    for (int i=0; i<size; i++) {
+    for (int i = 0; i < size; i++) {
       a.add(null);
     }
     return a;
@@ -115,19 +119,19 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
 
   @Override
   public Object resize(Object list, int newSize) {
-    List<Object> a = (List<Object>)list;
+    List<Object> a = (List<Object>) list;
     while (a.size() < newSize) {
       a.add(null);
     }
     while (a.size() > newSize) {
-      a.remove(a.size()-1);
+      a.remove(a.size() - 1);
     }
     return a;
   }
 
   @Override
   public Object set(Object list, int index, Object element) {
-    List<Object> a = (List<Object>)list;
+    List<Object> a = (List<Object>) list;
     a.set(index, element);
     return a;
   }

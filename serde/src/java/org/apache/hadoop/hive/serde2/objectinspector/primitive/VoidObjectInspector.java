@@ -19,10 +19,9 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A VoidObjectInspector can inspect a void object.
  */
 public interface VoidObjectInspector extends PrimitiveObjectInspector {
-  
+
 }

@@ -19,12 +19,12 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.io.Text;
 
-
 /**
  * A WritableStringObjectInspector inspects a Text Object.
  */
-public class WritableStringObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements SettableStringObjectInspector{
+public class WritableStringObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements
+    SettableStringObjectInspector {
 
   WritableStringObjectInspector() {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
@@ -32,17 +32,17 @@ implements SettableStringObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new Text((Text)o);
+    return o == null ? null : new Text((Text) o);
   }
 
   @Override
   public Text getPrimitiveWritableObject(Object o) {
-    return o == null ? null : (Text)o;
+    return o == null ? null : (Text) o;
   }
-  
+
   @Override
   public String getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((Text)o).toString();
+    return o == null ? null : ((Text) o).toString();
   }
 
   @Override
@@ -65,7 +65,7 @@ implements SettableStringObjectInspector{
 
   @Override
   public Object set(Object o, Text value) {
-    Text r = (Text)o;
+    Text r = (Text) o;
     if (value != null) {
       r.set(value);
     }
@@ -74,7 +74,7 @@ implements SettableStringObjectInspector{
 
   @Override
   public Object set(Object o, String value) {
-    Text r = (Text)o;
+    Text r = (Text) o;
     if (value != null) {
       r.set(value);
     }

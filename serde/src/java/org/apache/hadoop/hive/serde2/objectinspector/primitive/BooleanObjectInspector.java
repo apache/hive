@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A BooleanObjectInspector inspects an Object representing a Boolean.
  */
 public interface BooleanObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the boolean data.
    */

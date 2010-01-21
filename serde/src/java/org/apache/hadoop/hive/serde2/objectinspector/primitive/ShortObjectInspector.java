@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A ShortObjectInspector inspects an Object representing a Short.
  */
 public interface ShortObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the short data.
    */

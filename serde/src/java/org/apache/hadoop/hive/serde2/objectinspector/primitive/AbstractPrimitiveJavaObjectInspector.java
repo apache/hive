@@ -20,14 +20,15 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * An AbstractJavaPrimitiveObjectInspector for a Java object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public abstract class AbstractPrimitiveJavaObjectInspector extends
+    AbstractPrimitiveObjectInspector {
 
   protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
     super(typeEntry);
   }
-  
+
   @Override
   public Object getPrimitiveJavaObject(Object o) {
     return o;
@@ -37,7 +38,7 @@ public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimi
   public Object copyObject(Object o) {
     return o;
   }
-  
+
   @Override
   public boolean preferWritable() {
     return false;

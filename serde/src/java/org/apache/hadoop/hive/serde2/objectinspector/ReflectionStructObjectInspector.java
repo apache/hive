@@ -26,30 +26,35 @@ import java.util.Map;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
- * ReflectionStructObjectInspector works on struct data that is stored as a native Java object.
- * It will drill down into the Java class to get the fields and construct ObjectInspectors for 
- * the fields, if they are not specified.
+ * ReflectionStructObjectInspector works on struct data that is stored as a
+ * native Java object. It will drill down into the Java class to get the fields
+ * and construct ObjectInspectors for the fields, if they are not specified.
  * 
- * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
- * of directly creating an instance of this class. 
- *
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
+ * 
  */
-public class ReflectionStructObjectInspector extends SettableStructObjectInspector {
+public class ReflectionStructObjectInspector extends
+    SettableStructObjectInspector {
 
   public static class MyField implements StructField {
     protected Field field;
     protected ObjectInspector fieldObjectInspector;
-    
+
     public MyField(Field field, ObjectInspector fieldObjectInspector) {
       this.field = field;
       this.fieldObjectInspector = fieldObjectInspector;
     }
+
     public String getFieldName() {
       return field.getName().toLowerCase();
     }
+
     public ObjectInspector getFieldObjectInspector() {
       return fieldObjectInspector;
     }
+
+    @Override
     public String toString() {
       return field.toString();
     }
@@ -57,7 +62,7 @@ public class ReflectionStructObjectInspector extends SettableStructObjectInspect
 
   Class<?> objectClass;
   List<MyField> fields;
-  
+
   public Category getCategory() {
     return Category.STRUCT;
   }
@@ -65,52 +70,60 @@ public class ReflectionStructObjectInspector extends SettableStructObjectInspect
   public String getTypeName() {
     return objectClass.getName();
   }
-  
+
   /**
-   * This method is only intended to be used by the Utilities class in this package.
-   * This creates an uninitialized ObjectInspector so the Utilities class can put it into
-   * a cache before it initializes when it might look up the cache for member fields that
-   * might be of the same type (e.g. recursive type like linked list and trees).
+   * This method is only intended to be used by the Utilities class in this
+   * package. This creates an uninitialized ObjectInspector so the Utilities
+   * class can put it into a cache before it initializes when it might look up
+   * the cache for member fields that might be of the same type (e.g. recursive
+   * type like linked list and trees).
    */
   ReflectionStructObjectInspector() {
   }
-  
+
   /**
    * This method is only intended to be used by Utilities class in this package.
-   * The reason that this method is not recursive by itself is because we want to allow
-   * recursive types.
+   * The reason that this method is not recursive by itself is because we want
+   * to allow recursive types.
    */
-  void init(Class<?> objectClass, List<ObjectInspector> structFieldObjectInspectors) {
-    assert(!List.class.isAssignableFrom(objectClass));
-    assert(!Map.class.isAssignableFrom(objectClass));
-    
+  void init(Class<?> objectClass,
+      List<ObjectInspector> structFieldObjectInspectors) {
+    assert (!List.class.isAssignableFrom(objectClass));
+    assert (!Map.class.isAssignableFrom(objectClass));
+
     this.objectClass = objectClass;
-    Field[] reflectionFields = ObjectInspectorUtils.getDeclaredNonStaticFields(objectClass);
+    Field[] reflectionFields = ObjectInspectorUtils
+        .getDeclaredNonStaticFields(objectClass);
     fields = new ArrayList<MyField>(structFieldObjectInspectors.size());
     int used = 0;
-    for (int i=0; i<reflectionFields.length; i++) {
+    for (int i = 0; i < reflectionFields.length; i++) {
       if (!shouldIgnoreField(reflectionFields[i].getName())) {
         reflectionFields[i].setAccessible(true);
-        fields.add(new MyField(reflectionFields[i], structFieldObjectInspectors.get(used++)));
+        fields.add(new MyField(reflectionFields[i], structFieldObjectInspectors
+            .get(used++)));
       }
     }
-    assert(fields.size() == structFieldObjectInspectors.size());
+    assert (fields.size() == structFieldObjectInspectors.size());
   }
-  
-  // ThriftStructObjectInspector will override and ignore __isset fields. 
+
+  // ThriftStructObjectInspector will override and ignore __isset fields.
   public boolean shouldIgnoreField(String name) {
     return false;
   }
-  
+
   // Without Data
+  @Override
   public StructField getStructFieldRef(String fieldName) {
     return ObjectInspectorUtils.getStandardStructFieldRef(fieldName, fields);
   }
+
+  @Override
   public List<? extends StructField> getAllStructFieldRefs() {
     return fields;
   }
 
   // With Data
+  @Override
   public Object getStructFieldData(Object data, StructField fieldRef) {
     if (data == null) {
       return null;
@@ -123,22 +136,24 @@ public class ReflectionStructObjectInspector extends SettableStructObjectInspect
       Object r = f.field.get(data);
       return r;
     } catch (Exception e) {
-      throw new RuntimeException("cannot get field " + f.field + " from " 
-    		  + data.getClass() + " " + data, e); 
+      throw new RuntimeException("cannot get field " + f.field + " from "
+          + data.getClass() + " " + data, e);
     }
   }
+
+  @Override
   public List<Object> getStructFieldsDataAsList(Object data) {
     if (data == null) {
       return null;
     }
     try {
       ArrayList<Object> result = new ArrayList<Object>(fields.size());
-      for(int i=0; i<fields.size(); i++) {
+      for (int i = 0; i < fields.size(); i++) {
         result.add(fields.get(i).field.get(data));
       }
       return result;
     } catch (Exception e) {
-      throw new RuntimeException(e); 
+      throw new RuntimeException(e);
     }
   }
 
@@ -150,12 +165,12 @@ public class ReflectionStructObjectInspector extends SettableStructObjectInspect
   @Override
   public Object setStructFieldData(Object struct, StructField field,
       Object fieldValue) {
-    MyField myField = (MyField)field;
+    MyField myField = (MyField) field;
     try {
       myField.field.set(struct, fieldValue);
     } catch (Exception e) {
-      throw new RuntimeException("cannot set field " + myField.field + " of " 
-          + struct.getClass() + " " + struct, e); 
+      throw new RuntimeException("cannot set field " + myField.field + " of "
+          + struct.getClass() + " " + struct, e);
     }
     return struct;
   }

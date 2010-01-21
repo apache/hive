@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A DoubleObjectInspector inspects an Object representing a Double.
  */
 public interface DoubleObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the double data.
    */

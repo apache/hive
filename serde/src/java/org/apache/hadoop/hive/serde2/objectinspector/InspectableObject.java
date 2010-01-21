@@ -21,24 +21,24 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 /**
  * Simple wrapper of object with ObjectInspector.
  * 
- * TODO: we need to redefine the hashCode and equals methods, so that
- * it can be put into a HashMap as a key.
+ * TODO: we need to redefine the hashCode and equals methods, so that it can be
+ * put into a HashMap as a key.
  * 
- * This class also serves as a facility for a function that returns
- * both an object and an ObjectInspector.
+ * This class also serves as a facility for a function that returns both an
+ * object and an ObjectInspector.
  */
 public class InspectableObject {
 
   public Object o;
   public ObjectInspector oi;
-  
+
   public InspectableObject() {
-    this(null,null);
+    this(null, null);
   }
+
   public InspectableObject(Object o, ObjectInspector oi) {
     this.o = o;
     this.oi = oi;
   }
-  
 
 }

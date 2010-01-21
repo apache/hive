@@ -17,15 +17,17 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-public abstract class SettableStructObjectInspector extends StructObjectInspector {
-  
+public abstract class SettableStructObjectInspector extends
+    StructObjectInspector {
+
   /**
    * Create a struct which is not null, but all its fields are null.
    */
   public abstract Object create();
-  
+
   /**
-   * Modify the value of a field.  Returns the struct.
+   * Modify the value of a field. Returns the struct.
    */
-  public abstract Object setStructFieldData(Object struct, StructField field, Object fieldValue);
+  public abstract Object setStructFieldData(Object struct, StructField field,
+      Object fieldValue);
 }

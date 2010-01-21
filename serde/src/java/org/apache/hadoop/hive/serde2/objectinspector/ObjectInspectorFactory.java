@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -28,137 +27,152 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.event.ListSelectionEvent;
-
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
 
-
 /**
- * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
+ * ObjectInspectorFactory is the primary way to create new ObjectInspector
+ * instances.
  * 
- * SerDe classes should call the static functions in this library to create an ObjectInspector
- * to return to the caller of SerDe2.getObjectInspector().
+ * SerDe classes should call the static functions in this library to create an
+ * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  * 
- * The reason of having caches here is that ObjectInspector is because ObjectInspectors do
- * not have an internal state - so ObjectInspectors with the same construction parameters should
- * result in exactly the same ObjectInspector.
+ * The reason of having caches here is that ObjectInspector is because
+ * ObjectInspectors do not have an internal state - so ObjectInspectors with the
+ * same construction parameters should result in exactly the same
+ * ObjectInspector.
  */
 public class ObjectInspectorFactory {
 
-
   /**
-   * ObjectInspectorOptions describes what ObjectInspector to use. 
-   * JAVA is to use pure JAVA reflection. THRIFT is to use JAVA reflection and filter out __isset fields.
-   * New ObjectInspectorOptions can be added here when available.
+   * ObjectInspectorOptions describes what ObjectInspector to use. JAVA is to
+   * use pure JAVA reflection. THRIFT is to use JAVA reflection and filter out
+   * __isset fields. New ObjectInspectorOptions can be added here when
+   * available.
    * 
-   * We choose to use a single HashMap objectInspectorCache to cache all situations for efficiency and code 
-   * simplicity.  And we don't expect a case that a user need to create 2 or more different types of 
-   * ObjectInspectors for the same Java type.
+   * We choose to use a single HashMap objectInspectorCache to cache all
+   * situations for efficiency and code simplicity. And we don't expect a case
+   * that a user need to create 2 or more different types of ObjectInspectors
+   * for the same Java type.
    */
   public enum ObjectInspectorOptions {
-    JAVA,
-    THRIFT
+    JAVA, THRIFT
   };
-  
+
   private static HashMap<Type, ObjectInspector> objectInspectorCache = new HashMap<Type, ObjectInspector>();
-  
-  public static ObjectInspector getReflectionObjectInspector(Type t, ObjectInspectorOptions options) {
+
+  public static ObjectInspector getReflectionObjectInspector(Type t,
+      ObjectInspectorOptions options) {
     ObjectInspector oi = objectInspectorCache.get(t);
     if (oi == null) {
       oi = getReflectionObjectInspectorNoCache(t, options);
       objectInspectorCache.put(t, oi);
     }
-    if ((options.equals(ObjectInspectorOptions.JAVA) && oi.getClass().equals(ThriftStructObjectInspector.class))
-        || (options.equals(ObjectInspectorOptions.THRIFT) && oi.getClass().equals(ReflectionStructObjectInspector.class))) {
-      throw new RuntimeException("Cannot call getObjectInspectorByReflection with both JAVA and THRIFT !");
+    if ((options.equals(ObjectInspectorOptions.JAVA) && oi.getClass().equals(
+        ThriftStructObjectInspector.class))
+        || (options.equals(ObjectInspectorOptions.THRIFT) && oi.getClass()
+            .equals(ReflectionStructObjectInspector.class))) {
+      throw new RuntimeException(
+          "Cannot call getObjectInspectorByReflection with both JAVA and THRIFT !");
     }
     return oi;
   }
-  
-  private static ObjectInspector getReflectionObjectInspectorNoCache(Type t, ObjectInspectorOptions options) {
+
+  private static ObjectInspector getReflectionObjectInspectorNoCache(Type t,
+      ObjectInspectorOptions options) {
     if (t instanceof GenericArrayType) {
-      GenericArrayType at = (GenericArrayType)t;
-      return getStandardListObjectInspector(
-          getReflectionObjectInspector(at.getGenericComponentType(), options));
+      GenericArrayType at = (GenericArrayType) t;
+      return getStandardListObjectInspector(getReflectionObjectInspector(at
+          .getGenericComponentType(), options));
     }
 
     if (t instanceof ParameterizedType) {
-      ParameterizedType pt = (ParameterizedType)t;
+      ParameterizedType pt = (ParameterizedType) t;
       // List?
-      if (List.class.isAssignableFrom((Class<?>)pt.getRawType())) {
-        return getStandardListObjectInspector(
-            getReflectionObjectInspector(pt.getActualTypeArguments()[0], options));
+      if (List.class.isAssignableFrom((Class<?>) pt.getRawType())) {
+        return getStandardListObjectInspector(getReflectionObjectInspector(pt
+            .getActualTypeArguments()[0], options));
       }
       // Map?
-      if (Map.class.isAssignableFrom((Class<?>)pt.getRawType())) {
-        return getStandardMapObjectInspector(
-            getReflectionObjectInspector(pt.getActualTypeArguments()[0], options),
-            getReflectionObjectInspector(pt.getActualTypeArguments()[1], options));
+      if (Map.class.isAssignableFrom((Class<?>) pt.getRawType())) {
+        return getStandardMapObjectInspector(getReflectionObjectInspector(pt
+            .getActualTypeArguments()[0], options),
+            getReflectionObjectInspector(pt.getActualTypeArguments()[1],
+                options));
       }
-      // Otherwise convert t to RawType so we will fall into the following if block.
+      // Otherwise convert t to RawType so we will fall into the following if
+      // block.
       t = pt.getRawType();
     }
-    
+
     // Must be a class.
     if (!(t instanceof Class)) {
-      throw new RuntimeException(ObjectInspectorFactory.class.getName() + " internal error:"
-          + t); 
+      throw new RuntimeException(ObjectInspectorFactory.class.getName()
+          + " internal error:" + t);
     }
-    Class<?> c = (Class<?>)t;
-    
+    Class<?> c = (Class<?>) t;
+
     // Java Primitive Type?
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaType(c)) {
-      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaType(c).primitiveCategory);
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
+              .getTypeEntryFromPrimitiveJavaType(c).primitiveCategory);
     }
 
     // Java Primitive Class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(c)) {
-      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory);
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
+              .getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory);
     }
-    
+
     // Primitive Writable class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(c)) {
-      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
+              .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
     }
 
     // Must be struct because List and Map need to be ParameterizedType
-    assert(!List.class.isAssignableFrom(c));
-    assert(!Map.class.isAssignableFrom(c));
-    
+    assert (!List.class.isAssignableFrom(c));
+    assert (!Map.class.isAssignableFrom(c));
+
     // Create StructObjectInspector
     ReflectionStructObjectInspector oi;
-    switch(options) {
-    case JAVA: 
+    switch (options) {
+    case JAVA:
       oi = new ReflectionStructObjectInspector();
       break;
-    case THRIFT: 
+    case THRIFT:
       oi = new ThriftStructObjectInspector();
       break;
     default:
-      throw new RuntimeException(ObjectInspectorFactory.class.getName() + ": internal error."); 
+      throw new RuntimeException(ObjectInspectorFactory.class.getName()
+          + ": internal error.");
     }
-    // put it into the cache BEFORE it is initialized to make sure we can catch recursive types. 
+    // put it into the cache BEFORE it is initialized to make sure we can catch
+    // recursive types.
     objectInspectorCache.put(t, oi);
     Field[] fields = ObjectInspectorUtils.getDeclaredNonStaticFields(c);
-    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(fields.length);
-    for(int i=0; i<fields.length; i++) {
+    ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
+        fields.length);
+    for (int i = 0; i < fields.length; i++) {
       if (!oi.shouldIgnoreField(fields[i].getName())) {
-        structFieldObjectInspectors.add(getReflectionObjectInspector(fields[i].getGenericType(), options));
+        structFieldObjectInspectors.add(getReflectionObjectInspector(fields[i]
+            .getGenericType(), options));
       }
     }
     oi.init(c, structFieldObjectInspectors);
     return oi;
   }
-  
-  static HashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector =
-    new HashMap<ObjectInspector, StandardListObjectInspector>(); 
-  public static StandardListObjectInspector getStandardListObjectInspector(ObjectInspector listElementObjectInspector) {
-    StandardListObjectInspector result = cachedStandardListObjectInspector.get(listElementObjectInspector);
+
+  static HashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector = new HashMap<ObjectInspector, StandardListObjectInspector>();
+
+  public static StandardListObjectInspector getStandardListObjectInspector(
+      ObjectInspector listElementObjectInspector) {
+    StandardListObjectInspector result = cachedStandardListObjectInspector
+        .get(listElementObjectInspector);
     if (result == null) {
       result = new StandardListObjectInspector(listElementObjectInspector);
       cachedStandardListObjectInspector.put(listElementObjectInspector, result);
@@ -166,46 +180,54 @@ public class ObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector =
-    new HashMap<List<ObjectInspector>, StandardMapObjectInspector>(); 
-  public static StandardMapObjectInspector getStandardMapObjectInspector(ObjectInspector mapKeyObjectInspector, ObjectInspector mapValueObjectInspector) {
+  static HashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector = new HashMap<List<ObjectInspector>, StandardMapObjectInspector>();
+
+  public static StandardMapObjectInspector getStandardMapObjectInspector(
+      ObjectInspector mapKeyObjectInspector,
+      ObjectInspector mapValueObjectInspector) {
     ArrayList<ObjectInspector> signature = new ArrayList<ObjectInspector>(2);
     signature.add(mapKeyObjectInspector);
     signature.add(mapValueObjectInspector);
-    StandardMapObjectInspector result = cachedStandardMapObjectInspector.get(signature);
+    StandardMapObjectInspector result = cachedStandardMapObjectInspector
+        .get(signature);
     if (result == null) {
-      result = new StandardMapObjectInspector(mapKeyObjectInspector, mapValueObjectInspector);
+      result = new StandardMapObjectInspector(mapKeyObjectInspector,
+          mapValueObjectInspector);
       cachedStandardMapObjectInspector.put(signature, result);
     }
     return result;
   }
-  
-  static HashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector =
-    new HashMap<ArrayList<List<?>>, StandardStructObjectInspector>(); 
-  public static StandardStructObjectInspector getStandardStructObjectInspector(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors) {
+
+  static HashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector = new HashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
+
+  public static StandardStructObjectInspector getStandardStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors) {
     ArrayList<List<?>> signature = new ArrayList<List<?>>();
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    StandardStructObjectInspector result = cachedStandardStructObjectInspector.get(signature);
+    StandardStructObjectInspector result = cachedStandardStructObjectInspector
+        .get(signature);
     if (result == null) {
-      result = new StandardStructObjectInspector(structFieldNames, structFieldObjectInspectors);
+      result = new StandardStructObjectInspector(structFieldNames,
+          structFieldObjectInspectors);
       cachedStandardStructObjectInspector.put(signature, result);
     }
     return result;
   }
 
-  
-  static HashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =
-    new HashMap<List<StructObjectInspector>, UnionStructObjectInspector>(); 
-  public static UnionStructObjectInspector getUnionStructObjectInspector(List<StructObjectInspector> structObjectInspectors) {
-    UnionStructObjectInspector result = cachedUnionStructObjectInspector.get(structObjectInspectors);
+  static HashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector = new HashMap<List<StructObjectInspector>, UnionStructObjectInspector>();
+
+  public static UnionStructObjectInspector getUnionStructObjectInspector(
+      List<StructObjectInspector> structObjectInspectors) {
+    UnionStructObjectInspector result = cachedUnionStructObjectInspector
+        .get(structObjectInspectors);
     if (result == null) {
       result = new UnionStructObjectInspector(structObjectInspectors);
       cachedUnionStructObjectInspector.put(structObjectInspectors, result);
     }
     return result;
   }
-  
 
   static HashMap<ArrayList<Object>, ColumnarStructObjectInspector> cachedColumnarStructObjectInspector = new HashMap<ArrayList<Object>, ColumnarStructObjectInspector>();
 
@@ -225,5 +247,5 @@ public class ObjectInspectorFactory {
     }
     return result;
   }
-  
+
 }

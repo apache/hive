@@ -20,31 +20,31 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 public interface PrimitiveObjectInspector extends ObjectInspector {
 
   /**
-   * The primitive types supported by Hive. 
+   * The primitive types supported by Hive.
    */
   public static enum PrimitiveCategory {
     VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, UNKNOWN
   };
-  
+
   /**
    * Get the primitive category of the PrimitiveObjectInspector.
    */
   public PrimitiveCategory getPrimitiveCategory();
-  
+
   /**
-   * Get the Primitive Writable class which is the return type of 
+   * Get the Primitive Writable class which is the return type of
    * getPrimitiveWritableObject() and copyToPrimitiveWritableObject()
    */
   public Class<?> getPrimitiveWritableClass();
 
   /**
-   * Return the data in an instance of primitive writable Object.  If the 
-   * Object is already a primitive writable Object, just return o.
+   * Return the data in an instance of primitive writable Object. If the Object
+   * is already a primitive writable Object, just return o.
    */
   public Object getPrimitiveWritableObject(Object o);
-  
+
   /**
-   * Get the Java Primitive class which is the return type of 
+   * Get the Java Primitive class which is the return type of
    * getJavaPrimitiveObject().
    */
   public Class<?> getJavaPrimitiveClass();
@@ -53,21 +53,20 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * Get the Java Primitive object.
    */
   public Object getPrimitiveJavaObject(Object o);
-  
+
   /**
-   * Get a copy of the Object in the same class, so the return value can be 
+   * Get a copy of the Object in the same class, so the return value can be
    * stored independently of the parameter.
    * 
    * If the Object is a Primitive Java Object, we just return the parameter
    * since Primitive Java Object is immutable.
    */
   public Object copyObject(Object o);
-  
+
   /**
    * Whether the ObjectInspector prefers to return a Primitive Writable Object
-   * instead of a Primitive Java Object.
-   * This can be useful for determining the most efficient way to getting
-   * data out of the Object. 
+   * instead of a Primitive Java Object. This can be useful for determining the
+   * most efficient way to getting data out of the Object.
    */
   public boolean preferWritable();
 }

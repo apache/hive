@@ -65,6 +65,7 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
       return fieldObjectInspector;
     }
 
+    @Override
     public String toString() {
       return "" + fieldID + ":" + fieldName;
     }

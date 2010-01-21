@@ -20,17 +20,16 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.Text;
 
-
 /**
  * A StringObjectInspector inspects an Object representing a String.
  */
 public interface StringObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the Text representation of the data.
    */
   Text getPrimitiveWritableObject(Object o);
-  
+
   /**
    * Get the String representation of the data.
    */

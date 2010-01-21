@@ -19,12 +19,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-
 /**
  * A FloatObjectInspector inspects an Object representing a Float.
  */
 public interface FloatObjectInspector extends PrimitiveObjectInspector {
-  
+
   /**
    * Get the float data.
    */

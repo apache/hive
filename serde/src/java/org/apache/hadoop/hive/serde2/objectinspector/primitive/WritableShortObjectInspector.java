@@ -22,28 +22,29 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 /**
  * A WritableShortObjectInspector inspects a ShortWritable Object.
  */
-public class WritableShortObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements SettableShortObjectInspector{
+public class WritableShortObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements
+    SettableShortObjectInspector {
 
   WritableShortObjectInspector() {
     super(PrimitiveObjectInspectorUtils.shortTypeEntry);
   }
-  
+
   @Override
   public short get(Object o) {
-    return ((ShortWritable)o).get();
+    return ((ShortWritable) o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new ShortWritable(((ShortWritable)o).get());
+    return o == null ? null : new ShortWritable(((ShortWritable) o).get());
   }
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    return o == null ? null : Short.valueOf(((ShortWritable)o).get());
+    return o == null ? null : Short.valueOf(((ShortWritable) o).get());
   }
-  
+
   @Override
   public Object create(short value) {
     return new ShortWritable(value);
@@ -51,8 +52,8 @@ implements SettableShortObjectInspector{
 
   @Override
   public Object set(Object o, short value) {
-    ((ShortWritable)o).set(value);
+    ((ShortWritable) o).set(value);
     return o;
   }
-  
+
 }

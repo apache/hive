@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -42,58 +40,64 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
- * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
+ * ObjectInspectorFactory is the primary way to create new ObjectInspector
+ * instances.
  * 
- * SerDe classes should call the static functions in this library to create an ObjectInspector
- * to return to the caller of SerDe2.getObjectInspector(). 
+ * SerDe classes should call the static functions in this library to create an
+ * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  */
 public class PrimitiveObjectInspectorUtils {
 
-  private static Log LOG = LogFactory.getLog(PrimitiveObjectInspectorUtils.class.getName());
-  
+  private static Log LOG = LogFactory
+      .getLog(PrimitiveObjectInspectorUtils.class.getName());
+
   /**
    * TypeEntry stores information about a Hive Primitive TypeInfo.
    */
   public static class PrimitiveTypeEntry {
-    
+
     /**
      * The category of the PrimitiveType.
      */
     public PrimitiveObjectInspector.PrimitiveCategory primitiveCategory;
-    
+
     /**
-     * primitiveJavaType refers to java types like int, double, etc. 
+     * primitiveJavaType refers to java types like int, double, etc.
      */
     public Class<?> primitiveJavaType;
     /**
-     * primitiveJavaClass refers to java classes like Integer, Double, String etc.
+     * primitiveJavaClass refers to java classes like Integer, Double, String
+     * etc.
      */
     public Class<?> primitiveJavaClass;
     /**
-     * writableClass refers to hadoop Writable classes like IntWritable, DoubleWritable, Text etc. 
+     * writableClass refers to hadoop Writable classes like IntWritable,
+     * DoubleWritable, Text etc.
      */
     public Class<?> primitiveWritableClass;
     /**
      * typeName is the name of the type as in DDL.
      */
     public String typeName;
-    
-    PrimitiveTypeEntry(PrimitiveObjectInspector.PrimitiveCategory primitiveCategory, 
-        String typeName, Class<?> primitiveType, Class<?> javaClass, Class<?> hiveClass) {
+
+    PrimitiveTypeEntry(
+        PrimitiveObjectInspector.PrimitiveCategory primitiveCategory,
+        String typeName, Class<?> primitiveType, Class<?> javaClass,
+        Class<?> hiveClass) {
       this.primitiveCategory = primitiveCategory;
-      this.primitiveJavaType = primitiveType;
-      this.primitiveJavaClass = javaClass;
-      this.primitiveWritableClass = hiveClass;
+      primitiveJavaType = primitiveType;
+      primitiveJavaClass = javaClass;
+      primitiveWritableClass = hiveClass;
       this.typeName = typeName;
     }
   }
-  
+
   static final Map<PrimitiveCategory, PrimitiveTypeEntry> primitiveCategoryToTypeEntry = new HashMap<PrimitiveCategory, PrimitiveTypeEntry>();
   static final Map<Class<?>, PrimitiveTypeEntry> primitiveJavaTypeToTypeEntry = new HashMap<Class<?>, PrimitiveTypeEntry>();
   static final Map<Class<?>, PrimitiveTypeEntry> primitiveJavaClassToTypeEntry = new HashMap<Class<?>, PrimitiveTypeEntry>();
   static final Map<Class<?>, PrimitiveTypeEntry> primitiveWritableClassToTypeEntry = new HashMap<Class<?>, PrimitiveTypeEntry>();
   static final Map<String, PrimitiveTypeEntry> typeNameToTypeEntry = new HashMap<String, PrimitiveTypeEntry>();
-  
+
   static void registerType(PrimitiveTypeEntry t) {
     if (t.primitiveCategory != PrimitiveCategory.UNKNOWN) {
       primitiveCategoryToTypeEntry.put(t.primitiveCategory, t);
@@ -111,22 +115,41 @@ public class PrimitiveObjectInspectorUtils {
       typeNameToTypeEntry.put(t.typeName, t);
     }
   }
-  
-  public static final PrimitiveTypeEntry stringTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.STRING, Constants.STRING_TYPE_NAME, null, String.class, Text.class);
-  public static final PrimitiveTypeEntry booleanTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.BOOLEAN, Constants.BOOLEAN_TYPE_NAME, Boolean.TYPE, Boolean.class, BooleanWritable.class);
-  public static final PrimitiveTypeEntry intTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.INT, Constants.INT_TYPE_NAME, Integer.TYPE, Integer.class, IntWritable.class);
-  public static final PrimitiveTypeEntry longTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.LONG, Constants.BIGINT_TYPE_NAME, Long.TYPE, Long.class, LongWritable.class);
-  public static final PrimitiveTypeEntry floatTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.FLOAT, Constants.FLOAT_TYPE_NAME, Float.TYPE, Float.class, FloatWritable.class);
-  public static final PrimitiveTypeEntry voidTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.VOID, Constants.VOID_TYPE_NAME, Void.TYPE, Void.class, NullWritable.class);
+
+  public static final PrimitiveTypeEntry stringTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.STRING, Constants.STRING_TYPE_NAME, null, String.class,
+      Text.class);
+  public static final PrimitiveTypeEntry booleanTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.BOOLEAN, Constants.BOOLEAN_TYPE_NAME, Boolean.TYPE,
+      Boolean.class, BooleanWritable.class);
+  public static final PrimitiveTypeEntry intTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.INT, Constants.INT_TYPE_NAME, Integer.TYPE,
+      Integer.class, IntWritable.class);
+  public static final PrimitiveTypeEntry longTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.LONG, Constants.BIGINT_TYPE_NAME, Long.TYPE,
+      Long.class, LongWritable.class);
+  public static final PrimitiveTypeEntry floatTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.FLOAT, Constants.FLOAT_TYPE_NAME, Float.TYPE,
+      Float.class, FloatWritable.class);
+  public static final PrimitiveTypeEntry voidTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.VOID, Constants.VOID_TYPE_NAME, Void.TYPE, Void.class,
+      NullWritable.class);
 
   // No corresponding Writable classes for the following 3 in hadoop 0.17.0
-  public static final PrimitiveTypeEntry doubleTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.DOUBLE, Constants.DOUBLE_TYPE_NAME, Double.TYPE, Double.class, DoubleWritable.class);
-  public static final PrimitiveTypeEntry byteTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.BYTE, Constants.TINYINT_TYPE_NAME, Byte.TYPE, Byte.class, ByteWritable.class);
-  public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE, Short.class, ShortWritable.class);
+  public static final PrimitiveTypeEntry doubleTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.DOUBLE, Constants.DOUBLE_TYPE_NAME, Double.TYPE,
+      Double.class, DoubleWritable.class);
+  public static final PrimitiveTypeEntry byteTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.BYTE, Constants.TINYINT_TYPE_NAME, Byte.TYPE,
+      Byte.class, ByteWritable.class);
+  public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE,
+      Short.class, ShortWritable.class);
 
   // The following is a complex type for special handling
-  public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.UNKNOWN, "unknown", null, Object.class, null);
-  
+  public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.UNKNOWN, "unknown", null, Object.class, null);
+
   static {
     registerType(stringTypeEntry);
     registerType(booleanTypeEntry);
@@ -141,7 +164,8 @@ public class PrimitiveObjectInspectorUtils {
   }
 
   /**
-   * Return Whether the class is a Java Primitive type or a Java Primitive class. 
+   * Return Whether the class is a Java Primitive type or a Java Primitive
+   * class.
    */
   public static Class<?> primitiveJavaTypeToClass(Class<?> clazz) {
     PrimitiveTypeEntry t = primitiveJavaTypeToTypeEntry.get(clazz);
@@ -149,36 +173,36 @@ public class PrimitiveObjectInspectorUtils {
   }
 
   /**
-   * Whether the class is a Java Primitive type or a Java Primitive class. 
+   * Whether the class is a Java Primitive type or a Java Primitive class.
    */
   public static boolean isPrimitiveJava(Class<?> clazz) {
     return primitiveJavaTypeToTypeEntry.get(clazz) != null
-           || primitiveJavaClassToTypeEntry.get(clazz) != null;
+        || primitiveJavaClassToTypeEntry.get(clazz) != null;
   }
-  
+
   /**
-   * Whether the class is a Java Primitive type. 
+   * Whether the class is a Java Primitive type.
    */
   public static boolean isPrimitiveJavaType(Class<?> clazz) {
     return primitiveJavaTypeToTypeEntry.get(clazz) != null;
   }
 
   /**
-   * Whether the class is a Java Primitive class. 
+   * Whether the class is a Java Primitive class.
    */
   public static boolean isPrimitiveJavaClass(Class<?> clazz) {
     return primitiveJavaClassToTypeEntry.get(clazz) != null;
   }
 
   /**
-   * Whether the class is a Hive Primitive Writable class. 
+   * Whether the class is a Hive Primitive Writable class.
    */
   public static boolean isPrimitiveWritableClass(Class<?> clazz) {
     return primitiveWritableClassToTypeEntry.get(clazz) != null;
   }
-  
+
   /**
-   * Get the typeName from a Java Primitive Type or Java PrimitiveClass. 
+   * Get the typeName from a Java Primitive Type or Java PrimitiveClass.
    */
   public static String getTypeNameFromPrimitiveJava(Class<?> clazz) {
     PrimitiveTypeEntry t = primitiveJavaTypeToTypeEntry.get(clazz);
@@ -187,9 +211,9 @@ public class PrimitiveObjectInspectorUtils {
     }
     return t == null ? null : t.typeName;
   }
-  
+
   /**
-   * Get the typeName from a Primitive Writable Class. 
+   * Get the typeName from a Primitive Writable Class.
    */
   public static String getTypeNameFromPrimitiveWritable(Class<?> clazz) {
     PrimitiveTypeEntry t = primitiveWritableClassToTypeEntry.get(clazz);
@@ -197,14 +221,15 @@ public class PrimitiveObjectInspectorUtils {
   }
 
   /**
-   * Get the typeName from a Java Primitive Type or Java PrimitiveClass. 
+   * Get the typeName from a Java Primitive Type or Java PrimitiveClass.
    */
-  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveCategory(PrimitiveCategory category) {
+  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveCategory(
+      PrimitiveCategory category) {
     return primitiveCategoryToTypeEntry.get(category);
   }
-  
+
   /**
-   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass. 
+   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass.
    */
   public static PrimitiveTypeEntry getTypeEntryFromPrimitiveJava(Class<?> clazz) {
     PrimitiveTypeEntry t = primitiveJavaTypeToTypeEntry.get(clazz);
@@ -213,449 +238,473 @@ public class PrimitiveObjectInspectorUtils {
     }
     return t;
   }
-  
+
   /**
-   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass. 
+   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass.
    */
-  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveJavaType(Class<?> clazz) {
+  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveJavaType(
+      Class<?> clazz) {
     return primitiveJavaTypeToTypeEntry.get(clazz);
   }
-  
+
   /**
-   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass. 
+   * Get the TypeEntry for a Java Primitive Type or Java PrimitiveClass.
    */
-  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveJavaClass(Class<?> clazz) {
+  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveJavaClass(
+      Class<?> clazz) {
     return primitiveJavaClassToTypeEntry.get(clazz);
   }
-  
+
   /**
-   * Get the TypeEntry for a Primitive Writable Class. 
+   * Get the TypeEntry for a Primitive Writable Class.
    */
-  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveWritableClass(Class<?> clazz) {
+  public static PrimitiveTypeEntry getTypeEntryFromPrimitiveWritableClass(
+      Class<?> clazz) {
     return primitiveWritableClassToTypeEntry.get(clazz);
   }
-  
+
   /**
-   * Get the TypeEntry for a Primitive Writable Class. 
+   * Get the TypeEntry for a Primitive Writable Class.
    */
   public static PrimitiveTypeEntry getTypeEntryFromTypeName(String typeName) {
     return typeNameToTypeEntry.get(typeName);
   }
-  
+
   /**
-   * Compare 2 primitive objects. Conversion not allowed.
-   * Note that NULL does not equal to NULL according to SQL standard.
+   * Compare 2 primitive objects. Conversion not allowed. Note that NULL does
+   * not equal to NULL according to SQL standard.
    */
-  public static boolean comparePrimitiveObjects(Object o1, PrimitiveObjectInspector oi1,
-      Object o2, PrimitiveObjectInspector oi2) {
-    if (o1 == null || o2 == null) return false;
-    
+  public static boolean comparePrimitiveObjects(Object o1,
+      PrimitiveObjectInspector oi1, Object o2, PrimitiveObjectInspector oi2) {
+    if (o1 == null || o2 == null) {
+      return false;
+    }
+
     if (oi1.getPrimitiveCategory() != oi2.getPrimitiveCategory()) {
       return false;
     }
     switch (oi1.getPrimitiveCategory()) {
-      case BOOLEAN: {
-        return ((BooleanObjectInspector)oi1).get(o1) == ((BooleanObjectInspector)oi2).get(o2);
-      }
-      case BYTE: {
-        return ((ByteObjectInspector)oi1).get(o1) == ((ByteObjectInspector)oi2).get(o2);
-      }
-      case SHORT: {
-        return ((ShortObjectInspector)oi1).get(o1) == ((ShortObjectInspector)oi2).get(o2);
-      }
-      case INT: {
-        return ((IntObjectInspector)oi1).get(o1) == ((IntObjectInspector)oi2).get(o2);
-      }
-      case LONG: {
-        return ((LongObjectInspector)oi1).get(o1) == ((LongObjectInspector)oi2).get(o2);
-      }
-      case FLOAT: {
-        return ((FloatObjectInspector)oi1).get(o1) == ((FloatObjectInspector)oi2).get(o2);
-      }
-      case DOUBLE: {
-        return ((DoubleObjectInspector)oi1).get(o1) == ((DoubleObjectInspector)oi2).get(o2);
-      }
-      case STRING: {
-        Writable t1 = ((StringObjectInspector)oi1).getPrimitiveWritableObject(o1);
-        Writable t2 = ((StringObjectInspector)oi2).getPrimitiveWritableObject(o2);
-        return t1.equals(t2);
-      }
-      default:
-        return false;
+    case BOOLEAN: {
+      return ((BooleanObjectInspector) oi1).get(o1) == ((BooleanObjectInspector) oi2)
+          .get(o2);
+    }
+    case BYTE: {
+      return ((ByteObjectInspector) oi1).get(o1) == ((ByteObjectInspector) oi2)
+          .get(o2);
+    }
+    case SHORT: {
+      return ((ShortObjectInspector) oi1).get(o1) == ((ShortObjectInspector) oi2)
+          .get(o2);
+    }
+    case INT: {
+      return ((IntObjectInspector) oi1).get(o1) == ((IntObjectInspector) oi2)
+          .get(o2);
+    }
+    case LONG: {
+      return ((LongObjectInspector) oi1).get(o1) == ((LongObjectInspector) oi2)
+          .get(o2);
+    }
+    case FLOAT: {
+      return ((FloatObjectInspector) oi1).get(o1) == ((FloatObjectInspector) oi2)
+          .get(o2);
+    }
+    case DOUBLE: {
+      return ((DoubleObjectInspector) oi1).get(o1) == ((DoubleObjectInspector) oi2)
+          .get(o2);
+    }
+    case STRING: {
+      Writable t1 = ((StringObjectInspector) oi1)
+          .getPrimitiveWritableObject(o1);
+      Writable t2 = ((StringObjectInspector) oi2)
+          .getPrimitiveWritableObject(o2);
+      return t1.equals(t2);
+    }
+    default:
+      return false;
     }
   }
-  
 
-  /** Convert a primitive object to double.
+  /**
+   * Convert a primitive object to double.
    */
-  public static double convertPrimitiveToDouble(Object o, PrimitiveObjectInspector oi) 
-      throws NumberFormatException {
+  public static double convertPrimitiveToDouble(Object o,
+      PrimitiveObjectInspector oi) throws NumberFormatException {
     switch (oi.getPrimitiveCategory()) {
-      case BOOLEAN: {
-        return ((BooleanObjectInspector)oi).get(o) ? 1 : 0;
-      }
-      case BYTE: {
-        return ((ByteObjectInspector)oi).get(o);
-      }
-      case SHORT: {
-        return ((ShortObjectInspector)oi).get(o);
-      }
-      case INT: {
-        return ((IntObjectInspector)oi).get(o);
-      }
-      case LONG: {
-        return ((LongObjectInspector)oi).get(o);
-      }
-      case FLOAT: {
-        return ((FloatObjectInspector)oi).get(o);
-      }
-      case DOUBLE: {
-        return ((DoubleObjectInspector)oi).get(o);
-      }
-      case STRING: {
-        return Double.valueOf(((StringObjectInspector)oi).getPrimitiveJavaObject(o));
-      }
-      default:
-        throw new NumberFormatException();
+    case BOOLEAN: {
+      return ((BooleanObjectInspector) oi).get(o) ? 1 : 0;
+    }
+    case BYTE: {
+      return ((ByteObjectInspector) oi).get(o);
+    }
+    case SHORT: {
+      return ((ShortObjectInspector) oi).get(o);
+    }
+    case INT: {
+      return ((IntObjectInspector) oi).get(o);
+    }
+    case LONG: {
+      return ((LongObjectInspector) oi).get(o);
+    }
+    case FLOAT: {
+      return ((FloatObjectInspector) oi).get(o);
+    }
+    case DOUBLE: {
+      return ((DoubleObjectInspector) oi).get(o);
+    }
+    case STRING: {
+      return Double.valueOf(((StringObjectInspector) oi)
+          .getPrimitiveJavaObject(o));
+    }
+    default:
+      throw new NumberFormatException();
     }
   }
-  
+
   /**
-   * Compare 2 Primitive Objects with their Object Inspector, conversions allowed.
-   * Note that NULL does not equal to NULL according to SQL standard.
+   * Compare 2 Primitive Objects with their Object Inspector, conversions
+   * allowed. Note that NULL does not equal to NULL according to SQL standard.
    */
-  public static boolean comparePrimitiveObjectsWithConversion(Object o1, PrimitiveObjectInspector oi1,
-      Object o2, PrimitiveObjectInspector oi2) {
-    if (o1 == null || o2 == null) return false;
-    
+  public static boolean comparePrimitiveObjectsWithConversion(Object o1,
+      PrimitiveObjectInspector oi1, Object o2, PrimitiveObjectInspector oi2) {
+    if (o1 == null || o2 == null) {
+      return false;
+    }
+
     if (oi1.getPrimitiveCategory() == oi2.getPrimitiveCategory()) {
       return comparePrimitiveObjects(o1, oi1, o2, oi2);
     }
-    
+
     // If not equal, convert all to double and compare
     try {
-      return convertPrimitiveToDouble(o1, oi1) == convertPrimitiveToDouble(o2, oi2);
+      return convertPrimitiveToDouble(o1, oi1) == convertPrimitiveToDouble(o2,
+          oi2);
     } catch (NumberFormatException e) {
       return false;
     }
   }
-  
+
   /**
-   * Get the boolean value out of a primitive object.
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the boolean value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static boolean getBoolean(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+  public static boolean getBoolean(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
     boolean result = false;
     switch (oi.getPrimitiveCategory()) {
-      case VOID: {
-        result = false;
-        break;
+    case VOID: {
+      result = false;
+      break;
+    }
+    case BOOLEAN: {
+      result = ((BooleanObjectInspector) oi).get(o);
+      break;
+    }
+    case BYTE: {
+      result = ((ByteObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case SHORT: {
+      result = ((ShortObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case INT: {
+      result = ((IntObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case LONG: {
+      result = (int) ((LongObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case FLOAT: {
+      result = (int) ((FloatObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case DOUBLE: {
+      result = (int) ((DoubleObjectInspector) oi).get(o) != 0;
+      break;
+    }
+    case STRING: {
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      if (soi.preferWritable()) {
+        Text t = soi.getPrimitiveWritableObject(o);
+        result = t.getLength() != 0;
+      } else {
+        String s = soi.getPrimitiveJavaObject(o);
+        result = s.length() != 0;
       }
-      case BOOLEAN: {
-        result = ((BooleanObjectInspector)oi).get(o);
-        break;
-      }
-      case BYTE: {
-        result = ((ByteObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case SHORT: {
-        result = ((ShortObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case INT: {
-        result = ((IntObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case LONG: {
-        result = (int)((LongObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case FLOAT: {
-        result = (int)((FloatObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case DOUBLE: {
-        result = (int)((DoubleObjectInspector)oi).get(o) != 0;
-        break;
-      }
-      case STRING: {
-        StringObjectInspector soi = (StringObjectInspector)oi;
-        if (soi.preferWritable()) {
-          Text t = soi.getPrimitiveWritableObject(o);
-          result = t.getLength() != 0;
-        } else {
-          String s = soi.getPrimitiveJavaObject(o);
-          result = s.length() != 0;
-        }
-        break;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
+      break;
+    }
+    default: {
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
     }
     return result;
   }
-  
+
   /**
-   * Get the byte value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the byte value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static byte getByte(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
-    return (byte)getInt(o, oi);
+  public static byte getByte(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
+    return (byte) getInt(o, oi);
   }
-  
+
   /**
-   * Get the short value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the short value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static short getShort(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
-    return (short)getInt(o, oi);
+  public static short getShort(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
+    return (short) getInt(o, oi);
   }
-  
+
   /**
-   * Get the integer value out of a primitive object.
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the integer value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static int getInt(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+  public static int getInt(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
     int result = 0;
     switch (oi.getPrimitiveCategory()) {
-      case VOID: {
-        result = 0;
-        break;
+    case VOID: {
+      result = 0;
+      break;
+    }
+    case BOOLEAN: {
+      result = (((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      break;
+    }
+    case BYTE: {
+      result = ((ByteObjectInspector) oi).get(o);
+      break;
+    }
+    case SHORT: {
+      result = ((ShortObjectInspector) oi).get(o);
+      break;
+    }
+    case INT: {
+      result = ((IntObjectInspector) oi).get(o);
+      break;
+    }
+    case LONG: {
+      result = (int) ((LongObjectInspector) oi).get(o);
+      break;
+    }
+    case FLOAT: {
+      result = (int) ((FloatObjectInspector) oi).get(o);
+      break;
+    }
+    case DOUBLE: {
+      result = (int) ((DoubleObjectInspector) oi).get(o);
+      break;
+    }
+    case STRING: {
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      if (soi.preferWritable()) {
+        Text t = soi.getPrimitiveWritableObject(o);
+        result = LazyInteger.parseInt(t.getBytes(), 0, t.getLength());
+      } else {
+        String s = soi.getPrimitiveJavaObject(o);
+        result = Integer.parseInt(s);
       }
-      case BOOLEAN: {
-        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
-        break;
-      }
-      case BYTE: {
-        result = ((ByteObjectInspector)oi).get(o);
-        break;
-      }
-      case SHORT: {
-        result = ((ShortObjectInspector)oi).get(o);
-        break;
-      }
-      case INT: {
-        result = ((IntObjectInspector)oi).get(o);
-        break;
-      }
-      case LONG: {
-        result = (int)((LongObjectInspector)oi).get(o);
-        break;
-      }
-      case FLOAT: {
-        result = (int)((FloatObjectInspector)oi).get(o);
-        break;
-      }
-      case DOUBLE: {
-        result = (int)((DoubleObjectInspector)oi).get(o);
-        break;
-      }
-      case STRING: {
-        StringObjectInspector soi = (StringObjectInspector)oi;
-        if (soi.preferWritable()) {
-          Text t = soi.getPrimitiveWritableObject(o);
-          result = LazyInteger.parseInt(t.getBytes(), 0, t.getLength());
-        } else {
-          String s = soi.getPrimitiveJavaObject(o);
-          result = Integer.parseInt(s);
-        }
-        break;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
+      break;
+    }
+    default: {
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
     }
     return result;
   }
 
-  
   /**
-   * Get the long value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the long value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static long getLong(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+  public static long getLong(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
     long result = 0;
     switch (oi.getPrimitiveCategory()) {
-      case VOID: {
-        result = 0;
-        break;
+    case VOID: {
+      result = 0;
+      break;
+    }
+    case BOOLEAN: {
+      result = (((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      break;
+    }
+    case BYTE: {
+      result = ((ByteObjectInspector) oi).get(o);
+      break;
+    }
+    case SHORT: {
+      result = ((ShortObjectInspector) oi).get(o);
+      break;
+    }
+    case INT: {
+      result = ((IntObjectInspector) oi).get(o);
+      break;
+    }
+    case LONG: {
+      result = ((LongObjectInspector) oi).get(o);
+      break;
+    }
+    case FLOAT: {
+      result = (long) ((FloatObjectInspector) oi).get(o);
+      break;
+    }
+    case DOUBLE: {
+      result = (long) ((DoubleObjectInspector) oi).get(o);
+      break;
+    }
+    case STRING: {
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      if (soi.preferWritable()) {
+        Text t = soi.getPrimitiveWritableObject(o);
+        result = LazyLong.parseLong(t.getBytes(), 0, t.getLength());
+      } else {
+        String s = soi.getPrimitiveJavaObject(o);
+        result = Long.parseLong(s);
       }
-      case BOOLEAN: {
-        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
-        break;
-      }
-      case BYTE: {
-        result = ((ByteObjectInspector)oi).get(o);
-        break;
-      }
-      case SHORT: {
-        result = ((ShortObjectInspector)oi).get(o);
-        break;
-      }
-      case INT: {
-        result = ((IntObjectInspector)oi).get(o);
-        break;
-      }
-      case LONG: {
-        result = ((LongObjectInspector)oi).get(o);
-        break;
-      }
-      case FLOAT: {
-        result = (long)((FloatObjectInspector)oi).get(o);
-        break;
-      }
-      case DOUBLE: {
-        result = (long)((DoubleObjectInspector)oi).get(o);
-        break;
-      }
-      case STRING: {
-        StringObjectInspector soi = (StringObjectInspector)oi;
-        if (soi.preferWritable()) {
-          Text t = soi.getPrimitiveWritableObject(o);
-          result = LazyLong.parseLong(t.getBytes(), 0, t.getLength());
-        } else {
-          String s = soi.getPrimitiveJavaObject(o);
-          result = Long.parseLong(s);
-        }
-        break;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
+      break;
+    }
+    default: {
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
     }
     return result;
   }
-  
+
   /**
-   * Get the double value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the double value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static double getDouble(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+  public static double getDouble(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
     double result = 0;
     switch (oi.getPrimitiveCategory()) {
-      case VOID: {
-        result = 0;
-        break;
-      }
-      case BOOLEAN: {
-        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
-        break;
-      }
-      case BYTE: {
-        result = ((ByteObjectInspector)oi).get(o);
-        break;
-      }
-      case SHORT: {
-        result = ((ShortObjectInspector)oi).get(o);
-        break;
-      }
-      case INT: {
-        result = ((IntObjectInspector)oi).get(o);
-        break;
-      }
-      case LONG: {
-        result = ((LongObjectInspector)oi).get(o);
-        break;
-      }
-      case FLOAT: {
-        result = ((FloatObjectInspector)oi).get(o);
-        break;
-      }
-      case DOUBLE: {
-        result = ((DoubleObjectInspector)oi).get(o);
-        break;
-      }
-      case STRING: {
-        StringObjectInspector soi = (StringObjectInspector)oi;
-        String s = soi.getPrimitiveJavaObject(o);
-        result = Double.parseDouble(s);
-        break;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
+    case VOID: {
+      result = 0;
+      break;
+    }
+    case BOOLEAN: {
+      result = (((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      break;
+    }
+    case BYTE: {
+      result = ((ByteObjectInspector) oi).get(o);
+      break;
+    }
+    case SHORT: {
+      result = ((ShortObjectInspector) oi).get(o);
+      break;
+    }
+    case INT: {
+      result = ((IntObjectInspector) oi).get(o);
+      break;
+    }
+    case LONG: {
+      result = ((LongObjectInspector) oi).get(o);
+      break;
+    }
+    case FLOAT: {
+      result = ((FloatObjectInspector) oi).get(o);
+      break;
+    }
+    case DOUBLE: {
+      result = ((DoubleObjectInspector) oi).get(o);
+      break;
+    }
+    case STRING: {
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      String s = soi.getPrimitiveJavaObject(o);
+      result = Double.parseDouble(s);
+      break;
+    }
+    default: {
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
     }
     return result;
-  }    
-
-  /**
-   * Get the float value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
-   */
-  public static float getFloat(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
-    return (float)getDouble(o, oi);
   }
 
+  /**
+   * Get the float value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static float getFloat(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
+    return (float) getDouble(o, oi);
+  }
 
   /**
-   * Get the String value out of a primitive object. 
-   * Note that NullPointerException will be thrown if o is null.
-   * Note that NumberFormatException will be thrown if o is not a valid number.
+   * Get the String value out of a primitive object. Note that
+   * NullPointerException will be thrown if o is null. Note that
+   * NumberFormatException will be thrown if o is not a valid number.
    */
-  public static String getString(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
-    
+  public static String getString(Object o, PrimitiveObjectInspector oi)
+      throws NumberFormatException {
+
     if (o == null) {
       return null;
     }
-    
+
     String result = null;
     switch (oi.getPrimitiveCategory()) {
-      case VOID: {
-        result = null;
-        break;
-      }
-      case BOOLEAN: {
-        result = String.valueOf((((BooleanObjectInspector)oi).get(o)));
-        break;
-      }
-      case BYTE: {
-        result = String.valueOf((((ByteObjectInspector)oi).get(o)));
-        break;
-      }
-      case SHORT: {
-        result = String.valueOf((((ShortObjectInspector)oi).get(o)));
-        break;
-      }
-      case INT: {
-        result = String.valueOf((((IntObjectInspector)oi).get(o)));
-        break;
-      }
-      case LONG: {
-        result = String.valueOf((((LongObjectInspector)oi).get(o)));
-        break;
-      }
-      case FLOAT: {
-        result = String.valueOf((((FloatObjectInspector)oi).get(o)));
-        break;
-      }
-      case DOUBLE: {
-        result = String.valueOf((((DoubleObjectInspector)oi).get(o)));
-        break;
-      }
-      case STRING: {
-        StringObjectInspector soi = (StringObjectInspector)oi;
-        result = soi.getPrimitiveJavaObject(o);
-        break;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: unknown type: "
-            + oi.getTypeName());
-      }
+    case VOID: {
+      result = null;
+      break;
+    }
+    case BOOLEAN: {
+      result = String.valueOf((((BooleanObjectInspector) oi).get(o)));
+      break;
+    }
+    case BYTE: {
+      result = String.valueOf((((ByteObjectInspector) oi).get(o)));
+      break;
+    }
+    case SHORT: {
+      result = String.valueOf((((ShortObjectInspector) oi).get(o)));
+      break;
+    }
+    case INT: {
+      result = String.valueOf((((IntObjectInspector) oi).get(o)));
+      break;
+    }
+    case LONG: {
+      result = String.valueOf((((LongObjectInspector) oi).get(o)));
+      break;
+    }
+    case FLOAT: {
+      result = String.valueOf((((FloatObjectInspector) oi).get(o)));
+      break;
+    }
+    case DOUBLE: {
+      result = String.valueOf((((DoubleObjectInspector) oi).get(o)));
+      break;
+    }
+    case STRING: {
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      result = soi.getPrimitiveJavaObject(o);
+      break;
+    }
+    default: {
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
     }
     return result;
-  }    
-  
+  }
+
 }

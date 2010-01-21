@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 /**
  * 
- * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
- * of directly creating an instance of this class. 
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
-class ThriftStructObjectInspector extends
-    ReflectionStructObjectInspector {
+class ThriftStructObjectInspector extends ReflectionStructObjectInspector {
 
+  @Override
   public boolean shouldIgnoreField(String name) {
     return name.startsWith("__isset");
   }
-  
+
 }

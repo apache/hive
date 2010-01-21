@@ -23,17 +23,17 @@ public interface SettableMapObjectInspector extends MapObjectInspector {
    * Create an empty map.
    */
   public Object create();
-  
+
   /**
    * Add a key-value pair to the map. Return the map.
    */
   public Object put(Object map, Object key, Object value);
-  
+
   /**
    * Remove a key-value pair from the map. Return the map.
    */
   public Object remove(Object map, Object key);
-  
+
   /**
    * Clear the map. Return the map.
    */

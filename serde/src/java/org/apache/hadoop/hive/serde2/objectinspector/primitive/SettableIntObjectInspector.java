@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-
 /**
  * A SettableIntObjectInspector can set an int value to an object.
  */
@@ -26,11 +25,11 @@ public interface SettableIntObjectInspector extends IntObjectInspector {
   /**
    * Set the object with the value. Return the object that has the new value.
    * 
-   * In most cases the returned value should be the same as o, but in case 
-   * o is unmodifiable, this will return a new object with new value.    
+   * In most cases the returned value should be the same as o, but in case o is
+   * unmodifiable, this will return a new object with new value.
    */
   public Object set(Object o, int value);
-  
+
   /**
    * Create an object with the value.
    */

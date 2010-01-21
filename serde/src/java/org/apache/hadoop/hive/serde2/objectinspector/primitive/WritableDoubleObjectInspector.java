@@ -17,33 +17,32 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-
 
 /**
  * A WritableDoubleObjectInspector inspects a DoubleWritable Object.
  */
-public class WritableDoubleObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements SettableDoubleObjectInspector{
+public class WritableDoubleObjectInspector extends
+    AbstractPrimitiveWritableObjectInspector implements
+    SettableDoubleObjectInspector {
 
   WritableDoubleObjectInspector() {
     super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
   }
-  
+
   @Override
   public double get(Object o) {
-    return ((DoubleWritable)o).get();
+    return ((DoubleWritable) o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new DoubleWritable(((DoubleWritable)o).get());
+    return o == null ? null : new DoubleWritable(((DoubleWritable) o).get());
   }
 
   @Override
   public Object getPrimitiveJavaObject(Object o) {
-    return o == null ? null : Double.valueOf(((DoubleWritable)o).get());
+    return o == null ? null : Double.valueOf(((DoubleWritable) o).get());
   }
 
   @Override
@@ -53,8 +52,8 @@ implements SettableDoubleObjectInspector{
 
   @Override
   public Object set(Object o, double value) {
-    ((DoubleWritable)o).set(value);
+    ((DoubleWritable) o).set(value);
     return o;
   }
-  
+
 }
