@@ -18,12 +18,12 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.WritableComparator;
 
 /**
  * LazyPrimitive stores a primitive Object in a LazyObject.
  */
-public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyObject<OI> {
+public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends
+    LazyObject<OI> {
 
   protected ByteArrayRef bytes;
   protected int start;
@@ -31,12 +31,14 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyO
 
   /**
    * Create a LazyNonPrimitive object with the specified ObjectInspector.
-   * @param oi  The ObjectInspector would have to have a hierarchy of 
-   *            LazyObjectInspectors with the leaf nodes being 
-   *            WritableObjectInspectors.  It's used both for accessing the
-   *            type hierarchy of the complex object, as well as getting
-   *            meta information (separator, nullSequence, etc) when parsing
-   *            the lazy object.
+   * 
+   * @param oi
+   *          The ObjectInspector would have to have a hierarchy of
+   *          LazyObjectInspectors with the leaf nodes being
+   *          WritableObjectInspectors. It's used both for accessing the type
+   *          hierarchy of the complex object, as well as getting meta
+   *          information (separator, nullSequence, etc) when parsing the lazy
+   *          object.
    */
   protected LazyNonPrimitive(OI oi) {
     super(oi);
@@ -44,7 +46,7 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyO
     start = 0;
     length = 0;
   }
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     if (bytes == null) {
@@ -59,9 +61,10 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyO
 
   @Override
   public Object getObject() {
-    return this; 
+    return this;
   }
-  
+
+  @Override
   public int hashCode() {
     return LazyUtils.hashBytes(bytes.getData(), start, length);
   }

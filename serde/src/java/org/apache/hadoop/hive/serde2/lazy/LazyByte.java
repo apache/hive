@@ -33,7 +33,8 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObje
  * </p>
  * 
  */
-public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritable> {
+public class LazyByte extends
+    LazyPrimitive<LazyByteObjectInspector, ByteWritable> {
 
   public LazyByte(LazyByteObjectInspector oi) {
     super(oi);
@@ -44,7 +45,7 @@ public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritabl
     super(copy);
     data = new ByteWritable(copy.data.get());
   }
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
@@ -54,7 +55,7 @@ public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritabl
       isNull = true;
     }
   }
-  
+
   /**
    * Parses the string argument as if it was a byte value and returns the
    * result. Throws NumberFormatException if the string does not represent a
@@ -63,15 +64,16 @@ public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritabl
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a single byte quantity.
+   *          a UTF-8 encoded string representation of a single byte quantity.
    * @return byte the value represented by the argument
    * @throws NumberFormatException
-   *             if the argument could not be parsed as a byte quantity.
+   *           if the argument could not be parsed as a byte quantity.
    */
-  public static byte parseByte(byte[] bytes, int start, int length) throws NumberFormatException {
-    return parseByte(bytes, start, length, 10); 
+  public static byte parseByte(byte[] bytes, int start, int length)
+      throws NumberFormatException {
+    return parseByte(bytes, start, length, 10);
   }
-  
+
   /**
    * Parses the string argument as if it was a byte value and returns the
    * result. Throws NumberFormatException if the string does not represent a
@@ -81,22 +83,21 @@ public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritabl
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a single byte quantity.
+   *          a UTF-8 encoded string representation of a single byte quantity.
    * @param radix
-   *            the radix to use when parsing.
+   *          the radix to use when parsing.
    * @return byte the value represented by the argument
    * @throws NumberFormatException
-   *             if the argument could not be parsed as a byte quantity.
+   *           if the argument could not be parsed as a byte quantity.
    */
   public static byte parseByte(byte[] bytes, int start, int length, int radix)
-          throws NumberFormatException {
-      int intValue = LazyInteger.parseInt(bytes, start, length, radix);
-      byte result = (byte) intValue;
-      if (result == intValue) {
-          return result;
-      }
-      throw new NumberFormatException();
+      throws NumberFormatException {
+    int intValue = LazyInteger.parseInt(bytes, start, length, radix);
+    byte result = (byte) intValue;
+    if (result == intValue) {
+      return result;
+    }
+    throw new NumberFormatException();
   }
-
 
 }

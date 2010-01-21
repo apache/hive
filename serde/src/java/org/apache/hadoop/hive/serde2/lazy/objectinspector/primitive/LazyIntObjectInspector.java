@@ -22,17 +22,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.IntWritable;
 
-
 /**
  * A WritableIntObjectInspector inspects a IntWritable Object.
  */
-public class LazyIntObjectInspector extends AbstractPrimitiveLazyObjectInspector<IntWritable> 
-implements IntObjectInspector{
+public class LazyIntObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<IntWritable> implements
+    IntObjectInspector {
 
   LazyIntObjectInspector() {
     super(PrimitiveObjectInspectorUtils.intTypeEntry);
   }
-  
+
   @Override
   public int get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -40,7 +40,7 @@ implements IntObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyInteger((LazyInteger)o);
+    return o == null ? null : new LazyInteger((LazyInteger) o);
   }
 
   @Override

@@ -36,8 +36,8 @@ import org.apache.hadoop.io.LongWritable;
  * </p>
  * 
  */
-public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritable> {
-
+public class LazyLong extends
+    LazyPrimitive<LazyLongObjectInspector, LongWritable> {
 
   public LazyLong(LazyLongObjectInspector oi) {
     super(oi);
@@ -48,7 +48,7 @@ public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritabl
     super(copy);
     data = new LongWritable(copy.data.get());
   }
-   
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
@@ -67,38 +67,38 @@ public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritabl
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a long quantity.
+   *          a UTF-8 encoded string representation of a long quantity.
    * @return long the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as a long quantity.
+   *              if the argument could not be parsed as a long quantity.
    */
-  public static long parseLong(byte[] bytes, int start, int length) throws NumberFormatException {
+  public static long parseLong(byte[] bytes, int start, int length)
+      throws NumberFormatException {
     return parseLong(bytes, start, length, 10);
   }
 
   /**
    * Parses the string argument as if it was an long value and returns the
    * result. Throws NumberFormatException if the string does not represent an
-   * long quantity. The second argument specifies the radix to use when
-   * parsing the value.
+   * long quantity. The second argument specifies the radix to use when parsing
+   * the value.
    * 
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a long quantity.
+   *          a UTF-8 encoded string representation of a long quantity.
    * @param radix
-   *            the base to use for conversion.
+   *          the base to use for conversion.
    * @return the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as an long quantity.
+   *              if the argument could not be parsed as an long quantity.
    */
   public static long parseLong(byte[] bytes, int start, int length, int radix)
       throws NumberFormatException {
     if (bytes == null) {
       throw new NumberFormatException("String is null");
     }
-    if (radix < Character.MIN_RADIX ||
-        radix > Character.MAX_RADIX) {
+    if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
       throw new NumberFormatException("Invalid radix: " + radix);
     }
     if (length == 0) {
@@ -107,9 +107,10 @@ public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritabl
     int offset = start;
     boolean negative = bytes[start] == '-';
     if (negative || bytes[start] == '+') {
-      offset ++;
+      offset++;
       if (length == 1) {
-        throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
     }
 
@@ -117,61 +118,65 @@ public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritabl
   }
 
   /**
-  /**
-   * Parses the string argument as if it was an long value and returns the
+   * /** Parses the string argument as if it was an long value and returns the
    * result. Throws NumberFormatException if the string does not represent an
-   * long quantity. The second argument specifies the radix to use when
-   * parsing the value.
+   * long quantity. The second argument specifies the radix to use when parsing
+   * the value.
    * 
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a long quantity.
+   *          a UTF-8 encoded string representation of a long quantity.
    * @param offset
-   *            the starting position after the sign (if exists)
+   *          the starting position after the sign (if exists)
    * @param radix
-   *            the base to use for conversion.
+   *          the base to use for conversion.
    * @param negative
-   *            whether the number is negative.
+   *          whether the number is negative.
    * @return the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as an long quantity.
+   *              if the argument could not be parsed as an long quantity.
    */
-  private static long parse(byte[] bytes, int start, int length, int offset, int radix,
-      boolean negative) {
+  private static long parse(byte[] bytes, int start, int length, int offset,
+      int radix, boolean negative) {
     long max = Long.MIN_VALUE / radix;
     long result = 0, end = start + length;
     while (offset < end) {
       int digit = LazyUtils.digit(bytes[offset++], radix);
       if (digit == -1 || max > result) {
-        throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
       long next = result * radix - digit;
       if (next > result) {
-        throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
       result = next;
     }
     if (!negative) {
       result = -result;
       if (result < 0) {
-        throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
     }
     return result;
   }
 
   /**
-   * Writes out the text representation of an integer using base 10 to an 
+   * Writes out the text representation of an integer using base 10 to an
    * OutputStream in UTF-8 encoding.
-   *
-   * Note: division by a constant (like 10) is much faster than division by
-   * a variable.  That's one of the reasons that we don't make radix a 
-   * parameter here.
-   *  
-   * @param out the outputstream to write to
-   * @param i   an int to write out
-   * @throws IOException 
+   * 
+   * Note: division by a constant (like 10) is much faster than division by a
+   * variable. That's one of the reasons that we don't make radix a parameter
+   * here.
+   * 
+   * @param out
+   *          the outputstream to write to
+   * @param i
+   *          an int to write out
+   * @throws IOException
    */
   public static void writeUTF8(OutputStream out, long i) throws IOException {
     if (i == 0) {
@@ -187,14 +192,14 @@ public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritabl
       // of overflow here.
       i = -i;
     }
-    
+
     long start = 1000000000000000000L;
-    while (i/start == 0) {
+    while (i / start == 0) {
       start /= 10;
     }
-    
+
     while (start > 0) {
-      out.write('0' - (int)((i / start) % 10));
+      out.write('0' - (int) ((i / start) % 10));
       start /= 10;
     }
   }

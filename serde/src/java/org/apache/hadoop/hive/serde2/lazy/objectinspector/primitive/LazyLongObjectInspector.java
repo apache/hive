@@ -22,17 +22,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.LongWritable;
 
-
 /**
  * A WritableLongObjectInspector inspects a LongWritable Object.
  */
-public class LazyLongObjectInspector extends AbstractPrimitiveLazyObjectInspector<LongWritable> 
-implements LongObjectInspector{
+public class LazyLongObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<LongWritable> implements
+    LongObjectInspector {
 
   LazyLongObjectInspector() {
     super(PrimitiveObjectInspectorUtils.longTypeEntry);
   }
-  
+
   @Override
   public long get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -40,7 +40,7 @@ implements LongObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyLong((LazyLong)o);
+    return o == null ? null : new LazyLong((LazyLong) o);
   }
 
   @Override

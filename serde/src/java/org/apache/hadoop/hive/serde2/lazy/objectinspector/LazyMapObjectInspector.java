@@ -30,28 +30,30 @@ import org.apache.hadoop.io.Text;
 /**
  * LazyMapObjectInspector works on struct data that is stored in LazyStruct.
  * 
- * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
- * of directly creating an instance of this class.
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
 public class LazyMapObjectInspector implements MapObjectInspector {
 
-  public static final Log LOG = LogFactory.getLog(LazyMapObjectInspector.class.getName());
-  
+  public static final Log LOG = LogFactory.getLog(LazyMapObjectInspector.class
+      .getName());
+
   ObjectInspector mapKeyObjectInspector;
   ObjectInspector mapValueObjectInspector;
-  
+
   byte itemSeparator;
-  byte keyValueSeparator;  
+  byte keyValueSeparator;
   Text nullSequence;
   boolean escaped;
   byte escapeChar;
-  
-  /** Call ObjectInspectorFactory.getStandardListObjectInspector instead.
+
+  /**
+   * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */
   protected LazyMapObjectInspector(ObjectInspector mapKeyObjectInspector,
-      ObjectInspector mapValueObjectInspector,
-      byte itemSeparator, byte keyValueSeparator, Text nullSequence,
-      boolean escaped, byte escapeChar) {
+      ObjectInspector mapValueObjectInspector, byte itemSeparator,
+      byte keyValueSeparator, Text nullSequence, boolean escaped,
+      byte escapeChar) {
     this.mapKeyObjectInspector = mapKeyObjectInspector;
     this.mapValueObjectInspector = mapValueObjectInspector;
 
@@ -69,8 +71,8 @@ public class LazyMapObjectInspector implements MapObjectInspector {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME 
-        + "<" + mapKeyObjectInspector.getTypeName() + "," 
+    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME + "<"
+        + mapKeyObjectInspector.getTypeName() + ","
         + mapValueObjectInspector.getTypeName() + ">";
   }
 
@@ -89,7 +91,7 @@ public class LazyMapObjectInspector implements MapObjectInspector {
     if (data == null) {
       return null;
     }
-    return ((LazyMap)data).getMapValueElement(key);
+    return ((LazyMap) data).getMapValueElement(key);
   }
 
   @Override
@@ -97,7 +99,7 @@ public class LazyMapObjectInspector implements MapObjectInspector {
     if (data == null) {
       return null;
     }
-    return ((LazyMap)data).getMap();
+    return ((LazyMap) data).getMap();
   }
 
   @Override
@@ -105,22 +107,26 @@ public class LazyMapObjectInspector implements MapObjectInspector {
     if (data == null) {
       return -1;
     }
-    return ((LazyMap)data).getMapSize();
+    return ((LazyMap) data).getMapSize();
   }
-  
+
   // Called by LazyMap
   public byte getItemSeparator() {
     return itemSeparator;
   }
+
   public byte getKeyValueSeparator() {
     return keyValueSeparator;
   }
+
   public Text getNullSequence() {
     return nullSequence;
   }
+
   public boolean isEscaped() {
     return escaped;
   }
+
   public byte getEscapeChar() {
     return escapeChar;
   }

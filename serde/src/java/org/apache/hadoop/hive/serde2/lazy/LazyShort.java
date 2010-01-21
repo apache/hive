@@ -33,18 +33,19 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObj
  * </p>
  * 
  */
-public class LazyShort extends LazyPrimitive<LazyShortObjectInspector, ShortWritable> {
+public class LazyShort extends
+    LazyPrimitive<LazyShortObjectInspector, ShortWritable> {
 
   public LazyShort(LazyShortObjectInspector oi) {
     super(oi);
     data = new ShortWritable();
   }
-  
+
   public LazyShort(LazyShort copy) {
     super(copy);
     data = new ShortWritable(copy.data.get());
   }
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
@@ -63,12 +64,12 @@ public class LazyShort extends LazyPrimitive<LazyShortObjectInspector, ShortWrit
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a short quantity.
+   *          a UTF-8 encoded string representation of a short quantity.
    * @return short the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as a short quantity.
+   *              if the argument could not be parsed as a short quantity.
    */
-  public static short parseShort(byte[] bytes, int start, int length) 
+  public static short parseShort(byte[] bytes, int start, int length)
       throws NumberFormatException {
     return parseShort(bytes, start, length, 10);
   }
@@ -76,18 +77,18 @@ public class LazyShort extends LazyPrimitive<LazyShortObjectInspector, ShortWrit
   /**
    * Parses the string argument as if it was a short value and returns the
    * result. Throws NumberFormatException if the string does not represent a
-   * single short quantity. The second argument specifies the radix to use
-   * when parsing the value.
+   * single short quantity. The second argument specifies the radix to use when
+   * parsing the value.
    * 
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of a short quantity.
+   *          a UTF-8 encoded string representation of a short quantity.
    * @param radix
-   *            the radix to use when parsing.
+   *          the radix to use when parsing.
    * @return short the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as a short quantity.
+   *              if the argument could not be parsed as a short quantity.
    */
   public static short parseShort(byte[] bytes, int start, int length, int radix)
       throws NumberFormatException {

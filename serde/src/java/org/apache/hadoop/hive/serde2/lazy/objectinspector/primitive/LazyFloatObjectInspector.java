@@ -25,13 +25,14 @@ import org.apache.hadoop.io.FloatWritable;
 /**
  * A FloatObjectInspector inspects a FloatWritable Object.
  */
-public class LazyFloatObjectInspector extends AbstractPrimitiveLazyObjectInspector<FloatWritable> 
-implements FloatObjectInspector{
+public class LazyFloatObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<FloatWritable> implements
+    FloatObjectInspector {
 
   LazyFloatObjectInspector() {
     super(PrimitiveObjectInspectorUtils.floatTypeEntry);
   }
-  
+
   @Override
   public float get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -39,7 +40,7 @@ implements FloatObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyFloat((LazyFloat)o);
+    return o == null ? null : new LazyFloat((LazyFloat) o);
   }
 
   @Override

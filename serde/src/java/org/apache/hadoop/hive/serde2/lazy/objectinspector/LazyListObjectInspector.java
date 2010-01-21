@@ -30,23 +30,25 @@ import org.apache.hadoop.io.Text;
 /**
  * LazyListObjectInspector works on array data that is stored in LazyArray.
  * 
- * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
- * of directly creating an instance of this class.
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
 public class LazyListObjectInspector implements ListObjectInspector {
 
-  public static final Log LOG = LogFactory.getLog(LazyListObjectInspector.class.getName());
-  
+  public static final Log LOG = LogFactory.getLog(LazyListObjectInspector.class
+      .getName());
+
   ObjectInspector listElementObjectInspector;
-  
+
   byte separator;
   Text nullSequence;
   boolean escaped;
   byte escapeChar;
-  
-  /** Call ObjectInspectorFactory.getLazySimpleListObjectInspector instead.
+
+  /**
+   * Call ObjectInspectorFactory.getLazySimpleListObjectInspector instead.
    */
-  protected LazyListObjectInspector(ObjectInspector listElementObjectInspector, 
+  protected LazyListObjectInspector(ObjectInspector listElementObjectInspector,
       byte separator, Text nullSequence, boolean escaped, byte escapeChar) {
     this.listElementObjectInspector = listElementObjectInspector;
     this.separator = separator;
@@ -65,7 +67,7 @@ public class LazyListObjectInspector implements ListObjectInspector {
   public ObjectInspector getListElementObjectInspector() {
     return listElementObjectInspector;
   }
-  
+
   // with data
   @Override
   public Object getListElement(Object data, int index) {
@@ -75,7 +77,7 @@ public class LazyListObjectInspector implements ListObjectInspector {
     LazyArray array = (LazyArray) data;
     return array.getListElementObject(index);
   }
-  
+
   @Override
   public int getListLength(Object data) {
     if (data == null) {
@@ -84,7 +86,7 @@ public class LazyListObjectInspector implements ListObjectInspector {
     LazyArray array = (LazyArray) data;
     return array.getListLength();
   }
-  
+
   @Override
   public List<?> getList(Object data) {
     if (data == null) {
@@ -96,28 +98,29 @@ public class LazyListObjectInspector implements ListObjectInspector {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME 
-        + "<" + listElementObjectInspector.getTypeName() + ">";
+    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<"
+        + listElementObjectInspector.getTypeName() + ">";
   }
 
   /**
-   * Returns the separator for delimiting items in this array.
-   * Called by LazyArray.init(...).
+   * Returns the separator for delimiting items in this array. Called by
+   * LazyArray.init(...).
    */
   public byte getSeparator() {
     return separator;
   }
 
   /**
-   * Returns the NullSequence for this array.
-   * Called by LazyArray.init(...).
+   * Returns the NullSequence for this array. Called by LazyArray.init(...).
    */
   public Text getNullSequence() {
     return nullSequence;
   }
+
   public boolean isEscaped() {
     return escaped;
   }
+
   public byte getEscapeChar() {
     return escapeChar;
   }

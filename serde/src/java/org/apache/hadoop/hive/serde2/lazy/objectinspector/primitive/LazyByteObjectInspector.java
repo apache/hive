@@ -21,19 +21,18 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.BooleanWritable;
-
 
 /**
  * A WritableByteObjectInspector inspects a ByteWritable Object.
  */
-public class LazyByteObjectInspector extends AbstractPrimitiveLazyObjectInspector<ByteWritable> 
-implements ByteObjectInspector{
+public class LazyByteObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<ByteWritable> implements
+    ByteObjectInspector {
 
   LazyByteObjectInspector() {
     super(PrimitiveObjectInspectorUtils.byteTypeEntry);
   }
-  
+
   @Override
   public byte get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -41,7 +40,7 @@ implements ByteObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyByte((LazyByte)o);
+    return o == null ? null : new LazyByte((LazyByte) o);
   }
 
   @Override

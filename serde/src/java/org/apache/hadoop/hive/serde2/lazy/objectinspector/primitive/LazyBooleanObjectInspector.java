@@ -22,17 +22,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.BooleanWritable;
 
-
 /**
  * A WritableBooleanObjectInspector inspects a BooleanWritable Object.
  */
-public class LazyBooleanObjectInspector extends AbstractPrimitiveLazyObjectInspector<BooleanWritable> 
-implements BooleanObjectInspector{
+public class LazyBooleanObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<BooleanWritable> implements
+    BooleanObjectInspector {
 
   LazyBooleanObjectInspector() {
     super(PrimitiveObjectInspectorUtils.booleanTypeEntry);
   }
-  
+
   @Override
   public boolean get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -40,7 +40,7 @@ implements BooleanObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyBoolean((LazyBoolean)o);
+    return o == null ? null : new LazyBoolean((LazyBoolean) o);
   }
 
   @Override

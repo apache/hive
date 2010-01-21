@@ -22,17 +22,17 @@ import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
-
 /**
  * A WritableDoubleObjectInspector inspects a DoubleWritable Object.
  */
-public class LazyDoubleObjectInspector extends AbstractPrimitiveLazyObjectInspector<DoubleWritable>
-implements DoubleObjectInspector{
+public class LazyDoubleObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<DoubleWritable> implements
+    DoubleObjectInspector {
 
   LazyDoubleObjectInspector() {
     super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
   }
-  
+
   @Override
   public double get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -40,7 +40,7 @@ implements DoubleObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyDouble((LazyDouble)o);
+    return o == null ? null : new LazyDouble((LazyDouble) o);
   }
 
   @Override

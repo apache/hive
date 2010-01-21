@@ -28,15 +28,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
-
 /**
- * LazyObject for storing a struct.
- * The field of a struct can be primitive or non-primitive.
- *
- * LazyStruct does not deal with the case of a NULL struct. That is handled
- * by the parent LazyObject.
+ * LazyObject for storing a struct. The field of a struct can be primitive or
+ * non-primitive.
+ * 
+ * LazyStruct does not deal with the case of a NULL struct. That is handled by
+ * the parent LazyObject.
  */
-public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector> {
+public class LazyStruct extends
+    LazyNonPrimitive<LazySimpleStructObjectInspector> {
 
   private static Log LOG = LogFactory.getLog(LazyStruct.class.getName());
 
@@ -46,14 +46,13 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
   boolean parsed;
 
   /**
-   * The start positions of struct fields.
-   * Only valid when the data is parsed.
-   * Note that startPosition[arrayLength] = begin + length + 1;
-   * that makes sure we can use the same formula to compute the
-   * length of each element of the array.
+   * The start positions of struct fields. Only valid when the data is parsed.
+   * Note that startPosition[arrayLength] = begin + length + 1; that makes sure
+   * we can use the same formula to compute the length of each element of the
+   * array.
    */
   int[] startPosition;
-  
+
   /**
    * The fields of the struct.
    */
@@ -62,18 +61,20 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
    * Whether init() has been called on the field or not.
    */
   boolean[] fieldInited;
-  
+
   /**
    * Construct a LazyStruct object with the ObjectInspector.
    */
   public LazyStruct(LazySimpleStructObjectInspector oi) {
     super(oi);
   }
-  
+
   /**
    * Set the row data for this LazyStruct.
+   * 
    * @see LazyObject#init(ByteArrayRef, int, int)
    */
+  @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     super.init(bytes, start, length);
     parsed = false;
@@ -81,34 +82,37 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
 
   boolean missingFieldWarned = false;
   boolean extraFieldWarned = false;
+
   /**
    * Parse the byte[] and fill each field.
    */
   private void parse() {
-    
+
     byte separator = oi.getSeparator();
     boolean lastColumnTakesRest = oi.getLastColumnTakesRest();
     boolean isEscaped = oi.isEscaped();
     byte escapeChar = oi.getEscapeChar();
-    
+
     if (fields == null) {
-      List<? extends StructField> fieldRefs = ((StructObjectInspector)oi).getAllStructFieldRefs();
+      List<? extends StructField> fieldRefs = ((StructObjectInspector) oi)
+          .getAllStructFieldRefs();
       fields = new LazyObject[fieldRefs.size()];
-      for (int i = 0 ; i < fields.length; i++) {
-        fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
+      for (int i = 0; i < fields.length; i++) {
+        fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i)
+            .getFieldObjectInspector());
       }
-      fieldInited = new boolean[fields.length];      
-      // Extra element to make sure we have the same formula to compute the 
-      // length of each element of the array. 
-      startPosition = new int[fields.length+1];
+      fieldInited = new boolean[fields.length];
+      // Extra element to make sure we have the same formula to compute the
+      // length of each element of the array.
+      startPosition = new int[fields.length + 1];
     }
-    
+
     int structByteEnd = start + length;
     int fieldId = 0;
     int fieldByteBegin = start;
     int fieldByteEnd = start;
     byte[] bytes = this.bytes.getData();
-    
+
     // Go through all bytes in the byte[]
     while (fieldByteEnd <= structByteEnd) {
       if (fieldByteEnd == structByteEnd || bytes[fieldByteEnd] == separator) {
@@ -117,7 +121,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
           fieldByteEnd = structByteEnd;
         }
         startPosition[fieldId] = fieldByteBegin;
-        fieldId ++;
+        fieldId++;
         if (fieldId == fields.length || fieldByteEnd == structByteEnd) {
           // All fields have been parsed, or bytes have been parsed.
           // We need to set the startPosition of fields.length to ensure we
@@ -127,14 +131,14 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
           // return these fields as NULLs.
           for (int i = fieldId; i <= fields.length; i++) {
             startPosition[i] = fieldByteEnd + 1;
-          }          
+          }
           break;
         }
         fieldByteBegin = fieldByteEnd + 1;
-        fieldByteEnd ++;
+        fieldByteEnd++;
       } else {
         if (isEscaped && bytes[fieldByteEnd] == escapeChar
-            && fieldByteEnd+1 < structByteEnd) {
+            && fieldByteEnd + 1 < structByteEnd) {
           // ignore the char after escape_char
           fieldByteEnd += 2;
         } else {
@@ -142,36 +146,37 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
         }
       }
     }
-    
+
     // Extra bytes at the end?
     if (!extraFieldWarned && fieldByteEnd < structByteEnd) {
       extraFieldWarned = true;
       LOG.warn("Extra bytes detected at the end of the row! Ignoring similar "
           + "problems.");
     }
-    
+
     // Missing fields?
     if (!missingFieldWarned && fieldId < fields.length) {
       missingFieldWarned = true;
       LOG.warn("Missing fields! Expected " + fields.length + " fields but "
           + "only got " + fieldId + "! Ignoring similar problems.");
     }
-    
+
     Arrays.fill(fieldInited, false);
-    parsed = true;    
+    parsed = true;
   }
-  
+
   /**
    * Get one field out of the struct.
    * 
-   * If the field is a primitive field, return the actual object.
-   * Otherwise return the LazyObject.  This is because PrimitiveObjectInspector
-   * does not have control over the object used by the user - the user simply
-   * directly use the Object instead of going through 
-   * Object PrimitiveObjectInspector.get(Object).  
+   * If the field is a primitive field, return the actual object. Otherwise
+   * return the LazyObject. This is because PrimitiveObjectInspector does not
+   * have control over the object used by the user - the user simply directly
+   * use the Object instead of going through Object
+   * PrimitiveObjectInspector.get(Object).
    * 
-   * @param fieldID  The field ID
-   * @return         The field as a LazyObject
+   * @param fieldID
+   *          The field ID
+   * @return The field as a LazyObject
    */
   public Object getField(int fieldID) {
     if (!parsed) {
@@ -179,24 +184,27 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     }
     return uncheckedGetField(fieldID);
   }
-  
+
   /**
-   * Get the field out of the row without checking parsed.
-   * This is called by both getField and getFieldsAsList.
-   * @param fieldID  The id of the field starting from 0.
-   * @param nullSequence  The sequence representing NULL value.
-   * @return  The value of the field
+   * Get the field out of the row without checking parsed. This is called by
+   * both getField and getFieldsAsList.
+   * 
+   * @param fieldID
+   *          The id of the field starting from 0.
+   * @param nullSequence
+   *          The sequence representing NULL value.
+   * @return The value of the field
    */
   private Object uncheckedGetField(int fieldID) {
     Text nullSequence = oi.getNullSequence();
-    // Test the length first so in most cases we avoid doing a byte[] 
+    // Test the length first so in most cases we avoid doing a byte[]
     // comparison.
     int fieldByteBegin = startPosition[fieldID];
-    int fieldLength = startPosition[fieldID+1] - startPosition[fieldID] - 1;
+    int fieldLength = startPosition[fieldID + 1] - startPosition[fieldID] - 1;
     if ((fieldLength < 0)
-        || (fieldLength == nullSequence.getLength()
-           && LazyUtils.compare(bytes.getData(), fieldByteBegin, fieldLength,
-          nullSequence.getBytes(), 0, nullSequence.getLength()) == 0)) {
+        || (fieldLength == nullSequence.getLength() && LazyUtils.compare(bytes
+            .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
+            0, nullSequence.getLength()) == 0)) {
       return null;
     }
     if (!fieldInited[fieldID]) {
@@ -207,8 +215,10 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
   }
 
   ArrayList<Object> cachedList;
+
   /**
    * Get the values of the fields as an ArrayList.
+   * 
    * @return The values of the fields as an ArrayList.
    */
   public ArrayList<Object> getFieldsAsList() {
@@ -220,12 +230,12 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     } else {
       cachedList.clear();
     }
-    for (int i=0; i<fields.length; i++) {
+    for (int i = 0; i < fields.length; i++) {
       cachedList.add(uncheckedGetField(i));
     }
     return cachedList;
   }
-  
+
   @Override
   public Object getObject() {
     return this;

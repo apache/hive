@@ -36,7 +36,8 @@ import org.apache.hadoop.io.IntWritable;
  * </p>
  * 
  */
-public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritable> {
+public class LazyInteger extends
+    LazyPrimitive<LazyIntObjectInspector, IntWritable> {
 
   public LazyInteger(LazyIntObjectInspector oi) {
     super(oi);
@@ -46,9 +47,8 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
   public LazyInteger(LazyInteger copy) {
     super(copy);
     data = new IntWritable(copy.data.get());
-  }  
-  
-  
+  }
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
@@ -58,7 +58,7 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
       isNull = true;
     }
   }
-  
+
   /**
    * Parses the string argument as if it was an int value and returns the
    * result. Throws NumberFormatException if the string does not represent an
@@ -67,13 +67,14 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of an int quantity.
+   *          a UTF-8 encoded string representation of an int quantity.
    * @return int the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as an int quantity.
+   *              if the argument could not be parsed as an int quantity.
    */
-  public static int parseInt(byte[] bytes, int start, int length) throws NumberFormatException {
-      return parseInt(bytes, start, length, 10);
+  public static int parseInt(byte[] bytes, int start, int length)
+      throws NumberFormatException {
+    return parseInt(bytes, start, length, 10);
   }
 
   /**
@@ -85,20 +86,19 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of an int quantity.
+   *          a UTF-8 encoded string representation of an int quantity.
    * @param radix
-   *            the base to use for conversion.
-   * @return    the value represented by the argument
+   *          the base to use for conversion.
+   * @return the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as an int quantity.
+   *              if the argument could not be parsed as an int quantity.
    */
   public static int parseInt(byte[] bytes, int start, int length, int radix)
-          throws NumberFormatException {
+      throws NumberFormatException {
     if (bytes == null) {
       throw new NumberFormatException("String is null");
     }
-    if (radix < Character.MIN_RADIX ||
-        radix > Character.MAX_RADIX) {
+    if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
       throw new NumberFormatException("Invalid radix: " + radix);
     }
     if (length == 0) {
@@ -109,7 +109,8 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
     if (negative || bytes[start] == '+') {
       offset++;
       if (length == 1) {
-        throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
     }
 
@@ -121,57 +122,63 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
    * @param bytes
    * @param start
    * @param length
-   *            a UTF-8 encoded string representation of an int quantity.
+   *          a UTF-8 encoded string representation of an int quantity.
    * @param radix
-   *            the base to use for conversion.
+   *          the base to use for conversion.
    * @param offset
-   *            the starting position after the sign (if exists)
+   *          the starting position after the sign (if exists)
    * @param radix
-   *            the base to use for conversion.
+   *          the base to use for conversion.
    * @param negative
-   *            whether the number is negative.
+   *          whether the number is negative.
    * @return the value represented by the argument
    * @exception NumberFormatException
-   *                if the argument could not be parsed as an int quantity.
+   *              if the argument could not be parsed as an int quantity.
    */
-  private static int parse(byte[] bytes, int start, int length, int offset, int radix,
-          boolean negative) throws NumberFormatException {
-      int max = Integer.MIN_VALUE / radix;
-      int result = 0, end = start + length;
-      while (offset < end) {
-          int digit = LazyUtils.digit(bytes[offset++], radix);
-          if (digit == -1) {
-              throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
-          }
-          if (max > result) {
-              throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
-          }
-          int next = result * radix - digit;
-          if (next > result) {
-              throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
-          }
-          result = next;
+  private static int parse(byte[] bytes, int start, int length, int offset,
+      int radix, boolean negative) throws NumberFormatException {
+    int max = Integer.MIN_VALUE / radix;
+    int result = 0, end = start + length;
+    while (offset < end) {
+      int digit = LazyUtils.digit(bytes[offset++], radix);
+      if (digit == -1) {
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
-      if (!negative) {
-          result = -result;
-          if (result < 0) {
-              throw new NumberFormatException(LazyUtils.convertToString(bytes, start, length));
-          }
+      if (max > result) {
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
       }
-      return result;
+      int next = result * radix - digit;
+      if (next > result) {
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
+      }
+      result = next;
+    }
+    if (!negative) {
+      result = -result;
+      if (result < 0) {
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
+      }
+    }
+    return result;
   }
 
   /**
-   * Writes out the text representation of an integer using base 10 to an 
+   * Writes out the text representation of an integer using base 10 to an
    * OutputStream in UTF-8 encoding.
-   *
-   * Note: division by a constant (like 10) is much faster than division by
-   * a variable.  That's one of the reasons that we don't make radix a 
-   * parameter here.
-   *  
-   * @param out the outputstream to write to
-   * @param i   an int to write out
-   * @throws IOException 
+   * 
+   * Note: division by a constant (like 10) is much faster than division by a
+   * variable. That's one of the reasons that we don't make radix a parameter
+   * here.
+   * 
+   * @param out
+   *          the outputstream to write to
+   * @param i
+   *          an int to write out
+   * @throws IOException
    */
   public static void writeUTF8(OutputStream out, int i) throws IOException {
     if (i == 0) {
@@ -187,23 +194,23 @@ public class LazyInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritab
       // of overflow here.
       i = -i;
     }
-    
+
     int start = 1000000000;
-    while (i/start == 0) {
+    while (i / start == 0) {
       start /= 10;
     }
-    
+
     while (start > 0) {
       out.write('0' - (i / start % 10));
       start /= 10;
     }
   }
-  
+
   public static void writeUTF8NoException(OutputStream out, int i) {
     try {
       writeUTF8(out, i);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }  
+  }
 }

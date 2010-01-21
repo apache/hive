@@ -22,16 +22,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
-
 /**
  * A WritableStringObjectInspector inspects a Text Object.
  */
-public class LazyStringObjectInspector extends AbstractPrimitiveLazyObjectInspector<Text> 
-implements StringObjectInspector{
+public class LazyStringObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<Text> implements StringObjectInspector {
 
   boolean escaped;
   byte escapeChar;
-  
+
   LazyStringObjectInspector(boolean escaped, byte escapeChar) {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
     this.escaped = escaped;
@@ -40,25 +39,25 @@ implements StringObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyString((LazyString)o);
+    return o == null ? null : new LazyString((LazyString) o);
   }
 
   @Override
   public Text getPrimitiveWritableObject(Object o) {
-    return o == null ? null : ((LazyString)o).getWritableObject();
+    return o == null ? null : ((LazyString) o).getWritableObject();
   }
-  
+
   @Override
   public String getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((LazyString)o).getWritableObject().toString();
+    return o == null ? null : ((LazyString) o).getWritableObject().toString();
   }
 
   public boolean isEscaped() {
     return escaped;
   }
+
   public byte getEscapeChar() {
     return escapeChar;
   }
-  
-  
+
 }

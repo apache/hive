@@ -21,17 +21,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.io.NullWritable;
 
-
 /**
  * A WritableVoidObjectInspector inspects a NullWritable Object.
  */
-public class LazyVoidObjectInspector extends AbstractPrimitiveLazyObjectInspector<NullWritable> 
-implements VoidObjectInspector{
+public class LazyVoidObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<NullWritable> implements
+    VoidObjectInspector {
 
   LazyVoidObjectInspector() {
     super(PrimitiveObjectInspectorUtils.voidTypeEntry);
   }
-  
+
   @Override
   public Object copyObject(Object o) {
     return o;

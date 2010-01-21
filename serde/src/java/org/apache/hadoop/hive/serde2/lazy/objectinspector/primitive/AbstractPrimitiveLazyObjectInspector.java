@@ -23,22 +23,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.Writable;
 
 /**
- * An AbstractPrimitiveLazyObjectInspector for a LazyPrimitive object. 
+ * An AbstractPrimitiveLazyObjectInspector for a LazyPrimitive object.
  */
-public abstract class AbstractPrimitiveLazyObjectInspector<T extends Writable> extends AbstractPrimitiveObjectInspector {
+public abstract class AbstractPrimitiveLazyObjectInspector<T extends Writable>
+    extends AbstractPrimitiveObjectInspector {
 
   protected AbstractPrimitiveLazyObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry); 
+    super(typeEntry);
   }
-  
+
   @Override
   public T getPrimitiveWritableObject(Object o) {
-    return o == null ? null : ((LazyPrimitive<?,T>)o).getWritableObject();
+    return o == null ? null : ((LazyPrimitive<?, T>) o).getWritableObject();
   }
 
   @Override
   public boolean preferWritable() {
     return true;
   }
-  
+
 }

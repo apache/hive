@@ -33,7 +33,8 @@ import org.apache.hadoop.io.BooleanWritable;
  * </p>
  * 
  */
-public class LazyBoolean extends LazyPrimitive<LazyBooleanObjectInspector, BooleanWritable> {
+public class LazyBoolean extends
+    LazyPrimitive<LazyBooleanObjectInspector, BooleanWritable> {
 
   public LazyBoolean(LazyBooleanObjectInspector oi) {
     super(oi);
@@ -44,28 +45,26 @@ public class LazyBoolean extends LazyPrimitive<LazyBooleanObjectInspector, Boole
     super(copy);
     data = new BooleanWritable(copy.data.get());
   }
-  
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    if (length == 4 
-        && Character.toUpperCase(bytes.getData()[start]) == 'T'
-        && Character.toUpperCase(bytes.getData()[start+1]) == 'R'
-        && Character.toUpperCase(bytes.getData()[start+2]) == 'U'
-        && Character.toUpperCase(bytes.getData()[start+3]) == 'E') {
+    if (length == 4 && Character.toUpperCase(bytes.getData()[start]) == 'T'
+        && Character.toUpperCase(bytes.getData()[start + 1]) == 'R'
+        && Character.toUpperCase(bytes.getData()[start + 2]) == 'U'
+        && Character.toUpperCase(bytes.getData()[start + 3]) == 'E') {
       data.set(true);
       isNull = false;
     } else if (length == 5
-          && Character.toUpperCase(bytes.getData()[start]) == 'F'
-          && Character.toUpperCase(bytes.getData()[start+1]) == 'A'
-          && Character.toUpperCase(bytes.getData()[start+2]) == 'L'
-          && Character.toUpperCase(bytes.getData()[start+3]) == 'S'
-          && Character.toUpperCase(bytes.getData()[start+4]) == 'E') {
+        && Character.toUpperCase(bytes.getData()[start]) == 'F'
+        && Character.toUpperCase(bytes.getData()[start + 1]) == 'A'
+        && Character.toUpperCase(bytes.getData()[start + 2]) == 'L'
+        && Character.toUpperCase(bytes.getData()[start + 3]) == 'S'
+        && Character.toUpperCase(bytes.getData()[start + 4]) == 'E') {
       data.set(false);
       isNull = false;
-    } else { 
+    } else {
       isNull = true;
     }
   }
-  
 
 }

@@ -34,24 +34,24 @@ public class LazyString extends LazyPrimitive<LazyStringObjectInspector, Text> {
     super(copy);
     data = new Text(copy.data);
   }
-   
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     if (oi.isEscaped()) {
       byte escapeChar = oi.getEscapeChar();
       byte[] inputBytes = bytes.getData();
-      
+
       // First calculate the length of the output string
       int outputLength = 0;
-      for (int i=0; i<length; i++) {
-        if (inputBytes[start+i] != escapeChar) {
-          outputLength ++;
+      for (int i = 0; i < length; i++) {
+        if (inputBytes[start + i] != escapeChar) {
+          outputLength++;
         } else {
-          outputLength ++;
+          outputLength++;
           i++;
         }
       }
-      
+
       // Copy the data over, so that the internal state of Text will be set to
       // the required outputLength.
       data.set(bytes.getData(), start, outputLength);
@@ -62,17 +62,17 @@ public class LazyString extends LazyPrimitive<LazyStringObjectInspector, Text> {
       if (outputLength < length) {
         int k = 0;
         byte[] outputBytes = data.getBytes();
-        for (int i=0; i<length; i++) {
-          byte b = inputBytes[start+i];
+        for (int i = 0; i < length; i++) {
+          byte b = inputBytes[start + i];
           if (b != escapeChar || i == length - 1) {
             outputBytes[k++] = b;
           } else {
             // get the next byte
             i++;
-            outputBytes[k++] = inputBytes[start+i];
+            outputBytes[k++] = inputBytes[start + i];
           }
         }
-        assert(k == outputLength);
+        assert (k == outputLength);
       }
     } else {
       // if the data is not escaped, simply copy the data.

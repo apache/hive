@@ -22,17 +22,17 @@ import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 
-
 /**
  * A WritableShortObjectInspector inspects a ShortWritable Object.
  */
-public class LazyShortObjectInspector extends AbstractPrimitiveLazyObjectInspector<ShortWritable> 
-implements ShortObjectInspector{
+public class LazyShortObjectInspector extends
+    AbstractPrimitiveLazyObjectInspector<ShortWritable> implements
+    ShortObjectInspector {
 
   LazyShortObjectInspector() {
     super(PrimitiveObjectInspectorUtils.shortTypeEntry);
   }
-  
+
   @Override
   public short get(Object o) {
     return getPrimitiveWritableObject(o).get();
@@ -40,7 +40,7 @@ implements ShortObjectInspector{
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new LazyShort((LazyShort)o);
+    return o == null ? null : new LazyShort((LazyShort) o);
   }
 
   @Override

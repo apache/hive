@@ -23,8 +23,8 @@ import org.apache.hadoop.io.Writable;
 /**
  * LazyPrimitive stores a primitive Object in a LazyObject.
  */
-public abstract class LazyPrimitive<OI extends ObjectInspector, 
-    T extends Writable> extends LazyObject<OI> {
+public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writable>
+    extends LazyObject<OI> {
 
   LazyPrimitive(OI oi) {
     super(oi);
@@ -39,9 +39,10 @@ public abstract class LazyPrimitive<OI extends ObjectInspector,
   boolean isNull = false;
 
   /**
-   * Returns the primitive object represented by this LazyObject.
-   * This is useful because it can make sure we have "null" for null objects.
+   * Returns the primitive object represented by this LazyObject. This is useful
+   * because it can make sure we have "null" for null objects.
    */
+  @Override
   public Object getObject() {
     return isNull ? null : this;
   }
@@ -49,13 +50,15 @@ public abstract class LazyPrimitive<OI extends ObjectInspector,
   public T getWritableObject() {
     return isNull ? null : data;
   }
-  
+
+  @Override
   public String toString() {
     return isNull ? null : data.toString();
   }
-  
-  public int hashCode(){
+
+  @Override
+  public int hashCode() {
     return isNull ? 0 : data.hashCode();
   }
-  
+
 }

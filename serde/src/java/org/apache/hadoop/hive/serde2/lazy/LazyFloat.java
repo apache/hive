@@ -27,18 +27,19 @@ import org.apache.hadoop.io.Text;
  * LazyObject for storing a value of Double.
  * 
  */
-public class LazyFloat extends LazyPrimitive<LazyFloatObjectInspector, FloatWritable> {
+public class LazyFloat extends
+    LazyPrimitive<LazyFloatObjectInspector, FloatWritable> {
 
   public LazyFloat(LazyFloatObjectInspector oi) {
     super(oi);
     data = new FloatWritable();
   }
-  
+
   public LazyFloat(LazyFloat copy) {
     super(copy);
     data = new FloatWritable(copy.data.get());
-  }  
-  
+  }
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
