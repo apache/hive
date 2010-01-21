@@ -52,30 +52,37 @@ public class DoubleWritable implements WritableComparable {
     out.writeDouble(value);
   }
 
-  public void set(double value) { this.value = value; }
+  public void set(double value) {
+    this.value = value;
+  }
 
-  public double get() { return value; }
+  public double get() {
+    return value;
+  }
 
   /**
    * Returns true iff <code>o</code> is a DoubleWritable with the same value.
    */
+  @Override
   public boolean equals(Object o) {
     if (!(o instanceof DoubleWritable)) {
       return false;
     }
-    DoubleWritable other = (DoubleWritable)o;
-    return this.value == other.value;
+    DoubleWritable other = (DoubleWritable) o;
+    return value == other.value;
   }
 
+  @Override
   public int hashCode() {
-    return (int)Double.doubleToLongBits(value);
+    return (int) Double.doubleToLongBits(value);
   }
 
   public int compareTo(Object o) {
-    DoubleWritable other = (DoubleWritable)o;
+    DoubleWritable other = (DoubleWritable) o;
     return (value < other.value ? -1 : (value == other.value ? 0 : 1));
   }
 
+  @Override
   public String toString() {
     return Double.toString(value);
   }
@@ -86,18 +93,16 @@ public class DoubleWritable implements WritableComparable {
       super(DoubleWritable.class);
     }
 
-    public int compare(byte[] b1, int s1, int l1,
-                       byte[] b2, int s2, int l2) {
+    @Override
+    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
       double thisValue = readDouble(b1, s1);
       double thatValue = readDouble(b2, s2);
       return (thisValue < thatValue ? -1 : (thisValue == thatValue ? 0 : 1));
     }
   }
 
-  static {                                        // register this comparator
+  static { // register this comparator
     WritableComparator.define(DoubleWritable.class, new Comparator());
   }
 
 }
-
-      

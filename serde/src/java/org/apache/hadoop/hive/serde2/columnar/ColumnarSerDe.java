@@ -26,8 +26,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -55,6 +55,7 @@ public class ColumnarSerDe implements SerDe {
   // We need some initial values in case user don't call initialize()
   private ObjectInspector cachedObjectInspector;
 
+  @Override
   public String toString() {
     return getClass().toString()
         + "["
@@ -89,14 +90,14 @@ public class ColumnarSerDe implements SerDe {
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
         serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence(), serdeParams.isEscaped(),
-            serdeParams.getEscapeChar());
+            .getSeparators(), serdeParams.getNullSequence(), serdeParams
+            .isEscaped(), serdeParams.getEscapeChar());
 
-    
-    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
-    
+    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils
+        .getReadColumnIDs(job);
+
     cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs);
-    
+
     int size = serdeParams.getColumnTypes().size();
     field = new BytesRefWritable[size];
     for (int i = 0; i < size; i++) {
@@ -204,17 +205,17 @@ public class ColumnarSerDe implements SerDe {
             && (declaredFields == null || declaredFields.get(i)
                 .getFieldObjectInspector().getCategory().equals(
                     Category.PRIMITIVE))) {
-          LazySimpleSerDe.serialize(serializeStream, 
-              SerDeUtils.getJSONString(f, foi),
+          LazySimpleSerDe.serialize(serializeStream, SerDeUtils.getJSONString(
+              f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
               serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
-              serdeParams.isEscaped(), serdeParams.getEscapeChar(),
-              serdeParams.getNeedsEscape());
+              serdeParams.isEscaped(), serdeParams.getEscapeChar(), serdeParams
+                  .getNeedsEscape());
         } else {
-          LazySimpleSerDe.serialize(serializeStream, f, foi, 
-              serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
-              serdeParams.isEscaped(), serdeParams.getEscapeChar(),
-              serdeParams.getNeedsEscape());
+          LazySimpleSerDe.serialize(serializeStream, f, foi, serdeParams
+              .getSeparators(), 1, serdeParams.getNullSequence(), serdeParams
+              .isEscaped(), serdeParams.getEscapeChar(), serdeParams
+              .getNeedsEscape());
         }
 
         field[i].set(serializeStream.getData(), count, serializeStream

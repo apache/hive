@@ -33,22 +33,22 @@ public class MyTestClassBigger {
   MyTestInnerStruct myStruct;
   List<Integer> myList;
   Map<String, List<MyTestInnerStruct>> myMap;
-  
-  public MyTestClassBigger() {  
+
+  public MyTestClassBigger() {
   }
-  
-  public MyTestClassBigger(Byte b, Short s, Integer i, Long l, 
-      Float f, Double d, String st, MyTestInnerStruct is, 
-      List<Integer> li, Map<String, List<MyTestInnerStruct>> mp) {
-    this.myByte = b;
-    this.myShort = s;
-    this.myInt = i;
-    this.myLong = l;
-    this.myFloat = f;
-    this.myDouble = d;
-    this.myString = st;
-    this.myStruct = is;
-    this.myList = li;
-    this.myMap  = mp;
+
+  public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
+      Double d, String st, MyTestInnerStruct is, List<Integer> li,
+      Map<String, List<MyTestInnerStruct>> mp) {
+    myByte = b;
+    myShort = s;
+    myInt = i;
+    myLong = l;
+    myFloat = f;
+    myDouble = d;
+    myString = st;
+    myStruct = is;
+    myList = li;
+    myMap = mp;
   }
 }

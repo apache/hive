@@ -26,15 +26,14 @@ public class ColumnSet {
   public ColumnSet() {
   }
 
-  public ColumnSet(ArrayList<String> col)
-  {
+  public ColumnSet(ArrayList<String> col) {
     this();
     this.col = col;
   }
 
+  @Override
   public String toString() {
     return col.toString();
   }
-  
-}
 
+}

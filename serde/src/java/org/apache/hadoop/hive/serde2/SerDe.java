@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.serde2;
 /**
  * A union of HiveDeserializer and HiveSerializer interface.
  * 
- * If a developer wants his hive table to be read-only, then he just want to 
- * return 
+ * If a developer wants his hive table to be read-only, then he just want to
+ * return
  * 
  * both readable and writable, then
- *   
- *
+ * 
+ * 
  */
 public interface SerDe extends Deserializer, Serializer {
 

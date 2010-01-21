@@ -20,9 +20,10 @@ package org.apache.hadoop.hive.serde2.columnar;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
@@ -31,8 +32,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * ColumnarStruct is different from LazyStruct in that ColumnarStruct's field
@@ -47,11 +46,11 @@ public class ColumnarStruct {
    * The fields of the struct.
    */
   LazyObject[] fields;
-  
+
   private static final Log LOG = LogFactory.getLog(ColumnarStruct.class);
-  
-  int[]   prjColIDs   = null;   // list of projected column IDs
-  
+
+  int[] prjColIDs = null; // list of projected column IDs
+
   /**
    * Construct a ColumnarStruct object with the TypeInfo. It creates the first
    * level object at the first place
@@ -62,7 +61,7 @@ public class ColumnarStruct {
   public ColumnarStruct(ObjectInspector oi) {
     this(oi, null);
   }
-  
+
   /**
    * Construct a ColumnarStruct object with the TypeInfo. It creates the first
    * level object at the first place
@@ -70,44 +69,50 @@ public class ColumnarStruct {
    * @param oi
    *          the ObjectInspector representing the type of this LazyStruct.
    * @param notSkippedColumnIDs
-   * 		  the column ids that should not be skipped       
+   *          the column ids that should not be skipped
    */
-  public ColumnarStruct(ObjectInspector oi, ArrayList<Integer> notSkippedColumnIDs) {
-    List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
+  public ColumnarStruct(ObjectInspector oi,
+      ArrayList<Integer> notSkippedColumnIDs) {
+    List<? extends StructField> fieldRefs = ((StructObjectInspector) oi)
+        .getAllStructFieldRefs();
     int num = fieldRefs.size();
     fields = new LazyObject[num];
     cachedByteArrayRef = new ByteArrayRef[num];
     rawBytesField = new BytesRefWritable[num];
     fieldSkipped = new boolean[num];
     inited = new boolean[num];
-    
-    //if no columns is set to be skipped, add all columns in 'notSkippedColumnIDs'
-		if (notSkippedColumnIDs == null || notSkippedColumnIDs.size() == 0) {
-			for (int i = 0; i < num; i++)
-				notSkippedColumnIDs.add(i);
-		}
-    
-    for (int i = 0; i < num; i++) {
-      fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
-      cachedByteArrayRef[i] = new ByteArrayRef();
-      if(!notSkippedColumnIDs.contains(i)){
-      	fieldSkipped[i] = true;
-      	inited[i] = true;
-      } else
-      	inited[i] = false;
+
+    // if no columns is set to be skipped, add all columns in
+    // 'notSkippedColumnIDs'
+    if (notSkippedColumnIDs == null || notSkippedColumnIDs.size() == 0) {
+      for (int i = 0; i < num; i++) {
+        notSkippedColumnIDs.add(i);
+      }
     }
-    
-		// maintain a list of non-NULL column IDs
-		int min = notSkippedColumnIDs.size() > num ? num : notSkippedColumnIDs
-		    .size();
-		prjColIDs = new int[min];
-		for (int i = 0, index = 0; i < notSkippedColumnIDs.size(); ++i) {
-			int readCol = notSkippedColumnIDs.get(i).intValue();
-			if (readCol < num) {
-				prjColIDs[index] = readCol;
-				index++;
-			}
-		}
+
+    for (int i = 0; i < num; i++) {
+      fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i)
+          .getFieldObjectInspector());
+      cachedByteArrayRef[i] = new ByteArrayRef();
+      if (!notSkippedColumnIDs.contains(i)) {
+        fieldSkipped[i] = true;
+        inited[i] = true;
+      } else {
+        inited[i] = false;
+      }
+    }
+
+    // maintain a list of non-NULL column IDs
+    int min = notSkippedColumnIDs.size() > num ? num : notSkippedColumnIDs
+        .size();
+    prjColIDs = new int[min];
+    for (int i = 0, index = 0; i < notSkippedColumnIDs.size(); ++i) {
+      int readCol = notSkippedColumnIDs.get(i).intValue();
+      if (readCol < num) {
+        prjColIDs[index] = readCol;
+        index++;
+      }
+    }
   }
 
   /**
@@ -152,8 +157,9 @@ public class ColumnarStruct {
    * @return The value of the field
    */
   protected Object uncheckedGetField(int fieldID, Text nullSequence) {
-    if (fieldSkipped[fieldID])
+    if (fieldSkipped[fieldID]) {
       return null;
+    }
     if (!inited[fieldID]) {
       BytesRefWritable passedInField = rawBytesField[fieldID];
       try {
@@ -165,35 +171,36 @@ public class ColumnarStruct {
           .getStart(), passedInField.getLength());
       inited[fieldID] = true;
     }
-    
+
     byte[] data = cachedByteArrayRef[fieldID].getData();
     int fieldLen = rawBytesField[fieldID].length;
-    
+
     if (fieldLen == nullSequence.getLength()
-        && LazyUtils.compare(data, rawBytesField[fieldID].getStart(),
-            fieldLen, nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
+        && LazyUtils.compare(data, rawBytesField[fieldID].getStart(), fieldLen,
+            nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
       return null;
     }
 
     return fields[fieldID].getObject();
   }
-  
-  /*  ============================  [PERF] ===================================
-   *  This function is called for every row. Setting up the selected/projected 
-   *  columns at the first call, and don't do that for the following calls. 
-   *  Ideally this should be done in the constructor where we don't need to 
-   *  branch in the function for each row. 
-   *  =========================================================================
+
+  /*
+   * ============================ [PERF] ===================================
+   * This function is called for every row. Setting up the selected/projected
+   * columns at the first call, and don't do that for the following calls.
+   * Ideally this should be done in the constructor where we don't need to
+   * branch in the function for each row.
+   * =========================================================================
    */
   public void init(BytesRefArrayWritable cols) {
-    for (int i = 0; i < prjColIDs.length; ++i ) {
+    for (int i = 0; i < prjColIDs.length; ++i) {
       int fieldIndex = prjColIDs[i];
-      if(fieldIndex < cols.size()){
-      	rawBytesField[fieldIndex] = cols.unCheckedGet(fieldIndex);
-        inited[fieldIndex] = false;      	
+      if (fieldIndex < cols.size()) {
+        rawBytesField[fieldIndex] = cols.unCheckedGet(fieldIndex);
+        inited[fieldIndex] = false;
       } else {
-      	// select columns that actually do not exist in the file.
-      	fieldSkipped[fieldIndex] = true;
+        // select columns that actually do not exist in the file.
+        fieldSkipped[fieldIndex] = true;
       }
     }
   }

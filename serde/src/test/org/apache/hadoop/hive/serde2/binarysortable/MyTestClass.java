@@ -29,21 +29,20 @@ public class MyTestClass {
   String myString;
   MyTestInnerStruct myStruct;
   List<Integer> myList;
-  
-  public MyTestClass() {  
+
+  public MyTestClass() {
   }
-  
-  public MyTestClass(Byte b, Short s, Integer i, Long l, 
-      Float f, Double d, String st, MyTestInnerStruct is, 
-      List<Integer> li) {
-    this.myByte = b;
-    this.myShort = s;
-    this.myInt = i;
-    this.myLong = l;
-    this.myFloat = f;
-    this.myDouble = d;
-    this.myString = st;
-    this.myStruct = is;
-    this.myList = li;
+
+  public MyTestClass(Byte b, Short s, Integer i, Long l, Float f, Double d,
+      String st, MyTestInnerStruct is, List<Integer> li) {
+    myByte = b;
+    myShort = s;
+    myInt = i;
+    myLong = l;
+    myFloat = f;
+    myDouble = d;
+    myString = st;
+    myStruct = is;
+    myList = li;
   }
 }

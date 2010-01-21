@@ -39,9 +39,8 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   int start = 0;
   int length = 0;
   byte[] bytes = null;
-  
+
   LazyDecompressionCallback lazyDecompressObj;
-  
 
   /**
    * Create a zero-size bytes.
@@ -78,7 +77,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
     start = offset;
     length = len;
   }
-  
+
   /**
    * Create a BytesRefWritable referenced to one section of the given bytes. The
    * argument <tt>lazyDecompressData</tt> refers to a LazyDecompressionCallback
@@ -86,7 +85,8 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    * uncompressed bytes of <tt>lazyDecompressData</tt>. Use <tt>offset</tt> and
    * <tt>len</tt> after uncompressing the data.
    */
-  public BytesRefWritable(LazyDecompressionCallback lazyDecompressData, int offset, int len) {
+  public BytesRefWritable(LazyDecompressionCallback lazyDecompressData,
+      int offset, int len) {
     lazyDecompressObj = lazyDecompressData;
     start = offset;
     length = len;
@@ -102,7 +102,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
    * Returns a copy of the underlying bytes referenced by this instance.
    * 
    * @return a new copied byte array
-   * @throws IOException 
+   * @throws IOException
    */
   public byte[] getBytesCopy() throws IOException {
     lazyDecompress();
@@ -113,7 +113,8 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
 
   /**
    * Returns the underlying bytes.
-   * @throws IOException 
+   * 
+   * @throws IOException
    */
   public byte[] getData() throws IOException {
     lazyDecompress();
@@ -132,7 +133,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
     length = len;
     lazyDecompressObj = null;
   }
-  
+
   /**
    * readFields() will corrupt the array. So use the set method whenever
    * possible.
@@ -176,11 +177,13 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   }
 
   /** {@inheritDoc} */
+  @Override
   public int hashCode() {
     return super.hashCode();
   }
 
   /** {@inheritDoc} */
+  @Override
   public String toString() {
     StringBuffer sb = new StringBuffer(3 * length);
     for (int idx = start; idx < length; idx++) {
@@ -201,22 +204,26 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   /** {@inheritDoc} */
   @Override
   public int compareTo(BytesRefWritable other) {
-    if (other == null)
+    if (other == null) {
       throw new IllegalArgumentException("Argument can not be null.");
-    if (this == other)
+    }
+    if (this == other) {
       return 0;
+    }
     try {
-      return WritableComparator.compareBytes(getData(), start, getLength(), other
-          .getData(), other.start, other.getLength());
+      return WritableComparator.compareBytes(getData(), start, getLength(),
+          other.getData(), other.start, other.getLength());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   /** {@inheritDoc} */
+  @Override
   public boolean equals(Object right_obj) {
-    if (right_obj == null || !(right_obj instanceof BytesRefWritable))
+    if (right_obj == null || !(right_obj instanceof BytesRefWritable)) {
       return false;
+    }
     return compareTo((BytesRefWritable) right_obj) == 0;
   }
 

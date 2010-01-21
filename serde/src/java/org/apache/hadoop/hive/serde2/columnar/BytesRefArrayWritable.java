@@ -54,8 +54,9 @@ public class BytesRefArrayWritable implements Writable,
    *              if the specified initial capacity is negative
    */
   public BytesRefArrayWritable(int capacity) {
-    if (capacity < 0)
+    if (capacity < 0) {
       throw new IllegalArgumentException("Capacity can not be negative.");
+    }
     bytesRefWritables = new BytesRefWritable[0];
     ensureCapacity(capacity);
   }
@@ -85,10 +86,10 @@ public class BytesRefArrayWritable implements Writable,
    * @throws IndexOutOfBoundsException
    */
   public BytesRefWritable get(int index) {
-    if (index >= valid)
+    if (index >= valid) {
       throw new IndexOutOfBoundsException(
-          "This BytesRefArrayWritable only has " + valid
-              + " valid values.");
+          "This BytesRefArrayWritable only has " + valid + " valid values.");
+    }
     return bytesRefWritables[index];
   }
 
@@ -115,12 +116,14 @@ public class BytesRefArrayWritable implements Writable,
    *           if the specified new element is null
    */
   public void set(int index, BytesRefWritable bytesRefWritable) {
-    if (bytesRefWritable == null)
+    if (bytesRefWritable == null) {
       throw new IllegalArgumentException("Can not assign null.");
+    }
     ensureCapacity(index + 1);
     bytesRefWritables[index] = bytesRefWritable;
-    if (valid <= index)
+    if (valid <= index) {
       valid = index + 1;
+    }
   }
 
   /**
@@ -128,18 +131,22 @@ public class BytesRefArrayWritable implements Writable,
    */
   @Override
   public int compareTo(BytesRefArrayWritable other) {
-    if (other == null)
+    if (other == null) {
       throw new IllegalArgumentException("Argument can not be null.");
-    if (this == other)
+    }
+    if (this == other) {
       return 0;
+    }
     int sizeDiff = valid - other.valid;
-    if (sizeDiff != 0)
+    if (sizeDiff != 0) {
       return sizeDiff;
+    }
     for (int i = 0; i < valid; i++) {
-      if (other.contains(bytesRefWritables[i]))
+      if (other.contains(bytesRefWritables[i])) {
         continue;
-      else
+      } else {
         return 1;
+      }
     }
     return 0;
   }
@@ -155,11 +162,13 @@ public class BytesRefArrayWritable implements Writable,
    *           if the specified element is null
    */
   public boolean contains(BytesRefWritable bytesRefWritable) {
-    if (bytesRefWritable == null)
+    if (bytesRefWritable == null) {
       throw new IllegalArgumentException("Argument can not be null.");
+    }
     for (int i = 0; i < valid; i++) {
-      if (bytesRefWritables[i].equals(bytesRefWritable))
+      if (bytesRefWritables[i].equals(bytesRefWritable)) {
         return true;
+      }
     }
     return false;
   }
@@ -167,9 +176,11 @@ public class BytesRefArrayWritable implements Writable,
   /**
    * {@inheritDoc}
    */
+  @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof BytesRefArrayWritable))
+    if (o == null || !(o instanceof BytesRefArrayWritable)) {
       return false;
+    }
     return compareTo((BytesRefArrayWritable) o) == 0;
   }
 

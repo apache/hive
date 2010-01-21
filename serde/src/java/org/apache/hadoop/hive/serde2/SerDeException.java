@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 /**
  * Generic exception class for SerDes
- *
+ * 
  */
 
 public class SerDeException extends Exception {
@@ -42,4 +42,3 @@ public class SerDeException extends Exception {
     super(message, cause);
   }
 }
-

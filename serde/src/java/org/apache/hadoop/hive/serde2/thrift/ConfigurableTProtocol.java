@@ -18,21 +18,24 @@
 
 package org.apache.hadoop.hive.serde2.thrift;
 
-import org.apache.hadoop.conf.Configuration;
 import java.util.Properties;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.TException;
 
 /**
- * An interface for TProtocols that need to have properties passed in to 
- *  initialize them. e.g., separators for TCTLSeparatedProtocol.
- *  If there was a regex like deserializer, the regex could be passed in
- *  in this manner.
+ * An interface for TProtocols that need to have properties passed in to
+ * initialize them. e.g., separators for TCTLSeparatedProtocol. If there was a
+ * regex like deserializer, the regex could be passed in in this manner.
  */
 public interface ConfigurableTProtocol {
   /**
    * Initialize the TProtocol
-   * @param conf System properties
-   * @param tbl  table properties
+   * 
+   * @param conf
+   *          System properties
+   * @param tbl
+   *          table properties
    * @throws TException
    */
   public void initialize(Configuration conf, Properties tbl) throws TException;

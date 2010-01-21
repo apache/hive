@@ -21,23 +21,22 @@ package org.apache.hadoop.hive.serde2.thrift;
 import org.apache.thrift.TException;
 
 /**
- * An interface for TProtocols that actually write out nulls - 
- * This should be for all those that don't actually use
- * fieldids in the written data like TCTLSeparatedProtocol.
+ * An interface for TProtocols that actually write out nulls - This should be
+ * for all those that don't actually use fieldids in the written data like
+ * TCTLSeparatedProtocol.
  * 
  */
 public interface WriteNullsProtocol {
   /**
-   * Was the last primitive read really a NULL. Need
-   * only be called when the value of the primitive
-   * was 0. ie the protocol should return 0 on nulls
-   * and the caller will then check if it was actually null
-   * For boolean this is false.
+   * Was the last primitive read really a NULL. Need only be called when the
+   * value of the primitive was 0. ie the protocol should return 0 on nulls and
+   * the caller will then check if it was actually null For boolean this is
+   * false.
    */
   public boolean lastPrimitiveWasNull() throws TException;
 
   /**
-   * Write a null 
+   * Write a null
    */
   public void writeNull() throws TException;
 

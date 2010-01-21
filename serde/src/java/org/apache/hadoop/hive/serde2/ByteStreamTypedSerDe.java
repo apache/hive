@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.serde2;
 import java.lang.reflect.Type;
 
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 public abstract class ByteStreamTypedSerDe extends TypedSerDe {
@@ -35,12 +34,12 @@ public abstract class ByteStreamTypedSerDe extends TypedSerDe {
     bis = new ByteStream.Input();
   }
 
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     Object retObj = super.deserialize(field);
-    BytesWritable b = (BytesWritable)field;
+    BytesWritable b = (BytesWritable) field;
     bis.reset(b.get(), b.getSize());
     return (retObj);
   }
-
 
 }

@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -37,10 +38,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.io.Text;
 
 public class SerDeUtils {
-
 
   public static final char QUOTE = '"';
   public static final char COLON = ':';
@@ -50,40 +49,46 @@ public class SerDeUtils {
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
 
-  private static HashMap<String, Class<?>> serdes = new HashMap<String, Class<?>> ();
+  private static HashMap<String, Class<?>> serdes = new HashMap<String, Class<?>>();
 
   public static void registerSerDe(String name, Class<?> serde) {
-    if(serdes.containsKey(name)) {
+    if (serdes.containsKey(name)) {
       throw new RuntimeException("double registering serde " + name);
     }
     serdes.put(name, serde);
   }
 
-  public static Deserializer lookupDeserializer(String name) throws SerDeException {
+  public static Deserializer lookupDeserializer(String name)
+      throws SerDeException {
     Class<?> c;
-    if(serdes.containsKey(name)) {
-        c = serdes.get(name);
+    if (serdes.containsKey(name)) {
+      c = serdes.get(name);
     } else {
       try {
         c = Class.forName(name, true, JavaUtils.getClassLoader());
-      } catch(ClassNotFoundException e) {
+      } catch (ClassNotFoundException e) {
         throw new SerDeException("SerDe " + name + " does not exist");
       }
     }
     try {
-      return (Deserializer)c.newInstance();
-    } catch(Exception e) {
+      return (Deserializer) c.newInstance();
+    } catch (Exception e) {
       throw new SerDeException(e);
     }
   }
 
-  private static List<String> nativeSerDeNames = new ArrayList<String>(); 
+  private static List<String> nativeSerDeNames = new ArrayList<String>();
   static {
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class.getName());
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
+    nativeSerDeNames
+        .add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class
+            .getName());
+    nativeSerDeNames
+        .add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
+            .getName());
     // For backward compatibility
     nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    nativeSerDeNames
+        .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
   }
 
   public static boolean isNativeSerDe(String serde) {
@@ -91,16 +96,23 @@ public class SerDeUtils {
   }
 
   private static boolean initCoreSerDes = registerCoreSerDes();
-  
+
   protected static boolean registerCoreSerDes() {
-    // Eagerly load SerDes so they will register their symbolic names even on Lazy Loading JVMs
+    // Eagerly load SerDes so they will register their symbolic names even on
+    // Lazy Loading JVMs
     try {
       // loading these classes will automatically register the short names
-      Class.forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
-      Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-      Class.forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class.getName());
+      Class
+          .forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
+              .getName());
+      Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
+          .getName());
+      Class
+          .forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class
+              .getName());
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException("IMPOSSIBLE Exception: Unable to initialize core serdes", e);
+      throw new RuntimeException(
+          "IMPOSSIBLE Exception: Unable to initialize core serdes", e);
     }
     return true;
   }
@@ -159,7 +171,6 @@ public class SerDeUtils {
     return (escape.toString());
   }
 
-
   public static String lightEscapeString(String str) {
     int length = str.length();
     StringBuilder escape = new StringBuilder(length + 16);
@@ -193,123 +204,129 @@ public class SerDeUtils {
     return sb.toString();
   }
 
-
   static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi) {
 
-    switch(oi.getCategory()) {
-      case PRIMITIVE: {
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
-        if (o == null) {
-          sb.append("null");
-        } else {
-          switch (poi.getPrimitiveCategory()) {
-          case BOOLEAN: {
-            boolean b = ((BooleanObjectInspector)poi).get(o);
-            sb.append(b ? "true" : "false");
-            break;
-          }
-          case BYTE: {
-            sb.append(((ByteObjectInspector)poi).get(o));
-            break;
-          }
-          case SHORT: {
-            sb.append(((ShortObjectInspector)poi).get(o));
-            break;
-          }
-          case INT: {
-            sb.append(((IntObjectInspector)poi).get(o));
-            break;
-          }
-          case LONG: {
-            sb.append(((LongObjectInspector)poi).get(o));
-            break;
-          }
-          case FLOAT: {
-            sb.append(((FloatObjectInspector)poi).get(o));
-            break;
-          }
-          case DOUBLE: {
-            sb.append(((DoubleObjectInspector)poi).get(o));
-            break;
-          }
-          case STRING: {
-            sb.append('"'); 
-            sb.append(escapeString(((StringObjectInspector)poi).getPrimitiveJavaObject(o)));
-            sb.append('"'); 
-            break;
-          }
-          default:
-            throw new RuntimeException("Unknown primitive type: " + poi.getPrimitiveCategory());
-          }
+    switch (oi.getCategory()) {
+    case PRIMITIVE: {
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+      if (o == null) {
+        sb.append("null");
+      } else {
+        switch (poi.getPrimitiveCategory()) {
+        case BOOLEAN: {
+          boolean b = ((BooleanObjectInspector) poi).get(o);
+          sb.append(b ? "true" : "false");
+          break;
         }
-        break;
-      }
-      case LIST: {
-        ListObjectInspector loi = (ListObjectInspector)oi;
-        ObjectInspector listElementObjectInspector = loi.getListElementObjectInspector();
-        List<?> olist = loi.getList(o);
-        if (olist == null) {
-          sb.append("null");
-        } else {
-          sb.append(LBRACKET);
-          for (int i=0; i<olist.size(); i++) {
-            if (i>0) sb.append(COMMA);
-            buildJSONString(sb, olist.get(i), listElementObjectInspector);
-          }
-          sb.append(RBRACKET);
+        case BYTE: {
+          sb.append(((ByteObjectInspector) poi).get(o));
+          break;
         }
-        break;
-      }
-      case MAP: {
-        MapObjectInspector moi = (MapObjectInspector)oi;
-        ObjectInspector mapKeyObjectInspector = moi.getMapKeyObjectInspector();
-        ObjectInspector mapValueObjectInspector = moi.getMapValueObjectInspector();
-        Map<?,?> omap = moi.getMap(o);
-        if (omap == null) {
-          sb.append("null");
-        } else {
-          sb.append(LBRACE);
-          boolean first = true;
-          for(Object entry : omap.entrySet()) {
-            if (first) {
-              first = false;
-            } else {
-              sb.append(COMMA);
-            }
-            Map.Entry<?,?> e = (Map.Entry<?,?>)entry;
-            buildJSONString(sb, e.getKey(), mapKeyObjectInspector);
-            sb.append(COLON);
-            buildJSONString(sb, e.getValue(), mapValueObjectInspector);
-          }
-          sb.append(RBRACE);
+        case SHORT: {
+          sb.append(((ShortObjectInspector) poi).get(o));
+          break;
         }
-        break;
-      }
-      case STRUCT: {
-        StructObjectInspector soi = (StructObjectInspector)oi;
-        List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-        if (o == null) {
-          sb.append("null");
-        } else {
-          sb.append(LBRACE);
-          for(int i=0; i<structFields.size(); i++) {
-            if (i>0) {
-              sb.append(COMMA);
-            }
-            sb.append(QUOTE);
-            sb.append(structFields.get(i).getFieldName());
-            sb.append(QUOTE);
-            sb.append(COLON);
-            buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)), 
-                structFields.get(i).getFieldObjectInspector());          
-          }
-          sb.append(RBRACE);
+        case INT: {
+          sb.append(((IntObjectInspector) poi).get(o));
+          break;
         }
-        break;
+        case LONG: {
+          sb.append(((LongObjectInspector) poi).get(o));
+          break;
+        }
+        case FLOAT: {
+          sb.append(((FloatObjectInspector) poi).get(o));
+          break;
+        }
+        case DOUBLE: {
+          sb.append(((DoubleObjectInspector) poi).get(o));
+          break;
+        }
+        case STRING: {
+          sb.append('"');
+          sb.append(escapeString(((StringObjectInspector) poi)
+              .getPrimitiveJavaObject(o)));
+          sb.append('"');
+          break;
+        }
+        default:
+          throw new RuntimeException("Unknown primitive type: "
+              + poi.getPrimitiveCategory());
+        }
       }
-      default:
-        throw new RuntimeException("Unknown type in ObjectInspector!");
-    };
-    
-  }  
+      break;
+    }
+    case LIST: {
+      ListObjectInspector loi = (ListObjectInspector) oi;
+      ObjectInspector listElementObjectInspector = loi
+          .getListElementObjectInspector();
+      List<?> olist = loi.getList(o);
+      if (olist == null) {
+        sb.append("null");
+      } else {
+        sb.append(LBRACKET);
+        for (int i = 0; i < olist.size(); i++) {
+          if (i > 0) {
+            sb.append(COMMA);
+          }
+          buildJSONString(sb, olist.get(i), listElementObjectInspector);
+        }
+        sb.append(RBRACKET);
+      }
+      break;
+    }
+    case MAP: {
+      MapObjectInspector moi = (MapObjectInspector) oi;
+      ObjectInspector mapKeyObjectInspector = moi.getMapKeyObjectInspector();
+      ObjectInspector mapValueObjectInspector = moi
+          .getMapValueObjectInspector();
+      Map<?, ?> omap = moi.getMap(o);
+      if (omap == null) {
+        sb.append("null");
+      } else {
+        sb.append(LBRACE);
+        boolean first = true;
+        for (Object entry : omap.entrySet()) {
+          if (first) {
+            first = false;
+          } else {
+            sb.append(COMMA);
+          }
+          Map.Entry<?, ?> e = (Map.Entry<?, ?>) entry;
+          buildJSONString(sb, e.getKey(), mapKeyObjectInspector);
+          sb.append(COLON);
+          buildJSONString(sb, e.getValue(), mapValueObjectInspector);
+        }
+        sb.append(RBRACE);
+      }
+      break;
+    }
+    case STRUCT: {
+      StructObjectInspector soi = (StructObjectInspector) oi;
+      List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+      if (o == null) {
+        sb.append("null");
+      } else {
+        sb.append(LBRACE);
+        for (int i = 0; i < structFields.size(); i++) {
+          if (i > 0) {
+            sb.append(COMMA);
+          }
+          sb.append(QUOTE);
+          sb.append(structFields.get(i).getFieldName());
+          sb.append(QUOTE);
+          sb.append(COLON);
+          buildJSONString(sb, soi.getStructFieldData(o, structFields.get(i)),
+              structFields.get(i).getFieldObjectInspector());
+        }
+        sb.append(RBRACE);
+      }
+      break;
+    }
+    default:
+      throw new RuntimeException("Unknown type in ObjectInspector!");
+    }
+    ;
+
+  }
 }

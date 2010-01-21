@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -47,33 +46,36 @@ public class ByteWritable implements WritableComparable {
   public void set(byte value) {
     this.value = value;
   }
-  
+
   public byte get() {
     return value;
   }
-  
+
   /** Compares two ByteWritables. */
   public int compareTo(Object o) {
-    int thisValue = this.value;
+    int thisValue = value;
     int thatValue = ((ByteWritable) o).value;
     return thisValue - thatValue;
   }
 
+  @Override
   public boolean equals(Object o) {
     if (o == null || o.getClass() != ByteWritable.class) {
       return false;
     }
-    return get() == ((ByteWritable)o).get();
+    return get() == ((ByteWritable) o).get();
   }
-  
+
+  @Override
   public int hashCode() {
     return value;
   }
-  
+
+  @Override
   public String toString() {
     return String.valueOf(get());
   }
-  
+
   /** A Comparator optimized for BytesWritable. */
   public static class Comparator extends WritableComparator {
     public Comparator() {
@@ -83,6 +85,7 @@ public class ByteWritable implements WritableComparable {
     /**
      * Compare the buffers in serialized form.
      */
+    @Override
     public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
       int a1 = b1[s1];
       int a2 = b2[s2];

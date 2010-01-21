@@ -20,16 +20,15 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Class for testing TestReflectionObjectInspector.
  */
 public class MyStruct {
-    public int myInt;
-    public Integer myInteger;
-    public String myString;
-    // Note: this is a recursive struct
-    public MyStruct myStruct;
-    public List<String> myListString;
-    public Map<String, String> myMapStringString;
+  public int myInt;
+  public Integer myInteger;
+  public String myString;
+  // Note: this is a recursive struct
+  public MyStruct myStruct;
+  public List<String> myListString;
+  public Map<String, String> myMapStringString;
 }

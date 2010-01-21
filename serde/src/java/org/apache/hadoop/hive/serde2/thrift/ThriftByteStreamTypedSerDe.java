@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.serde2.ByteStreamTypedSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.Writable;
-
 import org.apache.thrift.TBase;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
@@ -37,19 +36,24 @@ public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
   protected TIOStreamTransport outTransport, inTransport;
   protected TProtocol outProtocol, inProtocol;
 
-  private void init(TProtocolFactory inFactory, TProtocolFactory outFactory) throws Exception {
+  private void init(TProtocolFactory inFactory, TProtocolFactory outFactory)
+      throws Exception {
     outTransport = new TIOStreamTransport(bos);
     inTransport = new TIOStreamTransport(bis);
     outProtocol = outFactory.getProtocol(outTransport);
     inProtocol = inFactory.getProtocol(inTransport);
   }
 
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
-    throw new SerDeException("ThriftByteStreamTypedSerDe is still semi-abstract");
+  @Override
+  public void initialize(Configuration job, Properties tbl)
+      throws SerDeException {
+    throw new SerDeException(
+        "ThriftByteStreamTypedSerDe is still semi-abstract");
   }
 
-  public ThriftByteStreamTypedSerDe(Type objectType, TProtocolFactory inFactory,
-                                    TProtocolFactory outFactory) throws SerDeException {
+  public ThriftByteStreamTypedSerDe(Type objectType,
+      TProtocolFactory inFactory, TProtocolFactory outFactory)
+      throws SerDeException {
     super(objectType);
     try {
       init(inFactory, outFactory);
@@ -58,14 +62,16 @@ public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
     }
   }
 
+  @Override
   protected ObjectInspectorFactory.ObjectInspectorOptions getObjectInspectorOptions() {
     return ObjectInspectorFactory.ObjectInspectorOptions.THRIFT;
   }
-  
+
+  @Override
   public Object deserialize(Writable field) throws SerDeException {
     Object obj = super.deserialize(field);
     try {
-      ((TBase)obj).read(inProtocol);
+      ((TBase) obj).read(inProtocol);
     } catch (Exception e) {
       throw new SerDeException(e);
     }

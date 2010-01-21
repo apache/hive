@@ -22,52 +22,59 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
-/** A Map Type has homogeneous keys and homogeneous values.
- *  All keys of the Map have the same TypeInfo, which is returned by
- *  getMapKeyTypeInfo(); and all values of the Map has the same TypeInfo,
- *  which is returned by getMapValueTypeInfo().
- *  
- *  Always use the TypeInfoFactory to create new TypeInfo objects, instead
- *  of directly creating an instance of this class. 
+/**
+ * A Map Type has homogeneous keys and homogeneous values. All keys of the Map
+ * have the same TypeInfo, which is returned by getMapKeyTypeInfo(); and all
+ * values of the Map has the same TypeInfo, which is returned by
+ * getMapValueTypeInfo().
+ * 
+ * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
+ * directly creating an instance of this class.
  */
-public class MapTypeInfo extends TypeInfo implements Serializable{
+public class MapTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
+
   TypeInfo mapKeyTypeInfo;
   TypeInfo mapValueTypeInfo;
-  
-  /** For java serialization use only.
+
+  /**
+   * For java serialization use only.
    */
-  public MapTypeInfo() {}
-  
-  public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME 
-    + "<" + mapKeyTypeInfo.getTypeName() + "," 
-    + mapValueTypeInfo.getTypeName() + ">";
+  public MapTypeInfo() {
   }
-  
-  /** For java serialization use only.
+
+  @Override
+  public String getTypeName() {
+    return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME + "<"
+        + mapKeyTypeInfo.getTypeName() + "," + mapValueTypeInfo.getTypeName()
+        + ">";
+  }
+
+  /**
+   * For java serialization use only.
    */
   public void setMapKeyTypeInfo(TypeInfo mapKeyTypeInfo) {
     this.mapKeyTypeInfo = mapKeyTypeInfo;
   }
 
-  /** For java serialization use only.
+  /**
+   * For java serialization use only.
    */
   public void setMapValueTypeInfo(TypeInfo mapValueTypeInfo) {
     this.mapValueTypeInfo = mapValueTypeInfo;
   }
-  
+
   // For TypeInfoFactory use only
   MapTypeInfo(TypeInfo keyTypeInfo, TypeInfo valueTypeInfo) {
-    this.mapKeyTypeInfo = keyTypeInfo;
-    this.mapValueTypeInfo = valueTypeInfo;
+    mapKeyTypeInfo = keyTypeInfo;
+    mapValueTypeInfo = valueTypeInfo;
   }
 
+  @Override
   public Category getCategory() {
     return Category.MAP;
-  }  
+  }
 
   public TypeInfo getMapKeyTypeInfo() {
     return mapKeyTypeInfo;
@@ -77,8 +84,11 @@ public class MapTypeInfo extends TypeInfo implements Serializable{
     return mapValueTypeInfo;
   }
 
+  @Override
   public boolean equals(Object other) {
-    if (this == other) return true;
+    if (this == other) {
+      return true;
+    }
     if (!(other instanceof MapTypeInfo)) {
       return false;
     }
@@ -87,10 +97,10 @@ public class MapTypeInfo extends TypeInfo implements Serializable{
         && o.getMapKeyTypeInfo().equals(getMapKeyTypeInfo())
         && o.getMapValueTypeInfo().equals(getMapValueTypeInfo());
   }
-  
+
+  @Override
   public int hashCode() {
     return mapKeyTypeInfo.hashCode() ^ mapValueTypeInfo.hashCode();
   }
-  
-  
+
 }

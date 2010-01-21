@@ -19,50 +19,61 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
+
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
-/** A List Type has homogeneous elements.  All elements of the List has
- *  the same TypeInfo which is returned by getListElementTypeInfo.
- *  
- *  Always use the TypeInfoFactory to create new TypeInfo objects, instead
- *  of directly creating an instance of this class. 
+/**
+ * A List Type has homogeneous elements. All elements of the List has the same
+ * TypeInfo which is returned by getListElementTypeInfo.
+ * 
+ * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
+ * directly creating an instance of this class.
  */
 public class ListTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
   TypeInfo listElementTypeInfo;
-  
-  /** For java serialization use only.
+
+  /**
+   * For java serialization use only.
    */
-  public ListTypeInfo() {}
-  
-  public String getTypeName() {
-    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME 
-    + "<" + listElementTypeInfo.getTypeName() + ">";
+  public ListTypeInfo() {
   }
-  
-  /** For java serialization use only.
+
+  @Override
+  public String getTypeName() {
+    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<"
+        + listElementTypeInfo.getTypeName() + ">";
+  }
+
+  /**
+   * For java serialization use only.
    */
   public void setListElementTypeInfo(TypeInfo listElementTypeInfo) {
     this.listElementTypeInfo = listElementTypeInfo;
   }
-  
-  /** For TypeInfoFactory use only.
+
+  /**
+   * For TypeInfoFactory use only.
    */
   ListTypeInfo(TypeInfo elementTypeInfo) {
-    this.listElementTypeInfo = elementTypeInfo;
+    listElementTypeInfo = elementTypeInfo;
   }
 
+  @Override
   public Category getCategory() {
     return Category.LIST;
-  }  
+  }
 
   public TypeInfo getListElementTypeInfo() {
     return listElementTypeInfo;
   }
 
+  @Override
   public boolean equals(Object other) {
-    if (this == other) return true;
+    if (this == other) {
+      return true;
+    }
     if (!(other instanceof ListTypeInfo)) {
       return false;
     }
@@ -70,9 +81,10 @@ public class ListTypeInfo extends TypeInfo implements Serializable {
     return o.getCategory().equals(getCategory())
         && o.getListElementTypeInfo().equals(getListElementTypeInfo());
   }
-  
+
+  @Override
   public int hashCode() {
     return listElementTypeInfo.hashCode();
   }
-  
+
 }

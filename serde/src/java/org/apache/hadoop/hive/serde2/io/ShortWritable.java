@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.io;
 
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -47,28 +46,31 @@ public class ShortWritable implements WritableComparable {
   public void set(short value) {
     this.value = value;
   }
-  
+
   public short get() {
     return value;
   }
-  
+
+  @Override
   public boolean equals(Object o) {
     if (o == null || o.getClass() != ShortWritable.class) {
       return false;
     }
-    return get() == ((ShortWritable)o).get();
+    return get() == ((ShortWritable) o).get();
   }
 
+  @Override
   public int hashCode() {
     return value;
   }
-  
+
+  @Override
   public String toString() {
     return String.valueOf(get());
   }
-  
+
   public int compareTo(Object o) {
-    int thisValue = this.value;
+    int thisValue = value;
     int thatValue = ((ShortWritable) o).value;
     return thisValue - thatValue;
   }
@@ -82,9 +84,10 @@ public class ShortWritable implements WritableComparable {
     /**
      * Compare the buffers in serialized form.
      */
+    @Override
     public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-      int a1 = (short)(readUnsignedShort(b1, s1));
-      int a2 = (short)(readUnsignedShort(b2, s2));
+      int a1 = (short) (readUnsignedShort(b1, s1));
+      int a2 = (short) (readUnsignedShort(b2, s2));
       return a1 - a2;
     }
   }

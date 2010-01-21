@@ -37,20 +37,22 @@ public abstract class TypedSerDe implements SerDe {
   public TypedSerDe(Type objectType) throws SerDeException {
     this.objectType = objectType;
     if (objectType instanceof Class) {
-      objectClass = (Class<?>)objectType;
+      objectClass = (Class<?>) objectType;
     } else if (objectType instanceof ParameterizedType) {
-      objectClass = (Class<?>)(((ParameterizedType)objectType).getRawType());
+      objectClass = (Class<?>) (((ParameterizedType) objectType).getRawType());
     } else {
-      throw new SerDeException("Cannot create TypedSerDe with type " + objectType);
+      throw new SerDeException("Cannot create TypedSerDe with type "
+          + objectType);
     }
   }
 
   protected Object deserializeCache;
+
   public Object deserialize(Writable blob) throws SerDeException {
     if (deserializeCache == null) {
       return ReflectionUtils.newInstance(objectClass, null);
     } else {
-      assert(deserializeCache.getClass().equals(objectClass));
+      assert (deserializeCache.getClass().equals(objectClass));
       return deserializeCache;
     }
   }
@@ -63,7 +65,7 @@ public abstract class TypedSerDe implements SerDe {
   protected ObjectInspectorFactory.ObjectInspectorOptions getObjectInspectorOptions() {
     return ObjectInspectorFactory.ObjectInspectorOptions.JAVA;
   }
-  
+
   public void initialize(Configuration job, Properties tbl)
       throws SerDeException {
     // do nothing
@@ -72,7 +74,9 @@ public abstract class TypedSerDe implements SerDe {
   public Class<? extends Writable> getSerializedClass() {
     return BytesWritable.class;
   }
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+
+  public Writable serialize(Object obj, ObjectInspector objInspector)
+      throws SerDeException {
     throw new RuntimeException("not supported");
   }
 

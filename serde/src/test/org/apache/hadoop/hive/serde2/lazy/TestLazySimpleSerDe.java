@@ -17,9 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-
 import java.util.List;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
@@ -32,8 +33,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
-import junit.framework.TestCase;
 
 public class TestLazySimpleSerDe extends TestCase {
 
@@ -50,16 +49,15 @@ public class TestLazySimpleSerDe extends TestCase {
 
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL");
-      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\tNULL"; 
-      Object[] expectedFieldsData = { new ByteWritable((byte)123),
-          new ShortWritable((short)456), new IntWritable(789),
-          new LongWritable(1000), new DoubleWritable(5.3), new Text("hive and hadoop"), null,
-          null
-      };
-      
+      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\tNULL";
+      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+          new ShortWritable((short) 456), new IntWritable(789),
+          new LongWritable(1000), new DoubleWritable(5.3),
+          new Text("hive and hadoop"), null, null };
+
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
-     
+
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -69,28 +67,29 @@ public class TestLazySimpleSerDe extends TestCase {
   private void deserializeAndSerialize(LazySimpleSerDe serDe, Text t, String s,
       Object[] expectedFieldsData) throws SerDeException {
     // Get the row structure
-    StructObjectInspector oi = (StructObjectInspector)serDe.getObjectInspector();
+    StructObjectInspector oi = (StructObjectInspector) serDe
+        .getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
     assertEquals(8, fieldRefs.size());
-    
+
     // Deserialize
     Object row = serDe.deserialize(t);
     for (int i = 0; i < fieldRefs.size(); i++) {
       Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
       if (fieldData != null) {
-        fieldData = ((LazyPrimitive)fieldData).getWritableObject();
+        fieldData = ((LazyPrimitive) fieldData).getWritableObject();
       }
       assertEquals("Field " + i, expectedFieldsData[i], fieldData);
     }
-    // Serialize 
+    // Serialize
     assertEquals(Text.class, serDe.getSerializedClass());
-    Text serializedText = (Text)serDe.serialize(row, oi);
+    Text serializedText = (Text) serDe.serialize(row, oi);
     assertEquals("Serialized data", s, serializedText.toString());
   }
 
   private Properties createProperties() {
     Properties tbl = new Properties();
-    
+
     // Set the configuration parameters
     tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns",
@@ -100,7 +99,7 @@ public class TestLazySimpleSerDe extends TestCase {
     tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
     return tbl;
   }
-    
+
   /**
    * Test the LazySimpleSerDe class with LastColumnTakesRest option.
    */
@@ -112,16 +111,15 @@ public class TestLazySimpleSerDe extends TestCase {
       Properties tbl = createProperties();
       tbl.setProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
       serDe.initialize(conf, tbl);
-      
+
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
-      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta\tb\t"; 
-      Object[] expectedFieldsData = { new ByteWritable((byte)123),
-          new ShortWritable((short)456), new IntWritable(789),
-          new LongWritable(1000), new DoubleWritable(5.3), new Text("hive and hadoop"), null,
-          new Text("a\tb\t")
-      };
-      
+      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta\tb\t";
+      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+          new ShortWritable((short) 456), new IntWritable(789),
+          new LongWritable(1000), new DoubleWritable(5.3),
+          new Text("hive and hadoop"), null, new Text("a\tb\t") };
+
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
 
@@ -131,7 +129,6 @@ public class TestLazySimpleSerDe extends TestCase {
     }
   }
 
-  
   /**
    * Test the LazySimpleSerDe class with extra columns.
    */
@@ -142,16 +139,15 @@ public class TestLazySimpleSerDe extends TestCase {
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
       serDe.initialize(conf, tbl);
-      
+
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
-      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta"; 
-      Object[] expectedFieldsData = { new ByteWritable((byte)123),
-          new ShortWritable((short)456), new IntWritable(789),
-          new LongWritable(1000), new DoubleWritable(5.3), new Text("hive and hadoop"), null,
-          new Text("a")
-      };
-      
+      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta";
+      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+          new ShortWritable((short) 456), new IntWritable(789),
+          new LongWritable(1000), new DoubleWritable(5.3),
+          new Text("hive and hadoop"), null, new Text("a") };
+
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
 
@@ -161,7 +157,6 @@ public class TestLazySimpleSerDe extends TestCase {
     }
   }
 
-  
   /**
    * Test the LazySimpleSerDe class with missing columns.
    */
@@ -172,16 +167,15 @@ public class TestLazySimpleSerDe extends TestCase {
       Configuration conf = new Configuration();
       Properties tbl = createProperties();
       serDe.initialize(conf, tbl);
-      
+
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\t");
-      String s = "123\t456\t789\t1000\t5.3\t\tNULL\tNULL"; 
-      Object[] expectedFieldsData = { new ByteWritable((byte)123),
-          new ShortWritable((short)456), new IntWritable(789),
+      String s = "123\t456\t789\t1000\t5.3\t\tNULL\tNULL";
+      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+          new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3), new Text(""), null,
-          null
-      };
-      
+          null };
+
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
 
@@ -190,5 +184,5 @@ public class TestLazySimpleSerDe extends TestCase {
       throw e;
     }
   }
-  
+
 }

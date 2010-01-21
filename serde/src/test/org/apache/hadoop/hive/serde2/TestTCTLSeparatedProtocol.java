@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2;
 
-
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -26,7 +25,6 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
-
 import org.apache.thrift.protocol.TField;
 import org.apache.thrift.protocol.TList;
 import org.apache.thrift.protocol.TMap;
@@ -44,14 +42,13 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     String bar = "World!";
 
     String key = "22";
-    String  value = "TheValue";
+    String value = "TheValue";
     String key2 = "24";
-    String  value2 = "TheValueAgain";
+    String value2 = "TheValueAgain";
 
-    byte columnSeparator [] = { 1 };
-    byte elementSeparator [] = { 2 };
-    byte kvSeparator [] = { 3 };
-
+    byte columnSeparator[] = { 1 };
+    byte elementSeparator[] = { 2 };
+    byte kvSeparator[] = { 3 };
 
     trans.write(foo.getBytes(), 0, foo.getBytes().length);
     trans.write(columnSeparator, 0, 1);
@@ -61,18 +58,16 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     trans.write(bar.getBytes(), 0, bar.getBytes().length);
     trans.write(columnSeparator, 0, 1);
 
-    trans.write(key.getBytes(), 0, key.getBytes().length); 
+    trans.write(key.getBytes(), 0, key.getBytes().length);
     trans.write(kvSeparator, 0, 1);
     trans.write(value.getBytes(), 0, value.getBytes().length);
     trans.write(elementSeparator, 0, 1);
 
-    trans.write(key2.getBytes(), 0, key2.getBytes().length); 
+    trans.write(key2.getBytes(), 0, key2.getBytes().length);
     trans.write(kvSeparator, 0, 1);
     trans.write(value2.getBytes(), 0, value2.getBytes().length);
-    
 
     trans.flush();
-
 
     // use 3 as the row buffer size to force lots of re-buffering.
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 1024);
@@ -113,7 +108,6 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readStructEnd();
   }
 
-
   public void testWrites() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 1024);
@@ -152,15 +146,14 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.writeListEnd();
     prot.writeFieldEnd();
 
-    
     prot.writeFieldBegin(new TField());
     prot.writeString("bye!");
     prot.writeFieldEnd();
 
     prot.writeStructEnd();
     trans.flush();
-    byte b[] = new byte[3*1024];
-    int len = trans.read(b,0,b.length);
+    byte b[] = new byte[3 * 1024];
+    int len = trans.read(b, 0, b.length);
     String test = new String(b, 0, len);
 
     String testRef = "100348.55234.22hello world!key1val1key2val2key3val3elem1elem2bye!";
@@ -175,7 +168,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     prot = new TCTLSeparatedProtocol(trans, 10);
     prot.initialize(new Configuration(), new Properties());
-    
+
     // 100 is the start
     prot.readStructBegin();
     prot.readFieldBegin();
@@ -265,11 +258,10 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     trans.flush();
 
     byte b[] = new byte[4096];
-    int len = trans.read(b,0,b.length);
-
+    int len = trans.read(b, 0, b.length);
 
     trans = new TMemoryBuffer(4096);
-    trans.write(b,0,len);
+    trans.write(b, 0, len);
     prot = new TCTLSeparatedProtocol(trans, 1024);
     prot.initialize(new Configuration(), schema);
 
@@ -278,10 +270,9 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     final String firstRead = prot.readString();
     prot.readFieldEnd();
 
-    testStr = testStr.replace("\"","");
+    testStr = testStr.replace("\"", "");
 
     assertEquals(testStr, firstRead);
-
 
     // the 2 element list
     prot.readFieldBegin();
@@ -305,10 +296,10 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readStructEnd();
   }
 
-
   /**
-   * Tests a sample apache log format. This is actually better done in general with a more TRegexLike protocol, but for this
-   * case, TCTLSeparatedProtocol can do it. 
+   * Tests a sample apache log format. This is actually better done in general
+   * with a more TRegexLike protocol, but for this case, TCTLSeparatedProtocol
+   * can do it.
    */
   public void test1ApacheLogFormat() throws Exception {
     final String sample = "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
@@ -320,7 +311,8 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 4096);
     Properties schema = new Properties();
 
-    // this is a hacky way of doing the quotes since it will match any 2 of these, so
+    // this is a hacky way of doing the quotes since it will match any 2 of
+    // these, so
     // "[ hello this is something to split [" would be considered to be quoted.
     schema.setProperty(Constants.QUOTE_CHAR, "(\"|\\[|\\])");
 
@@ -337,42 +329,42 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     assertEquals("127.0.0.1", ip);
 
-    //  identd
+    // identd
     prot.readFieldBegin();
     final String identd = prot.readString();
     prot.readFieldEnd();
 
     assertNull(identd);
 
-    //  user
+    // user
     prot.readFieldBegin();
     final String user = prot.readString();
     prot.readFieldEnd();
 
-    assertEquals("frank",user);
+    assertEquals("frank", user);
 
-    //  finishTime
+    // finishTime
     prot.readFieldBegin();
     final String finishTime = prot.readString();
     prot.readFieldEnd();
 
-    assertEquals("10/Oct/2000:13:55:36 -0700",finishTime);
+    assertEquals("10/Oct/2000:13:55:36 -0700", finishTime);
 
-    //  requestLine
+    // requestLine
     prot.readFieldBegin();
     final String requestLine = prot.readString();
     prot.readFieldEnd();
 
-    assertEquals("GET /apache_pb.gif HTTP/1.0",requestLine);
+    assertEquals("GET /apache_pb.gif HTTP/1.0", requestLine);
 
-    //  returncode
+    // returncode
     prot.readFieldBegin();
     final int returnCode = prot.readI32();
     prot.readFieldEnd();
 
     assertEquals(200, returnCode);
 
-    //  return size
+    // return size
     prot.readFieldBegin();
     final int returnSize = prot.readI32();
     prot.readFieldEnd();
@@ -381,8 +373,6 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     prot.readStructEnd();
   }
-
-
 
   public void testNulls() throws Exception {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
@@ -420,9 +410,9 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     prot.writeStructEnd();
 
-    byte b[] = new byte[3*1024];
-    int len = trans.read(b,0,b.length);
-    String written = new String(b,0,len);
+    byte b[] = new byte[3 * 1024];
+    int len = trans.read(b, 0, b.length);
+    String written = new String(b, 0, len);
 
     String testRef = "\\N\\N100\\N\\N\\Nkey2\\N\\Nval3";
 
@@ -433,7 +423,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     prot = new TCTLSeparatedProtocol(trans, 3);
     prot.initialize(new Configuration(), new Properties());
-    
+
     prot.readStructBegin();
 
     prot.readFieldBegin();
@@ -445,7 +435,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readFieldBegin();
     ret = prot.readString();
     prot.readFieldEnd();
-    
+
     assertNull(ret);
 
     prot.readFieldBegin();
@@ -454,13 +444,12 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     assertTrue(ret1 == 100);
 
-
     prot.readFieldBegin();
     ret1 = prot.readI32();
     prot.readFieldEnd();
 
     prot.readFieldBegin();
-    TMap map =  prot.readMapBegin();
+    TMap map = prot.readMapBegin();
 
     assertTrue(map.size == 3);
 
@@ -472,7 +461,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     assertNull(prot.readString());
     assertTrue(prot.readString().equals("val3"));
-    
+
     prot.readMapEnd();
     prot.readFieldEnd();
 

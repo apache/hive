@@ -28,19 +28,19 @@ public class MyTestClassSmaller {
   Double myDouble;
   String myString;
   MyTestInnerStruct myStruct;
-  
-  public MyTestClassSmaller() {  
+
+  public MyTestClassSmaller() {
   }
-  
-  public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, 
-      Float f, Double d, String st, MyTestInnerStruct is) {
-    this.myByte = b;
-    this.myShort = s;
-    this.myInt = i;
-    this.myLong = l;
-    this.myFloat = f;
-    this.myDouble = d;
-    this.myString = st;
-    this.myStruct = is;
+
+  public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, Float f,
+      Double d, String st, MyTestInnerStruct is) {
+    myByte = b;
+    myShort = s;
+    myInt = i;
+    myLong = l;
+    myFloat = f;
+    myDouble = d;
+    myString = st;
+    myStruct = is;
   }
 }

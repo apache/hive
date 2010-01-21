@@ -20,9 +20,8 @@ package org.apache.hadoop.hive.serde2.columnar;
 
 import java.io.IOException;
 
-
 /**
- * Used to call back lazy decompression process. 
+ * Used to call back lazy decompression process.
  * 
  * @see #BytesRefWritable
  */

@@ -25,30 +25,35 @@ import java.util.List;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
-/** StructTypeInfo represents the TypeInfo of a struct.
- *  A struct contains one or more fields each of which has a unique name
- *  and its own TypeInfo.  Different fields can have the same or different
- *  TypeInfo. 
- *  
- *  Always use the TypeInfoFactory to create new TypeInfo objects, instead
- *  of directly creating an instance of this class. 
+/**
+ * StructTypeInfo represents the TypeInfo of a struct. A struct contains one or
+ * more fields each of which has a unique name and its own TypeInfo. Different
+ * fields can have the same or different TypeInfo.
+ * 
+ * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
+ * directly creating an instance of this class.
  */
-public class StructTypeInfo extends TypeInfo implements Serializable{
+public class StructTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
+
   ArrayList<String> allStructFieldNames;
   ArrayList<TypeInfo> allStructFieldTypeInfos;
-  
-  /** For java serialization use only.
-   */
-  public StructTypeInfo() {}
 
+  /**
+   * For java serialization use only.
+   */
+  public StructTypeInfo() {
+  }
+
+  @Override
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
     sb.append(Constants.STRUCT_TYPE_NAME + "<");
-    for(int i=0; i<allStructFieldNames.size(); i++) {
-      if (i>0) sb.append(",");
+    for (int i = 0; i < allStructFieldNames.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
+      }
       sb.append(allStructFieldNames.get(i));
       sb.append(":");
       sb.append(allStructFieldTypeInfos.get(i).getTypeName());
@@ -56,21 +61,24 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
     sb.append(">");
     return sb.toString();
   }
-  
-  /** For java serialization use only.
+
+  /**
+   * For java serialization use only.
    */
   public void setAllStructFieldNames(ArrayList<String> allStructFieldNames) {
     this.allStructFieldNames = allStructFieldNames;
   }
 
-  /** For java serialization use only.
+  /**
+   * For java serialization use only.
    */
   public void setAllStructFieldTypeInfos(
       ArrayList<TypeInfo> allStructFieldTypeInfos) {
     this.allStructFieldTypeInfos = allStructFieldTypeInfos;
   }
-  
-  /** For TypeInfoFactory use only.
+
+  /**
+   * For TypeInfoFactory use only.
    */
   StructTypeInfo(List<String> names, List<TypeInfo> typeInfos) {
     allStructFieldNames = new ArrayList<String>();
@@ -79,33 +87,36 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
     allStructFieldTypeInfos.addAll(typeInfos);
   }
 
+  @Override
   public Category getCategory() {
     return Category.STRUCT;
   }
-  
+
   public ArrayList<String> getAllStructFieldNames() {
     return allStructFieldNames;
   }
-  
+
   public ArrayList<TypeInfo> getAllStructFieldTypeInfos() {
     return allStructFieldTypeInfos;
   }
-  
+
   public TypeInfo getStructFieldTypeInfo(String field) {
     String fieldLowerCase = field.toLowerCase();
-    for(int i=0; i<allStructFieldNames.size(); i++) {
+    for (int i = 0; i < allStructFieldNames.size(); i++) {
       if (fieldLowerCase.equals(allStructFieldNames.get(i))) {
         return allStructFieldTypeInfos.get(i);
       }
     }
-    throw new RuntimeException("cannot find field " + field + "(lowercase form: " 
-        + fieldLowerCase + ") in " + allStructFieldNames);
+    throw new RuntimeException("cannot find field " + field
+        + "(lowercase form: " + fieldLowerCase + ") in " + allStructFieldNames);
     // return null;
   }
-  
+
   @Override
   public boolean equals(Object other) {
-    if (this == other) return true;
+    if (this == other) {
+      return true;
+    }
     if (!(other instanceof StructTypeInfo)) {
       return false;
     }
@@ -114,9 +125,10 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
         && o.getAllStructFieldNames().equals(getAllStructFieldNames())
         && o.getAllStructFieldTypeInfos().equals(getAllStructFieldTypeInfos());
   }
-  
+
+  @Override
   public int hashCode() {
     return allStructFieldNames.hashCode() ^ allStructFieldTypeInfos.hashCode();
   }
-  
+
 }
