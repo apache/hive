@@ -52,7 +52,6 @@ Trunk -  Unreleased
 
     HIVE-1075. Make it possible for users to recover data when moveTask fails
     (Zheng Shao via Ning Zhang)
-    
 
 Release 0.5.0 -  Unreleased
 
@@ -492,6 +491,9 @@ Release 0.5.0 -  Unreleased
 
     HIVE-1049. Fix ant targets "eclipse-files" and "javadoc".
     (Carl Steinbach via zshao)
+
+    HIVE-1072. Keep CreateTime when a partition is overwritten.
+    (Paul Yang via zshao)
 
 Release 0.4.0 -  Unreleased
 
