@@ -392,8 +392,13 @@ public abstract class BaseSemanticAnalyzer {
           partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase()), val);
         }
         try {
-          // this doesn't create partition. partition is created in MoveTask
-          partHandle = new Partition(tableHandle, partSpec, null);
+          // In case the partition already exists, we need to get the partition
+          // data from the metastore
+          partHandle = db.getPartition(tableHandle, partSpec, false);
+          if(partHandle == null) {
+            // this doesn't create partition. partition is created in MoveTask
+            partHandle = new Partition(tableHandle, partSpec, null);
+          }
         } catch (HiveException e) {
           throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
         }
