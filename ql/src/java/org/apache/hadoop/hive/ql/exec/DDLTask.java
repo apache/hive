@@ -574,6 +574,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Table tbl = db.getTable(showTblStatus.getDbName(), showTblStatus
           .getPattern());
       par = db.getPartition(tbl, part, false);
+      if (par == null) {
+        throw new HiveException("Partition " + part + " for table "
+            + showTblStatus.getPattern() + " does not exist.");
+      }
       tbls.add(tbl);
     } else {
       LOG.info("pattern: " + showTblStatus.getPattern());

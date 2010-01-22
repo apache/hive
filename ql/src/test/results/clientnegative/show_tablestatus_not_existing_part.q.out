@@ -1,0 +1,4 @@
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-14-08', hr=11)
+PREHOOK: type: SHOW_TABLESTATUS
+FAILED: Error in metadata: Partition {ds=2008-14-08, hr=11} for table srcpart does not exist.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
