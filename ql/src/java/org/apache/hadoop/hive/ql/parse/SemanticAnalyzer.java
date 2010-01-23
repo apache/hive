@@ -5884,8 +5884,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String mapKeyDelim = null;
     String lineDelim = null;
     String comment = null;
-    String inputFormat = TEXTFILE_INPUT;
-    String outputFormat = TEXTFILE_OUTPUT;
+    String inputFormat = null;
+    String outputFormat = null;
     String location = null;
     String serde = null;
     Map<String, String> mapProp = null;
@@ -5896,17 +5896,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
     final int CTAS = 2; // CREATE TABLE AS SELECT ... (CTAS)
     int command_type = CREATE_TABLE;
-
-    if ("SequenceFile".equalsIgnoreCase(conf
-        .getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-      inputFormat = SEQUENCEFILE_INPUT;
-      outputFormat = SEQUENCEFILE_OUTPUT;
-    } else if ("RCFile".equalsIgnoreCase(conf
-        .getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-      inputFormat = RCFILE_INPUT;
-      outputFormat = RCFILE_OUTPUT;
-      serde = COLUMNAR_SERDE;
-    }
 
     LOG.info("Creating table " + tableName + " position="
         + ast.getCharPositionInLine());
@@ -6052,6 +6041,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (inputFormat == null) {
+      assert outputFormat == null;
+      if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+        inputFormat = SEQUENCEFILE_INPUT;
+        outputFormat = SEQUENCEFILE_OUTPUT;
+      } else if ("RCFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+        inputFormat = RCFILE_INPUT;
+        outputFormat = RCFILE_OUTPUT;
+        serde = COLUMNAR_SERDE;
+      } else {
+        inputFormat = TEXTFILE_INPUT;
+        outputFormat = TEXTFILE_OUTPUT;
+      }
+    }
+    
     // check for existence of table
     if (ifNotExists) {
       try {
