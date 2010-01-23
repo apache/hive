@@ -1,0 +1,4 @@
+PREHOOK: query: CREATE TABLE alter_test (d STRING)
+PREHOOK: type: CREATETABLE
+FAILED: Error in metadata: AlreadyExistsException(message:Table alter_test already exists)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

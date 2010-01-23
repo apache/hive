@@ -5,7 +5,7 @@ CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
                        ip STRING COMMENT 'IP Address of the User') 
     COMMENT 'This is the page view table' 
-    PARTITIONED BY(ds DATETIME, country STRING) 
+    PARTITIONED BY(ds STRING, country STRING) 
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS;
 DESCRIBE INPUTDDL4;
 DESCRIBE EXTENDED INPUTDDL4;

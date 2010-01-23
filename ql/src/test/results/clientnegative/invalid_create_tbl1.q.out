@@ -2,13 +2,4 @@ PREHOOK: query: DROP TABLE inv_valid_tbl1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE inv_valid_tbl1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE inv_valid_tbl1 COMMENT 'This is a thrift based table'
-    PARTITIONED BY(aint DATETIME, country STRING)
-    CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
-    ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer'
-    WITH SERDEPROPERTIES ('serialization.class' = 'org.apache.hadoop.hive.serde2.thrift.test.Complex',
-                          'serialization.format' = 'org.apache.thrift.protocol.TBinaryProtocol')
-    STORED AS SEQUENCEFILE
-PREHOOK: type: CREATETABLE
-FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: Partition column name aint conflicts with table columns.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Error in semantic analysis: DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use STRING instead.

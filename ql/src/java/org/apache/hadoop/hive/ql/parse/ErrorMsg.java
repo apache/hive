@@ -121,7 +121,9 @@ public enum ErrorMsg {
   LATERAL_VIEW_WITH_JOIN("Join with a lateral view is not supported"),
   LATERAL_VIEW_INVALID_CHILD("Lateral view AST with invalid child"),
   OUTPUT_SPECIFIED_MULTIPLE_TIMES("The same output cannot be present multiple times: "),
-  INVALID_AS("AS clause has an invalid number of aliases");
+  INVALID_AS("AS clause has an invalid number of aliases"),
+  UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use STRING instead.");
+
   private String mesg;
   private String SQLState;
 
