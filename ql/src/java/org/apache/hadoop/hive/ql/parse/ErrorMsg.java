@@ -118,7 +118,8 @@ public enum ErrorMsg {
       "The same output cannot be present multiple times: "), INVALID_AS(
       "AS clause has an invalid number of aliases"), VIEW_COL_MISMATCH(
       "The number of columns produced by the SELECT clause does not match the number of column names specified by CREATE VIEW"), DML_AGAINST_VIEW(
-      "A view cannot be used as target table for LOAD or INSERT");
+      "A view cannot be used as target table for LOAD or INSERT"), UNSUPPORTED_TYPE(
+      "DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use STRING instead.");
   private String mesg;
   private String SQLState;
 

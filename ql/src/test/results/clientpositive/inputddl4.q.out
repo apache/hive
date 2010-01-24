@@ -9,7 +9,7 @@ PREHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
                        ip STRING COMMENT 'IP Address of the User') 
     COMMENT 'This is the page view table' 
-    PARTITIONED BY(ds DATETIME, country STRING) 
+    PARTITIONED BY(ds STRING, country STRING) 
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
@@ -17,7 +17,7 @@ POSTHOOK: query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
                        ip STRING COMMENT 'IP Address of the User') 
     COMMENT 'This is the page view table' 
-    PARTITIONED BY(ds DATETIME, country STRING) 
+    PARTITIONED BY(ds STRING, country STRING) 
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@INPUTDDL4
@@ -32,7 +32,7 @@ referrer_url	string
 friends	array<bigint>	
 properties	map<string,string>	
 ip	string	IP Address of the User
-ds	datetime	
+ds	string	
 country	string	
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 PREHOOK: type: DESCTABLE
@@ -45,10 +45,10 @@ referrer_url	string
 friends	array<bigint>	
 properties	map<string,string>	
 ip	string	IP Address of the User
-ds	datetime	
+ds	string	
 country	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl4, dbName:default, owner:njain, createTime:1253780744, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:viewtime, type:string, comment:null), FieldSchema(name:userid, type:int, comment:null), FieldSchema(name:page_url, type:string, comment:null), FieldSchema(name:referrer_url, type:string, comment:null), FieldSchema(name:friends, type:array<bigint>, comment:null), FieldSchema(name:properties, type:map<string,string>, comment:null), FieldSchema(name:ip, type:string, comment:IP Address of the User)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/inputddl4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[userid], sortCols:[Order(col:viewtime, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:datetime, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{comment=This is the page view table})	
+Detailed Table Information	Table(tableName:inputddl4, dbName:default, owner:pyang, createTime:1264208851, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:viewtime, type:string, comment:null), FieldSchema(name:userid, type:int, comment:null), FieldSchema(name:page_url, type:string, comment:null), FieldSchema(name:referrer_url, type:string, comment:null), FieldSchema(name:friends, type:array<bigint>, comment:null), FieldSchema(name:properties, type:map<string,string>, comment:null), FieldSchema(name:ip, type:string, comment:IP Address of the User)], location:file:/data/users/pyang/task2/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/inputddl4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[userid], sortCols:[Order(col:viewtime, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1264208851,comment=This is the page view table}, viewOriginalText:null, viewExpandedText:null)	
 PREHOOK: query: DROP TABLE INPUTDDL4
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE INPUTDDL4
