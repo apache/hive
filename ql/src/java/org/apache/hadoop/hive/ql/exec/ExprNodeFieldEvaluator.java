@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
 
-  protected exprNodeFieldDesc desc;
+  protected ExprNodeFieldDesc desc;
   transient ExprNodeEvaluator leftEvaluator;
   transient ObjectInspector leftInspector;
   transient StructObjectInspector structObjectInspector;
@@ -44,7 +44,7 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
   transient ObjectInspector structFieldObjectInspector;
   transient ObjectInspector resultObjectInspector;
 
-  public ExprNodeFieldEvaluator(exprNodeFieldDesc desc) {
+  public ExprNodeFieldEvaluator(ExprNodeFieldDesc desc) {
     this.desc = desc;
     leftEvaluator = ExprNodeEvaluatorFactory.get(desc.getDesc());
   }

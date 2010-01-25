@@ -66,17 +66,17 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
-import org.apache.hadoop.hive.ql.plan.alterTableDesc;
-import org.apache.hadoop.hive.ql.plan.createTableDesc;
-import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
-import org.apache.hadoop.hive.ql.plan.createViewDesc;
-import org.apache.hadoop.hive.ql.plan.descFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.descTableDesc;
-import org.apache.hadoop.hive.ql.plan.dropTableDesc;
-import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
-import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
-import org.apache.hadoop.hive.ql.plan.showTableStatusDesc;
-import org.apache.hadoop.hive.ql.plan.showTablesDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
+import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.DescTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
+import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -117,27 +117,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       db = Hive.get(conf);
 
-      createTableDesc crtTbl = work.getCreateTblDesc();
+      CreateTableDesc crtTbl = work.getCreateTblDesc();
       if (crtTbl != null) {
         return createTable(db, crtTbl);
       }
 
-      createTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
+      CreateTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
       if (crtTblLike != null) {
         return createTableLike(db, crtTblLike);
       }
 
-      dropTableDesc dropTbl = work.getDropTblDesc();
+      DropTableDesc dropTbl = work.getDropTblDesc();
       if (dropTbl != null) {
         return dropTable(db, dropTbl);
       }
 
-      alterTableDesc alterTbl = work.getAlterTblDesc();
+      AlterTableDesc alterTbl = work.getAlterTblDesc();
       if (alterTbl != null) {
         return alterTable(db, alterTbl);
       }
 
-      createViewDesc crtView = work.getCreateViewDesc();
+      CreateViewDesc crtView = work.getCreateViewDesc();
       if (crtView != null) {
         return createView(db, crtView);
       }
@@ -152,32 +152,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return msck(db, msckDesc);
       }
 
-      descTableDesc descTbl = work.getDescTblDesc();
+      DescTableDesc descTbl = work.getDescTblDesc();
       if (descTbl != null) {
         return describeTable(db, descTbl);
       }
 
-      descFunctionDesc descFunc = work.getDescFunctionDesc();
+      DescFunctionDesc descFunc = work.getDescFunctionDesc();
       if (descFunc != null) {
         return describeFunction(descFunc);
       }
 
-      showTablesDesc showTbls = work.getShowTblsDesc();
+      ShowTablesDesc showTbls = work.getShowTblsDesc();
       if (showTbls != null) {
         return showTables(db, showTbls);
       }
 
-      showTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
+      ShowTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
       if (showTblStatus != null) {
         return showTableStatus(db, showTblStatus);
       }
 
-      showFunctionsDesc showFuncs = work.getShowFuncsDesc();
+      ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
       if (showFuncs != null) {
         return showFunctions(showFuncs);
       }
 
-      showPartitionsDesc showParts = work.getShowPartsDesc();
+      ShowPartitionsDesc showParts = work.getShowPartsDesc();
       if (showParts != null) {
         return showPartitions(db, showParts);
       }
@@ -360,7 +360,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showPartitions(Hive db, showPartitionsDesc showParts)
+  private int showPartitions(Hive db, ShowPartitionsDesc showParts)
       throws HiveException {
     // get the partitions for the table and populate the output
     String tabName = showParts.getTabName();
@@ -413,7 +413,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showTables(Hive db, showTablesDesc showTbls) throws HiveException {
+  private int showTables(Hive db, ShowTablesDesc showTbls) throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<String> tbls = null;
     if (showTbls.getPattern() != null) {
@@ -458,7 +458,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showFunctions(showFunctionsDesc showFuncs) throws HiveException {
+  private int showFunctions(ShowFunctionsDesc showFuncs) throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
@@ -501,7 +501,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *          is the function we are describing
    * @throws HiveException
    */
-  private int describeFunction(descFunctionDesc descFunc) throws HiveException {
+  private int describeFunction(DescFunctionDesc descFunc) throws HiveException {
     String funcName = descFunc.getName();
 
     // write the results in the file
@@ -510,14 +510,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       DataOutput outStream = (DataOutput) fs.create(descFunc.getResFile());
 
       // get the function documentation
-      description desc = null;
+      Description desc = null;
       Class<?> funcClass = null;
       FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
       if (functionInfo != null) {
         funcClass = functionInfo.getFunctionClass();
       }
       if (funcClass != null) {
-        desc = funcClass.getAnnotation(description.class);
+        desc = funcClass.getAnnotation(Description.class);
       }
       if (desc != null) {
         outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
@@ -564,7 +564,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *          tables we are interested in
    * @return Return 0 when execution succeeds and above 0 if it fails.
    */
-  private int showTableStatus(Hive db, showTableStatusDesc showTblStatus)
+  private int showTableStatus(Hive db, ShowTableStatusDesc showTblStatus)
       throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<Table> tbls = new ArrayList<Table>();
@@ -688,7 +688,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int describeTable(Hive db, descTableDesc descTbl)
+  private int describeTable(Hive db, DescTableDesc descTbl)
       throws HiveException {
     String colPath = descTbl.getTableName();
     String tableName = colPath.substring(0,
@@ -943,7 +943,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int alterTable(Hive db, alterTableDesc alterTbl) throws HiveException {
+  private int alterTable(Hive db, AlterTableDesc alterTbl) throws HiveException {
     // alter the table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl
         .getOldName());
@@ -953,9 +953,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     Table oldTbl = tbl.copy();
 
-    if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAME) {
+    if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.RENAME) {
       tbl.getTTable().setTableName(alterTbl.getNewName());
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCOLS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
       if (tbl.getSerializationLib().equals(
@@ -982,7 +982,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.getTTable().getSd().setCols(oldCols);
       }
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAMECOLUMN) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.RENAMECOLUMN) {
       List<FieldSchema> oldCols = tbl.getCols();
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
@@ -1048,7 +1048,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.getTTable().getSd().setCols(newCols);
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.REPLACECOLS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.REPLACECOLS) {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       if (tbl.getSerializationLib().equals(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
@@ -1065,12 +1065,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 1;
       }
       tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDPROPS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDPROPS) {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDSERDEPROPS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDSERDEPROPS) {
       tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
           alterTbl.getProps());
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDSERDE) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDSERDE) {
       tbl.setSerializationLib(alterTbl.getSerdeName());
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
         tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
@@ -1081,13 +1081,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.reinitSerDe();
       tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getName(), tbl
           .getDeserializer()));
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDFILEFORMAT) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDFILEFORMAT) {
       tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
       tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
       if (alterTbl.getSerdeName() != null) {
         tbl.setSerializationLib(alterTbl.getSerdeName());
       }
-    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCLUSTERSORTCOLUMN) {
+    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDCLUSTERSORTCOLUMN) {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
           .getCols());
@@ -1154,7 +1154,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int dropTable(Hive db, dropTableDesc dropTbl) throws HiveException {
+  private int dropTable(Hive db, DropTableDesc dropTbl) throws HiveException {
     // We need to fetch the table before it is dropped so that it can be passed
     // to
     // post-execution hook
@@ -1259,7 +1259,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createTable(Hive db, createTableDesc crtTbl) throws HiveException {
+  private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
     Table tbl = new Table(crtTbl.getTableName());
     StorageDescriptor tblStorDesc = tbl.getTTable().getSd();
@@ -1398,7 +1398,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createTableLike(Hive db, createTableLikeDesc crtTbl)
+  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl)
       throws HiveException {
     // Get the existing table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, crtTbl
@@ -1437,7 +1437,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createView(Hive db, createViewDesc crtView) throws HiveException {
+  private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
     Table tbl = new Table(crtView.getViewName());
     tbl.setViewOriginalText(crtView.getViewOriginalText());
     tbl.setViewExpandedText(crtView.getViewExpandedText());

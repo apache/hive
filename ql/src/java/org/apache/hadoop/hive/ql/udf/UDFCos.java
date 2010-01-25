@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(name = "cos", value = "_FUNC_(x) - returns the cosine of x (x is in radians)", extended = "Example:\n "
+@Description(name = "cos", value = "_FUNC_(x) - returns the cosine of x (x is in radians)", extended = "Example:\n "
     + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  1")
 public class UDFCos extends UDF {
 

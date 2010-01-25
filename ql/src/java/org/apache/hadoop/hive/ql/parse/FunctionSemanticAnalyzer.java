@@ -23,8 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
-import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
 
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory
@@ -49,13 +49,13 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeCreateFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
-    createFunctionDesc desc = new createFunctionDesc(functionName, className);
+    CreateFunctionDesc desc = new CreateFunctionDesc(functionName, className);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
-    dropFunctionDesc desc = new dropFunctionDesc(functionName);
+    DropFunctionDesc desc = new DropFunctionDesc(functionName);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
 }

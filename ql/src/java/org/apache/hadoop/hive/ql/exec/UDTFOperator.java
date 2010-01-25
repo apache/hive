@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.udtfDesc;
+import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.UDTFCollector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-public class UDTFOperator extends Operator<udtfDesc> implements Serializable {
+public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   protected final Log LOG = LogFactory.getLog(this.getClass().getName());

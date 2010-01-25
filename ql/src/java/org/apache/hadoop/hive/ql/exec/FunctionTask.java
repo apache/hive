@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
-import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
-import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -53,19 +53,19 @@ public class FunctionTask extends Task<FunctionWork> {
 
   @Override
   public int execute() {
-    createFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
+    CreateFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
     if (createFunctionDesc != null) {
       return createFunction(createFunctionDesc);
     }
 
-    dropFunctionDesc dropFunctionDesc = work.getDropFunctionDesc();
+    DropFunctionDesc dropFunctionDesc = work.getDropFunctionDesc();
     if (dropFunctionDesc != null) {
       return dropFunction(dropFunctionDesc);
     }
     return 0;
   }
 
-  private int createFunction(createFunctionDesc createFunctionDesc) {
+  private int createFunction(CreateFunctionDesc createFunctionDesc) {
     try {
       Class<?> udfClass = getUdfClass(createFunctionDesc);
       if (UDF.class.isAssignableFrom(udfClass)) {
@@ -98,7 +98,7 @@ public class FunctionTask extends Task<FunctionWork> {
     }
   }
 
-  private int dropFunction(dropFunctionDesc dropFunctionDesc) {
+  private int dropFunction(DropFunctionDesc dropFunctionDesc) {
     try {
       FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc
           .getFunctionName());
@@ -110,7 +110,7 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   @SuppressWarnings("unchecked")
-  private Class<?> getUdfClass(createFunctionDesc desc)
+  private Class<?> getUdfClass(CreateFunctionDesc desc)
       throws ClassNotFoundException {
     return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
   }

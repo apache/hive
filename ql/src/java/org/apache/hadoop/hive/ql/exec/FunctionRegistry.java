@@ -35,8 +35,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.UDAFMax;
 import org.apache.hadoop.hive.ql.udf.UDAFMin;
 import org.apache.hadoop.hive.ql.udf.UDFAbs;
@@ -869,11 +869,11 @@ public class FunctionRegistry {
    * Get the UDF class from an exprNodeDesc. Returns null if the exprNodeDesc
    * does not contain a UDF class.
    */
-  private static Class<? extends UDF> getUDFClassFromExprDesc(exprNodeDesc desc) {
-    if (!(desc instanceof exprNodeGenericFuncDesc)) {
+  private static Class<? extends UDF> getUDFClassFromExprDesc(ExprNodeDesc desc) {
+    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return null;
     }
-    exprNodeGenericFuncDesc genericFuncDesc = (exprNodeGenericFuncDesc) desc;
+    ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
     if (!(genericFuncDesc.getGenericUDF() instanceof GenericUDFBridge)) {
       return null;
     }
@@ -905,7 +905,7 @@ public class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is a node of "and", "or", "not".
    */
-  public static boolean isOpAndOrNot(exprNodeDesc desc) {
+  public static boolean isOpAndOrNot(ExprNodeDesc desc) {
     Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
     return UDFOPAnd.class == udfClass || UDFOPOr.class == udfClass
         || UDFOPNot.class == udfClass;
@@ -914,7 +914,7 @@ public class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is a node of "and".
    */
-  public static boolean isOpAnd(exprNodeDesc desc) {
+  public static boolean isOpAnd(ExprNodeDesc desc) {
     Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
     return UDFOPAnd.class == udfClass;
   }
@@ -922,7 +922,7 @@ public class FunctionRegistry {
   /**
    * Returns whether the exprNodeDesc is a node of "positive".
    */
-  public static boolean isOpPositive(exprNodeDesc desc) {
+  public static boolean isOpPositive(ExprNodeDesc desc) {
     Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
     return UDFOPPositive.class == udfClass;
   }

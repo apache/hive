@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.plan.explainWork;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
 
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
@@ -60,7 +60,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       tasks.add(fetchTask);
     }
 
-    rootTasks.add(TaskFactory.get(new explainWork(ctx.getResFile(), tasks,
+    rootTasks.add(TaskFactory.get(new ExplainWork(ctx.getResFile(), tasks,
         ((ASTNode) ast.getChild(0)).toStringTree(), extended), conf));
   }
 }

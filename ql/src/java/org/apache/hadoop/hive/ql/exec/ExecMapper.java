@@ -29,9 +29,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.plan.mapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -75,7 +75,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     try {
       jc = job;
       // create map and fetch operators
-      mapredWork mrwork = Utilities.getMapRedWork(job);
+      MapredWork mrwork = Utilities.getMapRedWork(job);
       mo = new MapOperator();
       mo.setConf(mrwork);
       // initialize map operator
@@ -84,13 +84,13 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.initialize(jc, null);
 
       // initialize map local work
-      mapredLocalWork localWork = mrwork.getMapLocalWork();
+      MapredLocalWork localWork = mrwork.getMapLocalWork();
       if (localWork == null) {
         return;
       }
       fetchOperators = new HashMap<String, FetchOperator>();
       // create map local operators
-      for (Map.Entry<String, fetchWork> entry : localWork.getAliasToFetchWork()
+      for (Map.Entry<String, FetchWork> entry : localWork.getAliasToFetchWork()
           .entrySet()) {
         fetchOperators.put(entry.getKey(), new FetchOperator(entry.getValue(),
             job));
@@ -130,7 +130,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       // process map local operators
       if (fetchOperators != null) {
         try {
-          mapredLocalWork localWork = mo.getConf().getMapLocalWork();
+          MapredLocalWork localWork = mo.getConf().getMapLocalWork();
           int fetchOpNum = 0;
           for (Map.Entry<String, FetchOperator> entry : fetchOperators
               .entrySet()) {
@@ -227,7 +227,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     try {
       mo.close(abort);
       if (fetchOperators != null) {
-        mapredLocalWork localWork = mo.getConf().getMapLocalWork();
+        MapredLocalWork localWork = mo.getConf().getMapLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
           Operator<? extends Serializable> forwardOp = localWork
               .getAliasToWork().get(entry.getKey());

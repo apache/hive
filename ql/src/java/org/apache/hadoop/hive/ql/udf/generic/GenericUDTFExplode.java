@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-@description(name = "explode", value = "_FUNC_(a) - separates the elements of array a into multiple rows ")
+@Description(name = "explode", value = "_FUNC_(a) - separates the elements of array a into multiple rows ")
 public class GenericUDTFExplode extends GenericUDTF {
 
   ListObjectInspector listOI = null;

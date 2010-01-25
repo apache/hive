@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "hex", value = "_FUNC_(n or str) - Convert the argument to hexadecimal ", extended = "If the argument is a string, returns two hex digits for each "
+@Description(name = "hex", value = "_FUNC_(n or str) - Convert the argument to hexadecimal ", extended = "If the argument is a string, returns two hex digits for each "
     + "character in the string.\n"
     + "If the argument is a number, returns the hexadecimal representation.\n"
     + "Example:\n"

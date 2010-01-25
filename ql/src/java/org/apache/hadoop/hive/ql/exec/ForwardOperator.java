@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.forwardDesc;
+import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Forward Operator Just forwards. Doesn't do anything itself.
  **/
-public class ForwardOperator extends Operator<forwardDesc> implements
+public class ForwardOperator extends Operator<ForwardDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
 

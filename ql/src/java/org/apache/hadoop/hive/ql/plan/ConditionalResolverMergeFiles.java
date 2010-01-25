@@ -117,7 +117,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         if ((currAvgSz < avgConditionSize) && (fStats.length > 1)) {
           // also set the number of reducers
           Task<? extends Serializable> tsk = ctx.getListTasks().get(1);
-          mapredWork work = (mapredWork) tsk.getWork();
+          MapredWork work = (MapredWork) tsk.getWork();
 
           int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
           int reducers = (int) ((totalSz + trgtSize - 1) / trgtSize);

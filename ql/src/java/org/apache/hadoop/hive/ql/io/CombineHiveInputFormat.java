@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
 import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
@@ -80,14 +80,14 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         throws IOException {
       this.inputSplitShim = inputSplitShim;
       if (job != null) {
-        Map<String, partitionDesc> pathToPartitionInfo = Utilities
+        Map<String, PartitionDesc> pathToPartitionInfo = Utilities
             .getMapRedWork(job).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         for (int i = 0; i < ipaths.length; i++) {
-          partitionDesc part = null;
+          PartitionDesc part = null;
           try {
             part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]
                 .getParent());
@@ -209,12 +209,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       inputSplitShim.write(out);
 
       if (inputFormatClassName == null) {
-        Map<String, partitionDesc> pathToPartitionInfo = Utilities
+        Map<String, PartitionDesc> pathToPartitionInfo = Utilities
             .getMapRedWork(getJob()).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        partitionDesc part = null;
+        PartitionDesc part = null;
         try {
           part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim
               .getPath(0).getParent());
@@ -298,12 +298,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             CombineHiveRecordReader.class);
   }
 
-  protected static partitionDesc getPartitionDescFromPath(
-      Map<String, partitionDesc> pathToPartitionInfo, Path dir)
+  protected static PartitionDesc getPartitionDescFromPath(
+      Map<String, PartitionDesc> pathToPartitionInfo, Path dir)
       throws IOException {
     // The format of the keys in pathToPartitionInfo sometimes contains a port
     // and sometimes doesn't, so we just compare paths.
-    for (Map.Entry<String, partitionDesc> entry : pathToPartitionInfo
+    for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
         .entrySet()) {
       try {
         if (new URI(entry.getKey()).getPath().equals(dir.toUri().getPath())) {

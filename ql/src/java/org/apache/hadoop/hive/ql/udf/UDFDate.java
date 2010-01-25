@@ -25,10 +25,10 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "to_date", value = "_FUNC_(expr) - Extracts the date part of the date or datetime "
+@Description(name = "to_date", value = "_FUNC_(expr) - Extracts the date part of the date or datetime "
     + "expression expr", extended = "Example:\n "
     + "  > SELECT _FUNC_('2009-30-07 04:17:52') FROM src LIMIT 1;\n"
     + "  '2009-30-07'")

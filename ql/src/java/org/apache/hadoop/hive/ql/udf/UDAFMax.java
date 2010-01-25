@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -29,7 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "max", value = "_FUNC_(expr) - Returns the maximum value of expr")
+@Description(name = "max", value = "_FUNC_(expr) - Returns the maximum value of expr")
 public class UDAFMax extends UDAF {
 
   static public class MaxShortEvaluator implements UDAFEvaluator {

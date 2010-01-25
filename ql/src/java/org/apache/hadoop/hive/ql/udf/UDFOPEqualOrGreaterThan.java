@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -31,7 +31,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = ">=", value = "a _FUNC_ b - Returns TRUE if b is not smaller than a")
+@Description(name = ">=", value = "a _FUNC_ b - Returns TRUE if b is not smaller than a")
 public class UDFOPEqualOrGreaterThan extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPEqualOrGreaterThan.class

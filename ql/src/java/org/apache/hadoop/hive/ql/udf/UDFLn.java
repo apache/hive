@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@description(name = "ln", value = "_FUNC_(x) - Returns the natural logarithm of x", extended = "Example:\n"
+@Description(name = "ln", value = "_FUNC_(x) - Returns the natural logarithm of x", extended = "Example:\n"
     + "  > SELECT _FUNC_(1) FROM src LIMIT 1;\n" + "  0")
 public class UDFLn extends UDF {
 

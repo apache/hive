@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.joinDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 /**
  * Join operator implementation.
  */
-public class JoinOperator extends CommonJoinOperator<joinDesc> implements
+public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
 

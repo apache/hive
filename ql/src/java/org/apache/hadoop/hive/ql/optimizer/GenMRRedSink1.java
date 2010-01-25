@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
  * Processor for the rule - table scan followed by reduce sink
@@ -58,7 +58,7 @@ public class GenMRRedSink1 implements NodeProcessor {
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-    mapredWork currPlan = (mapredWork) currTask.getWork();
+    MapredWork currPlan = (MapredWork) currTask.getWork();
     Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);

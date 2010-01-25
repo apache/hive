@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.lateralViewJoinDesc;
+import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * previous LVJ operator.
  */
 
-public class LateralViewJoinOperator extends Operator<lateralViewJoinDesc> {
+public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
   private static final long serialVersionUID = 1L;
 

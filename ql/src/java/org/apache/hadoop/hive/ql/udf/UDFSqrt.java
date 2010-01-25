@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * Implementation of the SQRT UDF found in many databases.
  */
-@description(name = "sqrt", value = "_FUNC_(x) - returns the square root of x", extended = "Example:\n "
+@Description(name = "sqrt", value = "_FUNC_(x) - returns the square root of x", extended = "Example:\n "
     + "  > SELECT _FUNC_(4) FROM src LIMIT 1;\n" + "  2")
 public class UDFSqrt extends UDF {
 

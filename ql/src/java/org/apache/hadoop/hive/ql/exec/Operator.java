@@ -32,8 +32,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.explain;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -159,7 +159,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     this.conf = conf;
   }
 
-  @explain
+  @Explain
   public T getConf() {
     return conf;
   }
@@ -201,7 +201,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * optimizer and built during semantic analysis contains only key elements for
    * reduce sink and group by op
    */
-  protected transient Map<String, exprNodeDesc> colExprMap;
+  protected transient Map<String, ExprNodeDesc> colExprMap;
 
   public void setId(String id) {
     this.id = id;
@@ -707,11 +707,11 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * 
    * @return null if the operator doesn't change columns
    */
-  public Map<String, exprNodeDesc> getColumnExprMap() {
+  public Map<String, ExprNodeDesc> getColumnExprMap() {
     return colExprMap;
   }
 
-  public void setColumnExprMap(Map<String, exprNodeDesc> colExprMap) {
+  public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
     this.colExprMap = colExprMap;
   }
 

@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
  * An implementation of PhysicalPlanResolver. It iterator each task with a rule
@@ -73,7 +73,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
       if (!task.isMapRedTask() || task instanceof ConditionalTask
-          || ((mapredWork) task.getWork()).getReducer() == null) {
+          || ((MapredWork) task.getWork()).getReducer() == null) {
         return null;
       }
 
@@ -92,7 +92,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
 
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
-      topNodes.add(((mapredWork) task.getWork()).getReducer());
+      topNodes.add(((MapredWork) task.getWork()).getReducer());
       ogw.startWalking(topNodes, null);
       return null;
     }

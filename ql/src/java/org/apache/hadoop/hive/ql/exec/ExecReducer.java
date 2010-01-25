@@ -30,8 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -77,8 +77,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     fieldNames = fieldNameArray.toArray(new String[0]);
   }
 
-  tableDesc keyTableDesc;
-  tableDesc[] valueTableDesc;
+  TableDesc keyTableDesc;
+  TableDesc[] valueTableDesc;
 
   @Override
   public void configure(JobConf job) {
@@ -100,7 +100,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
     jc = job;
-    mapredWork gWork = Utilities.getMapRedWork(job);
+    MapredWork gWork = Utilities.getMapRedWork(job);
     reducer = gWork.getReducer();
     reducer.setParentOperators(null); // clear out any parents as reducer is the
                                       // root
@@ -111,7 +111,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           .getDeserializerClass(), null);
       inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
-      valueTableDesc = new tableDesc[gWork.getTagToValueDesc().size()];
+      valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);

@@ -22,7 +22,7 @@ import java.util.HashMap;
 
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Context class for operator tree walker for partition pruner.
@@ -35,17 +35,17 @@ public class OpWalkerCtx implements NodeProcessorCtx {
    * Map from tablescan operator to partition pruning predicate that is
    * initialized from the ParseContext
    */
-  private final HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
+  private final HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
 
   /**
    * Constructor
    */
-  public OpWalkerCtx(HashMap<TableScanOperator, exprNodeDesc> opToPartPruner) {
+  public OpWalkerCtx(HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
     hasNonPartCols = false;
   }
 
-  public HashMap<TableScanOperator, exprNodeDesc> getOpToPartPruner() {
+  public HashMap<TableScanOperator, ExprNodeDesc> getOpToPartPruner() {
     return opToPartPruner;
   }
 

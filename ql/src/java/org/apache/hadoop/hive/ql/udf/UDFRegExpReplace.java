@@ -22,10 +22,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "regexp_replace", value = "_FUNC_(str, regexp, rep) - replace all substrings of str that "
+@Description(name = "regexp_replace", value = "_FUNC_(str, regexp, rep) - replace all substrings of str that "
     + "match regexp with rep", extended = "Example:\n"
     + "  > SELECT _FUNC_('100-200', '(\\d+)', 'num') FROM src LIMIT 1;\n"
     + "  'num-num'")

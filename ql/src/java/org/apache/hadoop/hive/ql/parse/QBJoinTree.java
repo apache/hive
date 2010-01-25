@@ -35,7 +35,7 @@ public class QBJoinTree {
   private QBJoinTree joinSrc;
   private String[] baseSrc;
   private int nextTag;
-  private joinCond[] joinCond;
+  private JoinCond[] joinCond;
   private boolean noOuterJoin;
   private boolean noSemiJoin;
 
@@ -133,11 +133,11 @@ public class QBJoinTree {
     return "$INTNAME";
   }
 
-  public joinCond[] getJoinCond() {
+  public JoinCond[] getJoinCond() {
     return joinCond;
   }
 
-  public void setJoinCond(joinCond[] joinCond) {
+  public void setJoinCond(JoinCond[] joinCond) {
     this.joinCond = joinCond;
   }
 

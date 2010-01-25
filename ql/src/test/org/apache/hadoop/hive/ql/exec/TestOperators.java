@@ -29,15 +29,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.collectDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.scriptDesc;
-import org.apache.hadoop.hive.ql.plan.selectDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ScriptDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -87,21 +87,21 @@ public class TestOperators extends TestCase {
   public void testBaseFilterOperator() throws Throwable {
     try {
       System.out.println("Testing Filter Operator");
-      exprNodeDesc col0 = TestExecDriver.getStringColumn("col0");
-      exprNodeDesc col1 = TestExecDriver.getStringColumn("col1");
-      exprNodeDesc col2 = TestExecDriver.getStringColumn("col2");
-      exprNodeDesc zero = new exprNodeConstantDesc("0");
-      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc col0 = TestExecDriver.getStringColumn("col0");
+      ExprNodeDesc col1 = TestExecDriver.getStringColumn("col1");
+      ExprNodeDesc col2 = TestExecDriver.getStringColumn("col2");
+      ExprNodeDesc zero = new ExprNodeConstantDesc("0");
+      ExprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc(">", col2, col1);
-      exprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("==", col0, zero);
-      exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("and", func1, func2);
       assert (func3 != null);
-      filterDesc filterCtx = new filterDesc(func3, false);
+      FilterDesc filterCtx = new FilterDesc(func3, false);
 
       // Configuration
-      Operator<filterDesc> op = OperatorFactory.get(filterDesc.class);
+      Operator<FilterDesc> op = OperatorFactory.get(FilterDesc.class);
       op.setConf(filterCtx);
 
       // runtime initialization
@@ -137,24 +137,24 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing FileSink Operator");
       // col1
-      exprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
+      ExprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
 
       // col2
-      exprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
-      exprNodeDesc expr2 = new exprNodeConstantDesc("1");
-      exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
+      ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
+      ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns
-      ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc>();
+      ArrayList<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
       earr.add(exprDesc1);
       earr.add(exprDesc2);
       ArrayList<String> outputCols = new ArrayList<String>();
       for (int i = 0; i < earr.size(); i++) {
         outputCols.add("_col" + i);
       }
-      selectDesc selectCtx = new selectDesc(earr, outputCols);
-      Operator<selectDesc> op = OperatorFactory.get(selectDesc.class);
+      SelectDesc selectCtx = new SelectDesc(earr, outputCols);
+      Operator<SelectDesc> op = OperatorFactory.get(SelectDesc.class);
       op.setConf(selectCtx);
 
       // fileSinkOperator to dump the output of the select
@@ -185,37 +185,37 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing Script Operator");
       // col1
-      exprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
+      ExprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
 
       // col2
-      exprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
-      exprNodeDesc expr2 = new exprNodeConstantDesc("1");
-      exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
+      ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
+      ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns
-      ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc>();
+      ArrayList<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
       earr.add(exprDesc1);
       earr.add(exprDesc2);
       ArrayList<String> outputCols = new ArrayList<String>();
       for (int i = 0; i < earr.size(); i++) {
         outputCols.add("_col" + i);
       }
-      selectDesc selectCtx = new selectDesc(earr, outputCols);
-      Operator<selectDesc> op = OperatorFactory.get(selectDesc.class);
+      SelectDesc selectCtx = new SelectDesc(earr, outputCols);
+      Operator<SelectDesc> op = OperatorFactory.get(SelectDesc.class);
       op.setConf(selectCtx);
 
       // scriptOperator to echo the output of the select
-      tableDesc scriptOutput = PlanUtils.getDefaultTableDesc(""
+      TableDesc scriptOutput = PlanUtils.getDefaultTableDesc(""
           + Utilities.tabCode, "a,b");
-      tableDesc scriptInput = PlanUtils.getDefaultTableDesc(""
+      TableDesc scriptInput = PlanUtils.getDefaultTableDesc(""
           + Utilities.tabCode, "a,b");
-      scriptDesc sd = new scriptDesc("cat", scriptOutput,
+      ScriptDesc sd = new ScriptDesc("cat", scriptOutput,
           TextRecordWriter.class, scriptInput, TextRecordReader.class);
-      Operator<scriptDesc> sop = OperatorFactory.getAndMakeChild(sd, op);
+      Operator<ScriptDesc> sop = OperatorFactory.getAndMakeChild(sd, op);
 
       // Collect operator to observe the output of the script
-      collectDesc cd = new collectDesc(Integer.valueOf(10));
+      CollectDesc cd = new CollectDesc(Integer.valueOf(10));
       CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(
           cd, sop);
 
@@ -270,25 +270,25 @@ public class TestOperators extends TestCase {
 
       // initialize pathToTableInfo
       // Default: treat the table as a single column "col"
-      tableDesc td = Utilities.defaultTd;
-      partitionDesc pd = new partitionDesc(td, null);
-      LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.partitionDesc> pathToPartitionInfo = new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.partitionDesc>();
+      TableDesc td = Utilities.defaultTd;
+      PartitionDesc pd = new PartitionDesc(td, null);
+      LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo = new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc>();
       pathToPartitionInfo.put("/testDir", pd);
 
       // initialize aliasToWork
-      collectDesc cd = new collectDesc(Integer.valueOf(1));
+      CollectDesc cd = new CollectDesc(Integer.valueOf(1));
       CollectOperator cdop1 = (CollectOperator) OperatorFactory
-          .get(collectDesc.class);
+          .get(CollectDesc.class);
       cdop1.setConf(cd);
       CollectOperator cdop2 = (CollectOperator) OperatorFactory
-          .get(collectDesc.class);
+          .get(CollectDesc.class);
       cdop2.setConf(cd);
       LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork = new LinkedHashMap<String, Operator<? extends Serializable>>();
       aliasToWork.put("a", cdop1);
       aliasToWork.put("b", cdop2);
 
       // initialize mapredWork
-      mapredWork mrwork = new mapredWork();
+      MapredWork mrwork = new MapredWork();
       mrwork.setPathToAliases(pathToAliases);
       mrwork.setPathToPartitionInfo(pathToPartitionInfo);
       mrwork.setAliasToWork(aliasToWork);

@@ -41,8 +41,8 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
  * The transformation step that does sample pruning.
@@ -116,7 +116,7 @@ public class SamplePruner implements Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator filOp = (FilterOperator) nd;
-      filterDesc filOpDesc = filOp.getConf();
+      FilterDesc filOpDesc = filOp.getConf();
       sampleDesc sampleDescr = filOpDesc.getSampleDescr();
 
       if ((sampleDescr == null) || !sampleDescr.getInputPruning()) {

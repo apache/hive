@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -50,7 +50,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 /**
  * Map side Join operator implementation.
  */
-public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
+public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
   static final private Log LOG = LogFactory.getLog(MapJoinOperator.class
@@ -86,7 +86,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
     SerDe serde;
-    tableDesc tblDesc;
+    TableDesc tblDesc;
     Configuration conf;
 
     /**
@@ -94,7 +94,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
      * @param serde
      */
     public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde,
-        tableDesc tblDesc, Configuration conf) {
+        TableDesc tblDesc, Configuration conf) {
       this.standardOI = standardOI;
       this.serde = serde;
       this.tblDesc = tblDesc;
@@ -115,7 +115,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
       return serde;
     }
 
-    public tableDesc getTblDesc() {
+    public TableDesc getTblDesc() {
       return tblDesc;
     }
 
@@ -239,7 +239,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
         if (firstRow) {
           metadataKeyTag = nextVal++;
 
-          tableDesc keyTableDesc = conf.getKeyTblDesc();
+          TableDesc keyTableDesc = conf.getKeyTblDesc();
           SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(
               keyTableDesc.getDeserializerClass(), null);
           keySerializer.initialize(null, keyTableDesc.getProperties());
@@ -299,7 +299,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements
         if (metadataValueTag[tag] == -1) {
           metadataValueTag[tag] = nextVal++;
 
-          tableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
+          TableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
           SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc
               .getDeserializerClass(), null);
           valueSerDe.initialize(null, valueTableDesc.getProperties());

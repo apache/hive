@@ -21,14 +21,14 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
-@description(name = "field", value = "_FUNC_(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found", extended = "All primitive types are supported, arguments are compared using str.equals(x)."
+@Description(name = "field", value = "_FUNC_(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found", extended = "All primitive types are supported, arguments are compared using str.equals(x)."
     + " If str is NULL, the return value is 0.")
 public class GenericUDFField extends GenericUDF {
   @Override

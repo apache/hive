@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.hive.ql.plan.explain;
-import org.apache.hadoop.hive.ql.plan.explainWork;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
@@ -40,7 +40,7 @@ import org.apache.hadoop.util.StringUtils;
  * ExplainTask implementation
  * 
  **/
-public class ExplainTask extends Task<explainWork> implements Serializable {
+public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public ExplainTask() {
@@ -161,10 +161,10 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
   private void outputPlan(Serializable work, PrintStream out, boolean extended,
       int indent) throws Exception {
     // Check if work has an explain annotation
-    Annotation note = work.getClass().getAnnotation(explain.class);
+    Annotation note = work.getClass().getAnnotation(Explain.class);
 
-    if (note instanceof explain) {
-      explain xpl_note = (explain) note;
+    if (note instanceof Explain) {
+      Explain xpl_note = (Explain) note;
       if (extended || xpl_note.normalExplain()) {
         out.print(indentString(indent));
         out.println(xpl_note.displayName());
@@ -193,10 +193,10 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
 
     for (Method m : methods) {
       int prop_indents = indent + 2;
-      note = m.getAnnotation(explain.class);
+      note = m.getAnnotation(Explain.class);
 
-      if (note instanceof explain) {
-        explain xpl_note = (explain) note;
+      if (note instanceof Explain) {
+        Explain xpl_note = (Explain) note;
 
         if (extended || xpl_note.normalExplain()) {
 

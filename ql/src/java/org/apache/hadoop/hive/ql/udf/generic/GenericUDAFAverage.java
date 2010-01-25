@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
-@description(name = "avg", value = "_FUNC_(x) - Returns the mean of a set of numbers")
+@Description(name = "avg", value = "_FUNC_(x) - Returns the mean of a set of numbers")
 public class GenericUDAFAverage implements GenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFAverage.class.getName());

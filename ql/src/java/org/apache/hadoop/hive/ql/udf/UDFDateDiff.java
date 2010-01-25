@@ -25,11 +25,11 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "datediff", value = "_FUNC_(date1, date2) - Returns the number of days between date1 "
+@Description(name = "datediff", value = "_FUNC_(date1, date2) - Returns the number of days between date1 "
     + "and date2", extended = "date1 and date2 are strings in the format "
     + "'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time parts are ignored."
     + "If date1 is earlier than date2, the result is negative.\n"

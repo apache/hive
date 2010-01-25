@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -152,7 +152,7 @@ public class Driver implements CommandProcessor {
         }
         FetchTask ft = (FetchTask) sem.getFetchTask();
 
-        tableDesc td = ft.getTblDesc();
+        TableDesc td = ft.getTblDesc();
         // partitioned tables don't have tableDesc set on the FetchTask. Instead
         // they have a list of PartitionDesc objects, each with a table desc.
         // Let's

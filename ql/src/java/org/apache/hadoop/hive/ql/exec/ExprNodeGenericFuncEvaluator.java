@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -30,7 +30,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
   private static final Log LOG = LogFactory
       .getLog(ExprNodeGenericFuncEvaluator.class.getName());
 
-  protected exprNodeGenericFuncDesc expr;
+  protected ExprNodeGenericFuncDesc expr;
 
   transient GenericUDF genericUDF;
   transient Object rowObject;
@@ -53,7 +53,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
     }
   };
 
-  public ExprNodeGenericFuncEvaluator(exprNodeGenericFuncDesc expr) {
+  public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr) {
     this.expr = expr;
     children = new ExprNodeEvaluator[expr.getChildExprs().size()];
     for (int i = 0; i < children.length; i++) {

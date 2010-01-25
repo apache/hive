@@ -26,11 +26,11 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "yearweek", value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
+@Description(name = "yearweek", value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
     + "is considered to start on a Monday and week 1 is the first week with >3 days.", extended = "Examples:\n"
     + "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n"
     + "  8\n"

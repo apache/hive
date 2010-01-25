@@ -56,8 +56,8 @@ import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -75,7 +75,7 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
 
-public class ExecDriver extends Task<mapredWork> implements Serializable {
+public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -154,7 +154,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   /**
    * Constructor/Initialization for invocation as independent utility
    */
-  public ExecDriver(mapredWork plan, JobConf job, boolean isSilent)
+  public ExecDriver(MapredWork plan, JobConf job, boolean isSilent)
       throws HiveException {
     setWork(plan);
     this.job = job;
@@ -375,7 +375,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * @return the number of reducers.
    */
   public int estimateNumberOfReducers(HiveConf hive, JobConf job,
-      mapredWork work) throws IOException {
+      MapredWork work) throws IOException {
     if (hive == null) {
       hive = new HiveConf();
     }
@@ -442,7 +442,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * @return the total size in bytes.
    * @throws IOException
    */
-  public long getTotalInputFileSize(JobConf job, mapredWork work)
+  public long getTotalInputFileSize(JobConf job, MapredWork work)
       throws IOException {
     long r = 0;
     // For each input path, calculate the total size.
@@ -930,7 +930,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       }
     }
 
-    mapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
+    MapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
 
     int ret = ed.execute();
@@ -1002,7 +1002,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
   @Override
   public boolean hasReduce() {
-    mapredWork w = getWork();
+    MapredWork w = getWork();
     return w.getReducer() != null;
   }
 
@@ -1022,7 +1022,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   /**
    * Handle a empty/null path for a given alias
    */
-  private int addInputPath(String path, JobConf job, mapredWork work,
+  private int addInputPath(String path, JobConf job, MapredWork work,
       String hiveScratchDir, int numEmptyPaths, boolean isEmptyPath,
       String alias) throws Exception {
     // either the directory does not exist or it is empty
@@ -1065,14 +1065,14 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     work.setPathToAliases(pathToAliases);
 
-    LinkedHashMap<String, partitionDesc> pathToPartitionInfo = work
+    LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = work
         .getPathToPartitionInfo();
     if (isEmptyPath) {
       pathToPartitionInfo.put(newPath.toUri().toString(), pathToPartitionInfo
           .get(path));
       pathToPartitionInfo.remove(path);
     } else {
-      partitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
+      PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
       pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
     }
     work.setPathToPartitionInfo(pathToPartitionInfo);
@@ -1085,7 +1085,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     return numEmptyPaths;
   }
 
-  private void addInputPaths(JobConf job, mapredWork work, String hiveScratchDir)
+  private void addInputPaths(JobConf job, MapredWork work, String hiveScratchDir)
       throws Exception {
     int numEmptyPaths = 0;
 

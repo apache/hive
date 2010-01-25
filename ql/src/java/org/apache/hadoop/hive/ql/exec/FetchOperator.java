@@ -34,9 +34,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -61,7 +61,7 @@ public class FetchOperator {
   transient protected Log LOG;
   transient protected LogHelper console;
 
-  public FetchOperator(fetchWork work, JobConf job) {
+  public FetchOperator(FetchWork work, JobConf job) {
     LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG);
 
@@ -78,7 +78,7 @@ public class FetchOperator {
     rowWithPart = new Object[2];
   }
 
-  private final fetchWork work;
+  private final FetchWork work;
   private int splitNum;
   private RecordReader<WritableComparable, Writable> currRecReader;
   private InputSplit[] inputSplits;
@@ -88,10 +88,10 @@ public class FetchOperator {
   private Writable value;
   private Deserializer serde;
   private Iterator<Path> iterPath;
-  private Iterator<partitionDesc> iterPartDesc;
+  private Iterator<PartitionDesc> iterPartDesc;
   private Path currPath;
-  private partitionDesc currPart;
-  private tableDesc currTbl;
+  private PartitionDesc currPart;
+  private TableDesc currTbl;
   private boolean tblDataDone;
   private StructObjectInspector rowObjectInspector;
   private final Object[] rowWithPart;
@@ -174,7 +174,7 @@ public class FetchOperator {
         }
         return;
       } else {
-        iterPath = fetchWork.convertStringToPathArray(work.getPartDir())
+        iterPath = FetchWork.convertStringToPathArray(work.getPartDir())
             .iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
@@ -182,7 +182,7 @@ public class FetchOperator {
 
     while (iterPath.hasNext()) {
       Path nxt = iterPath.next();
-      partitionDesc prt = iterPartDesc.next();
+      PartitionDesc prt = iterPartDesc.next();
       FileSystem fs = nxt.getFileSystem(job);
       if (fs.exists(nxt)) {
         FileStatus[] fStats = fs.listStatus(nxt);
@@ -213,7 +213,7 @@ public class FetchOperator {
       job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils
           .escapeString(currPath.toString()));
 
-      tableDesc tmp = currTbl;
+      TableDesc tmp = currTbl;
       if (tmp == null) {
         tmp = currPart.getTableDesc();
       }
@@ -302,12 +302,12 @@ public class FetchOperator {
   public ObjectInspector getOutputObjectInspector() throws HiveException {
     try {
       if (work.getTblDir() != null) {
-        tableDesc tbl = work.getTblDesc();
+        TableDesc tbl = work.getTblDesc();
         Deserializer serde = tbl.getDeserializerClass().newInstance();
         serde.initialize(job, tbl.getProperties());
         return serde.getObjectInspector();
       } else {
-        List<partitionDesc> listParts = work.getPartDesc();
+        List<PartitionDesc> listParts = work.getPartDesc();
         currPart = listParts.get(0);
         serde = currPart.getTableDesc().getDeserializerClass().newInstance();
         serde.initialize(job, currPart.getTableDesc().getProperties());

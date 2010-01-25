@@ -26,11 +26,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
-import org.apache.hadoop.hive.ql.plan.copyWork;
-import org.apache.hadoop.hive.ql.plan.explainWork;
-import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.moveWork;
+import org.apache.hadoop.hive.ql.plan.CopyWork;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 
 /**
  * TaskFactory implementation
@@ -50,14 +50,14 @@ public class TaskFactory {
   public static ArrayList<taskTuple<? extends Serializable>> taskvec;
   static {
     taskvec = new ArrayList<taskTuple<? extends Serializable>>();
-    taskvec.add(new taskTuple<moveWork>(moveWork.class, MoveTask.class));
-    taskvec.add(new taskTuple<fetchWork>(fetchWork.class, FetchTask.class));
-    taskvec.add(new taskTuple<copyWork>(copyWork.class, CopyTask.class));
+    taskvec.add(new taskTuple<MoveWork>(MoveWork.class, MoveTask.class));
+    taskvec.add(new taskTuple<FetchWork>(FetchWork.class, FetchTask.class));
+    taskvec.add(new taskTuple<CopyWork>(CopyWork.class, CopyTask.class));
     taskvec.add(new taskTuple<DDLWork>(DDLWork.class, DDLTask.class));
     taskvec.add(new taskTuple<FunctionWork>(FunctionWork.class,
         FunctionTask.class));
     taskvec
-        .add(new taskTuple<explainWork>(explainWork.class, ExplainTask.class));
+        .add(new taskTuple<ExplainWork>(ExplainWork.class, ExplainTask.class));
     taskvec.add(new taskTuple<ConditionalWork>(ConditionalWork.class,
         ConditionalTask.class));
     // we are taking this out to allow us to instantiate either MapRedTask or
@@ -99,7 +99,7 @@ public class TaskFactory {
       }
     }
 
-    if (workClass == mapredWork.class) {
+    if (workClass == MapredWork.class) {
 
       boolean viachild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
 

@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "concat", value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN", extended = "Returns NULL if any argument is NULL.\n"
+@Description(name = "concat", value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN", extended = "Returns NULL if any argument is NULL.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
     + "  'abcdef'")

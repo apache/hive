@@ -25,9 +25,9 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * Reduce Sink Operator sends output to the reduce stage
  **/
-public class ReduceSinkOperator extends TerminalOperator<reduceSinkDesc>
+public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -78,19 +78,19 @@ public class ReduceSinkOperator extends TerminalOperator<reduceSinkDesc>
     try {
       keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
       int i = 0;
-      for (exprNodeDesc e : conf.getKeyCols()) {
+      for (ExprNodeDesc e : conf.getKeyCols()) {
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
 
       valueEval = new ExprNodeEvaluator[conf.getValueCols().size()];
       i = 0;
-      for (exprNodeDesc e : conf.getValueCols()) {
+      for (ExprNodeDesc e : conf.getValueCols()) {
         valueEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
 
       partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
       i = 0;
-      for (exprNodeDesc e : conf.getPartitionCols()) {
+      for (ExprNodeDesc e : conf.getPartitionCols()) {
         partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
 
@@ -98,13 +98,13 @@ public class ReduceSinkOperator extends TerminalOperator<reduceSinkDesc>
       tagByte[0] = (byte) tag;
       LOG.info("Using tag = " + tag);
 
-      tableDesc keyTableDesc = conf.getKeySerializeInfo();
+      TableDesc keyTableDesc = conf.getKeySerializeInfo();
       keySerializer = (Serializer) keyTableDesc.getDeserializerClass()
           .newInstance();
       keySerializer.initialize(null, keyTableDesc.getProperties());
       keyIsText = keySerializer.getSerializedClass().equals(Text.class);
 
-      tableDesc valueTableDesc = conf.getValueSerializeInfo();
+      TableDesc valueTableDesc = conf.getValueSerializeInfo();
       valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
           .newInstance();
       valueSerializer.initialize(null, valueTableDesc.getProperties());

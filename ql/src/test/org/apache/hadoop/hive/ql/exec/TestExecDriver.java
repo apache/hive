@@ -37,18 +37,18 @@ import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.extractDesc;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.scriptDesc;
-import org.apache.hadoop.hive.ql.plan.selectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExtractDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ScriptDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -127,7 +127,7 @@ public class TestExecDriver extends TestCase {
     }
   }
 
-  mapredWork mr;
+  MapredWork mr;
 
   protected void setUp() {
     mr = PlanUtils.getMapRedWork();
@@ -157,39 +157,39 @@ public class TestExecDriver extends TestCase {
     }
   }
 
-  private filterDesc getTestFilterDesc(String column) {
-    ArrayList<exprNodeDesc> children1 = new ArrayList<exprNodeDesc>();
-    children1.add(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+  private FilterDesc getTestFilterDesc(String column) {
+    ArrayList<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
+    children1.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
         column, "", false));
-    exprNodeDesc lhs = new exprNodeGenericFuncDesc(
+    ExprNodeDesc lhs = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getFunctionInfo(
             Constants.DOUBLE_TYPE_NAME).getGenericUDF(), children1);
 
-    ArrayList<exprNodeDesc> children2 = new ArrayList<exprNodeDesc>();
-    children2.add(new exprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long
+    ArrayList<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>();
+    children2.add(new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long
         .valueOf(100)));
-    exprNodeDesc rhs = new exprNodeGenericFuncDesc(
+    ExprNodeDesc rhs = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getFunctionInfo(
             Constants.DOUBLE_TYPE_NAME).getGenericUDF(), children2);
 
-    ArrayList<exprNodeDesc> children3 = new ArrayList<exprNodeDesc>();
+    ArrayList<ExprNodeDesc> children3 = new ArrayList<ExprNodeDesc>();
     children3.add(lhs);
     children3.add(rhs);
 
-    exprNodeDesc desc = new exprNodeGenericFuncDesc(
+    ExprNodeDesc desc = new ExprNodeGenericFuncDesc(
         TypeInfoFactory.booleanTypeInfo, FunctionRegistry.getFunctionInfo("<")
             .getGenericUDF(), children3);
 
-    return new filterDesc(desc, false);
+    return new FilterDesc(desc, false);
   }
 
   @SuppressWarnings("unchecked")
   private void populateMapPlan1(Table src) {
     mr.setNumReduceTasks(Integer.valueOf(0));
 
-    Operator<fileSinkDesc> op2 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapplan1.out", Utilities.defaultTd, true));
-    Operator<filterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
+    Operator<FilterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
         op2);
 
     Utilities.addMapWork(mr, src, "a", op1);
@@ -199,15 +199,15 @@ public class TestExecDriver extends TestCase {
   private void populateMapPlan2(Table src) {
     mr.setNumReduceTasks(Integer.valueOf(0));
 
-    Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapplan2.out", Utilities.defaultTd, false));
 
-    Operator<scriptDesc> op2 = OperatorFactory.get(new scriptDesc("/bin/cat",
+    Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("/bin/cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
             + Utilities.tabCode, "key,value"), TextRecordReader.class), op3);
 
-    Operator<filterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
+    Operator<FilterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
         op2);
 
     Utilities.addMapWork(mr, src, "a", op1);
@@ -222,7 +222,7 @@ public class TestExecDriver extends TestCase {
       outputColumns.add("_col" + i);
     }
     // map-side work
-    Operator<reduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
             Utilities.makeList(getStringColumn("value")), outputColumns, true,
             -1, 1, -1));
@@ -232,10 +232,10 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan1.out", Utilities.defaultTd, false));
 
-    Operator<extractDesc> op2 = OperatorFactory.get(new extractDesc(
+    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
 
     mr.setReducer(op2);
@@ -249,7 +249,7 @@ public class TestExecDriver extends TestCase {
       outputColumns.add("_col" + i);
     }
     // map-side work
-    Operator<reduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
             Utilities
                 .makeList(getStringColumn("key"), getStringColumn("value")),
@@ -260,12 +260,12 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op4 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan2.out", Utilities.defaultTd, false));
 
-    Operator<filterDesc> op3 = OperatorFactory.get(getTestFilterDesc("0"), op4);
+    Operator<FilterDesc> op3 = OperatorFactory.get(getTestFilterDesc("0"), op4);
 
-    Operator<extractDesc> op2 = OperatorFactory.get(new extractDesc(
+    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
 
     mr.setReducer(op2);
@@ -283,7 +283,7 @@ public class TestExecDriver extends TestCase {
       outputColumns.add("_col" + i);
     }
     // map-side work
-    Operator<reduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
             Utilities.makeList(getStringColumn("value")), outputColumns, true,
             Byte.valueOf((byte) 0), 1, -1));
@@ -292,7 +292,7 @@ public class TestExecDriver extends TestCase {
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());
     mr.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
-    Operator<reduceSinkDesc> op2 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op2 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("key")),
             Utilities.makeList(getStringColumn("key")), outputColumns, true,
             Byte.valueOf((byte) 1), Integer.MAX_VALUE, -1));
@@ -301,13 +301,13 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op2.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op4 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan3.out", Utilities.defaultTd, false));
 
-    Operator<selectDesc> op5 = OperatorFactory.get(new selectDesc(Utilities
+    Operator<SelectDesc> op5 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn(Utilities.ReduceField.ALIAS.toString()),
-            new exprNodeFieldDesc(TypeInfoFactory.stringTypeInfo,
-                new exprNodeColumnDesc(TypeInfoFactory
+            new ExprNodeFieldDesc(TypeInfoFactory.stringTypeInfo,
+                new ExprNodeColumnDesc(TypeInfoFactory
                     .getListTypeInfo(TypeInfoFactory.stringTypeInfo),
                     Utilities.ReduceField.VALUE.toString(), "", false), "0",
                 false)), outputColumns), op4);
@@ -324,17 +324,17 @@ public class TestExecDriver extends TestCase {
     for (int i = 0; i < 2; i++) {
       outputColumns.add("_col" + i);
     }
-    Operator<reduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("tkey")),
             Utilities.makeList(getStringColumn("tkey"),
                 getStringColumn("tvalue")), outputColumns, false, -1, 1, -1));
 
-    Operator<scriptDesc> op0 = OperatorFactory.get(new scriptDesc("/bin/cat",
+    Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc("/bin/cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
             + Utilities.tabCode, "tkey,tvalue"), TextRecordReader.class), op1);
 
-    Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(Utilities
+    Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
         outputColumns), op0);
 
@@ -343,17 +343,17 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan4.out", Utilities.defaultTd, false));
 
-    Operator<extractDesc> op2 = OperatorFactory.get(new extractDesc(
+    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
 
     mr.setReducer(op2);
   }
 
-  public static exprNodeColumnDesc getStringColumn(String columnName) {
-    return new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, columnName,
+  public static ExprNodeColumnDesc getStringColumn(String columnName) {
+    return new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, columnName,
         "", false);
   }
 
@@ -366,12 +366,12 @@ public class TestExecDriver extends TestCase {
     for (int i = 0; i < 2; i++) {
       outputColumns.add("_col" + i);
     }
-    Operator<reduceSinkDesc> op0 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op0 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("0")), Utilities
             .makeList(getStringColumn("0"), getStringColumn("1")),
             outputColumns, false, -1, 1, -1));
 
-    Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(Utilities
+    Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
         outputColumns), op0);
 
@@ -380,10 +380,10 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op0.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan5.out", Utilities.defaultTd, false));
 
-    Operator<extractDesc> op2 = OperatorFactory.get(new extractDesc(
+    Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op3);
 
     mr.setReducer(op2);
@@ -398,18 +398,18 @@ public class TestExecDriver extends TestCase {
     for (int i = 0; i < 2; i++) {
       outputColumns.add("_col" + i);
     }
-    Operator<reduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
+    Operator<ReduceSinkDesc> op1 = OperatorFactory.get(PlanUtils
         .getReduceSinkDesc(Utilities.makeList(getStringColumn("tkey")),
             Utilities.makeList(getStringColumn("tkey"),
                 getStringColumn("tvalue")), outputColumns, false, -1, 1, -1));
 
-    Operator<scriptDesc> op0 = OperatorFactory.get(new scriptDesc(
+    Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc(
         "\'/bin/cat\'", PlanUtils.getDefaultTableDesc("" + Utilities.tabCode,
             "tkey,tvalue"), TextRecordWriter.class, PlanUtils
             .getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
         TextRecordReader.class), op1);
 
-    Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(Utilities
+    Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
         outputColumns), op0);
 
@@ -418,12 +418,12 @@ public class TestExecDriver extends TestCase {
     mr.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
         + "mapredplan6.out", Utilities.defaultTd, false));
 
-    Operator<filterDesc> op2 = OperatorFactory.get(getTestFilterDesc("0"), op3);
+    Operator<FilterDesc> op2 = OperatorFactory.get(getTestFilterDesc("0"), op3);
 
-    Operator<extractDesc> op5 = OperatorFactory.get(new extractDesc(
+    Operator<ExtractDesc> op5 = OperatorFactory.get(new ExtractDesc(
         getStringColumn(Utilities.ReduceField.VALUE.toString())), op2);
 
     mr.setReducer(op5);

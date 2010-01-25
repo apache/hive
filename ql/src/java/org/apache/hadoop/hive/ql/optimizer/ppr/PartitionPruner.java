@@ -48,9 +48,9 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -109,25 +109,25 @@ public class PartitionPruner implements Transform {
    * @param expr
    *          the pruner expression for the table
    */
-  public static boolean onlyContainsPartnCols(Table tab, exprNodeDesc expr) {
+  public static boolean onlyContainsPartnCols(Table tab, ExprNodeDesc expr) {
     if (!tab.isPartitioned() || (expr == null)) {
       return true;
     }
 
-    if (expr instanceof exprNodeColumnDesc) {
-      String colName = ((exprNodeColumnDesc) expr).getColumn();
+    if (expr instanceof ExprNodeColumnDesc) {
+      String colName = ((ExprNodeColumnDesc) expr).getColumn();
       return tab.isPartitionKey(colName);
     }
 
     // It cannot contain a non-deterministic function
-    if ((expr instanceof exprNodeGenericFuncDesc)
-        && !FunctionRegistry.isDeterministic(((exprNodeGenericFuncDesc) expr)
+    if ((expr instanceof ExprNodeGenericFuncDesc)
+        && !FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) expr)
             .getGenericUDF())) {
       return false;
     }
 
     // All columns of the expression must be parttioned columns
-    List<exprNodeDesc> children = expr.getChildren();
+    List<ExprNodeDesc> children = expr.getChildren();
     if (children != null) {
       for (int i = 0; i < children.size(); i++) {
         if (!onlyContainsPartnCols(tab, children.get(i))) {
@@ -155,7 +155,7 @@ public class PartitionPruner implements Transform {
    *         pruner condition.
    * @throws HiveException
    */
-  public static PrunedPartitionList prune(Table tab, exprNodeDesc prunerExpr,
+  public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias,
       Map<String, PrunedPartitionList> prunedPartitionsMap)
       throws HiveException {
@@ -271,17 +271,17 @@ public class PartitionPruner implements Transform {
   /**
    * Whether the expression contains a column node or not.
    */
-  public static boolean hasColumnExpr(exprNodeDesc desc) {
+  public static boolean hasColumnExpr(ExprNodeDesc desc) {
     // Return false for null
     if (desc == null) {
       return false;
     }
     // Return true for exprNodeColumnDesc
-    if (desc instanceof exprNodeColumnDesc) {
+    if (desc instanceof ExprNodeColumnDesc) {
       return true;
     }
     // Return true in case one of the children is column expr.
-    List<exprNodeDesc> children = desc.getChildren();
+    List<ExprNodeDesc> children = desc.getChildren();
     if (children != null) {
       for (int i = 0; i < children.size(); i++) {
         if (hasColumnExpr(children.get(i))) {

@@ -26,8 +26,8 @@ import java.util.Vector;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -39,7 +39,7 @@ import org.apache.hadoop.util.StringUtils;
 /**
  * FetchTask implementation
  **/
-public class FetchTask extends Task<fetchWork> implements Serializable {
+public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private int maxRows = 100;
@@ -85,7 +85,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   /**
    * Return the tableDesc of the fetchWork
    */
-  public tableDesc getTblDesc() {
+  public TableDesc getTblDesc() {
     return work.getTblDesc();
   }
 

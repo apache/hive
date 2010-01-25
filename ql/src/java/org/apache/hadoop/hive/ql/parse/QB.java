@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.plan.createTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
 /**
  * Implementation of the query block
@@ -45,7 +45,7 @@ public class QB {
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
-  private createTableDesc tblDesc = null; // table descriptor of the final
+  private CreateTableDesc tblDesc = null; // table descriptor of the final
                                           // results
 
   public void print(String msg) {
@@ -172,11 +172,11 @@ public class QB {
     return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS();
   }
 
-  public createTableDesc getTableDesc() {
+  public CreateTableDesc getTableDesc() {
     return tblDesc;
   }
 
-  public void setTableDesc(createTableDesc desc) {
+  public void setTableDesc(CreateTableDesc desc) {
     tblDesc = desc;
   }
 

@@ -35,9 +35,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.copyWork;
-import org.apache.hadoop.hive.ql.plan.loadTableDesc;
-import org.apache.hadoop.hive.ql.plan.moveWork;
+import org.apache.hadoop.hive.ql.plan.CopyWork;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 
 public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
@@ -210,7 +210,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       // that's just a test case.
       String copyURIStr = ctx.getExternalTmpFileURI(toURI);
       URI copyURI = URI.create(copyURIStr);
-      rTask = TaskFactory.get(new copyWork(fromURI.toString(), copyURIStr),
+      rTask = TaskFactory.get(new CopyWork(fromURI.toString(), copyURIStr),
           conf);
       fromURI = copyURI;
     }
@@ -218,16 +218,16 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // create final load/move work
 
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
-    loadTableDesc loadTableWork = new loadTableDesc(fromURI.toString(),
+    LoadTableDesc loadTableWork = new LoadTableDesc(fromURI.toString(),
         loadTmpPath, Utilities.getTableDesc(ts.tableHandle),
         (ts.partSpec != null) ? ts.partSpec : new HashMap<String, String>(),
         isOverWrite);
 
     if (rTask != null) {
-      rTask.addDependentTask(TaskFactory.get(new moveWork(getInputs(),
+      rTask.addDependentTask(TaskFactory.get(new MoveWork(getInputs(),
           getOutputs(), loadTableWork, null, true), conf));
     } else {
-      rTask = TaskFactory.get(new moveWork(getInputs(), getOutputs(),
+      rTask = TaskFactory.get(new MoveWork(getInputs(), getOutputs(),
           loadTableWork, null, true), conf);
     }
 

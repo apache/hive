@@ -24,11 +24,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "like", value = "_FUNC_(str, pattern) - Checks if str matches pattern", extended = "Example:\n"
+@Description(name = "like", value = "_FUNC_(str, pattern) - Checks if str matches pattern", extended = "Example:\n"
     + "  > SELECT a.* FROM srcpart a WHERE a.hr _FUNC_ '%2' LIMIT 1;\n"
     + "  27      val_27  2008-04-08      12")
 public class UDFLike extends UDF {

@@ -23,15 +23,15 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.selectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * Select operator implementation
  **/
-public class SelectOperator extends Operator<selectDesc> implements
+public class SelectOperator extends Operator<SelectDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -47,7 +47,7 @@ public class SelectOperator extends Operator<selectDesc> implements
       return;
     }
 
-    ArrayList<exprNodeDesc> colList = conf.getColList();
+    ArrayList<ExprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
       assert (colList.get(i) != null);

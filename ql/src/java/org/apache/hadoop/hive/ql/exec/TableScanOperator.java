@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.tableScanDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
  * forward it. This will be needed as part of local work when data is not being
  * read as part of map-reduce framework
  **/
-public class TableScanOperator extends Operator<tableScanDesc> implements
+public class TableScanOperator extends Operator<TableScanDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
 

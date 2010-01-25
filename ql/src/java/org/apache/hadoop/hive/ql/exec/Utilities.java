@@ -73,10 +73,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -103,8 +103,8 @@ public class Utilities {
     KEY, VALUE, ALIAS
   };
 
-  private static Map<String, mapredWork> gWorkMap = Collections
-      .synchronizedMap(new HashMap<String, mapredWork>());
+  private static Map<String, MapredWork> gWorkMap = Collections
+      .synchronizedMap(new HashMap<String, MapredWork>());
   static final private Log LOG = LogFactory.getLog(Utilities.class.getName());
 
   public static void clearMapRedWork(Configuration job) {
@@ -128,8 +128,8 @@ public class Utilities {
     }
   }
 
-  public static mapredWork getMapRedWork(Configuration job) {
-    mapredWork gWork = null;
+  public static MapredWork getMapRedWork(Configuration job) {
+    MapredWork gWork = null;
     try {
       synchronized (gWorkMap) {
         gWork = gWorkMap.get(getJobName(job));
@@ -141,7 +141,7 @@ public class Utilities {
           }
           InputStream in = new FileInputStream("HIVE_PLAN"
               + sanitizedJobId(job));
-          mapredWork ret = deserializeMapRedWork(in, job);
+          MapredWork ret = deserializeMapRedWork(in, job);
           gWork = ret;
           gWork.initialize();
           gWorkMap.put(getJobName(job), gWork);
@@ -185,7 +185,7 @@ public class Utilities {
     }
   }
 
-  public static void setMapRedWork(Configuration job, mapredWork w) {
+  public static void setMapRedWork(Configuration job, MapredWork w) {
     try {
       // use the default file system of the job
       FileSystem fs = FileSystem.get(job);
@@ -236,7 +236,7 @@ public class Utilities {
     XMLEncoder e = new XMLEncoder(out);
     // workaround for java 1.5
     e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(groupByDesc.Mode.class, new EnumDelegate());
+    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
     e
         .setPersistenceDelegate(Operator.ProgressCounter.class,
             new EnumDelegate());
@@ -250,19 +250,19 @@ public class Utilities {
    * standard output since it closes the output stream DO USE mapredWork.toXML()
    * instead
    */
-  public static void serializeMapRedWork(mapredWork w, OutputStream out) {
+  public static void serializeMapRedWork(MapredWork w, OutputStream out) {
     XMLEncoder e = new XMLEncoder(out);
     // workaround for java 1.5
     e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(groupByDesc.Mode.class, new EnumDelegate());
+    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
     e.writeObject(w);
     e.close();
   }
 
-  public static mapredWork deserializeMapRedWork(InputStream in,
+  public static MapredWork deserializeMapRedWork(InputStream in,
       Configuration conf) {
     XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    mapredWork ret = (mapredWork) d.readObject();
+    MapredWork ret = (MapredWork) d.readObject();
     d.close();
     return (ret);
   }
@@ -285,7 +285,7 @@ public class Utilities {
     }
   }
 
-  public static tableDesc defaultTd;
+  public static TableDesc defaultTd;
   static {
     // by default we expect ^A separated strings
     // This tableDesc does not provide column names. We should always use
@@ -378,14 +378,14 @@ public class Utilities {
     }
   }
 
-  public static tableDesc getTableDesc(Table tbl) {
-    return (new tableDesc(tbl.getDeserializer().getClass(), tbl
+  public static TableDesc getTableDesc(Table tbl) {
+    return (new TableDesc(tbl.getDeserializer().getClass(), tbl
         .getInputFormatClass(), tbl.getOutputFormatClass(), tbl.getSchema()));
   }
 
   // column names and column types are all delimited by comma
-  public static tableDesc getTableDesc(String cols, String colTypes) {
-    return (new tableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
+  public static TableDesc getTableDesc(String cols, String colTypes) {
+    return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
             org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
                 + Utilities.ctrlaCode,
@@ -393,15 +393,15 @@ public class Utilities {
             org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
   }
 
-  public static partitionDesc getPartitionDesc(Partition part)
+  public static PartitionDesc getPartitionDesc(Partition part)
       throws HiveException {
-    return (new partitionDesc(part));
+    return (new PartitionDesc(part));
   }
 
-  public static void addMapWork(mapredWork mr, Table tbl, String alias,
+  public static void addMapWork(MapredWork mr, Table tbl, String alias,
       Operator<?> work) {
     mr.addMapWork(tbl.getDataLocation().getPath(), alias, work,
-        new partitionDesc(getTableDesc(tbl), null));
+        new PartitionDesc(getTableDesc(tbl), null));
   }
 
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {

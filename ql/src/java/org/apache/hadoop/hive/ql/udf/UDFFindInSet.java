@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "find_in_set", value = "_FUNC_(str,str_array) - Returns the first occurrence "
+@Description(name = "find_in_set", value = "_FUNC_(str,str_array) - Returns the first occurrence "
     + " of str in str_array where str_array is a comma-delimited string."
     + " Returns null if either argument is null."
     + " Returns 0 if the first argument has any commas.", extended = "Example:\n"

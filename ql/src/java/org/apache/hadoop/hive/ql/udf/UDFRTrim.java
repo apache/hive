@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "rtrim", value = "_FUNC_(str) - Removes the trailing space characters from str ", extended = "Example:\n"
+@Description(name = "rtrim", value = "_FUNC_(str) - Removes the trailing space characters from str ", extended = "Example:\n"
     + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'")
 public class UDFRTrim extends UDF {
 

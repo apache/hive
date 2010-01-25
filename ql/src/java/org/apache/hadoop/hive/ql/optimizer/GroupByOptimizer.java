@@ -50,13 +50,13 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 /**
@@ -130,7 +130,7 @@ public class GroupByOptimizer implements Transform {
         throws SemanticException {
 
       // if this is not a HASH groupby, return
-      if (curr.getConf().getMode() != groupByDesc.Mode.HASH) {
+      if (curr.getConf().getMode() != GroupByDesc.Mode.HASH) {
         return;
       }
 
@@ -140,23 +140,23 @@ public class GroupByOptimizer implements Transform {
       }
 
       boolean bucketGroupBy = true;
-      groupByDesc desc = curr.getConf();
-      List<exprNodeDesc> groupByKeys = new LinkedList<exprNodeDesc>();
+      GroupByDesc desc = curr.getConf();
+      List<ExprNodeDesc> groupByKeys = new LinkedList<ExprNodeDesc>();
       groupByKeys.addAll(desc.getKeys());
       // compute groupby columns from groupby keys
       List<String> groupByCols = new ArrayList<String>();
       while (groupByKeys.size() > 0) {
-        exprNodeDesc node = groupByKeys.remove(0);
-        if (node instanceof exprNodeColumnDesc) {
+        ExprNodeDesc node = groupByKeys.remove(0);
+        if (node instanceof ExprNodeColumnDesc) {
           groupByCols.addAll(node.getCols());
-        } else if ((node instanceof exprNodeConstantDesc)
-            || (node instanceof exprNodeNullDesc)) {
+        } else if ((node instanceof ExprNodeConstantDesc)
+            || (node instanceof ExprNodeNullDesc)) {
           // nothing
-        } else if (node instanceof exprNodeFieldDesc) {
-          groupByKeys.add(0, ((exprNodeFieldDesc) node).getDesc());
+        } else if (node instanceof ExprNodeFieldDesc) {
+          groupByKeys.add(0, ((ExprNodeFieldDesc) node).getDesc());
           continue;
-        } else if (node instanceof exprNodeGenericFuncDesc) {
-          exprNodeGenericFuncDesc udfNode = ((exprNodeGenericFuncDesc) node);
+        } else if (node instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeGenericFuncDesc udfNode = ((ExprNodeGenericFuncDesc) node);
           GenericUDF udf = udfNode.getGenericUDF();
           if (!FunctionRegistry.isDeterministic(udf)) {
             return;

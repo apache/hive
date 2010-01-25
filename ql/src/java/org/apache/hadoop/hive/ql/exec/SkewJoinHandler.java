@@ -34,8 +34,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.joinDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -82,7 +82,7 @@ public class SkewJoinHandler {
   private int skewKeyDefinition = -1;
   private Map<Byte, StructObjectInspector> skewKeysTableObjectInspector = null;
   private Map<Byte, SerDe> tblSerializers = null;
-  private Map<Byte, tableDesc> tblDesc = null;
+  private Map<Byte, TableDesc> tblDesc = null;
 
   private Map<Byte, Boolean> bigKeysExistingMap = null;
 
@@ -92,7 +92,7 @@ public class SkewJoinHandler {
 
   private final CommonJoinOperator<? extends Serializable> joinOp;
   private final int numAliases;
-  private final joinDesc conf;
+  private final JoinDesc conf;
 
   public SkewJoinHandler(CommonJoinOperator<? extends Serializable> joinOp) {
     this.joinOp = joinOp;
@@ -102,7 +102,7 @@ public class SkewJoinHandler {
 
   public void initiliaze(Configuration hconf) {
     this.hconf = hconf;
-    joinDesc desc = joinOp.getConf();
+    JoinDesc desc = joinOp.getConf();
     skewKeyDefinition = desc.getSkewKeyDefinition();
     skewKeysTableObjectInspector = new HashMap<Byte, StructObjectInspector>(
         numAliases);
@@ -123,7 +123,7 @@ public class SkewJoinHandler {
       for (int k = 0; k < keyFieldSize; k++) {
         skewTableKeyInspectors.add(keyFields.get(k).getFieldObjectInspector());
       }
-      tableDesc joinKeyDesc = desc.getKeyTableDesc();
+      TableDesc joinKeyDesc = desc.getKeyTableDesc();
       List<String> keyColNames = Utilities.getColumnNames(joinKeyDesc
           .getProperties());
       StructObjectInspector structTblKeyInpector = ObjectInspectorFactory
@@ -140,7 +140,7 @@ public class SkewJoinHandler {
         break;
       }
 
-      tableDesc valTblDesc = joinOp.getSpillTableDesc(alias);
+      TableDesc valTblDesc = joinOp.getSpillTableDesc(alias);
       List<String> valColNames = new ArrayList<String>();
       if (valTblDesc != null) {
         valColNames = Utilities.getColumnNames(valTblDesc.getProperties());

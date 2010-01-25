@@ -24,12 +24,12 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "from_unixtime", value = "_FUNC_(unix_time, format) - returns unix_time in the specified "
+@Description(name = "from_unixtime", value = "_FUNC_(unix_time, format) - returns unix_time in the specified "
     + "format", extended = "Example:\n"
     + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
     + "  '1970-01-01 00:00:00'")

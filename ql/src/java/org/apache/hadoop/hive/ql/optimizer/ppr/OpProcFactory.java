@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Operator factory for partition pruning processing of operator graph We find
@@ -81,12 +81,12 @@ public class OpProcFactory {
       }
 
       // Otherwise this is not a sampling predicate and we need to
-      exprNodeDesc predicate = fop.getConf().getPredicate();
+      ExprNodeDesc predicate = fop.getConf().getPredicate();
       String alias = top.getConf().getAlias();
 
       // Generate the partition pruning predicate
       boolean hasNonPartCols = false;
-      exprNodeDesc ppr_pred = ExprProcFactory.genPruner(alias, predicate,
+      ExprNodeDesc ppr_pred = ExprProcFactory.genPruner(alias, predicate,
           hasNonPartCols);
       owc.addHasNonPartCols(hasNonPartCols);
 
@@ -96,10 +96,10 @@ public class OpProcFactory {
       return null;
     }
 
-    private void addPruningPred(Map<TableScanOperator, exprNodeDesc> opToPPR,
-        TableScanOperator top, exprNodeDesc new_ppr_pred) {
-      exprNodeDesc old_ppr_pred = opToPPR.get(top);
-      exprNodeDesc ppr_pred = null;
+    private void addPruningPred(Map<TableScanOperator, ExprNodeDesc> opToPPR,
+        TableScanOperator top, ExprNodeDesc new_ppr_pred) {
+      ExprNodeDesc old_ppr_pred = opToPPR.get(top);
+      ExprNodeDesc ppr_pred = null;
       if (old_ppr_pred != null) {
         // or the old_ppr_pred and the new_ppr_pred
         ppr_pred = TypeCheckProcFactory.DefaultExprProcessor

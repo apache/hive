@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.selectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 
 /**
  * This class implements the processor context for Column Pruner.
@@ -111,9 +111,9 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
    */
   public List<String> getColsFromSelectExpr(SelectOperator op) {
     List<String> cols = new ArrayList<String>();
-    selectDesc conf = op.getConf();
-    ArrayList<exprNodeDesc> exprList = conf.getColList();
-    for (exprNodeDesc expr : exprList) {
+    SelectDesc conf = op.getConf();
+    ArrayList<ExprNodeDesc> exprList = conf.getColList();
+    for (ExprNodeDesc expr : exprList) {
       cols = Utilities.mergeUniqElems(cols, expr.getCols());
     }
     return cols;
@@ -132,14 +132,14 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public List<String> getSelectColsFromChildren(SelectOperator op,
       List<String> colList) {
     List<String> cols = new ArrayList<String>();
-    selectDesc conf = op.getConf();
+    SelectDesc conf = op.getConf();
 
     if (conf.isSelStarNoCompute()) {
       cols.addAll(colList);
       return cols;
     }
 
-    ArrayList<exprNodeDesc> selectExprs = conf.getColList();
+    ArrayList<ExprNodeDesc> selectExprs = conf.getColList();
 
     // The colList is the output columns used by child operators, they are
     // different
@@ -148,7 +148,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     ArrayList<String> outputColumnNames = conf.getOutputColumnNames();
     for (int i = 0; i < outputColumnNames.size(); i++) {
       if (colList.contains(outputColumnNames.get(i))) {
-        exprNodeDesc expr = selectExprs.get(i);
+        ExprNodeDesc expr = selectExprs.get(i);
         cols = Utilities.mergeUniqElems(cols, expr.getCols());
       }
     }

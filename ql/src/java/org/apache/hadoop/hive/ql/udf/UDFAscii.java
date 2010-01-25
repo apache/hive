@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "ascii", value = "_FUNC_(str) - returns the numeric value of the first character"
+@Description(name = "ascii", value = "_FUNC_(str) - returns the numeric value of the first character"
     + " of str", extended = "Returns 0 if str is empty or NULL if str is NULL\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('222') FROM src LIMIT 1;"

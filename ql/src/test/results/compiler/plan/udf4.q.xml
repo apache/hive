@@ -5,11 +5,11 @@
    <string>Stage-2</string> 
   </void> 
   <void property="work"> 
-   <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
+   <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
     <void property="aliasToPartnInfo"> 
      <void method="put"> 
       <string>dest1</string> 
-      <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+      <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
        <void property="deserializerClass"> 
         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
        </void> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/dest1</string> 
+          <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/dest1</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1263415362</string> 
+          <string>1264444544</string> 
          </void> 
         </object> 
        </void> 
@@ -74,7 +74,7 @@
         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
        </void> 
        <void property="tableDesc"> 
-        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+        <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
          <void property="deserializerClass"> 
           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
          </void> 
@@ -109,12 +109,12 @@
               <void method="add"> 
                <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
                 <void property="conf"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/tmp/698882072/10001</string> 
+                   <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/388231394/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                     <void property="deserializerClass"> 
                      <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                     </void> 
@@ -388,11 +388,11 @@
              <object class="java.util.HashMap"> 
               <void method="put"> 
                <string>_col8</string> 
-               <object id="exprNodeGenericFuncDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -420,15 +420,15 @@
               </void> 
               <void method="put"> 
                <string>_col7</string> 
-               <object id="exprNodeGenericFuncDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                     <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
@@ -476,11 +476,11 @@
               </void> 
               <void method="put"> 
                <string>_col6</string> 
-               <object id="exprNodeGenericFuncDesc2" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -508,15 +508,15 @@
               </void> 
               <void method="put"> 
                <string>_col5</string> 
-               <object id="exprNodeGenericFuncDesc3" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                     <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
@@ -564,11 +564,11 @@
               </void> 
               <void method="put"> 
                <string>_col4</string> 
-               <object id="exprNodeGenericFuncDesc4" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -596,11 +596,11 @@
               </void> 
               <void method="put"> 
                <string>_col3</string> 
-               <object id="exprNodeGenericFuncDesc5" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -628,15 +628,15 @@
               </void> 
               <void method="put"> 
                <string>_col2</string> 
-               <object id="exprNodeGenericFuncDesc6" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc6" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                     <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
@@ -684,11 +684,11 @@
               </void> 
               <void method="put"> 
                <string>_col1</string> 
-               <object id="exprNodeGenericFuncDesc7" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc7" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -716,11 +716,11 @@
               </void> 
               <void method="put"> 
                <string>_col9</string> 
-               <object id="exprNodeGenericFuncDesc8" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc8" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -748,11 +748,11 @@
               </void> 
               <void method="put"> 
                <string>_col13</string> 
-               <object id="exprNodeGenericFuncDesc9" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc9" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -780,11 +780,11 @@
               </void> 
               <void method="put"> 
                <string>_col12</string> 
-               <object id="exprNodeGenericFuncDesc10" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc10" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -812,15 +812,15 @@
               </void> 
               <void method="put"> 
                <string>_col11</string> 
-               <object id="exprNodeGenericFuncDesc11" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc11" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                     <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
@@ -868,11 +868,11 @@
               </void> 
               <void method="put"> 
                <string>_col10</string> 
-               <object id="exprNodeGenericFuncDesc12" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc12" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -900,11 +900,11 @@
               </void> 
               <void method="put"> 
                <string>_col17</string> 
-               <object id="exprNodeGenericFuncDesc13" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc13" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -914,11 +914,11 @@
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                     <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo2"/> 
                         </void> 
@@ -969,11 +969,11 @@
               </void> 
               <void method="put"> 
                <string>_col16</string> 
-               <object id="exprNodeGenericFuncDesc14" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc14" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -983,7 +983,7 @@
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -1014,11 +1014,11 @@
               </void> 
               <void method="put"> 
                <string>_col15</string> 
-               <object id="exprNodeGenericFuncDesc15" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc15" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -1049,7 +1049,7 @@
               </void> 
               <void method="put"> 
                <string>_col14</string> 
-               <object id="exprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+               <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
                 </void> 
@@ -1060,11 +1060,11 @@
               </void> 
               <void method="put"> 
                <string>_col0</string> 
-               <object id="exprNodeGenericFuncDesc16" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc16" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -1092,11 +1092,11 @@
               </void> 
               <void method="put"> 
                <string>_col18</string> 
-               <object id="exprNodeGenericFuncDesc17" class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+               <object id="ExprNodeGenericFuncDesc17" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
@@ -1128,65 +1128,65 @@
              </object> 
             </void> 
             <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
+             <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
               <void property="colList"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc16"/> 
+                 <object idref="ExprNodeGenericFuncDesc16"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc7"/> 
+                 <object idref="ExprNodeGenericFuncDesc7"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc6"/> 
+                 <object idref="ExprNodeGenericFuncDesc6"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc5"/> 
+                 <object idref="ExprNodeGenericFuncDesc5"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc4"/> 
+                 <object idref="ExprNodeGenericFuncDesc4"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc3"/> 
+                 <object idref="ExprNodeGenericFuncDesc3"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc2"/> 
+                 <object idref="ExprNodeGenericFuncDesc2"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc1"/> 
+                 <object idref="ExprNodeGenericFuncDesc1"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc0"/> 
+                 <object idref="ExprNodeGenericFuncDesc0"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc8"/> 
+                 <object idref="ExprNodeGenericFuncDesc8"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc12"/> 
+                 <object idref="ExprNodeGenericFuncDesc12"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc11"/> 
+                 <object idref="ExprNodeGenericFuncDesc11"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc10"/> 
+                 <object idref="ExprNodeGenericFuncDesc10"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc9"/> 
+                 <object idref="ExprNodeGenericFuncDesc9"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeConstantDesc0"/> 
+                 <object idref="ExprNodeConstantDesc0"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc15"/> 
+                 <object idref="ExprNodeGenericFuncDesc15"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc14"/> 
+                 <object idref="ExprNodeGenericFuncDesc14"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc13"/> 
+                 <object idref="ExprNodeGenericFuncDesc13"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeGenericFuncDesc17"/> 
+                 <object idref="ExprNodeGenericFuncDesc17"/> 
                 </void> 
                </object> 
               </void> 
@@ -1539,7 +1539,7 @@
          </object> 
         </void> 
         <void property="conf"> 
-         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
           <void property="alias"> 
            <string>dest1</string> 
           </void> 
@@ -1606,7 +1606,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/dest1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>dest1</string> 
@@ -1618,8 +1618,8 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/dest1</string> 
-       <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/dest1</string> 
+       <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
@@ -1639,7 +1639,7 @@
          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
         </void> 
         <void property="tableDesc"> 
-         <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
           <void property="deserializerClass"> 
            <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
           </void> 

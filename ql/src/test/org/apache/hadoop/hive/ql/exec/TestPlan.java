@@ -26,12 +26,12 @@ import java.util.LinkedHashMap;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -44,15 +44,15 @@ public class TestPlan extends TestCase {
 
     try {
       // initialize a complete map reduce configuration
-      exprNodeDesc expr1 = new exprNodeColumnDesc(
+      ExprNodeDesc expr1 = new ExprNodeColumnDesc(
           TypeInfoFactory.stringTypeInfo, F1, "", false);
-      exprNodeDesc expr2 = new exprNodeColumnDesc(
+      ExprNodeDesc expr2 = new ExprNodeColumnDesc(
           TypeInfoFactory.stringTypeInfo, F2, "", false);
-      exprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor
+      ExprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("==", expr1, expr2);
 
-      filterDesc filterCtx = new filterDesc(filterExpr, false);
-      Operator<filterDesc> op = OperatorFactory.get(filterDesc.class);
+      FilterDesc filterCtx = new FilterDesc(filterExpr, false);
+      Operator<FilterDesc> op = OperatorFactory.get(FilterDesc.class);
       op.setConf(filterCtx);
 
       ArrayList<String> aliasList = new ArrayList<String>();
@@ -60,15 +60,15 @@ public class TestPlan extends TestCase {
       LinkedHashMap<String, ArrayList<String>> pa = new LinkedHashMap<String, ArrayList<String>>();
       pa.put("/tmp/testfolder", aliasList);
 
-      tableDesc tblDesc = Utilities.defaultTd;
-      partitionDesc partDesc = new partitionDesc(tblDesc, null);
-      LinkedHashMap<String, partitionDesc> pt = new LinkedHashMap<String, partitionDesc>();
+      TableDesc tblDesc = Utilities.defaultTd;
+      PartitionDesc partDesc = new PartitionDesc(tblDesc, null);
+      LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
       pt.put("/tmp/testfolder", partDesc);
 
       LinkedHashMap<String, Operator<? extends Serializable>> ao = new LinkedHashMap<String, Operator<? extends Serializable>>();
       ao.put("a", op);
 
-      mapredWork mrwork = new mapredWork();
+      MapredWork mrwork = new MapredWork();
       mrwork.setPathToAliases(pa);
       mrwork.setPathToPartitionInfo(pt);
       mrwork.setAliasToWork(ao);
@@ -83,7 +83,7 @@ public class TestPlan extends TestCase {
       JobConf job = new JobConf(TestPlan.class);
       job.set("fs.default.name", "file:///");
       Utilities.setMapRedWork(job, mrwork);
-      mapredWork mrwork2 = Utilities.getMapRedWork(job);
+      MapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearMapRedWork(job);
 
       // over here we should have some checks of the deserialized object against

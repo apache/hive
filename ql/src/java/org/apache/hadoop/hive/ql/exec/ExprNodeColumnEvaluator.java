@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -29,12 +29,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  */
 public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
 
-  protected exprNodeColumnDesc expr;
+  protected ExprNodeColumnDesc expr;
 
   transient StructObjectInspector[] inspectors;
   transient StructField[] fields;
 
-  public ExprNodeColumnEvaluator(exprNodeColumnDesc expr) {
+  public ExprNodeColumnEvaluator(ExprNodeColumnDesc expr) {
     this.expr = expr;
   }
 

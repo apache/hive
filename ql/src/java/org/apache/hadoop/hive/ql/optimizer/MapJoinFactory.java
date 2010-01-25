@@ -43,9 +43,9 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * Operator factory for MapJoin processing
@@ -83,7 +83,7 @@ public class MapJoinFactory {
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      mapredWork currPlan = (mapredWork) currTask.getWork();
+      MapredWork currPlan = (MapredWork) currTask.getWork();
       Operator<? extends Serializable> currTopOp = mapredCtx.getCurrTopOp();
       String currAliasId = mapredCtx.getCurrAliasId();
       Operator<? extends Serializable> reducer = mapJoin;
@@ -126,7 +126,7 @@ public class MapJoinFactory {
       MapJoinOperator mapJoin = (MapJoinOperator) nd;
       GenMRProcContext opProcCtx = (GenMRProcContext) procCtx;
 
-      mapredWork cplan = GenMapRedUtils.getMapRedWork();
+      MapredWork cplan = GenMapRedUtils.getMapRedWork();
       ParseContext parseCtx = opProcCtx.getParseCtx();
       Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
           .getConf());
@@ -212,11 +212,11 @@ public class MapJoinFactory {
         ctx.setMapJoinCtx(mapJoin, mjCtx);
       }
 
-      mapredWork mjPlan = GenMapRedUtils.getMapRedWork();
+      MapredWork mjPlan = GenMapRedUtils.getMapRedWork();
       Task<? extends Serializable> mjTask = TaskFactory.get(mjPlan, parseCtx
           .getConf());
 
-      tableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
+      TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
           .getFieldSchemasFromRowSchema(mapJoin.getSchema(), "temporarycol"));
 
       // generate the temporary file
@@ -232,7 +232,7 @@ public class MapJoinFactory {
 
       // Create a file sink operator for this file name
       Operator<? extends Serializable> fs_op = OperatorFactory.get(
-          new fileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
+          new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
               HiveConf.ConfVars.COMPRESSINTERMEDIATE)), mapJoin.getSchema());
 
       assert mapJoin.getChildOperators().size() == 1;
@@ -288,7 +288,7 @@ public class MapJoinFactory {
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      mapredWork currPlan = (mapredWork) currTask.getWork();
+      MapredWork currPlan = (MapredWork) currTask.getWork();
       mapredCtx.getCurrAliasId();
       Operator<? extends Serializable> reducer = mapJoin;
       HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
@@ -348,7 +348,7 @@ public class MapJoinFactory {
       GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
           pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      mapredWork currPlan = (mapredWork) currTask.getWork();
+      MapredWork currPlan = (MapredWork) currTask.getWork();
       Operator<? extends Serializable> reducer = mapJoin;
       HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
           .getOpTaskMap();

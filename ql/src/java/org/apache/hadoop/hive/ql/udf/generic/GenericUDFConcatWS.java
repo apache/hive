@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Text;
  * 
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
-@description(name = "concat_ws", value = "_FUNC_(separator, str1, str2, ...) - "
+@Description(name = "concat_ws", value = "_FUNC_(separator, str1, str2, ...) - "
     + "returns the concatenation of the strings separated by the separator.", extended = "Example:\n"
     + "  > SELECT _FUNC_('ce', 'fa', 'book') FROM src LIMIT 1;\n"
     + "  'facebook'")

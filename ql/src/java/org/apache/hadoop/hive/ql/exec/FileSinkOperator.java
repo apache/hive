@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -41,7 +41,7 @@ import org.apache.hadoop.mapred.JobConf;
 /**
  * File Sink operator implementation
  **/
-public class FileSinkOperator extends TerminalOperator<fileSinkDesc> implements
+public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Serializable {
 
   public static interface RecordWriter {

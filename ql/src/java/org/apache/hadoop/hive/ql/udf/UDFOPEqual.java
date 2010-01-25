@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -35,7 +35,7 @@ import org.apache.hadoop.io.Text;
  * performance; otherwise a single method that takes (Number a, Number b) and
  * use a.doubleValue() == b.doubleValue() is enough.
  */
-@description(name = "=,==", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
+@Description(name = "=,==", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
 public class UDFOPEqual extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPEqual.class.getName());

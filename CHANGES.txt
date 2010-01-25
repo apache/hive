@@ -28,6 +28,9 @@ Trunk -  Unreleased
     HIVE-1081. Automated source code cleanup - Part 3 - ql.
     (Carl Steinbach via zshao)
 
+    HIVE-1084. Capitalize first letter of class names.
+    (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

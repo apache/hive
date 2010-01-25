@@ -37,10 +37,10 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * Expression factory for predicate pushdown processing. Each processor
@@ -58,7 +58,7 @@ public class ExprWalkerProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
-      exprNodeColumnDesc colref = (exprNodeColumnDesc) nd;
+      ExprNodeColumnDesc colref = (ExprNodeColumnDesc) nd;
       RowResolver toRR = ctx.getToRR();
       Operator<? extends Serializable> op = ctx.getOp();
       String[] colAlias = toRR.reverseLookup(colref.getColumn());
@@ -66,7 +66,7 @@ public class ExprWalkerProcFactory {
       if (op.getColumnExprMap() != null) {
         // replace the output expression with the input expression so that
         // parent op can understand this expression
-        exprNodeDesc exp = op.getColumnExprMap().get(colref.getColumn());
+        ExprNodeDesc exp = op.getColumnExprMap().get(colref.getColumn());
         if (exp == null) {
           // means that expression can't be pushed either because it is value in
           // group by
@@ -95,12 +95,12 @@ public class ExprWalkerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
       String alias = null;
-      exprNodeFieldDesc expr = (exprNodeFieldDesc) nd;
+      ExprNodeFieldDesc expr = (ExprNodeFieldDesc) nd;
 
       boolean isCandidate = true;
       assert (nd.getChildren().size() == 1);
-      exprNodeDesc ch = (exprNodeDesc) nd.getChildren().get(0);
-      exprNodeDesc newCh = ctx.getConvertedNode(ch);
+      ExprNodeDesc ch = (ExprNodeDesc) nd.getChildren().get(0);
+      ExprNodeDesc newCh = ctx.getConvertedNode(ch);
       if (newCh != null) {
         expr.setDesc(newCh);
         ch = newCh;
@@ -138,7 +138,7 @@ public class ExprWalkerProcFactory {
         Object... nodeOutputs) throws SemanticException {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
       String alias = null;
-      exprNodeGenericFuncDesc expr = (exprNodeGenericFuncDesc) nd;
+      ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) nd;
 
       if (!FunctionRegistry.isDeterministic(expr.getGenericUDF())) {
         // this GenericUDF can't be pushed down
@@ -149,8 +149,8 @@ public class ExprWalkerProcFactory {
 
       boolean isCandidate = true;
       for (int i = 0; i < nd.getChildren().size(); i++) {
-        exprNodeDesc ch = (exprNodeDesc) nd.getChildren().get(i);
-        exprNodeDesc newCh = ctx.getConvertedNode(ch);
+        ExprNodeDesc ch = (ExprNodeDesc) nd.getChildren().get(i);
+        ExprNodeDesc newCh = ctx.getConvertedNode(ch);
         if (newCh != null) {
           expr.getChildExprs().set(i, newCh);
           ch = newCh;
@@ -189,7 +189,7 @@ public class ExprWalkerProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
-      ctx.setIsCandidate((exprNodeDesc) nd, true);
+      ctx.setIsCandidate((ExprNodeDesc) nd, true);
       return true;
     }
   }
@@ -211,9 +211,9 @@ public class ExprWalkerProcFactory {
   }
 
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext,
-      Operator<? extends Serializable> op, exprNodeDesc pred)
+      Operator<? extends Serializable> op, ExprNodeDesc pred)
       throws SemanticException {
-    List<exprNodeDesc> preds = new ArrayList<exprNodeDesc>();
+    List<ExprNodeDesc> preds = new ArrayList<ExprNodeDesc>();
     preds.add(pred);
     return extractPushdownPreds(opContext, op, preds);
   }
@@ -230,7 +230,7 @@ public class ExprWalkerProcFactory {
    * @throws SemanticException
    */
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext,
-      Operator<? extends Serializable> op, List<exprNodeDesc> preds)
+      Operator<? extends Serializable> op, List<ExprNodeDesc> preds)
       throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     ExprWalkerInfo exprContext = new ExprWalkerInfo(op, opContext
@@ -241,12 +241,12 @@ public class ExprWalkerProcFactory {
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(
-        new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"),
+        new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
         getColumnProcessor());
     exprRules.put(
-        new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"),
+        new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"),
         getFieldProcessor());
-    exprRules.put(new RuleRegExp("R3", exprNodeGenericFuncDesc.class.getName()
+    exprRules.put(new RuleRegExp("R3", ExprNodeGenericFuncDesc.class.getName()
         + "%"), getGenericFuncProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
@@ -256,8 +256,8 @@ public class ExprWalkerProcFactory {
     GraphWalker egw = new DefaultGraphWalker(disp);
 
     List<Node> startNodes = new ArrayList<Node>();
-    List<exprNodeDesc> clonedPreds = new ArrayList<exprNodeDesc>();
-    for (exprNodeDesc node : preds) {
+    List<ExprNodeDesc> clonedPreds = new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc node : preds) {
       clonedPreds.add(node.clone());
     }
     startNodes.addAll(clonedPreds);
@@ -265,7 +265,7 @@ public class ExprWalkerProcFactory {
     egw.startWalking(startNodes, null);
 
     // check the root expression for final candidates
-    for (exprNodeDesc pred : clonedPreds) {
+    for (ExprNodeDesc pred : clonedPreds) {
       extractFinalCandidates(pred, exprContext);
     }
     return exprContext;
@@ -275,7 +275,7 @@ public class ExprWalkerProcFactory {
    * Walks through the top AND nodes and determine which of them are final
    * candidates
    */
-  private static void extractFinalCandidates(exprNodeDesc expr,
+  private static void extractFinalCandidates(ExprNodeDesc expr,
       ExprWalkerInfo ctx) {
     if (ctx.isCandidate(expr)) {
       ctx.addFinalCandidate(expr);
@@ -286,7 +286,7 @@ public class ExprWalkerProcFactory {
       // If the operator is AND, we need to determine if any of the children are
       // final candidates.
       for (Node ch : expr.getChildren()) {
-        extractFinalCandidates((exprNodeDesc) ch, ctx);
+        extractFinalCandidates((ExprNodeDesc) ch, ctx);
       }
     }
 

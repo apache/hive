@@ -23,11 +23,11 @@ import java.util.Random;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
-@description(name = "rand", value = "_FUNC_([seed]) - Returns a pseudorandom number between 0 and 1")
+@Description(name = "rand", value = "_FUNC_([seed]) - Returns a pseudorandom number between 0 and 1")
 @UDFType(deterministic = false)
 public class UDFRand extends UDF {
 

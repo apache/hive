@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -32,7 +32,7 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * Filter operator implementation
  **/
-public class FilterOperator extends Operator<filterDesc> implements
+public class FilterOperator extends Operator<FilterDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;

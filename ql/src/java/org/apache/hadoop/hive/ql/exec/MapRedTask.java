@@ -29,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
  * runs it from a separate jvm. The primary issue with this is the inability to
  * control logging from a separate jvm in a consistent manner
  **/
-public class MapRedTask extends Task<mapredWork> implements Serializable {
+public class MapRedTask extends Task<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -86,7 +86,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
       File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
 
-      mapredWork plan = getWork();
+      MapredWork plan = getWork();
 
       File planFile = File.createTempFile("plan", ".xml", scratchDir);
       LOG.info("Generating plan file " + planFile.toString());
@@ -192,7 +192,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
 
   @Override
   public boolean hasReduce() {
-    mapredWork w = getWork();
+    MapredWork w = getWork();
     return w.getReducer() != null;
   }
 

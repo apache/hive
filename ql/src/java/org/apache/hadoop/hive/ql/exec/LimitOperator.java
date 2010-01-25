@@ -22,13 +22,13 @@ import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.limitDesc;
+import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Limit operator implementation Limits the number of rows to be passed on.
  **/
-public class LimitOperator extends Operator<limitDesc> implements Serializable {
+public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   transient protected int limit;

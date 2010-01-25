@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -99,7 +99,7 @@ public class RowContainer<Row extends List<Object>> {
 
   private List<Object> keyObject;
 
-  private tableDesc tblDesc;
+  private TableDesc tblDesc;
 
   boolean firstCalled = false; // once called first, it will never be able to
                                // write again.
@@ -498,7 +498,7 @@ public class RowContainer<Row extends List<Object>> {
     this.keyObject = dummyKey;
   }
 
-  public void setTableDesc(tableDesc tblDesc) {
+  public void setTableDesc(TableDesc tblDesc) {
     this.tblDesc = tblDesc;
   }
 

@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -27,11 +27,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
-  protected exprNodeConstantDesc expr;
+  protected ExprNodeConstantDesc expr;
   transient ObjectInspector writableObjectInspector;
   transient Object writableValue;
 
-  public ExprNodeConstantEvaluator(exprNodeConstantDesc expr) {
+  public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr) {
     this.expr = expr;
     PrimitiveCategory pc = ((PrimitiveTypeInfo) expr.getTypeInfo())
         .getPrimitiveCategory();

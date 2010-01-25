@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.collectDesc;
+import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 /**
  * Buffers rows emitted by other operators
  **/
-public class CollectOperator extends Operator<collectDesc> implements
+public class CollectOperator extends Operator<CollectDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;

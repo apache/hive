@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 // change the void to the first matching argument
 public class ExprNodeNullEvaluator extends ExprNodeEvaluator {
 
-  protected exprNodeNullDesc expr;
+  protected ExprNodeNullDesc expr;
 
-  public ExprNodeNullEvaluator(exprNodeNullDesc expr) {
+  public ExprNodeNullEvaluator(ExprNodeNullDesc expr) {
     this.expr = expr;
   }
 

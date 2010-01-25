@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Context for Expression Walker for determining predicate pushdown candidates
@@ -48,12 +48,12 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     /** alias that this expression refers to */
     public String alias = null;
     /** new expr for this expression. */
-    public exprNodeDesc convertedExpr = null;
+    public ExprNodeDesc convertedExpr = null;
 
     public ExprInfo() {
     }
 
-    public ExprInfo(boolean isCandidate, String alias, exprNodeDesc replacedNode) {
+    public ExprInfo(boolean isCandidate, String alias, ExprNodeDesc replacedNode) {
       this.isCandidate = isCandidate;
       this.alias = alias;
       convertedExpr = replacedNode;
@@ -70,18 +70,18 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * and the information for each node is the value which is used while walking
    * the tree by its parent
    */
-  private final Map<String, List<exprNodeDesc>> pushdownPreds;
+  private final Map<String, List<ExprNodeDesc>> pushdownPreds;
   /**
    * Values the expression sub-trees (predicates) that can be pushed down for
    * root expression tree. Since there can be more than one alias in an
    * expression tree, this is a map from the alias to predicates.
    */
-  private final Map<exprNodeDesc, ExprInfo> exprInfoMap;
+  private final Map<ExprNodeDesc, ExprInfo> exprInfoMap;
   private boolean isDeterministic = true;
 
   public ExprWalkerInfo() {
-    pushdownPreds = new HashMap<String, List<exprNodeDesc>>();
-    exprInfoMap = new HashMap<exprNodeDesc, ExprInfo>();
+    pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
+    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
   }
 
   public ExprWalkerInfo(Operator<? extends Serializable> op,
@@ -89,8 +89,8 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     this.op = op;
     this.toRR = toRR;
 
-    pushdownPreds = new HashMap<String, List<exprNodeDesc>>();
-    exprInfoMap = new HashMap<exprNodeDesc, ExprInfo>();
+    pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
+    exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
   }
 
   /**
@@ -111,7 +111,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @return converted expression for give node. If there is none then returns
    *         null.
    */
-  public exprNodeDesc getConvertedNode(Node nd) {
+  public ExprNodeDesc getConvertedNode(Node nd) {
     ExprInfo ei = exprInfoMap.get(nd);
     if (ei == null) {
       return null;
@@ -127,7 +127,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param newNode
    *          new node
    */
-  public void addConvertedNode(exprNodeDesc oldNode, exprNodeDesc newNode) {
+  public void addConvertedNode(ExprNodeDesc oldNode, ExprNodeDesc newNode) {
     ExprInfo ei = exprInfoMap.get(oldNode);
     if (ei == null) {
       ei = new ExprInfo();
@@ -143,7 +143,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param expr
    * @return true or false
    */
-  public boolean isCandidate(exprNodeDesc expr) {
+  public boolean isCandidate(ExprNodeDesc expr) {
     ExprInfo ei = exprInfoMap.get(expr);
     if (ei == null) {
       return false;
@@ -158,7 +158,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param b
    *          can
    */
-  public void setIsCandidate(exprNodeDesc expr, boolean b) {
+  public void setIsCandidate(ExprNodeDesc expr, boolean b) {
     ExprInfo ei = exprInfoMap.get(expr);
     if (ei == null) {
       ei = new ExprInfo();
@@ -173,7 +173,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param expr
    * @return The alias of the expression
    */
-  public String getAlias(exprNodeDesc expr) {
+  public String getAlias(ExprNodeDesc expr) {
     ExprInfo ei = exprInfoMap.get(expr);
     if (ei == null) {
       return null;
@@ -187,7 +187,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * @param expr
    * @param alias
    */
-  public void addAlias(exprNodeDesc expr, String alias) {
+  public void addAlias(ExprNodeDesc expr, String alias) {
     if (alias == null) {
       return;
     }
@@ -205,10 +205,10 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * 
    * @param expr
    */
-  public void addFinalCandidate(exprNodeDesc expr) {
+  public void addFinalCandidate(ExprNodeDesc expr) {
     String alias = getAlias(expr);
     if (pushdownPreds.get(alias) == null) {
-      pushdownPreds.put(alias, new ArrayList<exprNodeDesc>());
+      pushdownPreds.put(alias, new ArrayList<ExprNodeDesc>());
     }
     pushdownPreds.get(alias).add(expr.clone());
   }
@@ -220,7 +220,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * 
    * @return the map of alias to a list of pushdown predicates
    */
-  public Map<String, List<exprNodeDesc>> getFinalCandidates() {
+  public Map<String, List<ExprNodeDesc>> getFinalCandidates() {
     return pushdownPreds;
   }
 
@@ -234,9 +234,9 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     if (ewi == null) {
       return;
     }
-    for (Entry<String, List<exprNodeDesc>> e : ewi.getFinalCandidates()
+    for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates()
         .entrySet()) {
-      List<exprNodeDesc> predList = pushdownPreds.get(e.getKey());
+      List<ExprNodeDesc> predList = pushdownPreds.get(e.getKey());
       if (predList != null) {
         predList.addAll(e.getValue());
       } else {

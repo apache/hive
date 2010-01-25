@@ -36,12 +36,12 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -79,7 +79,7 @@ public class TypeCheckProcFactory {
    * 
    * @return exprNodeColumnDesc.
    */
-  public static exprNodeDesc processGByExpr(Node nd, Object procCtx)
+  public static ExprNodeDesc processGByExpr(Node nd, Object procCtx)
       throws SemanticException {
     // We recursively create the exprNodeDesc. Base cases: when we encounter
     // a column ref, we convert that into an exprNodeColumnDesc; when we
@@ -90,12 +90,12 @@ public class TypeCheckProcFactory {
     ASTNode expr = (ASTNode) nd;
     TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
     RowResolver input = ctx.getInputRR();
-    exprNodeDesc desc = null;
+    ExprNodeDesc desc = null;
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.get("", expr.toStringTree());
     if (colInfo != null) {
-      desc = new exprNodeColumnDesc(colInfo.getType(), colInfo
+      desc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
           .getInternalName(), colInfo.getTabAlias(), colInfo
           .getIsPartitionCol());
       return desc;
@@ -117,12 +117,12 @@ public class TypeCheckProcFactory {
         return null;
       }
 
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
 
-      return new exprNodeNullDesc();
+      return new ExprNodeNullDesc();
     }
 
   }
@@ -150,7 +150,7 @@ public class TypeCheckProcFactory {
         return null;
       }
 
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
@@ -171,7 +171,7 @@ public class TypeCheckProcFactory {
         throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT
             .getMsg(expr));
       }
-      return new exprNodeConstantDesc(v);
+      return new ExprNodeConstantDesc(v);
     }
 
   }
@@ -199,7 +199,7 @@ public class TypeCheckProcFactory {
         return null;
       }
 
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
@@ -221,7 +221,7 @@ public class TypeCheckProcFactory {
         str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
         break;
       }
-      return new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
+      return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
     }
 
   }
@@ -249,7 +249,7 @@ public class TypeCheckProcFactory {
         return null;
       }
 
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
@@ -267,7 +267,7 @@ public class TypeCheckProcFactory {
       default:
         assert false;
       }
-      return new exprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, bool);
+      return new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, bool);
     }
 
   }
@@ -295,7 +295,7 @@ public class TypeCheckProcFactory {
         return null;
       }
 
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
@@ -340,7 +340,7 @@ public class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          return new exprNodeColumnDesc(colInfo.getType(), colInfo
+          return new ExprNodeColumnDesc(colInfo.getType(), colInfo
               .getInternalName(), colInfo.getTabAlias(), colInfo
               .getIsPartitionCol());
         }
@@ -394,7 +394,7 @@ public class TypeCheckProcFactory {
     }
 
     public static boolean isRedundantConversionFunction(ASTNode expr,
-        boolean isFunction, ArrayList<exprNodeDesc> children) {
+        boolean isFunction, ArrayList<ExprNodeDesc> children) {
       if (!isFunction) {
         return false;
       }
@@ -453,9 +453,9 @@ public class TypeCheckProcFactory {
      * @return The expression node descriptor
      * @throws UDFArgumentException
      */
-    public static exprNodeDesc getFuncExprNodeDesc(String name,
-        exprNodeDesc... children) {
-      ArrayList<exprNodeDesc> c = new ArrayList<exprNodeDesc>(Arrays
+    public static ExprNodeDesc getFuncExprNodeDesc(String name,
+        ExprNodeDesc... children) {
+      ArrayList<ExprNodeDesc> c = new ArrayList<ExprNodeDesc>(Arrays
           .asList(children));
       try {
         return getFuncExprNodeDesc(name, c);
@@ -471,8 +471,8 @@ public class TypeCheckProcFactory {
      * 
      * @throws UDFArgumentException
      */
-    public static exprNodeDesc getFuncExprNodeDesc(String udfName,
-        List<exprNodeDesc> children) throws UDFArgumentException {
+    public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
+        List<ExprNodeDesc> children) throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
       if (fi == null) {
@@ -485,11 +485,11 @@ public class TypeCheckProcFactory {
             + " is an aggregation function.");
       }
 
-      return exprNodeGenericFuncDesc.newInstance(genericUDF, children);
+      return ExprNodeGenericFuncDesc.newInstance(genericUDF, children);
     }
 
-    static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
-        boolean isFunction, ArrayList<exprNodeDesc> children, TypeCheckCtx ctx)
+    static ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
+        boolean isFunction, ArrayList<ExprNodeDesc> children, TypeCheckCtx ctx)
         throws SemanticException, UDFArgumentException {
       // return the child directly if the conversion is redundant.
       if (isRedundantConversionFunction(expr, isFunction, children)) {
@@ -498,14 +498,14 @@ public class TypeCheckProcFactory {
         return children.get(0);
       }
       String funcText = getFunctionText(expr, isFunction);
-      exprNodeDesc desc;
+      ExprNodeDesc desc;
       if (funcText.equals(".")) {
         // "." : FIELD Expression
         assert (children.size() == 2);
         // Only allow constant field name for now
-        assert (children.get(1) instanceof exprNodeConstantDesc);
-        exprNodeDesc object = children.get(0);
-        exprNodeConstantDesc fieldName = (exprNodeConstantDesc) children.get(1);
+        assert (children.get(1) instanceof ExprNodeConstantDesc);
+        ExprNodeDesc object = children.get(0);
+        ExprNodeConstantDesc fieldName = (ExprNodeConstantDesc) children.get(1);
         assert (fieldName.getValue() instanceof String);
 
         // Calculate result TypeInfo
@@ -527,7 +527,7 @@ public class TypeCheckProcFactory {
           t = TypeInfoFactory.getListTypeInfo(t);
         }
 
-        desc = new exprNodeFieldDesc(t, children.get(0), fieldNameString,
+        desc = new ExprNodeFieldDesc(t, children.get(0), fieldNameString,
             isList);
 
       } else if (funcText.equals("[")) {
@@ -539,8 +539,8 @@ public class TypeCheckProcFactory {
 
         if (myt.getCategory() == Category.LIST) {
           // Only allow constant integer index for now
-          if (!(children.get(1) instanceof exprNodeConstantDesc)
-              || !(((exprNodeConstantDesc) children.get(1)).getTypeInfo()
+          if (!(children.get(1) instanceof ExprNodeConstantDesc)
+              || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
                   .equals(TypeInfoFactory.intTypeInfo))) {
             throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT
                 .getMsg(expr));
@@ -548,22 +548,22 @@ public class TypeCheckProcFactory {
 
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
-          desc = new exprNodeGenericFuncDesc(t, FunctionRegistry
+          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
               .getGenericUDFForIndex(), children);
         } else if (myt.getCategory() == Category.MAP) {
           // Only allow only constant indexes for now
-          if (!(children.get(1) instanceof exprNodeConstantDesc)) {
+          if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT
                 .getMsg(expr));
           }
-          if (!(((exprNodeConstantDesc) children.get(1)).getTypeInfo()
+          if (!(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(((MapTypeInfo) myt).getMapKeyTypeInfo()))) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE
                 .getMsg(expr));
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
-          desc = new exprNodeGenericFuncDesc(t, FunctionRegistry
+          desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
               .getGenericUDFForIndex(), children);
         } else {
           throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr,
@@ -635,7 +635,7 @@ public class TypeCheckProcFactory {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
 
       // If this is a GroupBy expression, clear error and continue
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         ctx.setError(null);
         return desc;
@@ -659,13 +659,13 @@ public class TypeCheckProcFactory {
         // NOTE: tableAlias must be a valid non-ambiguous table alias,
         // because we've checked that in TOK_TABLE_OR_COL's process method.
         ColumnInfo colInfo = input.get(tableAlias,
-            ((exprNodeConstantDesc) nodeOutputs[1]).getValue().toString());
+            ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString());
 
         if (colInfo == null) {
           ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)));
           return null;
         }
-        return new exprNodeColumnDesc(colInfo.getType(), colInfo
+        return new ExprNodeColumnDesc(colInfo.getType(), colInfo
             .getInternalName(), colInfo.getTabAlias(), colInfo
             .getIsPartitionCol());
       }
@@ -682,11 +682,11 @@ public class TypeCheckProcFactory {
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
-      ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr
+      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(expr
           .getChildCount()
           - childrenBegin);
       for (int ci = childrenBegin; ci < expr.getChildCount(); ci++) {
-        children.add((exprNodeDesc) nodeOutputs[ci]);
+        children.add((ExprNodeDesc) nodeOutputs[ci]);
       }
 
       // If any of the children contains null, then return a null

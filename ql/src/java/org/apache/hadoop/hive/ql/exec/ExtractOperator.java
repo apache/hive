@@ -22,13 +22,13 @@ import java.io.Serializable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.extractDesc;
+import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Extract operator implementation Extracts a subobject and passes that on.
  **/
-public class ExtractOperator extends Operator<extractDesc> implements
+public class ExtractOperator extends Operator<ExtractDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -45,7 +45,7 @@ import org.apache.hadoop.util.StringUtils;
  * GenericUDAFStd GenericUDAFStdSample
  * 
  */
-@description(name = "variance,var_pop", value = "_FUNC_(x) - Returns the variance of a set of numbers")
+@Description(name = "variance,var_pop", value = "_FUNC_(x) - Returns the variance of a set of numbers")
 public class GenericUDAFVariance implements GenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFVariance.class.getName());

@@ -16,9 +16,9 @@
        </object> 
       </void> 
       <void property="work"> 
-       <object class="org.apache.hadoop.hive.ql.plan.moveWork"> 
+       <object class="org.apache.hadoop.hive.ql.plan.MoveWork"> 
         <void property="loadTableWork"> 
-         <object class="org.apache.hadoop.hive.ql.plan.loadTableDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.LoadTableDesc"> 
           <void property="partitionSpec"> 
            <object class="java.util.HashMap"/> 
           </void> 
@@ -26,10 +26,10 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/tmp/645336633/10000</string> 
+           <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/628629625/10000</string> 
           </void> 
           <void property="table"> 
-           <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+           <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
             <void property="deserializerClass"> 
              <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
             </void> 
@@ -79,11 +79,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/dest1</string> 
+               <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/dest1</string> 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1263415286</string> 
+               <string>1264444457</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/tmp/645336633/10001</string> 
+           <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/628629625/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -107,11 +107,11 @@
    <string>Stage-2</string> 
   </void> 
   <void property="work"> 
-   <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
+   <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
     <void property="aliasToPartnInfo"> 
      <void method="put"> 
       <string>tmap:src</string> 
-      <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+      <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
        <void property="deserializerClass"> 
         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
        </void> 
@@ -164,11 +164,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
+          <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1263415286</string> 
+          <string>1264444457</string> 
          </void> 
         </object> 
        </void> 
@@ -176,7 +176,7 @@
         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
        </void> 
        <void property="tableDesc"> 
-        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+        <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
          <void property="deserializerClass"> 
           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
          </void> 
@@ -218,7 +218,7 @@
                      <object class="java.util.HashMap"> 
                       <void method="put"> 
                        <string>_col1</string> 
-                       <object id="exprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                       <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>_col1</string> 
                         </void> 
@@ -233,7 +233,7 @@
                       </void> 
                       <void method="put"> 
                        <string>_col0</string> 
-                       <object id="exprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                       <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>_col0</string> 
                         </void> 
@@ -245,11 +245,11 @@
                      </object> 
                     </void> 
                     <void property="conf"> 
-                     <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
                       <void property="keyCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                           <void property="column"> 
                            <string>_col0</string> 
                           </void> 
@@ -261,7 +261,7 @@
                        </object> 
                       </void> 
                       <void property="keySerializeInfo"> 
-                       <object id="tableDesc1" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+                       <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                         <void property="deserializerClass"> 
                          <class>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</class> 
                         </void> 
@@ -312,7 +312,7 @@
                       <void property="partitionCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                           <void property="column"> 
                            <string>_col0</string> 
                           </void> 
@@ -329,15 +329,15 @@
                       <void property="valueCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object idref="exprNodeColumnDesc1"/> 
+                         <object idref="ExprNodeColumnDesc1"/> 
                         </void> 
                         <void method="add"> 
-                         <object idref="exprNodeColumnDesc0"/> 
+                         <object idref="ExprNodeColumnDesc0"/> 
                         </void> 
                        </object> 
                       </void> 
                       <void property="valueSerializeInfo"> 
-                       <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+                       <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                         <void property="deserializerClass"> 
                          <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                         </void> 
@@ -432,7 +432,7 @@
                  </object> 
                 </void> 
                 <void property="conf"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.scriptDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ScriptDesc"> 
                   <void property="inRecordWriterClass"> 
                    <class>org.apache.hadoop.hive.ql.exec.TextRecordWriter</class> 
                   </void> 
@@ -443,7 +443,7 @@
                    <string>/bin/cat</string> 
                   </void> 
                   <void property="scriptInputInfo"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                     <void property="deserializerClass"> 
                      <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                     </void> 
@@ -480,7 +480,7 @@
                    </object> 
                   </void> 
                   <void property="scriptOutputInfo"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                     <void property="deserializerClass"> 
                      <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                     </void> 
@@ -555,7 +555,7 @@
              <object class="java.util.HashMap"> 
               <void method="put"> 
                <string>_col1</string> 
-               <object id="exprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>value</string> 
                 </void> 
@@ -569,7 +569,7 @@
               </void> 
               <void method="put"> 
                <string>_col0</string> 
-               <object id="exprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>key</string> 
                 </void> 
@@ -584,14 +584,14 @@
              </object> 
             </void> 
             <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
+             <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
               <void property="colList"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="exprNodeColumnDesc3"/> 
+                 <object idref="ExprNodeColumnDesc3"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="exprNodeColumnDesc2"/> 
+                 <object idref="ExprNodeColumnDesc2"/> 
                 </void> 
                </object> 
               </void> 
@@ -666,7 +666,7 @@
          </object> 
         </void> 
         <void property="conf"> 
-         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
           <void property="alias"> 
            <string>src</string> 
           </void> 
@@ -734,7 +734,7 @@
      </object> 
     </void> 
     <void property="keyDesc"> 
-     <object idref="tableDesc1"/> 
+     <object idref="TableDesc1"/> 
     </void> 
     <void property="numReduceTasks"> 
      <int>-1</int> 
@@ -742,7 +742,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -754,8 +754,8 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
-       <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
+       <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
@@ -775,7 +775,7 @@
          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
         </void> 
         <void property="tableDesc"> 
-         <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
           <void property="deserializerClass"> 
            <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
           </void> 
@@ -812,15 +812,15 @@
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
                   <void property="conf"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                     <void property="destTableId"> 
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/tmp/645336633/10000</string> 
+                     <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/628629625/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
-                     <object idref="tableDesc0"/> 
+                     <object idref="TableDesc0"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -886,7 +886,7 @@
                <object class="java.util.HashMap"> 
                 <void method="put"> 
                  <string>_col1</string> 
-                 <object id="exprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col1</string> 
                   </void> 
@@ -900,7 +900,7 @@
                 </void> 
                 <void method="put"> 
                  <string>_col0</string> 
-                 <object id="exprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                 <object id="ExprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col0</string> 
                   </void> 
@@ -915,14 +915,14 @@
                </object> 
               </void> 
               <void property="conf"> 
-               <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
+               <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
                 <void property="colList"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object idref="exprNodeColumnDesc5"/> 
+                   <object idref="ExprNodeColumnDesc5"/> 
                   </void> 
                   <void method="add"> 
-                   <object idref="exprNodeColumnDesc4"/> 
+                   <object idref="ExprNodeColumnDesc4"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -997,13 +997,13 @@
            </object> 
           </void> 
           <void property="conf"> 
-           <object class="org.apache.hadoop.hive.ql.plan.filterDesc"> 
+           <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
             <void property="predicate"> 
-             <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
+             <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
               <void property="childExprs"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>_col0</string> 
                   </void> 
@@ -1016,7 +1016,7 @@
                  </object> 
                 </void> 
                 <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                   <void property="typeInfo"> 
                    <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                     <void property="typeName"> 
@@ -1114,9 +1114,9 @@
        </object> 
       </void> 
       <void property="conf"> 
-       <object class="org.apache.hadoop.hive.ql.plan.extractDesc"> 
+       <object class="org.apache.hadoop.hive.ql.plan.ExtractDesc"> 
         <void property="col"> 
-         <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE</string> 
           </void> 
@@ -1175,7 +1175,7 @@
     <void property="tagToValueDesc"> 
      <object class="java.util.ArrayList"> 
       <void method="add"> 
-       <object idref="tableDesc2"/> 
+       <object idref="TableDesc2"/> 
       </void> 
      </object> 
     </void> 

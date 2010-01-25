@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * overriding the terminate() method of the evaluator.
  * 
  */
-@description(name = "stddev_samp", value = "_FUNC_(x) - Returns the sample standard deviation of a set of "
+@Description(name = "stddev_samp", value = "_FUNC_(x) - Returns the sample standard deviation of a set of "
     + "numbers")
 public class GenericUDAFStdSample extends GenericUDAFVariance {
 

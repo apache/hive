@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "lower,lcase", value = "_FUNC_(str) - Returns str with all characters changed to lowercase", extended = "Example:\n"
+@Description(name = "lower,lcase", value = "_FUNC_(str) - Returns str with all characters changed to lowercase", extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
 public class UDFLower extends UDF {
 

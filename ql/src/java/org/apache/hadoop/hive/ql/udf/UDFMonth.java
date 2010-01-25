@@ -26,11 +26,11 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "month", value = "_FUNC_(date) - Returns the month of date", extended = "Example:\n"
+@Description(name = "month", value = "_FUNC_(date) - Returns the month of date", extended = "Example:\n"
     + "  > SELECT _FUNC_('2009-30-07') FROM src LIMIT 1;\n" + "  7")
 public class UDFMonth extends UDF {
 

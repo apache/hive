@@ -42,11 +42,11 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.joinCond;
-import org.apache.hadoop.hive.ql.plan.joinDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -114,7 +114,7 @@ public class OpProcFactory {
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
-      exprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
+      ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
       // get pushdown predicates for this operator's predicate
       ExprWalkerInfo ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op,
           predicate);
@@ -181,17 +181,17 @@ public class OpProcFactory {
       int loj = Integer.MAX_VALUE;
       int roj = -1;
       boolean oj = false;
-      joinCond[] conds = op.getConf().getConds();
+      JoinCondDesc[] conds = op.getConf().getConds();
       Map<Integer, Set<String>> posToAliasMap = op.getPosToAliasMap();
-      for (joinCond jc : conds) {
-        if (jc.getType() == joinDesc.FULL_OUTER_JOIN) {
+      for (JoinCondDesc jc : conds) {
+        if (jc.getType() == JoinDesc.FULL_OUTER_JOIN) {
           oj = true;
           break;
-        } else if (jc.getType() == joinDesc.LEFT_OUTER_JOIN) {
+        } else if (jc.getType() == JoinDesc.LEFT_OUTER_JOIN) {
           if (jc.getLeft() < loj) {
             loj = jc.getLeft();
           }
-        } else if (jc.getType() == joinDesc.RIGHT_OUTER_JOIN) {
+        } else if (jc.getType() == JoinDesc.RIGHT_OUTER_JOIN) {
           if (jc.getRight() > roj) {
             roj = jc.getRight();
           }
@@ -264,11 +264,11 @@ public class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      for (Entry<String, List<exprNodeDesc>> e : ewi.getFinalCandidates()
+      for (Entry<String, List<ExprNodeDesc>> e : ewi.getFinalCandidates()
           .entrySet()) {
         LOG.info("Pushdown Predicates of " + nd.getName() + " For Alias : "
             + e.getKey());
-        for (exprNodeDesc n : e.getValue()) {
+        for (ExprNodeDesc n : e.getValue()) {
           LOG.info("\t" + n.getExprString());
         }
       }
@@ -308,7 +308,7 @@ public class OpProcFactory {
       if (ewi == null) {
         ewi = new ExprWalkerInfo();
       }
-      for (Entry<String, List<exprNodeDesc>> e : childPreds
+      for (Entry<String, List<ExprNodeDesc>> e : childPreds
           .getFinalCandidates().entrySet()) {
         if (ignoreAliases || aliases == null || aliases.contains(e.getKey())
             || e.getKey() == null) {
@@ -334,9 +334,9 @@ public class OpProcFactory {
     RowResolver inputRR = owi.getRowResolver(op);
 
     // combine all predicates into a single expression
-    List<exprNodeDesc> preds = null;
-    exprNodeDesc condn = null;
-    Iterator<List<exprNodeDesc>> iterator = pushDownPreds.getFinalCandidates()
+    List<ExprNodeDesc> preds = null;
+    ExprNodeDesc condn = null;
+    Iterator<List<ExprNodeDesc>> iterator = pushDownPreds.getFinalCandidates()
         .values().iterator();
     while (iterator.hasNext()) {
       preds = iterator.next();
@@ -347,10 +347,10 @@ public class OpProcFactory {
       }
 
       for (; i < preds.size(); i++) {
-        List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
+        List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
         children.add(condn);
         children.add(preds.get(i));
-        condn = new exprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        condn = new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
             FunctionRegistry.getGenericUDFForAnd(), children);
       }
     }
@@ -363,8 +363,8 @@ public class OpProcFactory {
     List<Operator<? extends Serializable>> originalChilren = op
         .getChildOperators();
     op.setChildOperators(null);
-    Operator<filterDesc> output = OperatorFactory.getAndMakeChild(
-        new filterDesc(condn, false), new RowSchema(inputRR.getColumnInfos()),
+    Operator<FilterDesc> output = OperatorFactory.getAndMakeChild(
+        new FilterDesc(condn, false), new RowSchema(inputRR.getColumnInfos()),
         op);
     output.setChildOperators(originalChilren);
     for (Operator<? extends Serializable> ch : originalChilren) {

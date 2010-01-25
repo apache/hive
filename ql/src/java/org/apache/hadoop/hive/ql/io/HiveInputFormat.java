@@ -36,8 +36,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -223,8 +223,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         cloneJobConf, reporter));
   }
 
-  private Map<String, partitionDesc> pathToPartitionInfo;
-  mapredWork mrwork = null;
+  private Map<String, PartitionDesc> pathToPartitionInfo;
+  MapredWork mrwork = null;
 
   protected void init(JobConf job) {
     mrwork = Utilities.getMapRedWork(job);
@@ -244,7 +244,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // for each dir, get the InputFormat, and do getSplits.
     for (Path dir : dirs) {
-      partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
+      PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       // create a new InputFormat instance if this is the first time to see this
       // class
       Class inputFormatClass = part.getInputFileFormatClass();
@@ -272,7 +272,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // for each dir, get the InputFormat, and do validateInput.
     for (Path dir : dirs) {
-      partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
+      PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       // create a new InputFormat instance if this is the first time to see this
       // class
       InputFormat inputFormat = getInputFormatFromCache(part
@@ -284,10 +284,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  protected static partitionDesc getPartitionDescFromPath(
-      Map<String, partitionDesc> pathToPartitionInfo, Path dir)
+  protected static PartitionDesc getPartitionDescFromPath(
+      Map<String, PartitionDesc> pathToPartitionInfo, Path dir)
       throws IOException {
-    partitionDesc partDesc = pathToPartitionInfo.get(dir.toString());
+    PartitionDesc partDesc = pathToPartitionInfo.get(dir.toString());
     if (partDesc == null) {
       partDesc = pathToPartitionInfo.get(dir.toUri().getPath());
     }

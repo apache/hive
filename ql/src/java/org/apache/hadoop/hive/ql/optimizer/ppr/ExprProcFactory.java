@@ -36,12 +36,12 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 
 /**
  * Expression processor factory for partition pruning. Each processor tries to
@@ -60,14 +60,14 @@ public class ExprProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      exprNodeDesc newcd = null;
-      exprNodeColumnDesc cd = (exprNodeColumnDesc) nd;
+      ExprNodeDesc newcd = null;
+      ExprNodeColumnDesc cd = (ExprNodeColumnDesc) nd;
       ExprProcCtx epc = (ExprProcCtx) procCtx;
       if (cd.getTabAlias().equalsIgnoreCase(epc.getTabAlias())
           && cd.getIsParititonCol()) {
         newcd = cd.clone();
       } else {
-        newcd = new exprNodeConstantDesc(cd.getTypeInfo(), null);
+        newcd = new ExprNodeConstantDesc(cd.getTypeInfo(), null);
         epc.setHasNonPartCols(true);
       }
 
@@ -87,8 +87,8 @@ public class ExprProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      exprNodeDesc newfd = null;
-      exprNodeGenericFuncDesc fd = (exprNodeGenericFuncDesc) nd;
+      ExprNodeDesc newfd = null;
+      ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) nd;
 
       boolean unknown = false;
 
@@ -106,24 +106,24 @@ public class ExprProcFactory {
       } else {
         // If any child is null, set unknown to true
         for (Object child : nodeOutputs) {
-          exprNodeDesc child_nd = (exprNodeDesc) child;
-          if (child_nd instanceof exprNodeConstantDesc
-              && ((exprNodeConstantDesc) child_nd).getValue() == null) {
+          ExprNodeDesc child_nd = (ExprNodeDesc) child;
+          if (child_nd instanceof ExprNodeConstantDesc
+              && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
             unknown = true;
           }
         }
       }
 
       if (unknown) {
-        newfd = new exprNodeConstantDesc(fd.getTypeInfo(), null);
+        newfd = new ExprNodeConstantDesc(fd.getTypeInfo(), null);
       } else {
         // Create the list of children
-        ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>();
+        ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
         for (Object child : nodeOutputs) {
-          children.add((exprNodeDesc) child);
+          children.add((ExprNodeDesc) child);
         }
         // Create a copy of the function descriptor
-        newfd = new exprNodeGenericFuncDesc(fd.getTypeInfo(), fd
+        newfd = new ExprNodeGenericFuncDesc(fd.getTypeInfo(), fd
             .getGenericUDF(), children);
       }
 
@@ -138,14 +138,14 @@ public class ExprProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      exprNodeFieldDesc fnd = (exprNodeFieldDesc) nd;
+      ExprNodeFieldDesc fnd = (ExprNodeFieldDesc) nd;
       boolean unknown = false;
       int idx = 0;
-      exprNodeDesc left_nd = null;
+      ExprNodeDesc left_nd = null;
       for (Object child : nodeOutputs) {
-        exprNodeDesc child_nd = (exprNodeDesc) child;
-        if (child_nd instanceof exprNodeConstantDesc
-            && ((exprNodeConstantDesc) child_nd).getValue() == null) {
+        ExprNodeDesc child_nd = (ExprNodeDesc) child;
+        if (child_nd instanceof ExprNodeConstantDesc
+            && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
           unknown = true;
         }
         left_nd = child_nd;
@@ -153,11 +153,11 @@ public class ExprProcFactory {
 
       assert (idx == 0);
 
-      exprNodeDesc newnd = null;
+      ExprNodeDesc newnd = null;
       if (unknown) {
-        newnd = new exprNodeConstantDesc(fnd.getTypeInfo(), null);
+        newnd = new ExprNodeConstantDesc(fnd.getTypeInfo(), null);
       } else {
-        newnd = new exprNodeFieldDesc(fnd.getTypeInfo(), left_nd, fnd
+        newnd = new ExprNodeFieldDesc(fnd.getTypeInfo(), left_nd, fnd
             .getFieldName(), fnd.getIsList());
       }
       return newnd;
@@ -174,10 +174,10 @@ public class ExprProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      if (nd instanceof exprNodeConstantDesc) {
-        return ((exprNodeConstantDesc) nd).clone();
-      } else if (nd instanceof exprNodeNullDesc) {
-        return ((exprNodeNullDesc) nd).clone();
+      if (nd instanceof ExprNodeConstantDesc) {
+        return ((ExprNodeConstantDesc) nd).clone();
+      } else if (nd instanceof ExprNodeNullDesc) {
+        return ((ExprNodeNullDesc) nd).clone();
       }
 
       assert (false);
@@ -214,7 +214,7 @@ public class ExprProcFactory {
    *         has a non partition column
    * @throws SemanticException
    */
-  public static exprNodeDesc genPruner(String tabAlias, exprNodeDesc pred,
+  public static ExprNodeDesc genPruner(String tabAlias, ExprNodeDesc pred,
       boolean hasNonPartCols) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     ExprProcCtx pprCtx = new ExprProcCtx(tabAlias);
@@ -224,12 +224,12 @@ public class ExprProcFactory {
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(
-        new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"),
+        new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
         getColumnProcessor());
     exprRules.put(
-        new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"),
+        new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"),
         getFieldProcessor());
-    exprRules.put(new RuleRegExp("R5", exprNodeGenericFuncDesc.class.getName()
+    exprRules.put(new RuleRegExp("R5", ExprNodeGenericFuncDesc.class.getName()
         + "%"), getGenericFuncProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
@@ -246,7 +246,7 @@ public class ExprProcFactory {
     hasNonPartCols = pprCtx.getHasNonPartCols();
 
     // Get the exprNodeDesc corresponding to the first start node;
-    return (exprNodeDesc) outputMap.get(pred);
+    return (ExprNodeDesc) outputMap.get(pred);
   }
 
 }

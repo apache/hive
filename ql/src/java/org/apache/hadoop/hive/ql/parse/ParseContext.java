@@ -34,10 +34,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.loadFileDesc;
-import org.apache.hadoop.hive.ql.plan.loadTableDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -52,15 +52,15 @@ import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
 public class ParseContext {
   private QB qb;
   private ASTNode ast;
-  private HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
+  private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
   private HashMap<TableScanOperator, Table> topToTable;
-  private List<loadTableDesc> loadTableWork;
-  private List<loadFileDesc> loadFileWork;
+  private List<LoadTableDesc> loadTableWork;
+  private List<LoadFileDesc> loadFileWork;
   private Context ctx;
   private HiveConf conf;
   private HashMap<String, String> idToTableNameMap;
@@ -120,13 +120,13 @@ public class ParseContext {
       HiveConf conf,
       QB qb,
       ASTNode ast,
-      HashMap<TableScanOperator, exprNodeDesc> opToPartPruner,
+      HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
       HashMap<TableScanOperator, Table> topToTable,
-      List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
+      List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
       UnionProcContext uCtx, List<MapJoinOperator> listMapJoinOpsNoReducer,
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
@@ -218,7 +218,7 @@ public class ParseContext {
   /**
    * @return the opToPartPruner
    */
-  public HashMap<TableScanOperator, exprNodeDesc> getOpToPartPruner() {
+  public HashMap<TableScanOperator, ExprNodeDesc> getOpToPartPruner() {
     return opToPartPruner;
   }
 
@@ -227,7 +227,7 @@ public class ParseContext {
    *          the opToPartPruner to set
    */
   public void setOpToPartPruner(
-      HashMap<TableScanOperator, exprNodeDesc> opToPartPruner) {
+      HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
   }
 
@@ -296,7 +296,7 @@ public class ParseContext {
   /**
    * @return the loadTableWork
    */
-  public List<loadTableDesc> getLoadTableWork() {
+  public List<LoadTableDesc> getLoadTableWork() {
     return loadTableWork;
   }
 
@@ -304,14 +304,14 @@ public class ParseContext {
    * @param loadTableWork
    *          the loadTableWork to set
    */
-  public void setLoadTableWork(List<loadTableDesc> loadTableWork) {
+  public void setLoadTableWork(List<LoadTableDesc> loadTableWork) {
     this.loadTableWork = loadTableWork;
   }
 
   /**
    * @return the loadFileWork
    */
-  public List<loadFileDesc> getLoadFileWork() {
+  public List<LoadFileDesc> getLoadFileWork() {
     return loadFileWork;
   }
 
@@ -319,7 +319,7 @@ public class ParseContext {
    * @param loadFileWork
    *          the loadFileWork to set
    */
-  public void setLoadFileWork(List<loadFileDesc> loadFileWork) {
+  public void setLoadFileWork(List<LoadFileDesc> loadFileWork) {
     this.loadFileWork = loadFileWork;
   }
 

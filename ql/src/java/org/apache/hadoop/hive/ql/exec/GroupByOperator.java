@@ -34,9 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.plan.aggregationDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -53,7 +53,7 @@ import org.apache.hadoop.io.Text;
 /**
  * GroupBy operator implementation.
  */
-public class GroupByOperator extends Operator<groupByDesc> implements
+public class GroupByOperator extends Operator<GroupByDesc> implements
     Serializable {
 
   static final private Log LOG = LogFactory.getLog(GroupByOperator.class
@@ -185,7 +185,7 @@ public class GroupByOperator extends Operator<groupByDesc> implements
         .getAggregators().size()][];
     aggregationParameterObjects = new Object[conf.getAggregators().size()][];
     for (int i = 0; i < aggregationParameterFields.length; i++) {
-      ArrayList<exprNodeDesc> parameters = conf.getAggregators().get(i)
+      ArrayList<ExprNodeDesc> parameters = conf.getAggregators().get(i)
           .getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
       aggregationParameterObjectInspectors[i] = new ObjectInspector[parameters
@@ -215,7 +215,7 @@ public class GroupByOperator extends Operator<groupByDesc> implements
     aggregationEvaluators = new GenericUDAFEvaluator[conf.getAggregators()
         .size()];
     for (int i = 0; i < aggregationEvaluators.length; i++) {
-      aggregationDesc agg = conf.getAggregators().get(i);
+      AggregationDesc agg = conf.getAggregators().get(i);
       aggregationEvaluators[i] = agg.getGenericUDAFEvaluator();
     }
 
@@ -233,7 +233,7 @@ public class GroupByOperator extends Operator<groupByDesc> implements
 
     bucketGroup = conf.getBucketGroup();
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
-    if (conf.getMode() != groupByDesc.Mode.HASH || bucketGroup) {
+    if (conf.getMode() != GroupByDesc.Mode.HASH || bucketGroup) {
       aggregations = newAggregations();
       hashAggr = false;
     } else {
@@ -411,7 +411,7 @@ public class GroupByOperator extends Operator<groupByDesc> implements
     // 64 bytes is the overhead for a reference
     fixedRowSize = javaHashEntryOverHead;
 
-    ArrayList<exprNodeDesc> keys = conf.getKeys();
+    ArrayList<ExprNodeDesc> keys = conf.getKeys();
 
     // Go over all the keys and get the size of the fields of fixed length. Keep
     // track of the variable length keys
@@ -905,15 +905,15 @@ public class GroupByOperator extends Operator<groupByDesc> implements
   public List<String> genColLists(
       HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
     List<String> colLists = new ArrayList<String>();
-    ArrayList<exprNodeDesc> keys = conf.getKeys();
-    for (exprNodeDesc key : keys) {
+    ArrayList<ExprNodeDesc> keys = conf.getKeys();
+    for (ExprNodeDesc key : keys) {
       colLists = Utilities.mergeUniqElems(colLists, key.getCols());
     }
 
-    ArrayList<aggregationDesc> aggrs = conf.getAggregators();
-    for (aggregationDesc aggr : aggrs) {
-      ArrayList<exprNodeDesc> params = aggr.getParameters();
-      for (exprNodeDesc param : params) {
+    ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+    for (AggregationDesc aggr : aggrs) {
+      ArrayList<ExprNodeDesc> params = aggr.getParameters();
+      for (ExprNodeDesc param : params) {
         colLists = Utilities.mergeUniqElems(colLists, param.getCols());
       }
     }

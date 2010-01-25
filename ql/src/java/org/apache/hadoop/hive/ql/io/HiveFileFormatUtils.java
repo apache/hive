@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -200,8 +200,8 @@ public class HiveFileFormatUtils {
   }
 
   public static RecordWriter getHiveRecordWriter(JobConf jc,
-      tableDesc tableInfo, Class<? extends Writable> outputClass,
-      fileSinkDesc conf, Path outPath) throws HiveException {
+      TableDesc tableInfo, Class<? extends Writable> outputClass,
+      FileSinkDesc conf, Path outPath) throws HiveException {
     try {
       HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo
           .getOutputFileFormatClass().newInstance();

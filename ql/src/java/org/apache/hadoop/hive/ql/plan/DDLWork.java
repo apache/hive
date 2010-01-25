@@ -26,19 +26,19 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private createTableDesc createTblDesc;
-  private createTableLikeDesc createTblLikeDesc;
-  private createViewDesc createVwDesc;
-  private dropTableDesc dropTblDesc;
-  private alterTableDesc alterTblDesc;
-  private showTablesDesc showTblsDesc;
-  private showFunctionsDesc showFuncsDesc;
-  private descFunctionDesc descFunctionDesc;
-  private showPartitionsDesc showPartsDesc;
-  private descTableDesc descTblDesc;
+  private CreateTableDesc createTblDesc;
+  private CreateTableLikeDesc createTblLikeDesc;
+  private CreateViewDesc createVwDesc;
+  private DropTableDesc dropTblDesc;
+  private AlterTableDesc alterTblDesc;
+  private ShowTablesDesc showTblsDesc;
+  private ShowFunctionsDesc showFuncsDesc;
+  private DescFunctionDesc descFunctionDesc;
+  private ShowPartitionsDesc showPartsDesc;
+  private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
   private MsckDesc msckDesc;
-  private showTableStatusDesc showTblStatusDesc;
+  private ShowTableStatusDesc showTblStatusDesc;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -62,7 +62,7 @@ public class DDLWork implements Serializable {
    *          alter table descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      alterTableDesc alterTblDesc) {
+      AlterTableDesc alterTblDesc) {
     this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
   }
@@ -72,7 +72,7 @@ public class DDLWork implements Serializable {
    *          create table descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      createTableDesc createTblDesc) {
+      CreateTableDesc createTblDesc) {
     this(inputs, outputs);
 
     this.createTblDesc = createTblDesc;
@@ -83,7 +83,7 @@ public class DDLWork implements Serializable {
    *          create table like descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      createTableLikeDesc createTblLikeDesc) {
+      CreateTableLikeDesc createTblLikeDesc) {
     this(inputs, outputs);
 
     this.createTblLikeDesc = createTblLikeDesc;
@@ -94,7 +94,7 @@ public class DDLWork implements Serializable {
    *          create view descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      createViewDesc createVwDesc) {
+      CreateViewDesc createVwDesc) {
     this(inputs, outputs);
 
     this.createVwDesc = createVwDesc;
@@ -105,7 +105,7 @@ public class DDLWork implements Serializable {
    *          drop table descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      dropTableDesc dropTblDesc) {
+      DropTableDesc dropTblDesc) {
     this(inputs, outputs);
 
     this.dropTblDesc = dropTblDesc;
@@ -115,7 +115,7 @@ public class DDLWork implements Serializable {
    * @param descTblDesc
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      descTableDesc descTblDesc) {
+      DescTableDesc descTblDesc) {
     this(inputs, outputs);
 
     this.descTblDesc = descTblDesc;
@@ -125,7 +125,7 @@ public class DDLWork implements Serializable {
    * @param showTblsDesc
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      showTablesDesc showTblsDesc) {
+      ShowTablesDesc showTblsDesc) {
     this(inputs, outputs);
 
     this.showTblsDesc = showTblsDesc;
@@ -135,7 +135,7 @@ public class DDLWork implements Serializable {
    * @param showFuncsDesc
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      showFunctionsDesc showFuncsDesc) {
+      ShowFunctionsDesc showFuncsDesc) {
     this(inputs, outputs);
 
     this.showFuncsDesc = showFuncsDesc;
@@ -145,7 +145,7 @@ public class DDLWork implements Serializable {
    * @param descFuncDesc
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      descFunctionDesc descFuncDesc) {
+      DescFunctionDesc descFuncDesc) {
     this(inputs, outputs);
 
     descFunctionDesc = descFuncDesc;
@@ -155,7 +155,7 @@ public class DDLWork implements Serializable {
    * @param showPartsDesc
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      showPartitionsDesc showPartsDesc) {
+      ShowPartitionsDesc showPartsDesc) {
     this(inputs, outputs);
 
     this.showPartsDesc = showPartsDesc;
@@ -184,7 +184,7 @@ public class DDLWork implements Serializable {
    *          show table status descriptor
    */
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
-      showTableStatusDesc showTblStatusDesc) {
+      ShowTableStatusDesc showTblStatusDesc) {
     this(inputs, outputs);
 
     this.showTblStatusDesc = showTblStatusDesc;
@@ -193,8 +193,8 @@ public class DDLWork implements Serializable {
   /**
    * @return the createTblDesc
    */
-  @explain(displayName = "Create Table Operator")
-  public createTableDesc getCreateTblDesc() {
+  @Explain(displayName = "Create Table Operator")
+  public CreateTableDesc getCreateTblDesc() {
     return createTblDesc;
   }
 
@@ -202,15 +202,15 @@ public class DDLWork implements Serializable {
    * @param createTblDesc
    *          the createTblDesc to set
    */
-  public void setCreateTblDesc(createTableDesc createTblDesc) {
+  public void setCreateTblDesc(CreateTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
   }
 
   /**
    * @return the createTblDesc
    */
-  @explain(displayName = "Create Table Operator")
-  public createTableLikeDesc getCreateTblLikeDesc() {
+  @Explain(displayName = "Create Table Operator")
+  public CreateTableLikeDesc getCreateTblLikeDesc() {
     return createTblLikeDesc;
   }
 
@@ -218,15 +218,15 @@ public class DDLWork implements Serializable {
    * @param createTblLikeDesc
    *          the createTblDesc to set
    */
-  public void setCreateTblLikeDesc(createTableLikeDesc createTblLikeDesc) {
+  public void setCreateTblLikeDesc(CreateTableLikeDesc createTblLikeDesc) {
     this.createTblLikeDesc = createTblLikeDesc;
   }
 
   /**
    * @return the createTblDesc
    */
-  @explain(displayName = "Create View Operator")
-  public createViewDesc getCreateViewDesc() {
+  @Explain(displayName = "Create View Operator")
+  public CreateViewDesc getCreateViewDesc() {
     return createVwDesc;
   }
 
@@ -234,15 +234,15 @@ public class DDLWork implements Serializable {
    * @param createVwDesc
    *          the createViewDesc to set
    */
-  public void setCreateViewDesc(createViewDesc createVwDesc) {
+  public void setCreateViewDesc(CreateViewDesc createVwDesc) {
     this.createVwDesc = createVwDesc;
   }
 
   /**
    * @return the dropTblDesc
    */
-  @explain(displayName = "Drop Table Operator")
-  public dropTableDesc getDropTblDesc() {
+  @Explain(displayName = "Drop Table Operator")
+  public DropTableDesc getDropTblDesc() {
     return dropTblDesc;
   }
 
@@ -250,15 +250,15 @@ public class DDLWork implements Serializable {
    * @param dropTblDesc
    *          the dropTblDesc to set
    */
-  public void setDropTblDesc(dropTableDesc dropTblDesc) {
+  public void setDropTblDesc(DropTableDesc dropTblDesc) {
     this.dropTblDesc = dropTblDesc;
   }
 
   /**
    * @return the alterTblDesc
    */
-  @explain(displayName = "Alter Table Operator")
-  public alterTableDesc getAlterTblDesc() {
+  @Explain(displayName = "Alter Table Operator")
+  public AlterTableDesc getAlterTblDesc() {
     return alterTblDesc;
   }
 
@@ -266,15 +266,15 @@ public class DDLWork implements Serializable {
    * @param alterTblDesc
    *          the alterTblDesc to set
    */
-  public void setAlterTblDesc(alterTableDesc alterTblDesc) {
+  public void setAlterTblDesc(AlterTableDesc alterTblDesc) {
     this.alterTblDesc = alterTblDesc;
   }
 
   /**
    * @return the showTblsDesc
    */
-  @explain(displayName = "Show Table Operator")
-  public showTablesDesc getShowTblsDesc() {
+  @Explain(displayName = "Show Table Operator")
+  public ShowTablesDesc getShowTblsDesc() {
     return showTblsDesc;
   }
 
@@ -282,23 +282,23 @@ public class DDLWork implements Serializable {
    * @param showTblsDesc
    *          the showTblsDesc to set
    */
-  public void setShowTblsDesc(showTablesDesc showTblsDesc) {
+  public void setShowTblsDesc(ShowTablesDesc showTblsDesc) {
     this.showTblsDesc = showTblsDesc;
   }
 
   /**
    * @return the showFuncsDesc
    */
-  @explain(displayName = "Show Function Operator")
-  public showFunctionsDesc getShowFuncsDesc() {
+  @Explain(displayName = "Show Function Operator")
+  public ShowFunctionsDesc getShowFuncsDesc() {
     return showFuncsDesc;
   }
 
   /**
    * @return the descFuncDesc
    */
-  @explain(displayName = "Show Function Operator")
-  public descFunctionDesc getDescFunctionDesc() {
+  @Explain(displayName = "Show Function Operator")
+  public DescFunctionDesc getDescFunctionDesc() {
     return descFunctionDesc;
   }
 
@@ -306,7 +306,7 @@ public class DDLWork implements Serializable {
    * @param showFuncsDesc
    *          the showFuncsDesc to set
    */
-  public void setShowFuncsDesc(showFunctionsDesc showFuncsDesc) {
+  public void setShowFuncsDesc(ShowFunctionsDesc showFuncsDesc) {
     this.showFuncsDesc = showFuncsDesc;
   }
 
@@ -314,15 +314,15 @@ public class DDLWork implements Serializable {
    * @param descFuncDesc
    *          the showFuncsDesc to set
    */
-  public void setDescFuncDesc(descFunctionDesc descFuncDesc) {
+  public void setDescFuncDesc(DescFunctionDesc descFuncDesc) {
     descFunctionDesc = descFuncDesc;
   }
 
   /**
    * @return the showPartsDesc
    */
-  @explain(displayName = "Show Partitions Operator")
-  public showPartitionsDesc getShowPartsDesc() {
+  @Explain(displayName = "Show Partitions Operator")
+  public ShowPartitionsDesc getShowPartsDesc() {
     return showPartsDesc;
   }
 
@@ -330,15 +330,15 @@ public class DDLWork implements Serializable {
    * @param showPartsDesc
    *          the showPartsDesc to set
    */
-  public void setShowPartsDesc(showPartitionsDesc showPartsDesc) {
+  public void setShowPartsDesc(ShowPartitionsDesc showPartsDesc) {
     this.showPartsDesc = showPartsDesc;
   }
 
   /**
    * @return the descTblDesc
    */
-  @explain(displayName = "Describe Table Operator")
-  public descTableDesc getDescTblDesc() {
+  @Explain(displayName = "Describe Table Operator")
+  public DescTableDesc getDescTblDesc() {
     return descTblDesc;
   }
 
@@ -346,7 +346,7 @@ public class DDLWork implements Serializable {
    * @param descTblDesc
    *          the descTblDesc to set
    */
-  public void setDescTblDesc(descTableDesc descTblDesc) {
+  public void setDescTblDesc(DescTableDesc descTblDesc) {
     this.descTblDesc = descTblDesc;
   }
 
@@ -383,7 +383,7 @@ public class DDLWork implements Serializable {
   /**
    * @return show table descriptor
    */
-  public showTableStatusDesc getShowTblStatusDesc() {
+  public ShowTableStatusDesc getShowTblStatusDesc() {
     return showTblStatusDesc;
   }
 
@@ -391,7 +391,7 @@ public class DDLWork implements Serializable {
    * @param showTblStatusDesc
    *          show table descriptor
    */
-  public void setShowTblStatusDesc(showTableStatusDesc showTblStatusDesc) {
+  public void setShowTblStatusDesc(ShowTableStatusDesc showTblStatusDesc) {
     this.showTblStatusDesc = showTblStatusDesc;
   }
 

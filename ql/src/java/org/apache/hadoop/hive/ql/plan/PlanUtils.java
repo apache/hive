@@ -59,11 +59,11 @@ public class PlanUtils {
   };
 
   @SuppressWarnings("nls")
-  public static mapredWork getMapRedWork() {
-    return new mapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
-        new LinkedHashMap<String, partitionDesc>(),
+  public static MapredWork getMapRedWork() {
+    return new MapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
+        new LinkedHashMap<String, PartitionDesc>(),
         new LinkedHashMap<String, Operator<? extends Serializable>>(),
-        new tableDesc(), new ArrayList<tableDesc>(), null, Integer.valueOf(1),
+        new TableDesc(), new ArrayList<TableDesc>(), null, Integer.valueOf(1),
         null);
   }
 
@@ -71,7 +71,7 @@ public class PlanUtils {
    * Generate the table descriptor of MetadataTypedColumnsetSerDe with the
    * separatorCode and column names (comma separated string).
    */
-  public static tableDesc getDefaultTableDesc(String separatorCode,
+  public static TableDesc getDefaultTableDesc(String separatorCode,
       String columns) {
     return getDefaultTableDesc(separatorCode, columns, false);
   }
@@ -80,7 +80,7 @@ public class PlanUtils {
    * Generate the table descriptor of given serde with the separatorCode and
    * column names (comma separated string).
    */
-  public static tableDesc getTableDesc(
+  public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns) {
     return getTableDesc(serdeClass, separatorCode, columns, false);
@@ -91,7 +91,7 @@ public class PlanUtils {
    * separatorCode and column names (comma separated string), and whether the
    * last column should take the rest of the line.
    */
-  public static tableDesc getDefaultTableDesc(String separatorCode,
+  public static TableDesc getDefaultTableDesc(String separatorCode,
       String columns, boolean lastColumnTakesRestOfTheLine) {
     return getDefaultTableDesc(separatorCode, columns, null,
         lastColumnTakesRestOfTheLine);
@@ -102,7 +102,7 @@ public class PlanUtils {
    * and column names (comma separated string), and whether the last column
    * should take the rest of the line.
    */
-  public static tableDesc getTableDesc(
+  public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, boolean lastColumnTakesRestOfTheLine) {
     return getTableDesc(serdeClass, separatorCode, columns, null,
@@ -114,20 +114,20 @@ public class PlanUtils {
    * separatorCode and column names (comma separated string), and whether the
    * last column should take the rest of the line.
    */
-  public static tableDesc getDefaultTableDesc(String separatorCode,
+  public static TableDesc getDefaultTableDesc(String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine) {
     return getTableDesc(LazySimpleSerDe.class, separatorCode, columns,
         columnTypes, lastColumnTakesRestOfTheLine);
   }
 
-  public static tableDesc getTableDesc(
+  public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine) {
     return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
         lastColumnTakesRestOfTheLine, false);
   }
 
-  public static tableDesc getTableDesc(
+  public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
       boolean useJSONForLazy) {
@@ -158,14 +158,14 @@ public class PlanUtils {
       properties.setProperty(Constants.SERIALIZATION_USE_JSON_OBJECTS, "true");
     }
 
-    return new tableDesc(serdeClass, TextInputFormat.class,
+    return new TableDesc(serdeClass, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class, properties);
   }
 
   /**
    * Generate a table descriptor from a createTableDesc.
    */
-  public static tableDesc getTableDesc(createTableDesc crtTblDesc, String cols,
+  public static TableDesc getTableDesc(CreateTableDesc crtTblDesc, String cols,
       String colTypes) {
 
     Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
@@ -173,7 +173,7 @@ public class PlanUtils {
     String columns = cols;
     String columnTypes = colTypes;
     boolean lastColumnTakesRestOfTheLine = false;
-    tableDesc ret;
+    TableDesc ret;
 
     try {
       if (crtTblDesc.getSerName() != null) {
@@ -232,8 +232,8 @@ public class PlanUtils {
    * does not support a table with a single column "col" with type
    * "array<string>".
    */
-  public static tableDesc getDefaultTableDesc(String separatorCode) {
-    return new tableDesc(MetadataTypedColumnsetSerDe.class,
+  public static TableDesc getDefaultTableDesc(String separatorCode) {
+    return new TableDesc(MetadataTypedColumnsetSerDe.class,
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
             .makeProperties(
                 org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
@@ -243,9 +243,9 @@ public class PlanUtils {
   /**
    * Generate the table descriptor for reduce key.
    */
-  public static tableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas,
+  public static TableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas,
       String order) {
-    return new tableDesc(BinarySortableSerDe.class,
+    return new TableDesc(BinarySortableSerDe.class,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
         Utilities.makeProperties(Constants.LIST_COLUMNS, MetaStoreUtils
             .getColumnNamesFromFieldSchema(fieldSchemas),
@@ -257,8 +257,8 @@ public class PlanUtils {
   /**
    * Generate the table descriptor for Map-side join key.
    */
-  public static tableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
-    return new tableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+  public static TableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
+    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
             MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
             "columns.types", MetaStoreUtils
@@ -269,9 +269,9 @@ public class PlanUtils {
   /**
    * Generate the table descriptor for Map-side join key.
    */
-  public static tableDesc getMapJoinValueTableDesc(
+  public static TableDesc getMapJoinValueTableDesc(
       List<FieldSchema> fieldSchemas) {
-    return new tableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
             MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
             "columns.types", MetaStoreUtils
@@ -282,9 +282,9 @@ public class PlanUtils {
   /**
    * Generate the table descriptor for intermediate files.
    */
-  public static tableDesc getIntermediateFileTableDesc(
+  public static TableDesc getIntermediateFileTableDesc(
       List<FieldSchema> fieldSchemas) {
-    return new tableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
             Constants.LIST_COLUMNS, MetaStoreUtils
                 .getColumnNamesFromFieldSchema(fieldSchemas),
@@ -296,8 +296,8 @@ public class PlanUtils {
   /**
    * Generate the table descriptor for intermediate files.
    */
-  public static tableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
-    return new tableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+  public static TableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
+    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
             Constants.LIST_COLUMNS, MetaStoreUtils
                 .getColumnNamesFromFieldSchema(fieldSchemas),
@@ -310,7 +310,7 @@ public class PlanUtils {
    * Convert the ColumnList to FieldSchema list.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnList(
-      List<exprNodeDesc> cols, List<String> outputColumnNames, int start,
+      List<ExprNodeDesc> cols, List<String> outputColumnNames, int start,
       String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i = 0; i < cols.size(); i++) {
@@ -324,7 +324,7 @@ public class PlanUtils {
    * Convert the ColumnList to FieldSchema list.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnList(
-      List<exprNodeDesc> cols, String fieldPrefix) {
+      List<ExprNodeDesc> cols, String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i = 0; i < cols.size(); i++) {
       schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix + i,
@@ -393,12 +393,12 @@ public class PlanUtils {
    *          input data size.
    * @return The reduceSinkDesc object.
    */
-  public static reduceSinkDesc getReduceSinkDesc(
-      ArrayList<exprNodeDesc> keyCols, ArrayList<exprNodeDesc> valueCols,
+  public static ReduceSinkDesc getReduceSinkDesc(
+      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
-      ArrayList<exprNodeDesc> partitionCols, String order, int numReducers) {
-    tableDesc keyTable = null;
-    tableDesc valueTable = null;
+      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers) {
+    TableDesc keyTable = null;
+    TableDesc valueTable = null;
     ArrayList<String> outputKeyCols = new ArrayList<String>();
     ArrayList<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
@@ -419,7 +419,7 @@ public class PlanUtils {
           valueCols, outputColumnNames, 0, ""));
       outputValCols.addAll(outputColumnNames);
     }
-    return new reduceSinkDesc(keyCols, valueCols, outputKeyCols, outputValCols,
+    return new ReduceSinkDesc(keyCols, valueCols, outputKeyCols, outputValCols,
         tag, partitionCols, numReducers, keyTable,
         // Revert to DynamicSerDe:
         // getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols,
@@ -446,22 +446,22 @@ public class PlanUtils {
    *          input data size.
    * @return The reduceSinkDesc object.
    */
-  public static reduceSinkDesc getReduceSinkDesc(
-      ArrayList<exprNodeDesc> keyCols, ArrayList<exprNodeDesc> valueCols,
+  public static ReduceSinkDesc getReduceSinkDesc(
+      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
       int numPartitionFields, int numReducers) {
-    ArrayList<exprNodeDesc> partitionCols = null;
+    ArrayList<ExprNodeDesc> partitionCols = null;
 
     if (numPartitionFields >= keyCols.size()) {
       partitionCols = keyCols;
     } else if (numPartitionFields >= 0) {
-      partitionCols = new ArrayList<exprNodeDesc>(numPartitionFields);
+      partitionCols = new ArrayList<ExprNodeDesc>(numPartitionFields);
       for (int i = 0; i < numPartitionFields; i++) {
         partitionCols.add(keyCols.get(i));
       }
     } else {
       // numPartitionFields = -1 means random partitioning
-      partitionCols = new ArrayList<exprNodeDesc>(1);
+      partitionCols = new ArrayList<ExprNodeDesc>(1);
       partitionCols.add(TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("rand"));
     }

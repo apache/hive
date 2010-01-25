@@ -23,7 +23,7 @@ import java.util.HashMap;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-@description(name = "map", value = "_FUNC_(key0, value0, key1, value1...) - Creates a map with the given key/value pairs ")
+@Description(name = "map", value = "_FUNC_(key0, value0, key1, value1...) - Creates a map with the given key/value pairs ")
 public class GenericUDFMap extends GenericUDF {
   Converter[] converters;
   HashMap<Object, Object> ret = new HashMap<Object, Object>();

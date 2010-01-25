@@ -32,8 +32,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -49,7 +49,7 @@ import org.apache.hadoop.io.Writable;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
-public class MapOperator extends Operator<mapredWork> implements Serializable {
+public class MapOperator extends Operator<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -168,18 +168,18 @@ public class MapOperator extends Operator<mapredWork> implements Serializable {
    * @param mrwork
    * @throws HiveException
    */
-  public void initializeAsRoot(Configuration hconf, mapredWork mrwork)
+  public void initializeAsRoot(Configuration hconf, MapredWork mrwork)
       throws HiveException {
     setConf(mrwork);
     setChildren(hconf);
     initialize(hconf, null);
   }
 
-  private static MapOpCtx initObjectInspector(mapredWork conf,
+  private static MapOpCtx initObjectInspector(MapredWork conf,
       Configuration hconf, String onefile) throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,
       SerDeException {
-    partitionDesc td = conf.getPathToPartitionInfo().get(onefile);
+    PartitionDesc td = conf.getPathToPartitionInfo().get(onefile);
     LinkedHashMap<String, String> partSpec = td.getPartSpec();
     Properties tblProps = td.getProperties();
 

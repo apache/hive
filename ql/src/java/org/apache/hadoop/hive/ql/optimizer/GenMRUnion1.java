@@ -45,10 +45,10 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParse
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * Processor for the rule - TableScan followed by Union
@@ -125,7 +125,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     Operator<? extends Serializable> parent = union.getParentOperators().get(
         pos);
-    mapredWork uPlan = null;
+    MapredWork uPlan = null;
 
     // union is encountered for the first time
     if (uCtxTask == null) {
@@ -136,7 +136,7 @@ public class GenMRUnion1 implements NodeProcessor {
       ctx.setUnionTask(union, uCtxTask);
     } else {
       uTask = uCtxTask.getUTask();
-      uPlan = (mapredWork) uTask.getWork();
+      uPlan = (MapredWork) uTask.getWork();
     }
 
     // If there is a mapjoin at position 'pos'
@@ -145,19 +145,19 @@ public class GenMRUnion1 implements NodeProcessor {
       assert mjOp != null;
       GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
       assert mjCtx != null;
-      mapredWork plan = (mapredWork) currTask.getWork();
+      MapredWork plan = (MapredWork) currTask.getWork();
 
       String taskTmpDir = mjCtx.getTaskTmpDir();
-      tableDesc tt_desc = mjCtx.getTTDesc();
+      TableDesc tt_desc = mjCtx.getTTDesc();
       assert plan.getPathToAliases().get(taskTmpDir) == null;
       plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
       plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
       plan.getPathToPartitionInfo().put(taskTmpDir,
-          new partitionDesc(tt_desc, null));
+          new PartitionDesc(tt_desc, null));
       plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
     }
 
-    tableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
+    TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
         .getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol"));
 
     // generate the temporary file
@@ -174,7 +174,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // Create a file sink operator for this file name
     Operator<? extends Serializable> fs_op = OperatorFactory.get(
-        new fileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
+        new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
             HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
 
     assert parent.getChildOperators().size() == 1;
@@ -189,7 +189,7 @@ public class GenMRUnion1 implements NodeProcessor {
     // If it is map-only task, add the files to be processed
     if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)) {
       GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(),
-          (mapredWork) currTask.getWork(), false, ctx);
+          (MapredWork) currTask.getWork(), false, ctx);
     }
 
     ctx.setCurrTask(uTask);

@@ -22,22 +22,22 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.plan.collectDesc;
-import org.apache.hadoop.hive.ql.plan.extractDesc;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.ql.plan.forwardDesc;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
-import org.apache.hadoop.hive.ql.plan.joinDesc;
-import org.apache.hadoop.hive.ql.plan.lateralViewJoinDesc;
-import org.apache.hadoop.hive.ql.plan.limitDesc;
-import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.scriptDesc;
-import org.apache.hadoop.hive.ql.plan.selectDesc;
-import org.apache.hadoop.hive.ql.plan.tableScanDesc;
-import org.apache.hadoop.hive.ql.plan.udtfDesc;
-import org.apache.hadoop.hive.ql.plan.unionDesc;
+import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.ExtractDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.ForwardDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
+import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ScriptDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.UDTFDesc;
+import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
 public class OperatorFactory {
 
@@ -54,30 +54,30 @@ public class OperatorFactory {
   public static ArrayList<opTuple> opvec;
   static {
     opvec = new ArrayList<opTuple>();
-    opvec.add(new opTuple<filterDesc>(filterDesc.class, FilterOperator.class));
-    opvec.add(new opTuple<selectDesc>(selectDesc.class, SelectOperator.class));
+    opvec.add(new opTuple<FilterDesc>(FilterDesc.class, FilterOperator.class));
+    opvec.add(new opTuple<SelectDesc>(SelectDesc.class, SelectOperator.class));
     opvec
-        .add(new opTuple<forwardDesc>(forwardDesc.class, ForwardOperator.class));
-    opvec.add(new opTuple<fileSinkDesc>(fileSinkDesc.class,
+        .add(new opTuple<ForwardDesc>(ForwardDesc.class, ForwardOperator.class));
+    opvec.add(new opTuple<FileSinkDesc>(FileSinkDesc.class,
         FileSinkOperator.class));
     opvec
-        .add(new opTuple<collectDesc>(collectDesc.class, CollectOperator.class));
-    opvec.add(new opTuple<scriptDesc>(scriptDesc.class, ScriptOperator.class));
-    opvec.add(new opTuple<reduceSinkDesc>(reduceSinkDesc.class,
+        .add(new opTuple<CollectDesc>(CollectDesc.class, CollectOperator.class));
+    opvec.add(new opTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
+    opvec.add(new opTuple<ReduceSinkDesc>(ReduceSinkDesc.class,
         ReduceSinkOperator.class));
     opvec
-        .add(new opTuple<extractDesc>(extractDesc.class, ExtractOperator.class));
+        .add(new opTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
     opvec
-        .add(new opTuple<groupByDesc>(groupByDesc.class, GroupByOperator.class));
-    opvec.add(new opTuple<joinDesc>(joinDesc.class, JoinOperator.class));
+        .add(new opTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
+    opvec.add(new opTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
     opvec
-        .add(new opTuple<mapJoinDesc>(mapJoinDesc.class, MapJoinOperator.class));
-    opvec.add(new opTuple<limitDesc>(limitDesc.class, LimitOperator.class));
-    opvec.add(new opTuple<tableScanDesc>(tableScanDesc.class,
+        .add(new opTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
+    opvec.add(new opTuple<LimitDesc>(LimitDesc.class, LimitOperator.class));
+    opvec.add(new opTuple<TableScanDesc>(TableScanDesc.class,
         TableScanOperator.class));
-    opvec.add(new opTuple<unionDesc>(unionDesc.class, UnionOperator.class));
-    opvec.add(new opTuple<udtfDesc>(udtfDesc.class, UDTFOperator.class));
-    opvec.add(new opTuple<lateralViewJoinDesc>(lateralViewJoinDesc.class,
+    opvec.add(new opTuple<UnionDesc>(UnionDesc.class, UnionOperator.class));
+    opvec.add(new opTuple<UDTFDesc>(UDTFDesc.class, UDTFOperator.class));
+    opvec.add(new opTuple<LateralViewJoinDesc>(LateralViewJoinDesc.class,
         LateralViewJoinOperator.class));
   }
 

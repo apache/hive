@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * Processor Context for creating map reduce task. Walk the tree in a DFS manner
@@ -95,12 +95,12 @@ public class GenMRProcContext implements NodeProcessorCtx {
   public static class GenMRUnionCtx {
     Task<? extends Serializable> uTask;
     List<String> taskTmpDir;
-    List<tableDesc> tt_desc;
+    List<TableDesc> tt_desc;
 
     public GenMRUnionCtx() {
       uTask = null;
       taskTmpDir = new ArrayList<String>();
-      tt_desc = new ArrayList<tableDesc>();
+      tt_desc = new ArrayList<TableDesc>();
     }
 
     public Task<? extends Serializable> getUTask() {
@@ -119,18 +119,18 @@ public class GenMRProcContext implements NodeProcessorCtx {
       return taskTmpDir;
     }
 
-    public void addTTDesc(tableDesc tt_desc) {
+    public void addTTDesc(TableDesc tt_desc) {
       this.tt_desc.add(tt_desc);
     }
 
-    public List<tableDesc> getTTDesc() {
+    public List<TableDesc> getTTDesc() {
       return tt_desc;
     }
   }
 
   public static class GenMRMapJoinCtx {
     String taskTmpDir;
-    tableDesc tt_desc;
+    TableDesc tt_desc;
     Operator<? extends Serializable> rootMapJoinOp;
     MapJoinOperator oldMapJoin;
 
@@ -147,7 +147,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
      * @param rootMapJoinOp
      * @param oldMapJoin
      */
-    public GenMRMapJoinCtx(String taskTmpDir, tableDesc tt_desc,
+    public GenMRMapJoinCtx(String taskTmpDir, TableDesc tt_desc,
         Operator<? extends Serializable> rootMapJoinOp,
         MapJoinOperator oldMapJoin) {
       this.taskTmpDir = taskTmpDir;
@@ -164,11 +164,11 @@ public class GenMRProcContext implements NodeProcessorCtx {
       return taskTmpDir;
     }
 
-    public void setTTDesc(tableDesc tt_desc) {
+    public void setTTDesc(TableDesc tt_desc) {
       this.tt_desc = tt_desc;
     }
 
-    public tableDesc getTTDesc() {
+    public TableDesc getTTDesc() {
       return tt_desc;
     }
 

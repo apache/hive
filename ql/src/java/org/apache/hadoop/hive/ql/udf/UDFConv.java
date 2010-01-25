@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.udf;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@description(name = "conv", value = "_FUNC_(num, from_base, to_base) - convert num from from_base to"
+@Description(name = "conv", value = "_FUNC_(num, from_base, to_base) - convert num from from_base to"
     + " to_base", extended = "If to_base is negative, treat num as a signed integer,"
     + "otherwise, treat it as an unsigned integer.\n"
     + "Example:\n"

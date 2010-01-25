@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.Text;
 
-@description(name = "unhex", value = "_FUNC_(str) - Converts hexadecimal argument to string", extended = "Performs the inverse operation of HEX(str). That is, it interprets\n"
+@Description(name = "unhex", value = "_FUNC_(str) - Converts hexadecimal argument to string", extended = "Performs the inverse operation of HEX(str). That is, it interprets\n"
     + "each pair of hexadecimal digits in the argument as a number and\n"
     + "converts it to the character represented by the number. The\n"
     + "resulting characters are returned as a binary string.\n\n"

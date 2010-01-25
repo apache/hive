@@ -34,16 +34,16 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.loadFileDesc;
-import org.apache.hadoop.hive.ql.plan.loadTableDesc;
-import org.apache.hadoop.hive.ql.plan.moveWork;
+import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
 /**
  * MoveTask implementation
  **/
-public class MoveTask extends Task<moveWork> implements Serializable {
+public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -57,7 +57,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
     try {
       // Do any hive related operations like moving tables and files
       // to appropriate locations
-      loadFileDesc lfd = work.getLoadFileWork();
+      LoadFileDesc lfd = work.getLoadFileWork();
       if (lfd != null) {
         Path targetPath = new Path(lfd.getTargetDir());
         Path sourcePath = new Path(lfd.getSourceDir());
@@ -108,7 +108,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
       }
 
       // Next we do this for tables and partitions
-      loadTableDesc tbd = work.getLoadTableWork();
+      LoadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
         String mesg = "Loading data to table "
             + tbd.getTable().getTableName()
@@ -181,12 +181,12 @@ public class MoveTask extends Task<moveWork> implements Serializable {
    * Does the move task involve moving to a local file system
    */
   public boolean isLocal() {
-    loadTableDesc tbd = work.getLoadTableWork();
+    LoadTableDesc tbd = work.getLoadTableWork();
     if (tbd != null) {
       return false;
     }
 
-    loadFileDesc lfd = work.getLoadFileWork();
+    LoadFileDesc lfd = work.getLoadFileWork();
     if (lfd != null) {
       if (lfd.getIsDfsDir()) {
         return false;
