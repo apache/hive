@@ -62,6 +62,8 @@ Trunk -  Unreleased
     HIVE-1085. ColumnarSerde should not be the default Serde when user 
     specified a fileformat using 'stored as' (Yongqiang He via Ning Zhang)
 
+    HIVE-1086. Add "-Doffline=true" option to ant. (Zheng Shao via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

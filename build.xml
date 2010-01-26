@@ -46,6 +46,9 @@
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
 
+  <condition property="is-offline" value="true" else="false">
+    <isset property="offline"/>
+  </condition>
 
   <!-- ====================================================== -->
   <!-- Macro definitions                                      -->
@@ -78,6 +81,7 @@
     <sequential>
       <subant target="@{target}">
         <property name="build.dir.hive" location="${build.dir.hive}"/>
+        <property name="is-offline" value="${is-offline}"/>
         <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
       </subant>
     </sequential>
@@ -88,6 +92,7 @@
     <sequential>
       <subant target="@{target}">
         <property name="build.dir.hive" location="${build.dir.hive}"/>
+        <property name="is-offline" value="${is-offline}"/>
         <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
       </subant>
     </sequential>

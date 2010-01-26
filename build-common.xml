@@ -82,6 +82,10 @@
   <property name="ant_task_repo_url" value="${mvn.repo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar"/>
   <property name="ivy_repo_url" value="${mvn.repo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
 
+  <condition property="offline">
+    <istrue value="${is-offline}"/>
+  </condition>
+
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern" value="${ant.project.name}/[conf]/[artifact]-[revision].[ext]"/>
       
@@ -147,14 +151,15 @@
   </target>
   
   <target name="ivy-retrieve" depends="ivy-resolve"
-    description="Retrieve Ivy-managed artifacts">
+    description="Retrieve Ivy-managed artifacts" unless="offline">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
   </target>
   
   <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
-    description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
+    description="Retrieve Ivy-managed artifacts for the checkstyle configurations"
+    unless="offline">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
@@ -162,7 +167,8 @@
   </target>
   
   <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
-    description="Retrieve Ivy-managed Hadoop source artifacts" >
+    description="Retrieve Ivy-managed Hadoop source artifacts"
+    unless="offline">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
