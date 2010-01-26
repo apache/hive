@@ -558,6 +558,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
       } catch (Throwable th) {
         scriptError = th;
+        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() + 
+            "\nCause: " + th.getCause());
         LOG.warn(StringUtils.stringifyException(th));
       } finally {
         try {

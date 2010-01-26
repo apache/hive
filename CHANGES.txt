@@ -67,6 +67,9 @@ Trunk -  Unreleased
     HIVE-1094. Disable streaming last table if there is a skew key in
     previous tables. (He Yongqiang via namit)
 
+    HIVE-1097. Increase memory for groupby_bigdata.q for intermittent OOM
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
