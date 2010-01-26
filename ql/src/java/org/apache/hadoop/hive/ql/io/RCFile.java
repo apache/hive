@@ -909,7 +909,9 @@ public class RCFile {
     private byte[] sync = new byte[SYNC_HASH_SIZE];
     private byte[] syncCheck = new byte[SYNC_HASH_SIZE];
     private boolean syncSeen;
+    private long lastSeenSyncPos = 0;
 
+    private long headerEnd;
     private long end;
     private int currentKeyLength;
     private int currentRecordLength;
@@ -1074,6 +1076,7 @@ public class RCFile {
 
       if (version > 1) { // if version > 1
         in.readFully(sync); // read sync bytes
+        headerEnd = in.getPos();
       }
     }
 
@@ -1102,6 +1105,15 @@ public class RCFile {
         seek(end);
         return;
       }
+   
+     //this is to handle syn(pos) where pos < headerEnd.
+     if (position < headerEnd) {
+       // seek directly to first record
+       in.seek(headerEnd);
+       // note the sync marker "seen" in the header
+       syncSeen = true;
+       return;
+     }
 
       try {
         seek(position + 4); // skip escape
@@ -1159,6 +1171,7 @@ public class RCFile {
       if (version > 1 && sync != null && length == SYNC_ESCAPE) { // process
         // a
         // sync entry
+        lastSeenSyncPos = in.getPos() - 4; // minus SYNC_ESCAPE's length
         in.readFully(syncCheck); // read syncCheck
         if (!Arrays.equals(sync, syncCheck)) // check it
           throw new IOException("File is corrupt!");
@@ -1402,6 +1415,12 @@ public class RCFile {
     /** Returns true iff the previous call to next passed a sync mark. */
     public boolean syncSeen() {
       return syncSeen;
+    }
+    
+   
+    /** Returns the last seen sync position */
+    public long lastSeenSyncPos() {
+      return lastSeenSyncPos;
     }
 
     /** Returns the name of the file. */
