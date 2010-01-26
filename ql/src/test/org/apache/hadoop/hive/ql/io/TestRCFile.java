@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -47,7 +48,12 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 
 public class TestRCFile extends TestCase {
 
@@ -374,4 +380,79 @@ public class TestRCFile extends TestCase {
     long cost = System.currentTimeMillis() - start;
     LOG.debug("reading fully costs:" + cost + " milliseconds");
   }
+  
+  public void testSynAndSplit() throws IOException {
+    splitBeforeSync();
+    splitRightBeforeSync();
+    splitInMiddleOfSync();
+    splitRightAfterSync();
+    splitAfterSync();
+  }
+
+  private void splitBeforeSync() throws IOException {
+    writeThenReadByRecordReader(600, 1000, 2, 1, null);
+  }
+  
+  private void splitRightBeforeSync() throws IOException {
+    writeThenReadByRecordReader(500, 1000, 2, 17750, null);
+  }
+  
+  private void splitInMiddleOfSync() throws IOException {
+    writeThenReadByRecordReader(500, 1000, 2, 17760, null);
+    
+  }
+  
+  private void splitRightAfterSync() throws IOException {
+    writeThenReadByRecordReader(500, 1000, 2, 17770, null);
+  }
+  
+  private void splitAfterSync() throws IOException {
+    writeThenReadByRecordReader(500, 1000, 2, 19950, null);
+  }
+
+  private void writeThenReadByRecordReader(int intervalRecordCount,
+      int writeCount, int splitNumber, long minSplitSize, CompressionCodec codec)
+      throws IOException {
+    Path testDir = new Path(System.getProperty("test.data.dir", ".") + "/mapred/testsmallfirstsplit");
+    Path testFile = new Path(testDir, "test_rcfile");
+    fs.delete(testFile, true);
+    Configuration cloneConf = new Configuration(conf);
+    RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
+    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+
+    RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
+
+    BytesRefArrayWritable bytes = new BytesRefArrayWritable(bytesArray.length);
+    for (int i = 0; i < bytesArray.length; i++) {
+      BytesRefWritable cu = null;
+      cu = new BytesRefWritable(bytesArray[i], 0, bytesArray[i].length);
+      bytes.set(i, cu);
+    }
+    for (int i = 0; i < writeCount; i++) {
+      if(i == intervalRecordCount)
+        System.out.println("write position:" + writer.getLength());
+      writer.append(bytes);
+    }
+    writer.close();
+    
+    RCFileInputFormat inputFormat = new RCFileInputFormat();
+    JobConf jonconf = new JobConf(cloneConf);
+    jonconf.set("mapred.input.dir", testDir.toString());
+    jonconf.setLong("mapred.min.split.size", minSplitSize);
+    InputSplit[] splits = inputFormat.getSplits(jonconf, splitNumber);
+    assertEquals("splits length should be " + splitNumber, splits.length, splitNumber);
+    int readCount = 0;
+    for (int i = 0; i < splits.length; i++) {
+      int previousReadCount = readCount;
+      RecordReader rr = inputFormat.getRecordReader(splits[i], jonconf, Reporter.NULL);
+      Object key = rr.createKey();
+      Object value = rr.createValue();
+      while(rr.next(key, value)) 
+        readCount ++;
+      System.out.println("The " + i + "th split read "
+          + (readCount - previousReadCount));
+    }
+    assertEquals("readCount should be equal to writeCount", readCount, writeCount);
+  }
+  
 }

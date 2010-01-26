@@ -1504,3 +1504,7 @@ Release 0.2.0 - Unreleased
 
     HIVE-283. Do case insensitive comparison of aliases in partition
     pruning. (athusoo)
+
+    HIVE-1088. RCFileRecordReader's first split will read duplicate rows if
+    the split end is < the first sync mark (Yongqiang He via Ning Zhang)
+

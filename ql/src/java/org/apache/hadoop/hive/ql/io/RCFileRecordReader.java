@@ -72,27 +72,14 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
         conf);
   }
 
-  private boolean firstSeen = true;
-
   @Override
   public boolean next(LongWritable key, BytesRefArrayWritable value)
       throws IOException {
-    if (!more) {
-      return false;
-    }
-    long pos = in.getPosition();
-    boolean hasMore = in.next(key);
-    if (hasMore) {
+    
+    more = next(key);
+    
+    if (more) {
       in.getCurrentRow(value);
-    }
-    if (pos >= end && in.syncSeen() && !in.hasRecordsInBuffer()) {
-      more = false;
-      if (firstSeen) {
-        firstSeen = false;
-        return true;
-      }
-    } else {
-      more = hasMore;
     }
     return more;
   }
@@ -101,12 +88,16 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     if (!more) {
       return false;
     }
-    long pos = in.getPosition();
-    boolean hasMore = in.next(key);
-    if (pos >= end && in.syncSeen()) {
+    
+    more = in.next(key);
+    if (!more) {
+      return false;
+    }
+    
+    long lastSeenSyncPos = in.lastSeenSyncPos();
+    if(lastSeenSyncPos >= end) {
       more = false;
-    } else {
-      more = hasMore;
+      return more;
     }
     return more;
   }
