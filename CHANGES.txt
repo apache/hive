@@ -34,6 +34,9 @@ Release 0.4.1
     HIVE-902. Fix cli.sh to work with hadoop versions less than 20.
     (Carl Steinbach via zshao)
 
+    HIVE-1099. Make queries in input40.q deterministic
+    (Paul Yang via namit)
+
 Release 0.4.0
 
   INCOMPATIBLE CHANGES
