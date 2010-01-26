@@ -171,6 +171,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   Map<GroupByOperator, Set<String>> groupOpToInputTables;
   Map<String, PrunedPartitionList> prunedPartitions;
+  private List<FieldSchema> resultSchema;
   private CreateViewDesc createVwDesc;
   private ASTNode viewSelect;
   private final UnparseTranslator unparseTranslator;
@@ -5580,10 +5581,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     getMetaData(qb);
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
+    // Save the result schema derived from the sink operator produced
+    // by genPlan.  This has the correct column names, which clients
+    // such as JDBC would prefer instead of the c0, c1 we'll end
+    // up with later.
     Operator sinkOp = genPlan(qb);
+    resultSchema =
+      convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRR());
 
     if (createVwDesc != null) {
-      saveViewDefinition(sinkOp);
+      saveViewDefinition();
       // Since we're only creating a view (not executing it), we
       // don't need to optimize or translate the plan (and in fact, those
       // procedures can interfere with the view creation). So
@@ -5615,12 +5622,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return;
   }
 
-  private void saveViewDefinition(Operator sinkOp) throws SemanticException {
+  @Override
+  public List<FieldSchema> getResultSchema() {
+    return resultSchema;
+  }
 
-    // Save the view schema derived from the sink operator produced
-    // by genPlan.
-    List<FieldSchema> derivedSchema = convertRowSchemaToViewSchema(opParseCtx
-        .get(sinkOp).getRR());
+  private void saveViewDefinition() throws SemanticException {
+
+    // Make a copy of the statement's result schema, since we may
+    // modify it below as part of imposing view column names.
+    List<FieldSchema> derivedSchema =
+      new ArrayList<FieldSchema>(resultSchema);
     validateColumnNameUniqueness(derivedSchema);
 
     List<FieldSchema> imposedSchema = createVwDesc.getSchema();

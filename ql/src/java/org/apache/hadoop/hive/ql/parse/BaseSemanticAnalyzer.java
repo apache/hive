@@ -302,6 +302,14 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * @return the schema for the fields which will be produced
+   * when the statement is executed, or null if not known
+   */
+  public List<FieldSchema> getResultSchema() {
+    return null;
+  }
+
+  /**
    * Get the list of FieldSchema out of the ASTNode.
    */
   protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {

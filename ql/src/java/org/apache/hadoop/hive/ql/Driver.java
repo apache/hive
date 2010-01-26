@@ -141,9 +141,17 @@ public class Driver implements CommandProcessor {
    * Get a Schema with fields represented with native Hive types
    */
   public Schema getSchema() throws Exception {
-    Schema schema;
+    Schema schema = null;
     try {
-      if (plan != null && plan.getPlan().getFetchTask() != null) {
+      // If we have a plan, prefer its logical result schema if it's
+      // available; otherwise, try digging out a fetch task; failing that,
+      // give up.
+      if (plan == null) {
+        // can't get any info without a plan
+      } else if (plan.getPlan().getResultSchema() != null) {
+        List<FieldSchema> lst = plan.getPlan().getResultSchema();
+        schema = new Schema(lst, null);
+      } else if (plan.getPlan().getFetchTask() != null) {
         BaseSemanticAnalyzer sem = plan.getPlan();
 
         if (!sem.getFetchTaskInit()) {
@@ -174,7 +182,8 @@ public class Driver implements CommandProcessor {
         List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
             tableName, td.getDeserializer());
         schema = new Schema(lst, null);
-      } else {
+      }
+      if (schema == null) {
         schema = new Schema();
       }
     } catch (Exception e) {

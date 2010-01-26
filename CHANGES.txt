@@ -70,6 +70,9 @@ Trunk -  Unreleased
     HIVE-1097. Increase memory for groupby_bigdata.q for intermittent OOM
     (Paul Yang via namit)
 
+    HIVE-763. getSchema returns invalid column names, getThriftSchema does
+    not return old style string schemas (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

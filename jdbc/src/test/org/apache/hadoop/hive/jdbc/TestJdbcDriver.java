@@ -323,14 +323,23 @@ public class TestJdbcDriver extends TestCase {
     // creating a table with tinyint is failing currently so not including
     res = stmt.executeQuery("create table " + tableName
         + " (a string, b boolean, c bigint, d int, f double)");
-    res = stmt.executeQuery("select * from " + tableName + " limit 1");
+    res = stmt.executeQuery(
+      "select a,b,c,d,f as e,f*2 from " + tableName + " limit 1");
 
     ResultSetMetaData meta = res.getMetaData();
+    assertEquals("Unexpected column count", 6, meta.getColumnCount());
+    assertEquals("Unexpected column name", "a", meta.getColumnName(1));
+    assertEquals("Unexpected column name", "b", meta.getColumnName(2));
+    assertEquals("Unexpected column name", "c", meta.getColumnName(3));
+    assertEquals("Unexpected column name", "d", meta.getColumnName(4));
+    assertEquals("Unexpected column name", "e", meta.getColumnName(5));
+    assertEquals("Unexpected column name", "_c5", meta.getColumnName(6));
     assertEquals("Unexpected column type", Types.VARCHAR, meta.getColumnType(1));
     assertEquals("Unexpected column type", Types.BOOLEAN, meta.getColumnType(2));
     assertEquals("Unexpected column type", Types.BIGINT, meta.getColumnType(3));
     assertEquals("Unexpected column type", Types.INTEGER, meta.getColumnType(4));
     assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(5));
+    assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(6));
     assertEquals("Unexpected column type name", "string", meta
         .getColumnTypeName(1));
     assertEquals("Unexpected column type name", "boolean", meta
@@ -341,6 +350,8 @@ public class TestJdbcDriver extends TestCase {
         .getColumnTypeName(4));
     assertEquals("Unexpected column type name", "double", meta
         .getColumnTypeName(5));
+    assertEquals("Unexpected column type name", "double", meta
+        .getColumnTypeName(6));
     assertEquals("Unexpected column display size", 32, meta
         .getColumnDisplaySize(1));
     assertEquals("Unexpected column display size", 8, meta
@@ -351,14 +362,16 @@ public class TestJdbcDriver extends TestCase {
         .getColumnDisplaySize(4));
     assertEquals("Unexpected column display size", 16, meta
         .getColumnDisplaySize(5));
+    assertEquals("Unexpected column display size", 16, meta
+        .getColumnDisplaySize(6));
 
-    for (int i = 1; i <= 5; i++) {
+    for (int i = 1; i <= 6; i++) {
       assertFalse(meta.isAutoIncrement(i));
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
 
-      int expectedPrecision = i == 5 ? -1 : 0;
-      int expectedScale = i == 5 ? -1 : 0;
+      int expectedPrecision = i >= 5 ? -1 : 0;
+      int expectedScale = i >= 5 ? -1 : 0;
       assertEquals("Unexpected precision", expectedPrecision, meta
           .getPrecision(i));
       assertEquals("Unexpected scale", expectedScale, meta.getScale(i));
