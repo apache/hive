@@ -1508,3 +1508,5 @@ Release 0.2.0 - Unreleased
     HIVE-1088. RCFileRecordReader's first split will read duplicate rows if
     the split end is < the first sync mark (Yongqiang He via Ning Zhang)
 
+    HIVE-1087. Let user script write out binary data into a table 
+    (Zheng Shao via Ning Zhang)
