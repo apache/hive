@@ -71,6 +71,7 @@ public class HiveConf extends Configuration {
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
     EXECPARALLEL("hive.exec.parallel",false), // parallel query launching
+    EXECPARALLETHREADNUMBER ("hive.exec.parallel.thread.number", 8),
     HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution",true),
 
     // hadoop stuff
@@ -182,7 +183,8 @@ public class HiveConf extends Configuration {
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
-    HIVEOPTGROUPBY("hive.optimize.groupby", true); // optimize group by
+    HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by
+    ;
 
     public final String varname;
     public final String defaultVal;

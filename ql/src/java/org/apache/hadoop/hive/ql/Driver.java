@@ -85,7 +85,7 @@ public class Driver implements CommandProcessor {
   private String SQLState;
 
   // A limit on the number of threads that can be launched
-  private final int maxthreads = 8;
+  private int maxthreads;
   private final int sleeptime = 2000;
 
   public void init() {
@@ -274,7 +274,7 @@ public class Driver implements CommandProcessor {
   /**
    * Compile a new query. Any currently-planned query associated with this
    * Driver is discarded.
-   * 
+   *
    * @param command
    *          The SQL query to compile.
    */
@@ -445,6 +445,7 @@ public class Driver implements CommandProcessor {
 
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
+    maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
     try {
       LOG.info("Starting command: " + queryStr);
@@ -584,7 +585,7 @@ public class Driver implements CommandProcessor {
 
   /**
    * Launches a new task
-   * 
+   *
    * @param tsk
    *          task being launched
    * @param queryId
@@ -647,7 +648,7 @@ public class Driver implements CommandProcessor {
 
   /**
    * Polls running tasks to see if a task has ended.
-   * 
+   *
    * @param results
    *          Set of result objects for running tasks
    * @return The result object for any completed/failed task
