@@ -59,10 +59,13 @@ Trunk -  Unreleased
     HIVE-1072. Show table extended to error out when the partition does not exist.
     (Yongqiang He via zshao)
 
-    HIVE-1085. ColumnarSerde should not be the default Serde when user 
+    HIVE-1085. ColumnarSerde should not be the default Serde when user
     specified a fileformat using 'stored as' (Yongqiang He via Ning Zhang)
 
     HIVE-1086. Add "-Doffline=true" option to ant. (Zheng Shao via Ning Zhang)
+
+    HIVE-1094. Disable streaming last table if there is a skew key in
+    previous tables. (He Yongqiang via namit)
 
 Release 0.5.0 -  Unreleased
 
@@ -1508,5 +1511,5 @@ Release 0.2.0 - Unreleased
     HIVE-1088. RCFileRecordReader's first split will read duplicate rows if
     the split end is < the first sync mark (Yongqiang He via Ning Zhang)
 
-    HIVE-1087. Let user script write out binary data into a table 
+    HIVE-1087. Let user script write out binary data into a table
     (Zheng Shao via Ning Zhang)

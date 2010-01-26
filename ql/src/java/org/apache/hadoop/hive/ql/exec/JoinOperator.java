@@ -74,7 +74,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       int sz = storage.get(alias).size();
 
       // Are we consuming too much memory
-      if (alias == numAliases - 1) {
+      if (alias == numAliases - 1 && !(handleSkewJoin && skewJoinKeyContext.currBigKeyTag >= 0)) {
         if (sz == joinEmitInterval) {
           // The input is sorted by alias, so if we are already in the last join
           // operand,
@@ -130,7 +130,8 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   @Override
   public void jobClose(Configuration hconf, boolean success)
       throws HiveException {
-    if (handleSkewJoin) {
+    int numAliases = conf.getExprs().size();
+    if (conf.getHandleSkewJoin()) {
       try {
         for (int i = 0; i < numAliases; i++) {
           String specPath = conf.getBigKeysDirMap().get((byte) i);
