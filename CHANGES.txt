@@ -79,6 +79,9 @@ Trunk -  Unreleased
     HIVE-1069. CREATE VIEW followup: find and document current expected
     version of thrift (John Sichi via namit)
 
+    HIVE-898. Hive ODBC build fails on OSX.
+    (Carl Steinbach and Ning Zhang via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

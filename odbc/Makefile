@@ -15,11 +15,12 @@
 #
 
 #
-# Note: This makefile depends on 4 environment variables to funtion correctly:
+# Note: This makefile depends on 5 environment variables to funtion correctly:
 # a) WORD_SIZE
 # b) THRIFT_HOME
 # c) HIVE_ROOT
 # d) BASE_DIR
+# e) BOOST_HOME
 # All these are passed by build.xml.
 #
 
@@ -30,6 +31,15 @@ else
   ARCH_FLAGS = -m64 -DARCH64
 endif
 
+OS=$(shell uname -s)
+
+ifeq ($(OS),Darwin)
+  LDFLAGS = -dynamiclib
+else
+  LDFLAGS = -shared
+endif
+
+
 AR = ar
 ARFLAGS = rcs
 ARXFLAGS = -x
@@ -38,7 +48,6 @@ CFLAGS = -Wall -g -fPIC
 CXX = g++
 CXXFLAGS = -Wall -g -fPIC
 LD = g++
-LDFLAGS = -shared
 INSTALL = /usr/bin/install -c
 SHELL = /bin/sh
 LIBTOOL = $(SHELL) /usr/bin/libtool
@@ -56,6 +65,7 @@ THRIFT_INCLUDE_PATH = $(HIVE_ROOT)/service/include/thrift
 INSTALL_PATH = /usr/local
 INSTALL_LIB_PATH = $(INSTALL_PATH)/lib
 INSTALL_INCLUDE_PATH = $(INSTALL_PATH)/include
+BOOST_INCLUDE_PATH = $(BOOST_HOME)/include
 
 LIB_NAME = hiveclient
 SHLIB_VERSION = 1.0.0
@@ -101,6 +111,7 @@ TEST_FLAGS = -DTEST_DATA_DIR=$(ODBC_TEST_DATA_DIR)
 HIVE_CLIENT_TEST = $(TEST_ODBC_BUILD_DIR)/HiveClientTestC
 
 INCLUDE_PATHS = -I$(THRIFT_INCLUDE_PATH) \
+                -I$(BOOST_INCLUDE_PATH) \
                 -I$(FB303_SRC_DIR) \
                 -I$(SERVICE_SRC_DIR) \
                 -I$(METASTORE_SRC_DIR) \
