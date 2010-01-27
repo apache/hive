@@ -36,8 +36,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
 import org.apache.hadoop.hive.ql.plan.api.NodeType;
@@ -47,37 +50,53 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
 
+/**
+ * QueryPlan can be serialized to disk so that we can restart/resume the
+ * progress of it in the future, either within or outside of the current
+ * jvm.
+ */
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
 
   static final private Log LOG = LogFactory.getLog(QueryPlan.class.getName());
 
   private final String queryString;
-  private final BaseSemanticAnalyzer plan;
+  
+  private ArrayList<Task<? extends Serializable>> rootTasks;
+  private FetchTask fetchTask;
+  private HashSet<ReadEntity> inputs;
+  private HashSet<WriteEntity> outputs;
+
+  private HashMap<String, String> idToTableNameMap;
+  
   private final String queryId;
   private final org.apache.hadoop.hive.ql.plan.api.Query query;
-  private final Map<String, Map<String, Long>> counters;
-  private final Set<String> done;
-  private final Set<String> started;
+  private final HashMap<String, HashMap<String, Long>> counters;
+  private final HashSet<String> done;
+  private final HashSet<String> started;
 
-  public QueryPlan(String queryString, BaseSemanticAnalyzer plan) {
+  public QueryPlan(String queryString, BaseSemanticAnalyzer sem) {
     this.queryString = queryString;
-    this.plan = plan;
+    
+    rootTasks = new ArrayList<Task<? extends Serializable>>();
+    rootTasks.addAll(sem.getRootTasks());
+    fetchTask = sem.getFetchTask();
+    // Note that inputs and outputs can be changed when the query gets executed
+    inputs = sem.getInputs();
+    outputs = sem.getOutputs();
+    idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
+    
     queryId = makeQueryId();
     query = new org.apache.hadoop.hive.ql.plan.api.Query();
     query.setQueryId(queryId);
     query.putToQueryAttributes("queryString", this.queryString);
-    counters = new HashMap<String, Map<String, Long>>();
+    counters = new HashMap<String, HashMap<String, Long>>();
     done = new HashSet<String>();
     started = new HashSet<String>();
   }
 
   public String getQueryStr() {
     return queryString;
-  }
-
-  public BaseSemanticAnalyzer getPlan() {
-    return plan;
   }
 
   public String getQueryId() {
@@ -152,7 +171,7 @@ public class QueryPlan implements Serializable {
 
     Queue<Task<? extends Serializable>> tasksToVisit = new LinkedList<Task<? extends Serializable>>();
     Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
-    tasksToVisit.addAll(plan.getRootTasks());
+    tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.size() != 0) {
       Task<? extends Serializable> task = tasksToVisit.remove();
       tasksVisited.add(task);
@@ -273,7 +292,7 @@ public class QueryPlan implements Serializable {
   private void extractCounters() throws IOException {
     Queue<Task<? extends Serializable>> tasksToVisit = new LinkedList<Task<? extends Serializable>>();
     Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
-    tasksToVisit.addAll(plan.getRootTasks());
+    tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.peek() != null) {
       Task<? extends Serializable> task = tasksToVisit.remove();
       tasksVisited.add(task);
@@ -599,6 +618,46 @@ public class QueryPlan implements Serializable {
 
   public Set<String> getDone() {
     return done;
+  }
+
+  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+    return rootTasks;
+  }
+
+  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+    this.rootTasks = rootTasks;
+  }
+
+  public FetchTask getFetchTask() {
+    return fetchTask;
+  }
+
+  public void setFetchTask(FetchTask fetchTask) {
+    this.fetchTask = fetchTask;
+  }
+
+  public HashSet<ReadEntity> getInputs() {
+    return inputs;
+  }
+
+  public void setInputs(HashSet<ReadEntity> inputs) {
+    this.inputs = inputs;
+  }
+
+  public HashSet<WriteEntity> getOutputs() {
+    return outputs;
+  }
+
+  public void setOutputs(HashSet<WriteEntity> outputs) {
+    this.outputs = outputs;
+  }
+
+  public HashMap<String, String> getIdToTableNameMap() {
+    return idToTableNameMap;
+  }
+
+  public void setIdToTableNameMap(HashMap<String, String> idToTableNameMap) {
+    this.idToTableNameMap = idToTableNameMap;
   }
 
 }

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -5164,7 +5165,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void genMapRedTasks(QB qb) throws SemanticException {
     FetchWork fetch = null;
     List<Task<? extends Serializable>> mvTask = new ArrayList<Task<? extends Serializable>>();
-    Task<? extends Serializable> fetchTask = null;
+    FetchTask fetchTask = null;
 
     QBParseInfo qbParseInfo = qb.getParseInfo();
 
@@ -5235,7 +5236,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (noMapRed) {
-        fetchTask = TaskFactory.get(fetch, conf);
+        fetchTask = (FetchTask)TaskFactory.get(fetch, conf);
         setFetchTask(fetchTask);
 
         // remove root tasks if any
@@ -5262,7 +5263,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
                   colTypes)), qb.getParseInfo().getOuterQueryLimit());
 
-      fetchTask = TaskFactory.get(fetch, conf);
+      fetchTask = (FetchTask)TaskFactory.get(fetch, conf);
       setFetchTask(fetchTask);
     } else {
       new ArrayList<MoveWork>();

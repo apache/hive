@@ -82,6 +82,9 @@ Trunk -  Unreleased
     HIVE-898. Hive ODBC build fails on OSX.
     (Carl Steinbach and Ning Zhang via zshao)
 
+    HIVE-1108. Make QueryPlan serializable
+    (Zheng Shao via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

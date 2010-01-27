@@ -811,7 +811,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * populated at runtime from hadoop counters at run time in the client
    */
-  transient protected Map<String, Long> counters;
+  transient protected HashMap<String, Long> counters;
 
   /**
    * keeps track of unique ProgressCounter enums used this value is used at
@@ -893,7 +893,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     this.operatorId = operatorId;
   }
 
-  public Map<String, Long> getCounters() {
+  public HashMap<String, Long> getCounters() {
     return counters;
   }
 

@@ -56,7 +56,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   transient protected LogHelper console;
   transient protected QueryPlan queryPlan;
   transient protected TaskHandle taskHandle;
-  transient protected Map<String, Long> taskCounters;
+  transient protected HashMap<String, Long> taskCounters;
   transient protected DriverContext driverContext;
   // Bean methods
 
@@ -279,7 +279,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
     // default, do nothing
   }
 
-  public Map<String, Long> getCounters() {
+  public HashMap<String, Long> getCounters() {
     return taskCounters;
   }
 

@@ -18,26 +18,38 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
 import java.io.DataInput;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
@@ -48,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.Utilities.EnumDelegate;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
@@ -59,11 +72,15 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -81,6 +98,8 @@ public class Driver implements CommandProcessor {
   private DataInput resStream;
   private Context ctx;
   private QueryPlan plan;
+  private Schema schema;
+  
   private String errorMessage;
   private String SQLState;
 
@@ -137,58 +156,59 @@ public class Driver implements CommandProcessor {
     return cs;
   }
 
+  
+  public Schema getSchema() {
+    return schema;
+  }
+  
   /**
    * Get a Schema with fields represented with native Hive types
    */
-  public Schema getSchema() throws Exception {
+  public static Schema getSchema(BaseSemanticAnalyzer sem, HiveConf conf) {
     Schema schema = null;
-    try {
-      // If we have a plan, prefer its logical result schema if it's
-      // available; otherwise, try digging out a fetch task; failing that,
-      // give up.
-      if (plan == null) {
-        // can't get any info without a plan
-      } else if (plan.getPlan().getResultSchema() != null) {
-        List<FieldSchema> lst = plan.getPlan().getResultSchema();
-        schema = new Schema(lst, null);
-      } else if (plan.getPlan().getFetchTask() != null) {
-        BaseSemanticAnalyzer sem = plan.getPlan();
-
-        if (!sem.getFetchTaskInit()) {
-          sem.setFetchTaskInit(true);
-          sem.getFetchTask().initialize(conf, plan, null);
+    
+    // If we have a plan, prefer its logical result schema if it's
+    // available; otherwise, try digging out a fetch task; failing that,
+    // give up.
+    if (sem == null) {
+      // can't get any info without a plan
+    } else if (sem.getResultSchema() != null) {
+      List<FieldSchema> lst = sem.getResultSchema();
+      schema = new Schema(lst, null);
+    } else if (sem.getFetchTask() != null) {
+      FetchTask ft = (FetchTask) sem.getFetchTask();
+      TableDesc td = ft.getTblDesc();
+      // partitioned tables don't have tableDesc set on the FetchTask. Instead
+      // they have a list of PartitionDesc objects, each with a table desc.
+      // Let's
+      // try to fetch the desc for the first partition and use it's
+      // deserializer.
+      if (td == null && ft.getWork() != null
+          && ft.getWork().getPartDesc() != null) {
+        if (ft.getWork().getPartDesc().size() > 0) {
+          td = ft.getWork().getPartDesc().get(0).getTableDesc();
         }
-        FetchTask ft = (FetchTask) sem.getFetchTask();
+      }
 
-        TableDesc td = ft.getTblDesc();
-        // partitioned tables don't have tableDesc set on the FetchTask. Instead
-        // they have a list of PartitionDesc objects, each with a table desc.
-        // Let's
-        // try to fetch the desc for the first partition and use it's
-        // deserializer.
-        if (td == null && ft.getWork() != null
-            && ft.getWork().getPartDesc() != null) {
-          if (ft.getWork().getPartDesc().size() > 0) {
-            td = ft.getWork().getPartDesc().get(0).getTableDesc();
-          }
-        }
-
-        if (td == null) {
-          throw new Exception("No table description found for fetch task: "
-              + ft);
-        }
-
+      if (td == null) {
+        LOG.info("No returning schema.");
+      } else {
         String tableName = "result";
-        List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
-            tableName, td.getDeserializer());
-        schema = new Schema(lst, null);
+        List<FieldSchema> lst = null;
+        try {
+          lst = MetaStoreUtils.getFieldsFromDeserializer(
+              tableName, td.getDeserializer());
+        } catch (Exception e) {
+          LOG.warn("Error getting schema: " + 
+              org.apache.hadoop.util.StringUtils.stringifyException(e));
+        }
+        if (lst != null) {
+          schema = new Schema(lst, null);
+        }
       }
-      if (schema == null) {
-        schema = new Schema();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+    }
+    if (schema == null) {
+      schema = new Schema();
     }
     LOG.info("Returning Hive schema: " + schema);
     return schema;
@@ -302,7 +322,14 @@ public class Driver implements CommandProcessor {
       sem.validate();
 
       plan = new QueryPlan(command, sem);
-
+      // initialize FetchTask right here
+      if (sem.getFetchTask() != null) {
+        sem.getFetchTask().initialize(conf, plan, null);
+      }
+      
+      // get the output schema
+      schema = getSchema(sem, conf);
+      
       return (0);
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
@@ -459,16 +486,14 @@ public class Driver implements CommandProcessor {
       }
       resStream = null;
 
-      BaseSemanticAnalyzer sem = plan.getPlan();
-
       // Get all the pre execution hooks and execute them.
       for (PreExecute peh : getPreExecHooks()) {
-        peh.run(SessionState.get(), sem.getInputs(), sem.getOutputs(),
+        peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
             UnixUserGroupInformation.readFromConf(conf,
                 UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
 
-      int jobs = countJobs(sem.getRootTasks());
+      int jobs = countJobs(plan.getRootTasks());
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
@@ -476,7 +501,7 @@ public class Driver implements CommandProcessor {
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_NUM_TASKS, String.valueOf(jobs));
         SessionState.get().getHiveHistory().setIdToTableMap(
-            sem.getIdToTableNameMap());
+            plan.getIdToTableNameMap());
       }
       String jobname = Utilities.abbreviate(queryStr, maxlen - 6);
 
@@ -493,7 +518,7 @@ public class Driver implements CommandProcessor {
 
       // Add root Tasks to runnable
 
-      for (Task<? extends Serializable> tsk : sem.getRootTasks()) {
+      for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
         driverCxt.addToRunnable(tsk);
       }
 
@@ -542,7 +567,7 @@ public class Driver implements CommandProcessor {
 
       // Get all the post execution hooks and execute them.
       for (PostExecute peh : getPostExecHooks()) {
-        peh.run(SessionState.get(), sem.getInputs(), sem.getOutputs(),
+        peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
             UnixUserGroupInformation.readFromConf(conf,
                 UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
@@ -580,6 +605,7 @@ public class Driver implements CommandProcessor {
       }
     }
     console.printInfo("OK");
+    
     return (0);
   }
 
@@ -677,13 +703,8 @@ public class Driver implements CommandProcessor {
   }
 
   public boolean getResults(Vector<String> res) throws IOException {
-    if (plan != null && plan.getPlan().getFetchTask() != null) {
-      BaseSemanticAnalyzer sem = plan.getPlan();
-      if (!sem.getFetchTaskInit()) {
-        sem.setFetchTaskInit(true);
-        sem.getFetchTask().initialize(conf, plan, null);
-      }
-      FetchTask ft = (FetchTask) sem.getFetchTask();
+    if (plan != null && plan.getFetchTask() != null) {
+      FetchTask ft = (FetchTask) plan.getFetchTask();
       ft.setMaxRows(maxRows);
       return ft.fetch(res);
     }

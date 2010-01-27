@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -290,7 +291,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param schema
    *          thrift ddl
    */
-  private Task<? extends Serializable> createFetchTask(String schema) {
+  private FetchTask createFetchTask(String schema) {
     Properties prop = new Properties();
 
     prop.setProperty(Constants.SERIALIZATION_FORMAT, "9");
@@ -303,7 +304,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         LazySimpleSerDe.class, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
-    return TaskFactory.get(fetch, conf);
+    return (FetchTask)TaskFactory.get(fetch, conf);
   }
 
   private void analyzeDescribeTable(ASTNode ast) throws SemanticException {

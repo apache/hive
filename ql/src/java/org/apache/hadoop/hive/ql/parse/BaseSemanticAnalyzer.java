@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -56,8 +58,7 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
-  protected Task<? extends Serializable> fetchTask;
-  protected boolean fetchTaskInit;
+  protected FetchTask fetchTask;
   protected final Log LOG;
   protected final LogHelper console;
 
@@ -67,11 +68,11 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * ReadEntitites that are passed to the hooks.
    */
-  protected Set<ReadEntity> inputs;
+  protected HashSet<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected Set<WriteEntity> outputs;
+  protected HashSet<WriteEntity> outputs;
 
   protected static final String TEXTFILE_INPUT = TextInputFormat.class
       .getName();
@@ -124,7 +125,7 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * @return the fetchTask
    */
-  public Task<? extends Serializable> getFetchTask() {
+  public FetchTask getFetchTask() {
     return fetchTask;
   }
 
@@ -132,16 +133,8 @@ public abstract class BaseSemanticAnalyzer {
    * @param fetchTask
    *          the fetchTask to set
    */
-  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+  public void setFetchTask(FetchTask fetchTask) {
     this.fetchTask = fetchTask;
-  }
-
-  public boolean getFetchTaskInit() {
-    return fetchTaskInit;
-  }
-
-  public void setFetchTaskInit(boolean fetchTaskInit) {
-    this.fetchTaskInit = fetchTaskInit;
   }
 
   protected void reset() {
@@ -293,11 +286,11 @@ public abstract class BaseSemanticAnalyzer {
     return sb.toString();
   }
 
-  public Set<ReadEntity> getInputs() {
+  public HashSet<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public Set<WriteEntity> getOutputs() {
+  public HashSet<WriteEntity> getOutputs() {
     return outputs;
   }
 
