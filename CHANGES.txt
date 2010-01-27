@@ -1,5 +1,20 @@
 Hive Change Log
 
+Release 0.4.2 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-898. Hive ODBC build fails on OSX.
+    (Carl Steinbach and Ning Zhang via zshao)
+
 Release 0.4.1
 
   INCOMPATIBLE CHANGES
