@@ -1291,6 +1291,9 @@ class MetaException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
+  def __str__(self):
+    return repr(self)
+
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1346,6 +1349,9 @@ class UnknownTableException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
+
+  def __str__(self):
+    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1403,6 +1409,9 @@ class UnknownDBException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
+  def __str__(self):
+    return repr(self)
+
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1458,6 +1467,9 @@ class AlreadyExistsException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
+
+  def __str__(self):
+    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1515,6 +1527,9 @@ class InvalidObjectException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
+  def __str__(self):
+    return repr(self)
+
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1570,6 +1585,9 @@ class NoSuchObjectException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
+
+  def __str__(self):
+    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
@@ -1627,6 +1645,9 @@ class IndexAlreadyExistsException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
+  def __str__(self):
+    return repr(self)
+
   def __repr__(self):
     L = ['%s=%r' % (key, value)
       for key, value in self.__dict__.iteritems()]
@@ -1682,6 +1703,9 @@ class InvalidOperationException(Exception):
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
+
+  def __str__(self):
+    return repr(self)
 
   def __repr__(self):
     L = ['%s=%r' % (key, value)
