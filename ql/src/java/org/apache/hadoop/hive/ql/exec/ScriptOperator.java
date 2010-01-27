@@ -518,6 +518,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       } catch (Throwable th) {
         scriptError = th;
+        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() + 
+            "\nCause: " + th.getCause());
         LOG.warn(StringUtils.stringifyException(th));
       } finally {
         try {
