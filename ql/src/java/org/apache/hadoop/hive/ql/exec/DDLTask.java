@@ -219,6 +219,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (tbl.isView()) {
       throw new HiveException("Cannot use ALTER TABLE on a view");
     }
+    
+    // If the add partition was created with IF NOT EXISTS, then we should
+    // not throw an error if the specified part does exist.
+    Partition checkPart = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
+    if(checkPart != null && addPartitionDesc.getIfNotExists()) {
+      return 0;
+    }
 
     if (addPartitionDesc.getLocation() == null) {
       db.createPartition(tbl, addPartitionDesc.getPartSpec());
