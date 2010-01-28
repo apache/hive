@@ -551,9 +551,19 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
     job.setMapOutputKeyClass(HiveKey.class);
     job.setMapOutputValueClass(BytesWritable.class);
-
+    if(work.getNumMapTasks() != null) {
+      job.setNumMapTasks(work.getNumMapTasks().intValue());      
+    }
+    if(work.getMinSplitSize() != null) {
+      job.setInt(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname, 
+         work.getMinSplitSize().intValue());
+    }
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);
+    
+    if(work.getInputformat() != null) {
+      HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, work.getInputformat());
+    }
 
     // Turn on speculative execution for reducers
     HiveConf.setVar(job, HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,

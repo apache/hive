@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
@@ -91,11 +92,11 @@ public class GenMRSkewJoinProcessor {
    * For each table, we launch one mapjoin job, taking the directory containing
    * big keys in this table and corresponding dirs in other tables as input.
    * (Actally one job for one row in the above.)
-   * 
+   *
    * <p>
    * For more discussions, please check
    * https://issues.apache.org/jira/browse/HIVE-964.
-   * 
+   *
    */
   public static void processSkewJoin(JoinOperator joinOp,
       Task<? extends Serializable> currTask, ParseContext parseCtx)
@@ -152,14 +153,10 @@ public class GenMRSkewJoinProcessor {
     Map<Byte, TableDesc> tableDescList = new HashMap<Byte, TableDesc>();
     Map<Byte, List<ExprNodeDesc>> newJoinValues = new HashMap<Byte, List<ExprNodeDesc>>();
     Map<Byte, List<ExprNodeDesc>> newJoinKeys = new HashMap<Byte, List<ExprNodeDesc>>();
-    List<TableDesc> newJoinValueTblDesc = new ArrayList<TableDesc>();// used for
-                                                                     // create
-                                                                     // mapJoinDesc,
-                                                                     // should
-                                                                     // be in
-                                                                     // order
+    // used for create mapJoinDesc, should be in order
+    List<TableDesc> newJoinValueTblDesc = new ArrayList<TableDesc>();
 
-    for (Byte tag : tags) {
+    for (int k = 0; k < tags.length; k++) {
       newJoinValueTblDesc.add(null);
     }
 
@@ -302,9 +299,10 @@ public class GenMRSkewJoinProcessor {
 
       HiveConf jc = new HiveConf(parseCtx.getConf(),
           GenMRSkewJoinProcessor.class);
-      HiveConf.setVar(jc, HiveConf.ConfVars.HIVEINPUTFORMAT,
-          org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.class
-              .getCanonicalName());
+
+      newPlan.setNumMapTasks(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINNUMMAPTASK));
+      newPlan.setMinSplitSize(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
+      newPlan.setInputformat(HiveInputFormat.class.getName());
       Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(
           newPlan, jc);
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);

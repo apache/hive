@@ -53,9 +53,12 @@ public class MapredWork implements Serializable {
   private Operator<?> reducer;
 
   private Integer numReduceTasks;
+  private Integer numMapTasks;
+  private Integer minSplitSize;
 
   private boolean needsTagging;
   private MapredLocalWork mapLocalWork;
+  private String inputformat;
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -175,7 +178,16 @@ public class MapredWork implements Serializable {
   public void setReducer(final Operator<?> reducer) {
     this.reducer = reducer;
   }
+  
 
+  public Integer getNumMapTasks() {
+    return numMapTasks;
+  }
+
+  public void setNumMapTasks(Integer numMapTasks) {
+    this.numMapTasks = numMapTasks;
+  }
+  
   /**
    * If the number of reducers is -1, the runtime will automatically figure it
    * out by input data size.
@@ -275,6 +287,22 @@ public class MapredWork implements Serializable {
 
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
+  }
+
+  public Integer getMinSplitSize() {
+    return minSplitSize;
+  }
+
+  public void setMinSplitSize(Integer minSplitSize) {
+    this.minSplitSize = minSplitSize;
+  }
+
+  public String getInputformat() {
+    return inputformat;
+  }
+
+  public void setInputformat(String inputformat) {
+    this.inputformat = inputformat;
   }
 
 }

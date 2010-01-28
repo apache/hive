@@ -171,7 +171,10 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long)(16*1000*1000)),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
-    HIVESKEWJOINKEY("hive.skewjoin.key", 500000),
+    HIVESKEWJOINKEY("hive.skewjoin.key", 1000000),
+    HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
+    HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432), //32M
+    MAPREDMINSPLITSIZE("mapred.min.split.size", 1),
     
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),

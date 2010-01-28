@@ -294,6 +294,22 @@
 </property>
 
 <property>
+  <name>hive.skewjoin.mapjoin.map.tasks</name>
+  <value>10000</value>
+  <description> Determine the number of map task used in the follow up map join job 
+	for a skew join. It should be used together with hive.skewjoin.mapjoin.min.split 
+	to perform a fine grained control.</description>
+</property>
+
+<property>
+  <name>hive.skewjoin.mapjoin.min.split</name>
+  <value>33554432</value>
+  <description> Determine the number of map task at most used in the follow up map join job 
+	for a skew join by specifying the minimum split size. It should be used together with 
+	hive.skewjoin.mapjoin.map.tasks to perform a fine grained control.</description>
+</property>
+
+<property>
   <name>hive.mapred.mode</name>
   <value>nonstrict</value>
   <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>
