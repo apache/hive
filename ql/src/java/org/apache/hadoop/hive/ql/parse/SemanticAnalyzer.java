@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -865,7 +864,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private void parseJoinCondPopulateAlias(QBJoinTree joinTree, ASTNode condn,
-      Vector<String> leftAliases, Vector<String> rightAliases,
+      ArrayList<String> leftAliases, ArrayList<String> rightAliases,
       ArrayList<String> fields) throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
     switch (condn.getToken().getType()) {
@@ -957,9 +956,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void populateAliases(Vector<String> leftAliases,
-      Vector<String> rightAliases, ASTNode condn, QBJoinTree joinTree,
-      Vector<String> leftSrc) throws SemanticException {
+  private void populateAliases(ArrayList<String> leftAliases,
+      ArrayList<String> rightAliases, ASTNode condn, QBJoinTree joinTree,
+      ArrayList<String> leftSrc) throws SemanticException {
     if ((leftAliases.size() != 0) && (rightAliases.size() != 0)) {
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1
           .getMsg(condn));
@@ -1001,7 +1000,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond,
-      Vector<String> leftSrc) throws SemanticException {
+      ArrayList<String> leftSrc) throws SemanticException {
     if (joinCond == null) {
       return;
     }
@@ -1018,14 +1017,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     case HiveParser.EQUAL:
       ASTNode leftCondn = (ASTNode) joinCond.getChild(0);
-      Vector<String> leftCondAl1 = new Vector<String>();
-      Vector<String> leftCondAl2 = new Vector<String>();
+      ArrayList<String> leftCondAl1 = new ArrayList<String>();
+      ArrayList<String> leftCondAl2 = new ArrayList<String>();
       parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2,
           null);
 
       ASTNode rightCondn = (ASTNode) joinCond.getChild(1);
-      Vector<String> rightCondAl1 = new Vector<String>();
-      Vector<String> rightCondAl2 = new Vector<String>();
+      ArrayList<String> rightCondAl1 = new ArrayList<String>();
+      ArrayList<String> rightCondAl2 = new ArrayList<String>();
       parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1,
           rightCondAl2, null);
 
@@ -1069,13 +1068,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Create all children
       int childrenBegin = (isFunction ? 1 : 0);
-      ArrayList<Vector<String>> leftAlias = new ArrayList<Vector<String>>(
+      ArrayList<ArrayList<String>> leftAlias = new ArrayList<ArrayList<String>>(
           joinCond.getChildCount() - childrenBegin);
-      ArrayList<Vector<String>> rightAlias = new ArrayList<Vector<String>>(
+      ArrayList<ArrayList<String>> rightAlias = new ArrayList<ArrayList<String>>(
           joinCond.getChildCount() - childrenBegin);
       for (int ci = 0; ci < joinCond.getChildCount() - childrenBegin; ci++) {
-        Vector<String> left = new Vector<String>();
-        Vector<String> right = new Vector<String>();
+        ArrayList<String> left = new ArrayList<String>();
+        ArrayList<String> right = new ArrayList<String>();
         leftAlias.add(left);
         rightAlias.add(right);
       }
@@ -1087,7 +1086,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean leftAliasNull = true;
-      for (Vector<String> left : leftAlias) {
+      for (ArrayList<String> left : leftAlias) {
         if (left.size() != 0) {
           leftAliasNull = false;
           break;
@@ -1095,7 +1094,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean rightAliasNull = true;
-      for (Vector<String> right : rightAlias) {
+      for (ArrayList<String> right : rightAlias) {
         if (right.size() != 0) {
           rightAliasNull = false;
           break;
@@ -1433,7 +1432,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     StringBuilder inpColumns = new StringBuilder();
     StringBuilder inpColumnTypes = new StringBuilder();
-    Vector<ColumnInfo> inputSchema = opParseCtx.get(input).getRR()
+    ArrayList<ColumnInfo> inputSchema = opParseCtx.get(input).getRR()
         .getColumnInfos();
     for (int i = 0; i < inputSchema.size(); ++i) {
       if (i != 0) {
@@ -3046,7 +3045,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       String cols = new String();
       String colTypes = new String();
-      Vector<ColumnInfo> colInfos = inputRR.getColumnInfos();
+      ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
 
       // CTAS case: the file output format and serde are defined by the create
       // table command
@@ -3138,7 +3137,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     input = genConversionSelectOperator(dest, qb, input, table_desc);
     inputRR = opParseCtx.get(input).getRR();
 
-    Vector<ColumnInfo> vecCol = new Vector<ColumnInfo>();
+    ArrayList<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
 
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector) table_desc
@@ -3185,7 +3184,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Check column number
     List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
-    Vector<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
+    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
         .getColumnInfos();
     if (tableFields.size() != rowFields.size()) {
       String reason = "Table " + dest + " has " + tableFields.size()
@@ -3314,7 +3313,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // resulting output object inspector can be used to make the RowResolver
     // for the UDTF operator
     RowResolver selectRR = opParseCtx.get(input).getRR();
-    Vector<ColumnInfo> inputCols = selectRR.getColumnInfos();
+    ArrayList<ColumnInfo> inputCols = selectRR.getColumnInfos();
 
     // Create the object inspector for the input columns and initialize the UDTF
     ArrayList<String> colNames = new ArrayList<String>();
@@ -3586,7 +3585,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
 
     // Compute join keys and store in reduceKeys
-    Vector<ASTNode> exprs = joinTree.getExpressions().get(pos);
+    ArrayList<ASTNode> exprs = joinTree.getExpressions().get(pos);
     for (int i = 0; i < exprs.size(); i++) {
       ASTNode expr = exprs.get(i);
       reduceKeys.add(genExprNodeDesc(expr, inputRS));
@@ -3646,7 +3645,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator joinSrcOp = null;
     if (leftChild != null) {
       Operator joinOp = genJoinOperator(qb, leftChild, map);
-      Vector<ASTNode> filter = joinTree.getFilters().get(0);
+      ArrayList<ASTNode> filter = joinTree.getFilters().get(0);
       for (ASTNode cond : filter) {
         joinOp = genFilterPlan(qb, cond, joinOp);
       }
@@ -3850,7 +3849,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void pushJoinFilters(QB qb, QBJoinTree joinTree,
       HashMap<String, Operator> map) throws SemanticException {
-    Vector<Vector<ASTNode>> filters = joinTree.getFilters();
+    ArrayList<ArrayList<ASTNode>> filters = joinTree.getFilters();
     if (joinTree.getJoinSrc() != null) {
       pushJoinFilters(qb, joinTree.getJoinSrc(), map);
     }
@@ -3859,7 +3858,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
         Operator srcOp = map.get(src);
-        Vector<ASTNode> filter = filters.get(pos);
+        ArrayList<ASTNode> filter = filters.get(pos);
         for (ASTNode cond : filter) {
           srcOp = genFilterPlan(qb, cond, srcOp);
         }
@@ -3895,14 +3894,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBJoinTree joinTree = new QBJoinTree();
     joinTree.setNoOuterJoin(false);
 
-    joinTree.setExpressions(new Vector<Vector<ASTNode>>());
-    joinTree.setFilters(new Vector<Vector<ASTNode>>());
+    joinTree.setExpressions(new ArrayList<ArrayList<ASTNode>>());
+    joinTree.setFilters(new ArrayList<ArrayList<ASTNode>>());
 
     // Create joinTree structures to fill them up later
-    Vector<String> rightAliases = new Vector<String>();
-    Vector<String> leftAliases = new Vector<String>();
-    Vector<String> baseSrc = new Vector<String>();
-    Vector<Boolean> preserved = new Vector<Boolean>();
+    ArrayList<String> rightAliases = new ArrayList<String>();
+    ArrayList<String> leftAliases = new ArrayList<String>();
+    ArrayList<String> baseSrc = new ArrayList<String>();
+    ArrayList<Boolean> preserved = new ArrayList<Boolean>();
 
     boolean lastPreserved = false;
     int cols = -1;
@@ -3941,8 +3940,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + "number of keys in UNIQUEJOIN");
         }
 
-        Vector<ASTNode> expressions = new Vector<ASTNode>();
-        Vector<ASTNode> filt = new Vector<ASTNode>();
+        ArrayList<ASTNode> expressions = new ArrayList<ASTNode>();
+        ArrayList<ASTNode> filt = new ArrayList<ASTNode>();
 
         for (Node exp : child.getChildren()) {
           expressions.add((ASTNode) exp);
@@ -4065,18 +4064,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert false;
     }
 
-    Vector<Vector<ASTNode>> expressions = new Vector<Vector<ASTNode>>();
-    expressions.add(new Vector<ASTNode>());
-    expressions.add(new Vector<ASTNode>());
+    ArrayList<ArrayList<ASTNode>> expressions = new ArrayList<ArrayList<ASTNode>>();
+    expressions.add(new ArrayList<ASTNode>());
+    expressions.add(new ArrayList<ASTNode>());
     joinTree.setExpressions(expressions);
 
-    Vector<Vector<ASTNode>> filters = new Vector<Vector<ASTNode>>();
-    filters.add(new Vector<ASTNode>());
-    filters.add(new Vector<ASTNode>());
+    ArrayList<ArrayList<ASTNode>> filters = new ArrayList<ArrayList<ASTNode>>();
+    filters.add(new ArrayList<ASTNode>());
+    filters.add(new ArrayList<ASTNode>());
     joinTree.setFilters(filters);
 
     ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
-    Vector<String> leftSrc = new Vector<String>();
+    ArrayList<String> leftSrc = new ArrayList<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
     if (leftSrc.size() == 1) {
       joinTree.setLeftAlias(leftSrc.get(0));
@@ -4164,18 +4163,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     target.setBaseSrc(baseSrc);
 
-    Vector<Vector<ASTNode>> expr = target.getExpressions();
+    ArrayList<ArrayList<ASTNode>> expr = target.getExpressions();
     for (int i = 0; i < nodeRightAliases.length; i++) {
       expr.add(node.getExpressions().get(i + 1));
     }
 
-    Vector<Vector<ASTNode>> filter = target.getFilters();
+    ArrayList<ArrayList<ASTNode>> filter = target.getFilters();
     for (int i = 0; i < nodeRightAliases.length; i++) {
       filter.add(node.getFilters().get(i + 1));
     }
 
     if (node.getFilters().get(0).size() != 0) {
-      Vector<ASTNode> filterPos = filter.get(pos);
+      ArrayList<ASTNode> filterPos = filter.get(pos);
       filterPos.addAll(node.getFilters().get(0));
     }
 
@@ -4239,8 +4238,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return -1;
     }
 
-    Vector<ASTNode> nodeCondn = node.getExpressions().get(0);
-    Vector<ASTNode> targetCondn = null;
+    ArrayList<ASTNode> nodeCondn = node.getExpressions().get(0);
+    ArrayList<ASTNode> targetCondn = null;
 
     if (leftAlias.equals(target.getLeftAlias())) {
       targetCondn = target.getExpressions().get(0);
@@ -4308,7 +4307,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRR();
-    Vector<ColumnInfo> columns = inputRR.getColumnInfos();
+    ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     ArrayList<String> columnNames = new ArrayList<String>();
     for (int i = 0; i < columns.size(); i++) {
@@ -5148,8 +5147,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void LVmergeRowResolvers(RowResolver source, RowResolver dest,
       ArrayList<String> outputInternalColNames) {
-    Vector<ColumnInfo> cols = source.getColumnInfos();
-    for (ColumnInfo c : cols) {
+    for (ColumnInfo c : source.getColumnInfos()) {
       String internalName = getColumnInternalName(outputInternalColNames.size());
       outputInternalColNames.add(internalName);
       ColumnInfo newCol = new ColumnInfo(internalName, c.getType(), c

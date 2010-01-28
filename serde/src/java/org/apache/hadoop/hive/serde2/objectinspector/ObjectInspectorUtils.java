@@ -298,7 +298,7 @@ public class ObjectInspectorUtils {
           + getObjectInspectorName(moi.getMapValueObjectInspector()) + ">";
     }
     case STRUCT: {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
       result.append(oi.getClass().getSimpleName() + "<");
       StructObjectInspector soi = (StructObjectInspector) oi;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();

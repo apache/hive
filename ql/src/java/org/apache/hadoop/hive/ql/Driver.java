@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -702,7 +701,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  public boolean getResults(Vector<String> res) throws IOException {
+  public boolean getResults(ArrayList<String> res) throws IOException {
     if (plan != null && plan.getFetchTask() != null) {
       FetchTask ft = (FetchTask) plan.getFetchTask();
       ft.setMaxRows(maxRows);

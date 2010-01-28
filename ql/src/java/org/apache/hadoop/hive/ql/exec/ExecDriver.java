@@ -272,7 +272,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    * @return true if fatal errors happened during job execution, false
    *         otherwise.
    */
-  protected boolean checkFatalErrors(TaskHandle t, StringBuffer errMsg) {
+  protected boolean checkFatalErrors(TaskHandle t, StringBuilder errMsg) {
     ExecDriverTaskHandle th = (ExecDriverTaskHandle) t;
     RunningJob rj = th.getRunningJob();
     try {
@@ -300,7 +300,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     long reportTime = System.currentTimeMillis();
     long maxReportInterval = 60 * 1000; // One minute
     boolean fatal = false;
-    StringBuffer errMsg = new StringBuffer();
+    StringBuilder errMsg = new StringBuilder();
     while (!rj.isComplete()) {
       try {
         Thread.sleep(1000);

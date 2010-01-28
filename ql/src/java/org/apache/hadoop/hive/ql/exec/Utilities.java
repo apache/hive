@@ -409,7 +409,7 @@ public class Utilities {
       return "";
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(indent);
     sb.append(op.toString());
     sb.append("\n");

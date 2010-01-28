@@ -31,6 +31,9 @@ Trunk -  Unreleased
     HIVE-1084. Capitalize first letter of class names.
     (Carl Steinbach via zshao)
 
+    HIVE-1112. Replace instances of StringBuffer and Vector with StringBuilder
+    and ArrayList. (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 import java.util.Map.Entry;
 
 /**
@@ -44,10 +43,10 @@ public class QBJoinTree {
   private final HashMap<String, ArrayList<ASTNode>> rhsSemijoin;
 
   // join conditions
-  private Vector<Vector<ASTNode>> expressions;
+  private ArrayList<ArrayList<ASTNode>> expressions;
 
   // filters
-  private Vector<Vector<ASTNode>> filters;
+  private ArrayList<ArrayList<ASTNode>> filters;
 
   // user asked for map-side join
   private boolean mapSideJoin;
@@ -101,11 +100,11 @@ public class QBJoinTree {
     this.leftAliases = leftAliases;
   }
 
-  public Vector<Vector<ASTNode>> getExpressions() {
+  public ArrayList<ArrayList<ASTNode>> getExpressions() {
     return expressions;
   }
 
-  public void setExpressions(Vector<Vector<ASTNode>> expressions) {
+  public void setExpressions(ArrayList<ArrayList<ASTNode>> expressions) {
     this.expressions = expressions;
   }
 
@@ -160,7 +159,7 @@ public class QBJoinTree {
   /**
    * @return the filters
    */
-  public Vector<Vector<ASTNode>> getFilters() {
+  public ArrayList<ArrayList<ASTNode>> getFilters() {
     return filters;
   }
 
@@ -168,7 +167,7 @@ public class QBJoinTree {
    * @param filters
    *          the filters to set
    */
-  public void setFilters(Vector<Vector<ASTNode>> filters) {
+  public void setFilters(ArrayList<ArrayList<ASTNode>> filters) {
     this.filters = filters;
   }
 

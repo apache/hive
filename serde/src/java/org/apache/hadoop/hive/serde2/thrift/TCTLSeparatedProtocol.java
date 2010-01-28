@@ -247,7 +247,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     }
 
     public String nextToken() throws EOFException {
-      StringBuffer ret = null;
+      StringBuilder ret = null;
       boolean done = false;
 
       if (tokenizer == null) {
@@ -267,7 +267,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
           if (nextToken.equals(separator)) {
             done = true;
           } else if (ret == null) {
-            ret = new StringBuffer(nextToken);
+            ret = new StringBuilder(nextToken);
           } else {
             ret.append(nextToken);
           }

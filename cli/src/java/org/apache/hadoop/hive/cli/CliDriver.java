@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import jline.ArgumentCompletor;
 import jline.ConsoleReader;
@@ -143,7 +143,7 @@ public class CliDriver {
             return ret;
           }
 
-          Vector<String> res = new Vector<String>();
+          ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
               for (String r : res) {
@@ -211,7 +211,7 @@ public class CliDriver {
 
   public int processReader(BufferedReader r) throws IOException {
     String line;
-    StringBuffer qsb = new StringBuffer();
+    StringBuilder qsb = new StringBuilder();
 
     while ((line = r.readLine()) != null) {
       qsb.append(line + "\n");

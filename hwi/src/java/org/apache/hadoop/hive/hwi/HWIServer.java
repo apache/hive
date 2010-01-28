@@ -72,7 +72,7 @@ public class HWIServer {
      * setting these as a system property we avoid having to specifically pass
      * them
      */
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (String arg : args) {
       sb.append(arg + " ");
     }

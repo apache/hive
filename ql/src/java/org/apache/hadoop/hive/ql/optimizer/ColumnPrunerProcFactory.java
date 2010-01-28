@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Vector;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
@@ -312,8 +311,8 @@ public class ColumnPrunerProcFactory {
       if (cols.size() < originalOutputColumnNames.size()) {
         ArrayList<ExprNodeDesc> newColList = new ArrayList<ExprNodeDesc>();
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();
-        Vector<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
-        Vector<ColumnInfo> rs_newsignature = new Vector<ColumnInfo>();
+        ArrayList<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
+        ArrayList<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
         RowResolver old_rr = cppCtx.getOpToParseCtxMap().get(op).getRR();
         RowResolver new_rr = new RowResolver();
         for (String col : cols) {
@@ -397,7 +396,7 @@ public class ColumnPrunerProcFactory {
     ReduceSinkDesc reduceConf = reduce.getConf();
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
     Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
-    Vector<ColumnInfo> sig = new Vector<ColumnInfo>();
+    ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
     RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(reduce).getRR();
     RowResolver newRR = new RowResolver();
     ArrayList<String> originalValueOutputColNames = reduceConf
@@ -515,7 +514,7 @@ public class ColumnPrunerProcFactory {
     RowResolver joinRR = cppCtx.getOpToParseCtxMap().get(op).getRR();
     RowResolver newJoinRR = new RowResolver();
     ArrayList<String> outputCols = new ArrayList<String>();
-    Vector<ColumnInfo> rs = new Vector<ColumnInfo>();
+    ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
     Map<String, ExprNodeDesc> newColExprMap = new HashMap<String, ExprNodeDesc>();
 
     for (int i = 0; i < conf.getOutputColumnNames().size(); i++) {

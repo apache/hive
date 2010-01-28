@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,7 +73,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
    * The results from the Driver. This is used for storing the most result
    * results from the driver in memory
    */
-  private Vector<Vector<String>> resultBucket;
+  private ArrayList<ArrayList<String>> resultBucket;
 
   /** Limits the resultBucket to be no greater then this size */
   private int resultBucketMaxSize;
@@ -109,7 +108,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     status = WebSessionItemStatus.NEW;
     queries = new ArrayList<String>();
     queryRet = new ArrayList<Integer>();
-    resultBucket = new Vector<Vector<String>>();
+    resultBucket = new ArrayList<ArrayList<String>>();
     resultBucketMaxSize = 1000;
     runnable = new Thread(this);
     runnable.start();
@@ -189,7 +188,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     throwIfRunning();
     queries = new ArrayList<String>();
     queryRet = new ArrayList<Integer>();
-    resultBucket = new Vector<Vector<String>>();
+    resultBucket = new ArrayList<ArrayList<String>>();
     resultFile = null;
     errorFile = null;
     // this.conf = null;
@@ -332,7 +331,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
         if (proc instanceof Driver) {
           Driver qp = (Driver) proc;
           queryRet.add(new Integer(qp.run(cmd)));
-          Vector<String> res = new Vector<String>();
+          ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
               resultBucket.add(res);
@@ -558,7 +557,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /** gets the value for resultBucket */
-  public Vector<Vector<String>> getResultBucket() {
+  public ArrayList<ArrayList<String>> getResultBucket() {
     return resultBucket;
   }
 

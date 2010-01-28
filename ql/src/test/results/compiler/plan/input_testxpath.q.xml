@@ -66,11 +66,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+          <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1264444481</string> 
+          <string>1264705824</string> 
          </void> 
         </object> 
        </void> 
@@ -115,7 +115,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/1081585311/10001</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/631970649/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -177,7 +177,7 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object class="java.util.Vector"> 
+                   <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
@@ -456,7 +456,7 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object class="java.util.Vector"> 
+               <object class="java.util.ArrayList"> 
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                   <void property="alias"> 
@@ -546,7 +546,7 @@
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object class="java.util.Vector"> 
+           <object class="java.util.ArrayList"> 
             <void method="add"> 
              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
               <void property="internalName"> 
@@ -622,7 +622,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -634,7 +634,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 

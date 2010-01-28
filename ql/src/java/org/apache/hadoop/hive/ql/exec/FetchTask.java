@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Vector;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -104,7 +104,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public boolean fetch(Vector<String> res) throws IOException {
+  public boolean fetch(ArrayList<String> res) throws IOException {
     try {
       int numRows = 0;
       int rowsRet = maxRows;

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,7 +137,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   // dummy method - FetchTask overwrites this
-  public boolean fetch(Vector<String> res) throws IOException {
+  public boolean fetch(ArrayList<String> res) throws IOException {
     assert false;
     return false;
   }

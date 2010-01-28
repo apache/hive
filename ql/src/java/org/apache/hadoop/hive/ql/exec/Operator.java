@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -129,13 +128,13 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Implements the getChildren function for the Node Interface.
    */
-  public Vector<Node> getChildren() {
+  public ArrayList<Node> getChildren() {
 
     if (getChildOperators() == null) {
       return null;
     }
 
-    Vector<Node> ret_vec = new Vector<Node>();
+    ArrayList<Node> ret_vec = new ArrayList<Node>();
     for (Operator<? extends Serializable> op : getChildOperators()) {
       ret_vec.add(op);
     }
@@ -935,7 +934,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * 
    * @param ctrs
    */
-  public boolean checkFatalErrors(Counters ctrs, StringBuffer errMsg) {
+  public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
     if (counterNameToEnum == null) {
       return false;
     }
@@ -976,7 +975,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @param counterValue
    *          input counter code.
    */
-  protected void fatalErrorMessage(StringBuffer errMsg, long counterValue) {
+  protected void fatalErrorMessage(StringBuilder errMsg, long counterValue) {
   }
 
   // A given query can have multiple map-reduce jobs

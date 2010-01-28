@@ -229,7 +229,7 @@ public class GenMRSkewJoinProcessor {
       MapredWork clonePlan = null;
       try {
         String xmlPlan = currPlan.toXML();
-        StringBuffer sb = new StringBuffer(xmlPlan);
+        StringBuilder sb = new StringBuilder(xmlPlan);
         ByteArrayInputStream bis;
         bis = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
         clonePlan = Utilities.deserializeMapRedWork(bis, parseCtx.getConf());

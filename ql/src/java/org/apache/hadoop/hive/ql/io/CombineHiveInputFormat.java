@@ -187,7 +187,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
      */
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append(inputSplitShim.toString());
       sb.append("InputFormatClass: " + inputFormatClassName);
       sb.append("\n");

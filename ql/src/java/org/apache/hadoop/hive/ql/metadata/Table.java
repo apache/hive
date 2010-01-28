@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -311,9 +310,9 @@ public class Table {
     return getTTable().getParameters().get(name);
   }
 
-  public Vector<StructField> getFields() {
+  public ArrayList<StructField> getFields() {
 
-    Vector<StructField> fields = new Vector<StructField>();
+    ArrayList<StructField> fields = new ArrayList<StructField>();
     try {
       Deserializer decoder = getDeserializer();
 

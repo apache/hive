@@ -30,7 +30,7 @@ public interface Node {
    * Gets the vector of children nodes. This is used in the graph walker
    * algorithms.
    * 
-   * @return Vector<Node>
+   * @return List<? extends Node>
    */
   public List<? extends Node> getChildren();
 

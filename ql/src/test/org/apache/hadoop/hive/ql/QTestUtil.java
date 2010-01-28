@@ -224,7 +224,7 @@ public class QTestUtil {
     FileInputStream fis = new FileInputStream(qf);
     BufferedInputStream bis = new BufferedInputStream(fis);
     DataInputStream dis = new DataInputStream(bis);
-    StringBuffer qsb = new StringBuffer();
+    StringBuilder qsb = new StringBuilder();
 
     // Read the entire query
     while (dis.available() != 0) {

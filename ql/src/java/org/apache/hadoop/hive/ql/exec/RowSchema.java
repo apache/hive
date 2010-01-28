@@ -19,29 +19,28 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * RowSchema Implementation
- **/
-
+ */
 public class RowSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private Vector<ColumnInfo> signature;
+  private ArrayList<ColumnInfo> signature;
 
   public RowSchema() {
   }
 
-  public RowSchema(Vector<ColumnInfo> signature) {
+  public RowSchema(ArrayList<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public void setSignature(Vector<ColumnInfo> signature) {
+  public void setSignature(ArrayList<ColumnInfo> signature) {
     this.signature = signature;
   }
 
-  public Vector<ColumnInfo> getSignature() {
+  public ArrayList<ColumnInfo> getSignature() {
     return signature;
   }
 }

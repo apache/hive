@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
+          <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1264444507</string> 
+          <string>1264705849</string> 
          </void> 
         </object> 
        </void> 
@@ -368,7 +368,7 @@
                         <void property="schema"> 
                          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                           <void property="signature"> 
-                           <object class="java.util.Vector"> 
+                           <object class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
@@ -482,7 +482,7 @@
                     <void property="schema"> 
                      <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                       <void property="signature"> 
-                       <object class="java.util.Vector"> 
+                       <object class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
@@ -670,7 +670,7 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="Vector0" class="java.util.Vector"> 
+                   <object id="ArrayList1" class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
@@ -850,7 +850,7 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="Vector0"/> 
+               <object idref="ArrayList1"/> 
               </void> 
              </object> 
             </void> 
@@ -897,7 +897,7 @@
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object idref="Vector0"/> 
+           <object idref="ArrayList1"/> 
           </void> 
          </object> 
         </void> 
@@ -951,7 +951,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
                           <void property="keyCols"> 
-                           <object id="ArrayList1" class="java.util.ArrayList"> 
+                           <object id="ArrayList2" class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                               <void property="column"> 
@@ -1014,7 +1014,7 @@
                            </object> 
                           </void> 
                           <void property="partitionCols"> 
-                           <object idref="ArrayList1"/> 
+                           <object idref="ArrayList2"/> 
                           </void> 
                           <void property="tag"> 
                            <int>1</int> 
@@ -1089,7 +1089,7 @@
                         <void property="schema"> 
                          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                           <void property="signature"> 
-                           <object class="java.util.Vector"> 
+                           <object class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
@@ -1203,7 +1203,7 @@
                     <void property="schema"> 
                      <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                       <void property="signature"> 
-                       <object class="java.util.Vector"> 
+                       <object class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
@@ -1383,7 +1383,7 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="Vector1" class="java.util.Vector"> 
+                   <object id="ArrayList3" class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
@@ -1563,7 +1563,7 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="Vector1"/> 
+               <object idref="ArrayList3"/> 
               </void> 
              </object> 
             </void> 
@@ -1610,7 +1610,7 @@
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object idref="Vector1"/> 
+           <object idref="ArrayList3"/> 
           </void> 
          </object> 
         </void> 
@@ -1664,7 +1664,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
                           <void property="keyCols"> 
-                           <object id="ArrayList2" class="java.util.ArrayList"> 
+                           <object id="ArrayList4" class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                               <void property="column"> 
@@ -1727,7 +1727,7 @@
                            </object> 
                           </void> 
                           <void property="partitionCols"> 
-                           <object idref="ArrayList2"/> 
+                           <object idref="ArrayList4"/> 
                           </void> 
                           <void property="tag"> 
                            <int>2</int> 
@@ -1802,7 +1802,7 @@
                         <void property="schema"> 
                          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                           <void property="signature"> 
-                           <object class="java.util.Vector"> 
+                           <object class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
@@ -1916,7 +1916,7 @@
                     <void property="schema"> 
                      <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                       <void property="signature"> 
-                       <object class="java.util.Vector"> 
+                       <object class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
@@ -2096,7 +2096,7 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="Vector2" class="java.util.Vector"> 
+                   <object id="ArrayList5" class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
@@ -2276,7 +2276,7 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="Vector2"/> 
+               <object idref="ArrayList5"/> 
               </void> 
              </object> 
             </void> 
@@ -2323,7 +2323,7 @@
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
-           <object idref="Vector2"/> 
+           <object idref="ArrayList5"/> 
           </void> 
          </object> 
         </void> 
@@ -2343,7 +2343,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -2361,7 +2361,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
@@ -2421,7 +2421,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/zshao/hadoop_hive/trunk/build/ql/scratchdir/1016514866/10001</string> 
+                     <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/1320380302/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -2483,7 +2483,7 @@
                   <void property="schema"> 
                    <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                     <void property="signature"> 
-                     <object class="java.util.Vector"> 
+                     <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                         <void property="internalName"> 
@@ -2699,7 +2699,7 @@
               <void property="schema"> 
                <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                 <void property="signature"> 
-                 <object class="java.util.Vector"> 
+                 <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                     <void property="alias"> 
@@ -2951,7 +2951,7 @@
           <void property="schema"> 
            <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
             <void property="signature"> 
-             <object class="java.util.Vector"> 
+             <object class="java.util.ArrayList"> 
               <void method="add"> 
                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
@@ -3299,7 +3299,7 @@
       <void property="schema"> 
        <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
         <void property="signature"> 
-         <object class="java.util.Vector"> 
+         <object class="java.util.ArrayList"> 
           <void method="add"> 
            <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
             <void property="internalName"> 

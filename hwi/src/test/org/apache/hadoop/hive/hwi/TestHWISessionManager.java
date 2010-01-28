@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import junit.framework.TestCase;
 
@@ -110,7 +109,7 @@ public class TestHWISessionManager extends TestCase {
     zero1.add(0);
     assertEquals(zero, searchItem.getQueryRet());
 
-    Vector<Vector<String>> searchBlockRes = searchItem.getResultBucket();
+    ArrayList<ArrayList<String>> searchBlockRes = searchItem.getResultBucket();
 
     String resLine = searchBlockRes.get(0).get(0);
     assertEquals(true, resLine.contains("key"));

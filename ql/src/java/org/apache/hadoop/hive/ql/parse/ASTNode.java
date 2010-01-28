@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
@@ -50,12 +50,12 @@ public class ASTNode extends CommonTree implements Node {
    * 
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
-  public Vector<Node> getChildren() {
+  public ArrayList<Node> getChildren() {
     if (super.getChildCount() == 0) {
       return null;
     }
 
-    Vector<Node> ret_vec = new Vector<Node>();
+    ArrayList<Node> ret_vec = new ArrayList<Node>();
     for (int i = 0; i < super.getChildCount(); ++i) {
       ret_vec.add((Node) super.getChild(i));
     }
@@ -89,11 +89,11 @@ public class ASTNode extends CommonTree implements Node {
   }
 
   public String dump() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append('(');
     sb.append(toString());
-    Vector<Node> children = getChildren();
+    ArrayList<Node> children = getChildren();
     if (children != null) {
       for (Node node : getChildren()) {
         if (node instanceof ASTNode) {

@@ -275,7 +275,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements
 
   @Override
   public String toString() {
-    StringBuffer result = new StringBuffer();
+    StringBuilder result = new StringBuilder();
     String prefix = "";
     for (DynamicSerDeField t : getChildren()) {
       result.append(prefix + t.fieldid + ":"

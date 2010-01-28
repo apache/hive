@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -126,8 +126,8 @@ public class HWISessionManager implements Runnable {
    * 
    * @return A set of SessionItems this framework manages
    */
-  public Vector<HWISessionItem> findAllSessionItems() {
-    Vector<HWISessionItem> otherItems = new Vector<HWISessionItem>();
+  public ArrayList<HWISessionItem> findAllSessionItems() {
+    ArrayList<HWISessionItem> otherItems = new ArrayList<HWISessionItem>();
     for (HWIAuth a : items.keySet()) {
       otherItems.addAll(items.get(a));
     }

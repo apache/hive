@@ -348,8 +348,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     for (int tag = 0; tag < exprs.size(); tag++) {
       List<ExprNodeDesc> valueCols = exprs.get((byte) tag);
       int columnSize = valueCols.size();
-      StringBuffer colNames = new StringBuffer();
-      StringBuffer colTypes = new StringBuffer();
+      StringBuilder colNames = new StringBuilder();
+      StringBuilder colTypes = new StringBuilder();
       if (columnSize <= 0) {
         continue;
       }

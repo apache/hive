@@ -86,7 +86,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
    * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
    */
   static String safeEnvVarName(String var) {
-    StringBuffer safe = new StringBuffer();
+    StringBuilder safe = new StringBuilder();
     int len = var.length();
     for (int i = 0; i < len; i++) {
       char c = var.charAt(i);

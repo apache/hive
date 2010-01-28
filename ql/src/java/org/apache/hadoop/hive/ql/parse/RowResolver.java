@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,8 +32,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 /**
  * Implementation of the Row Resolver
  * 
- **/
-
+ */
 public class RowResolver {
 
   private final RowSchema rowSchema;
@@ -60,7 +59,7 @@ public class RowResolver {
     }
     col_alias = col_alias.toLowerCase();
     if (rowSchema.getSignature() == null) {
-      rowSchema.setSignature(new Vector<ColumnInfo>());
+      rowSchema.setSignature(new ArrayList<ColumnInfo>());
     }
 
     rowSchema.getSignature().add(colInfo);
@@ -133,7 +132,7 @@ public class RowResolver {
     return ret;
   }
 
-  public Vector<ColumnInfo> getColumnInfos() {
+  public ArrayList<ColumnInfo> getColumnInfos() {
     return rowSchema.getSignature();
   }
 
@@ -176,7 +175,7 @@ public class RowResolver {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     for (Map.Entry<String, LinkedHashMap<String, ColumnInfo>> e : rslvMap
         .entrySet()) {

@@ -90,7 +90,7 @@ public class ParseException extends Exception {
     if (!specialConstructor) {
       return super.getMessage();
     }
-    StringBuffer expected = new StringBuffer();
+    StringBuilder expected = new StringBuilder();
     int maxSize = 0;
     for (int[] expectedTokenSequence : expectedTokenSequences) {
       if (maxSize < expectedTokenSequence.length) {
@@ -139,7 +139,7 @@ public class ParseException extends Exception {
    * version cannot be used as part of an ASCII string literal.
    */
   protected String add_escapes(String str) {
-    StringBuffer retval = new StringBuffer();
+    StringBuilder retval = new StringBuilder();
     char ch;
     for (int i = 0; i < str.length(); i++) {
       switch (str.charAt(i)) {

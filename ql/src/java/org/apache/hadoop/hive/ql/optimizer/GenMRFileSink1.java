@@ -176,8 +176,8 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     Operator extract = OperatorFactory.getAndMakeChild(new ExtractDesc(
         new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-            Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
-        out_rwsch.getColumnInfos()));
+            Utilities.ReduceField.VALUE.toString(), "", false)), 
+            new RowSchema(out_rwsch.getColumnInfos()));
 
     TableDesc ts = (TableDesc) fsConf.getTableInfo().clone();
     fsConf

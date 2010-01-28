@@ -213,7 +213,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
   }
 
   @Override
-  protected void fatalErrorMessage(StringBuffer errMsg, long counterCode) {
+  protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
     errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): "
         + fatalErrMsg[(int) counterCode]);
   }

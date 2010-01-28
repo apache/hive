@@ -185,7 +185,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   /** {@inheritDoc} */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer(3 * length);
+    StringBuilder sb = new StringBuilder(3 * length);
     for (int idx = start; idx < length; idx++) {
       // if not the first, put a blank separator in
       if (idx != 0) {

@@ -225,7 +225,7 @@ public class Warehouse {
 
   public static String makePartName(Map<String, String> spec)
       throws MetaException {
-    StringBuffer suffixBuf = new StringBuffer();
+    StringBuilder suffixBuf = new StringBuilder();
     for (Entry<String, String> e : spec.entrySet()) {
       if (e.getValue() == null || e.getValue().length() == 0) {
         throw new MetaException("Partition spec is incorrect. " + spec);

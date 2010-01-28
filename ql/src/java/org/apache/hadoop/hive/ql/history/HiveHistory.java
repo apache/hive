@@ -106,7 +106,7 @@ public class HiveHistory {
     BufferedReader reader = new BufferedReader(new InputStreamReader(fi));
     try {
       String line = null;
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       while ((line = reader.readLine()) != null) {
         buf.append(line);
         // if it does not end with " then it is line continuation
@@ -114,7 +114,7 @@ public class HiveHistory {
           continue;
         }
         parseLine(buf.toString(), l);
-        buf = new StringBuffer();
+        buf = new StringBuilder();
       }
     } finally {
       try {
@@ -229,7 +229,7 @@ public class HiveHistory {
       return;
     }
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(rt.name());
 
     for (Map.Entry<String, String> ent : keyValMap.entrySet()) {

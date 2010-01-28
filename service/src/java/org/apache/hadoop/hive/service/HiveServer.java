@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -229,7 +229,7 @@ public class HiveServer extends ThriftHive {
         return "";
       }
 
-      Vector<String> result = new Vector<String>();
+      ArrayList<String> result = new ArrayList<String>();
       driver.setMaxRows(1);
       try {
         if (driver.getResults(result)) {
@@ -267,10 +267,10 @@ public class HiveServer extends ThriftHive {
       }
       if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
-        return new Vector<String>();
+        return new ArrayList<String>();
       }
 
-      Vector<String> result = new Vector<String>();
+      ArrayList<String> result = new ArrayList<String>();
       driver.setMaxRows(numRows);
       try {
         driver.getResults(result);
@@ -295,11 +295,11 @@ public class HiveServer extends ThriftHive {
     public List<String> fetchAll() throws HiveServerException, TException {
       if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
-        return new Vector<String>();
+        return new ArrayList<String>();
       }
 
-      Vector<String> rows = new Vector<String>();
-      Vector<String> result = new Vector<String>();
+      ArrayList<String> rows = new ArrayList<String>();
+      ArrayList<String> result = new ArrayList<String>();
       try {
         while (driver.getResults(result)) {
           rows.addAll(result);
