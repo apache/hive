@@ -491,16 +491,20 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String currentLocation = null;
     Map<String, String> currentPart = null;
-
+    boolean ifNotExists = false;
+    
     int numCh = ast.getChildCount();
     for (int num = 1; num < numCh; num++) {
       CommonTree child = (CommonTree)ast.getChild(num);
       switch (child.getToken().getType()) {
+      case HiveParser.TOK_IFNOTEXISTS:
+        ifNotExists = true;
+        break;
       case HiveParser.TOK_PARTSPEC:
         if(currentPart != null) {
           AddPartitionDesc addPartitionDesc =
             new AddPartitionDesc(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-                tblName, currentPart, currentLocation);
+                tblName, currentPart, currentLocation, ifNotExists);
           rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc), conf));
         }
         //create new partition, set values
@@ -520,7 +524,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(currentPart != null) {
       AddPartitionDesc addPartitionDesc =
         new AddPartitionDesc(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-            tblName, currentPart, currentLocation);
+            tblName, currentPart, currentLocation, ifNotExists);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), addPartitionDesc), conf));
     }
   }

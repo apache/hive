@@ -19,5 +19,5 @@ POSTHOOK: type: SHOWPARTITIONS
 b=f/c=s
 PREHOOK: query: alter table addpart1 add partition (b='f', c='')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-FAILED: Error in metadata: add partition: Value for key c is null or empty
+FAILED: Error in metadata: get partition: Value for key c is null or empty
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

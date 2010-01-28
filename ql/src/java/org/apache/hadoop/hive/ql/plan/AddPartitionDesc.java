@@ -27,6 +27,7 @@ public class AddPartitionDesc {
   String tableName;
   String dbName;
   String location;
+  boolean ifNotExists;
   Map<String, String> partSpec;
   
   /**
@@ -34,14 +35,16 @@ public class AddPartitionDesc {
    * @param tableName table to add to.
    * @param partSpec partition specification.
    * @param location partition location, relative to table location. 
+   * @param ifNotExists if true, the partition is only added if it doesn't exist
    */
   public AddPartitionDesc(String dbName, String tableName,
-      Map<String, String> partSpec, String location) {
+      Map<String, String> partSpec, String location, boolean ifNotExists) {
     super();
     this.dbName = dbName;
     this.tableName = tableName;
     this.partSpec = partSpec;
     this.location = location;
+    this.ifNotExists = ifNotExists;
   }
 
   /**
@@ -100,4 +103,17 @@ public class AddPartitionDesc {
     this.partSpec = partSpec;
   }
 
+  /**
+   * @return if the partition should only be added if it doesn't exist already
+   */
+  public boolean getIfNotExists() {
+    return this.ifNotExists;
+  }
+  
+  /**
+   * @param ifNotExists if the part should be added only if it doesn't exist
+   */
+  public void setIfNotExists(boolean ifNotExists) {
+    this.ifNotExists = ifNotExists;
+  }
 }
