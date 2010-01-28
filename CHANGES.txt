@@ -34,6 +34,9 @@ Trunk -  Unreleased
     HIVE-1112. Replace instances of StringBuffer and Vector with StringBuilder
     and ArrayList. (Carl Steinbach via zshao)
 
+    HIVE-1105. Add service script for starting metastore server.
+    (John Sichi via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
