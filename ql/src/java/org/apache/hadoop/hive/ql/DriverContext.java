@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 public class DriverContext {
 
   Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
+  
+  // how many jobs have been started
+  int curJobNo; 
 
   public DriverContext(Queue<Task<? extends Serializable>> runnable) {
     this.runnable = runnable;
@@ -53,6 +56,14 @@ public class DriverContext {
   public void addToRunnable(Task<? extends Serializable> tsk) {
     runnable.add(tsk);
     tsk.setQueued();
+  }
+
+  public int getCurJobNo() {
+    return curJobNo;
+  }
+
+  public void incCurJobNo(int amount) {
+    this.curJobNo = this.curJobNo + amount;
   }
 
 }

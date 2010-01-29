@@ -527,8 +527,7 @@ public class Driver implements CommandProcessor {
         // Launch upto maxthreads tasks
         while (runnable.peek() != null && running.size() < maxthreads) {
           Task<? extends Serializable> tsk = runnable.remove();
-          curJobNo = launchTask(tsk, queryId, noName, running, jobname, jobs,
-              curJobNo, driverCxt);
+          launchTask(tsk, queryId, noName, running, jobname, jobs, driverCxt);
         }
 
         // poll the Tasks to see which one completed
@@ -628,9 +627,9 @@ public class Driver implements CommandProcessor {
    * @return the updated number of last the map-reduce job launched
    */
 
-  public int launchTask(Task<? extends Serializable> tsk, String queryId,
+  public void launchTask(Task<? extends Serializable> tsk, String queryId,
       boolean noName, Map<TaskResult, TaskRunner> running, String jobname,
-      int jobs, int curJobNo, DriverContext cxt) {
+      int jobs, DriverContext cxt) {
 
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory().startTask(queryId, tsk,
@@ -641,8 +640,8 @@ public class Driver implements CommandProcessor {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "("
             + tsk.getId() + ")");
       }
-      curJobNo++;
-      console.printInfo("Launching Job " + curJobNo + " out of " + jobs);
+      cxt.incCurJobNo(1);
+      console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
     }
     tsk.initialize(conf, plan, cxt);
     TaskResult tskRes = new TaskResult();
@@ -657,7 +656,7 @@ public class Driver implements CommandProcessor {
       tskRun.runSequential();
     }
     running.put(tskRes, tskRun);
-    return curJobNo;
+    return;
   }
 
   /**

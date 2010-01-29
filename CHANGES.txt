@@ -101,6 +101,9 @@ Trunk -  Unreleased
     HIVE-1110. Add a counter to denote that skewjoin got triggered
     (He Yongqiang via namit)
 
+    HIVE-1092. Add job counter for conditional tasks
+    (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
@@ -1550,4 +1553,4 @@ Release 0.2.0 - Unreleased
 
     HIVE-1087. Let user script write out binary data into a table
     (Zheng Shao via Ning Zhang)
- 
+

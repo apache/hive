@@ -86,6 +86,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
         console.printInfo(ExecDriver.getJobEndMsg(""
             + Utilities.randGen.nextInt())
             + ", job is filtered out (removed at runtime).");
+        driverContext.incCurJobNo(1);
         if (tsk.getChildTasks() != null) {
           for (Task<? extends Serializable> child : tsk.getChildTasks()) {
             child.parentTasks.remove(tsk);
