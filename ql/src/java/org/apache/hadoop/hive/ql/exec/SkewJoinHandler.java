@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -85,6 +86,8 @@ public class SkewJoinHandler {
   private Map<Byte, TableDesc> tblDesc = null;
 
   private Map<Byte, Boolean> bigKeysExistingMap = null;
+  
+  private LongWritable skewjoinFollowupJobs;
 
   Configuration hconf = null;
   List<Object> dummyKey = null;
@@ -226,7 +229,7 @@ public class SkewJoinHandler {
       // table (the last table can always be streamed), we define that we get
       // a skew key now.
       currBigKeyTag = tag;
-
+      updateSkewJoinJobCounter(tag);
       // right now we assume that the group by is an ArrayList object. It may
       // change in future.
       if (!(dummyKey instanceof List)) {
@@ -340,6 +343,14 @@ public class SkewJoinHandler {
   private Path getOperatorFinalPath(String specPath) throws IOException {
     Path tmpPath = Utilities.toTempPath(specPath);
     return new Path(tmpPath, taskId);
+  }
+
+  public void setSkewJoinJobCounter(LongWritable skewjoinFollowupJobs) {
+    this.skewjoinFollowupJobs = skewjoinFollowupJobs;
+  }
+  
+  public void updateSkewJoinJobCounter(int tag) {
+    this.skewjoinFollowupJobs.set(this.skewjoinFollowupJobs.get()+1);
   }
 
 }

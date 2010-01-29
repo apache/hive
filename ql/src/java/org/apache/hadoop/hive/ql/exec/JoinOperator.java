@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.LongWritable;
 
 /**
  * Join operator implementation.
@@ -41,7 +42,12 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   private static final long serialVersionUID = 1L;
 
   private transient SkewJoinHandler skewJoinKeyContext = null;
-
+  
+  public static enum SkewkeyTableCounter {
+    SKEWJOINFOLLOWUPJOBS
+  }
+  transient private final LongWritable skewjoin_followup_jobs = new LongWritable(0);
+  
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -49,7 +55,9 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
     if (handleSkewJoin) {
       skewJoinKeyContext = new SkewJoinHandler(this);
       skewJoinKeyContext.initiliaze(hconf);
+      skewJoinKeyContext.setSkewJoinJobCounter(skewjoin_followup_jobs);
     }
+    statsMap.put(SkewkeyTableCounter.SKEWJOINFOLLOWUPJOBS, skewjoin_followup_jobs);
   }
 
   @Override

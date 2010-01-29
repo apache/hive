@@ -95,6 +95,9 @@ Trunk -  Unreleased
     input size of skew join's following map join job
     (He Yongqiang via namit)
 
+    HIVE-1110. Add a counter to denote that skewjoin got triggered
+    (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
