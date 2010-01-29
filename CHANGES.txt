@@ -37,6 +37,9 @@ Trunk -  Unreleased
     HIVE-1105. Add service script for starting metastore server.
     (John Sichi via zshao)
 
+    HIVE-1109. Structured temporary directories
+    (Zheng Shao via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
@@ -1547,3 +1550,4 @@ Release 0.2.0 - Unreleased
 
     HIVE-1087. Let user script write out binary data into a table
     (Zheng Shao via Ning Zhang)
+ 
