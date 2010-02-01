@@ -311,18 +311,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false, madeDir = false;
       try {
         getMS().openTransaction();
-        if (tbl.getSd().getLocation() == null
+        if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
+          if (tbl.getSd().getLocation() == null
             || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(tbl.getDbName(), tbl.getTableName());
-        } else {
-          if (!isExternal(tbl)) {
-            LOG.warn("Location: " + tbl.getSd().getLocation()
+            tblPath = wh.getDefaultTablePath(
+              tbl.getDbName(), tbl.getTableName());
+          } else {
+            if (!isExternal(tbl)) {
+              LOG.warn("Location: " + tbl.getSd().getLocation()
                 + "specified for non-external table:" + tbl.getTableName());
+            }
+            tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
           }
-          tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
-        }
 
-        tbl.getSd().setLocation(tblPath.toString());
+          tbl.getSd().setLocation(tblPath.toString());
+        }
 
         // get_table checks whether database exists, it should be moved here
         if (is_table_exists(tbl.getDbName(), tbl.getTableName())) {
@@ -330,12 +333,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               + " already exists");
         }
 
-        if (!wh.isDir(tblPath)) {
-          if (!wh.mkdirs(tblPath)) {
-            throw new MetaException(tblPath
+        if (tblPath != null) {
+          if (!wh.isDir(tblPath)) {
+            if (!wh.mkdirs(tblPath)) {
+              throw new MetaException(tblPath
                 + " is not a directory or unable to create one");
+            }
+            madeDir = true;
           }
-          madeDir = true;
         }
 
         // set create time
@@ -381,11 +386,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (tbl == null) {
           throw new NoSuchObjectException(name + " doesn't exist");
         }
-        if (tbl.getSd() == null || tbl.getSd().getLocation() == null) {
+        if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
         isExternal = isExternal(tbl);
-        tblPath = new Path(tbl.getSd().getLocation());
+        if (tbl.getSd().getLocation() != null) {
+          tblPath = new Path(tbl.getSd().getLocation());
+        }
         if (!getMS().dropTable(dbname, name)) {
           throw new MetaException("Unable to drop table");
         }
@@ -705,9 +712,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (NoSuchObjectException e) {
         throw new UnknownTableException(e.getMessage());
       }
-      boolean isNative = SerDeUtils.isNativeSerDe(tbl.getSd().getSerdeInfo()
-          .getSerializationLib());
-      if (isNative) {
+      boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
+        tbl.getSd().getSerdeInfo().getSerializationLib());
+      if (!getColsFromSerDe) {
         return tbl.getSd().getCols();
       } else {
         try {

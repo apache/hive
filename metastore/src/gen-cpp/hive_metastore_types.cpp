@@ -728,8 +728,8 @@ uint32_t StorageDescriptor::write(apache::thrift::protocol::TProtocol* oprot) co
   return xfer;
 }
 
-const char* Table::ascii_fingerprint = "CBD4F726F025A868EEB3BDC4028F3D66";
-const uint8_t Table::binary_fingerprint[16] = {0xCB,0xD4,0xF7,0x26,0xF0,0x25,0xA8,0x68,0xEE,0xB3,0xBD,0xC4,0x02,0x8F,0x3D,0x66};
+const char* Table::ascii_fingerprint = "F709D087CEEE7C49380296E3B423FF76";
+const uint8_t Table::binary_fingerprint[16] = {0xF7,0x09,0xD0,0x87,0xCE,0xEE,0x7C,0x49,0x38,0x02,0x96,0xE3,0xB4,0x23,0xFF,0x76};
 
 uint32_t Table::read(apache::thrift::protocol::TProtocol* iprot) {
 
@@ -866,6 +866,14 @@ uint32_t Table::read(apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 12:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tableType);
+          this->__isset.tableType = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -930,6 +938,9 @@ uint32_t Table::write(apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldBegin("viewExpandedText", apache::thrift::protocol::T_STRING, 11);
   xfer += oprot->writeString(this->viewExpandedText);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("tableType", apache::thrift::protocol::T_STRING, 12);
+  xfer += oprot->writeString(this->tableType);
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();

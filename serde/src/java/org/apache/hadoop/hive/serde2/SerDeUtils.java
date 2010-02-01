@@ -91,8 +91,8 @@ public class SerDeUtils {
         .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
   }
 
-  public static boolean isNativeSerDe(String serde) {
-    return nativeSerDeNames.contains(serde);
+  public static boolean shouldGetColsFromSerDe(String serde) {
+    return (serde != null) && !nativeSerDeNames.contains(serde);
   }
 
   private static boolean initCoreSerDes = registerCoreSerDes();

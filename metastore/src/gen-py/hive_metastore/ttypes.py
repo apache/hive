@@ -706,6 +706,7 @@ class Table:
    - parameters
    - viewOriginalText
    - viewExpandedText
+   - tableType
   """
 
   thrift_spec = (
@@ -721,9 +722,10 @@ class Table:
     (9, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 9
     (10, TType.STRING, 'viewOriginalText', None, None, ), # 10
     (11, TType.STRING, 'viewExpandedText', None, None, ), # 11
+    (12, TType.STRING, 'tableType', None, None, ), # 12
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -735,6 +737,7 @@ class Table:
     self.parameters = parameters
     self.viewOriginalText = viewOriginalText
     self.viewExpandedText = viewExpandedText
+    self.tableType = tableType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -813,6 +816,11 @@ class Table:
           self.viewExpandedText = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.STRING:
+          self.tableType = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -873,6 +881,10 @@ class Table:
     if self.viewExpandedText != None:
       oprot.writeFieldBegin('viewExpandedText', TType.STRING, 11)
       oprot.writeString(self.viewExpandedText)
+      oprot.writeFieldEnd()
+    if self.tableType != None:
+      oprot.writeFieldBegin('tableType', TType.STRING, 12)
+      oprot.writeString(self.tableType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

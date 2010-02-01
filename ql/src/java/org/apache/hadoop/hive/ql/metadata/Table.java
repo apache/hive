@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -143,6 +144,8 @@ public class Table {
     sd.setSortCols(new ArrayList<Order>());
 
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+
+    setTableType(TableType.MANAGED_TABLE);
   }
 
   public void reinitSerDe() throws HiveException {
@@ -188,6 +191,14 @@ public class Table {
       }
     }
 
+    if (isView()) {
+      assert(getViewOriginalText() != null);
+      assert(getViewExpandedText() != null);
+    } else {
+      assert(getViewOriginalText() == null);
+      assert(getViewExpandedText() == null);
+    }
+    
     Iterator<FieldSchema> iterCols = getCols().iterator();
     List<String> colNames = new ArrayList<String>();
     while (iterCols.hasNext()) {
@@ -309,6 +320,14 @@ public class Table {
   public String getProperty(String name) {
     return getTTable().getParameters().get(name);
   }
+
+  public void setTableType(TableType tableType) {
+     getTTable().setTableType(tableType.toString());
+   }
+
+  public TableType getTableType() {
+     return Enum.valueOf(TableType.class, getTTable().getTableType());
+   }
 
   public ArrayList<StructField> getFields() {
 
@@ -442,8 +461,9 @@ public class Table {
   }
 
   public List<FieldSchema> getCols() {
-    boolean isNative = SerDeUtils.isNativeSerDe(getSerializationLib());
-    if (isNative) {
+    boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
+      getSerializationLib());
+    if (!getColsFromSerDe) {
       return getTTable().getSd().getCols();
     } else {
       try {
@@ -653,12 +673,7 @@ public class Table {
    * @return whether this table is actually a view
    */
   public boolean isView() {
-    // either both attributes (expandedText and originalText) should
-    // be set, or neither
-    boolean hasExpandedText = (getViewExpandedText() != null);
-    boolean hasOriginalText = (getViewOriginalText() != null);
-    assert (hasExpandedText == hasOriginalText);
-    return hasExpandedText;
+    return TableType.VIRTUAL_VIEW.equals(getTableType());
   }
 
   /**

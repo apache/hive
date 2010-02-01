@@ -427,9 +427,10 @@ public class Hive {
       // of type "array<string>". This happens when the table is created using
       // an
       // earlier version of Hive.
-      if (tTable.getSd().getSerdeInfo().getSerializationLib().equals(
+      if (
           org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-              .getName())
+          .getName().equals(
+            tTable.getSd().getSerdeInfo().getSerializationLib())
           && tTable.getSd().getColsSize() > 0
           && tTable.getSd().getCols().get(0).getType().indexOf('<') == -1) {
         tTable.getSd().getSerdeInfo().setSerializationLib(

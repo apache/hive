@@ -31,6 +31,7 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
   private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)9);
   private static final TField VIEW_ORIGINAL_TEXT_FIELD_DESC = new TField("viewOriginalText", TType.STRING, (short)10);
   private static final TField VIEW_EXPANDED_TEXT_FIELD_DESC = new TField("viewExpandedText", TType.STRING, (short)11);
+  private static final TField TABLE_TYPE_FIELD_DESC = new TField("tableType", TType.STRING, (short)12);
 
   private String tableName;
   public static final int TABLENAME = 1;
@@ -54,6 +55,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
   public static final int VIEWORIGINALTEXT = 10;
   private String viewExpandedText;
   public static final int VIEWEXPANDEDTEXT = 11;
+  private String tableType;
+  public static final int TABLETYPE = 12;
 
   private final Isset __isset = new Isset();
   private static final class Isset implements java.io.Serializable {
@@ -88,6 +91,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         new FieldValueMetaData(TType.STRING)));
     put(VIEWEXPANDEDTEXT, new FieldMetaData("viewExpandedText", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
+    put(TABLETYPE, new FieldMetaData("tableType", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
   }});
 
   static {
@@ -108,7 +113,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     List<FieldSchema> partitionKeys,
     Map<String,String> parameters,
     String viewOriginalText,
-    String viewExpandedText)
+    String viewExpandedText,
+    String tableType)
   {
     this();
     this.tableName = tableName;
@@ -125,6 +131,7 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     this.parameters = parameters;
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
+    this.tableType = tableType;
   }
 
   /**
@@ -176,6 +183,9 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     }
     if (other.isSetViewExpandedText()) {
       this.viewExpandedText = other.viewExpandedText;
+    }
+    if (other.isSetTableType()) {
+      this.tableType = other.tableType;
     }
   }
 
@@ -400,6 +410,23 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     return this.viewExpandedText != null;
   }
 
+  public String getTableType() {
+    return this.tableType;
+  }
+
+  public void setTableType(String tableType) {
+    this.tableType = tableType;
+  }
+
+  public void unsetTableType() {
+    this.tableType = null;
+  }
+
+  // Returns true if field tableType is set (has been asigned a value) and false otherwise
+  public boolean isSetTableType() {
+    return this.tableType != null;
+  }
+
   public void setFieldValue(int fieldID, Object value) {
     switch (fieldID) {
     case TABLENAME:
@@ -490,6 +517,14 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       }
       break;
 
+    case TABLETYPE:
+      if (value == null) {
+        unsetTableType();
+      } else {
+        setTableType((String)value);
+      }
+      break;
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -530,6 +565,9 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     case VIEWEXPANDEDTEXT:
       return getViewExpandedText();
 
+    case TABLETYPE:
+      return getTableType();
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -560,6 +598,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       return isSetViewOriginalText();
     case VIEWEXPANDEDTEXT:
       return isSetViewExpandedText();
+    case TABLETYPE:
+      return isSetTableType();
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -674,6 +714,15 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       if (!(this_present_viewExpandedText && that_present_viewExpandedText))
         return false;
       if (!this.viewExpandedText.equals(that.viewExpandedText))
+        return false;
+    }
+
+    boolean this_present_tableType = true && this.isSetTableType();
+    boolean that_present_tableType = true && that.isSetTableType();
+    if (this_present_tableType || that_present_tableType) {
+      if (!(this_present_tableType && that_present_tableType))
+        return false;
+      if (!this.tableType.equals(that.tableType))
         return false;
     }
 
@@ -800,6 +849,13 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case TABLETYPE:
+          if (field.type == TType.STRING) {
+            this.tableType = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -875,6 +931,11 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
     if (this.viewExpandedText != null) {
       oprot.writeFieldBegin(VIEW_EXPANDED_TEXT_FIELD_DESC);
       oprot.writeString(this.viewExpandedText);
+      oprot.writeFieldEnd();
+    }
+    if (this.tableType != null) {
+      oprot.writeFieldBegin(TABLE_TYPE_FIELD_DESC);
+      oprot.writeString(this.tableType);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -959,6 +1020,14 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       sb.append("null");
     } else {
       sb.append(this.viewExpandedText);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("tableType:");
+    if (this.tableType == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tableType);
     }
     first = false;
     sb.append(")");

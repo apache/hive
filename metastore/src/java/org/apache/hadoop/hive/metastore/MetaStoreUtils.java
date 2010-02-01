@@ -189,6 +189,9 @@ public class MetaStoreUtils {
   static public Deserializer getDeserializer(Configuration conf,
       org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
     String lib = table.getSd().getSerdeInfo().getSerializationLib();
+    if (lib == null) {
+      return null;
+    }
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
       deserializer.initialize(conf, MetaStoreUtils.getSchema(table));

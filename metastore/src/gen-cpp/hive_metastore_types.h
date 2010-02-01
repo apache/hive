@@ -345,10 +345,10 @@ class StorageDescriptor {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "CBD4F726F025A868EEB3BDC4028F3D66";
-  static const uint8_t binary_fingerprint[16]; // = {0xCB,0xD4,0xF7,0x26,0xF0,0x25,0xA8,0x68,0xEE,0xB3,0xBD,0xC4,0x02,0x8F,0x3D,0x66};
+  static const char* ascii_fingerprint; // = "F709D087CEEE7C49380296E3B423FF76";
+  static const uint8_t binary_fingerprint[16]; // = {0xF7,0x09,0xD0,0x87,0xCE,0xEE,0x7C,0x49,0x38,0x02,0x96,0xE3,0xB4,0x23,0xFF,0x76};
 
-  Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText("") {
+  Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText(""), tableType("") {
   }
 
   virtual ~Table() throw() {}
@@ -364,9 +364,10 @@ class Table {
   std::map<std::string, std::string>  parameters;
   std::string viewOriginalText;
   std::string viewExpandedText;
+  std::string tableType;
 
   struct __isset {
-    __isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false) {}
+    __isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false) {}
     bool tableName;
     bool dbName;
     bool owner;
@@ -378,6 +379,7 @@ class Table {
     bool parameters;
     bool viewOriginalText;
     bool viewExpandedText;
+    bool tableType;
   } __isset;
 
   bool operator == (const Table & rhs) const
@@ -403,6 +405,8 @@ class Table {
     if (!(viewOriginalText == rhs.viewOriginalText))
       return false;
     if (!(viewExpandedText == rhs.viewExpandedText))
+      return false;
+    if (!(tableType == rhs.tableType))
       return false;
     return true;
   }

@@ -581,11 +581,23 @@ public class ObjectStore implements RawStore, Configurable {
     if (mtbl == null) {
       return null;
     }
+    String tableType = mtbl.getTableType();
+    if (tableType == null) {
+      // for backwards compatibility with old metastore persistence
+      if (mtbl.getViewOriginalText() != null) {
+        tableType = TableType.VIRTUAL_VIEW.toString();
+      } else if ("TRUE".equals(mtbl.getParameters().get("EXTERNAL"))) {
+        tableType = TableType.EXTERNAL_TABLE.toString();
+      } else {
+        tableType = TableType.MANAGED_TABLE.toString();
+      }
+    }
     return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), mtbl.getParameters(),
-        mtbl.getViewOriginalText(), mtbl.getViewExpandedText());
+        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(),
+        tableType);
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -605,7 +617,8 @@ public class ObjectStore implements RawStore, Configurable {
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
             .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
-        tbl.getViewOriginalText(), tbl.getViewExpandedText());
+        tbl.getViewOriginalText(), tbl.getViewExpandedText(),
+        tbl.getTableType());
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {

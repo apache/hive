@@ -6198,7 +6198,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((crtTblDesc.getCols() == null) || (crtTblDesc.getCols().size() == 0)) {
       // for now make sure that serde exists
       if (StringUtils.isEmpty(crtTblDesc.getSerName())
-          || SerDeUtils.isNativeSerDe(crtTblDesc.getSerName())) {
+          || !SerDeUtils.shouldGetColsFromSerDe(crtTblDesc.getSerName())) {
         throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
       }
       return;

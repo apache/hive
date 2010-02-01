@@ -46,6 +46,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -1344,6 +1345,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
+      tbl.setTableType(TableType.EXTERNAL_TABLE);
     }
 
     // If the sorted columns is a superset of bucketed columns, store this fact.
@@ -1446,6 +1448,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
     Table tbl = new Table(crtView.getViewName());
+    tbl.setTableType(TableType.VIRTUAL_VIEW);
+    tbl.setSerializationLib(null);
+    tbl.getTTable().getSd().getSerdeInfo().getParameters().clear();
     tbl.setViewOriginalText(crtView.getViewOriginalText());
     tbl.setViewExpandedText(crtView.getViewExpandedText());
     tbl.setFields(crtView.getSchema());

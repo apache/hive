@@ -34,6 +34,7 @@ public class MTable {
   private Map<String, String> parameters;
   private String viewOriginalText;
   private String viewExpandedText;
+  private String tableType;
 
   public MTable() {}
 
@@ -47,11 +48,14 @@ public class MTable {
    * @param retention
    * @param partitionKeys
    * @param parameters
+   * @param viewOriginalText
+   * @param viewExpandedText
+   * @param tableType
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
       Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText) {
+      String viewOriginalText, String viewExpandedText, String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -63,6 +67,7 @@ public class MTable {
     this.parameters = parameters;
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
+    this.tableType = tableType;
   }
 
   /**
@@ -219,5 +224,17 @@ public class MTable {
     return lastAccessTime;
   }
 
-  
+  /**
+   * @param tableType the tableType to set
+   */
+  public void setTableType(String tableType) {
+    this.tableType = tableType;
+  }
+
+  /**
+   * @return the tableType
+   */
+  public String getTableType() {
+    return tableType;
+  }
 }

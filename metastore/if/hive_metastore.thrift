@@ -74,7 +74,8 @@ struct Table {
   8: list<FieldSchema> partitionKeys, // partition keys of the table. only primitive types are supported
   9: map<string, string> parameters,   // to store comments or any other user level parameters
   10: string viewOriginalText,         // original view text, null for non-view
-  11: string viewExpandedText          // expanded view text, null for non-view
+  11: string viewExpandedText,         // expanded view text, null for non-view
+  12: string tableType                 // table type enum, e.g. EXTERNAL_TABLE
 }
 
 struct Partition {

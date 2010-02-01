@@ -43,6 +43,16 @@ DESCRIBE EXTENDED view3;
 
 CREATE TABLE table1 (key int);
 
+-- use DESCRIBE EXTENDED on a base table and an external table as points
+-- of comparison for view descriptions
+DESCRIBE EXTENDED table1;
+DESCRIBE EXTENDED src1;
+
+-- use DESCRIBE EXTENDED on a base table as a point of comparison for
+-- view descriptions
+DESCRIBE EXTENDED table1;
+
+
 INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86;
 
 SELECT * FROM table1;
@@ -60,9 +70,9 @@ FROM view4 v1 join view4 v2;
 SELECT * FROM view5;
 DESCRIBE view5;
 
--- verify that column name and comment in DDL portion 
+-- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
-CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS 
+CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86;
 DESCRIBE view6;
 
@@ -87,16 +97,16 @@ SELECT * FROM view7 LIMIT 5;
 SELECT * FROM view7 LIMIT 20;
 
 -- test usage of a function within a view
-CREATE TEMPORARY FUNCTION test_translate AS 
+CREATE TEMPORARY FUNCTION test_translate AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate';
 CREATE VIEW view8(c) AS
-SELECT test_translate('abc', 'a', 'b') 
+SELECT test_translate('abc', 'a', 'b')
 FROM table1;
 DESCRIBE EXTENDED view8;
 SELECT * FROM view8;
 
 -- test usage of a UDAF within a view
-CREATE TEMPORARY FUNCTION test_max AS 
+CREATE TEMPORARY FUNCTION test_max AS
 'org.apache.hadoop.hive.ql.udf.UDAFTestMax';
 CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
@@ -111,7 +121,7 @@ DESCRIBE EXTENDED view10;
 SELECT * FROM view10;
 
 -- test usage of a UDTF within a view
-CREATE TEMPORARY FUNCTION test_explode AS 
+CREATE TEMPORARY FUNCTION test_explode AS
 'org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode';
 CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
@@ -140,14 +150,14 @@ ORDER BY key LIMIT 12;
 
 -- test usage of JOIN+UNION+AGG all within same view
 CREATE VIEW view14 AS
-SELECT unionsrc1.key as k1, unionsrc1.value as v1, 
+SELECT unionsrc1.key as k1, unionsrc1.value as v1,
        unionsrc2.key as k2, unionsrc2.value as v2
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
-                         UNION  ALL  
-      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1 
-JOIN 
+                         UNION  ALL
+      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1
+JOIN
      (select 'tst1' as key, cast(count(1) as string) as value from src s3
-                         UNION  ALL  
+                         UNION  ALL
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key);
 DESCRIBE EXTENDED view14;

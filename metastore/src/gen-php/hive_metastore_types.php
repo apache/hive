@@ -1089,6 +1089,7 @@ class metastore_Table {
   public $parameters = null;
   public $viewOriginalText = null;
   public $viewExpandedText = null;
+  public $tableType = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1151,6 +1152,10 @@ class metastore_Table {
           'var' => 'viewExpandedText',
           'type' => TType::STRING,
           ),
+        12 => array(
+          'var' => 'tableType',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -1186,6 +1191,9 @@ class metastore_Table {
       }
       if (isset($vals['viewExpandedText'])) {
         $this->viewExpandedText = $vals['viewExpandedText'];
+      }
+      if (isset($vals['tableType'])) {
+        $this->tableType = $vals['tableType'];
       }
     }
   }
@@ -1311,6 +1319,13 @@ class metastore_Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 12:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tableType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1405,6 +1420,11 @@ class metastore_Table {
     if ($this->viewExpandedText !== null) {
       $xfer += $output->writeFieldBegin('viewExpandedText', TType::STRING, 11);
       $xfer += $output->writeString($this->viewExpandedText);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tableType !== null) {
+      $xfer += $output->writeFieldBegin('tableType', TType::STRING, 12);
+      $xfer += $output->writeString($this->tableType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
