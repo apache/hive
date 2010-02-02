@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false">
+  <local-check-config name="Hive Checkstyle" location="checkstyle/checkstyle.xml" type="project" description="">
+    <additional-data name="protect-config-file" value="true"/>
+  </local-check-config>
+  <fileset name="Hive Java Source Files" enabled="true" check-config-name="Hive Checkstyle" local="true">
+    <file-match-pattern match-pattern="^(ant|cli|common|contrib|hwi|jdbc|metastore|ql|serde|service|shims).*\.java$" include-pattern="true"/>
+  </fileset>
+</fileset-config>
