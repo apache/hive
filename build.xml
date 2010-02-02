@@ -495,16 +495,17 @@
     
     <checkstyle config="${checkstyle.conf.dir}/checkstyle.xml"
   		failOnViolation="false">
-      <fileset dir="${hive.root}/cli/src" includes="**/*.java"/>
-      <fileset dir="${hive.root}/common/src" includes="**/*.java"/>
-      <fileset dir="${hive.root}/contrib/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/hwi/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/jdbc/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/metastore/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/ql/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/serde/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/service/src/java" includes="**/*.java"/>
-      <fileset dir="${hive.root}/shims/src" includes="**/*.java"/>
+      <fileset dir="${hive.root}/ant" includes="**/*.java"/>
+      <fileset dir="${hive.root}/cli" includes="**/*.java"/>
+      <fileset dir="${hive.root}/common" includes="**/*.java"/>
+      <fileset dir="${hive.root}/contrib" includes="**/*.java"/>
+      <fileset dir="${hive.root}/hwi" includes="**/*.java"/>
+      <fileset dir="${hive.root}/jdbc" includes="**/*.java"/>
+      <fileset dir="${hive.root}/metastore" includes="**/*.java"/>
+      <fileset dir="${hive.root}/ql" includes="**/*.java"/>
+      <fileset dir="${hive.root}/serde" includes="**/*.java"/>
+      <fileset dir="${hive.root}/service" includes="**/*.java"/>
+      <fileset dir="${hive.root}/shims" includes="**/*.java"/>
       <formatter type="xml" toFile="${checkstyle.build.dir}/checkstyle-errors.xml"/>
     </checkstyle>
     

@@ -151,15 +151,14 @@
   </target>
   
   <target name="ivy-retrieve" depends="ivy-resolve"
-    description="Retrieve Ivy-managed artifacts" unless="offline">
+    description="Retrieve Ivy-managed artifacts">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
   </target>
   
   <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
-    description="Retrieve Ivy-managed artifacts for the checkstyle configurations"
-    unless="offline">
+    description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
@@ -167,8 +166,7 @@
   </target>
   
   <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
-    description="Retrieve Ivy-managed Hadoop source artifacts"
-    unless="offline">
+    description="Retrieve Ivy-managed Hadoop source artifacts">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>

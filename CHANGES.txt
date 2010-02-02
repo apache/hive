@@ -43,6 +43,9 @@ Trunk -  Unreleased
     HIVE-1068. CREATE VIEW followup: add a 'table type' enum attribute in
     metastore's MTable. (John Sichi via zshao)
 
+    HIVE-1104. Suppress Checkstyle warnings for generated files.
+    (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
