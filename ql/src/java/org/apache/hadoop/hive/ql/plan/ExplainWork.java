@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
@@ -27,36 +28,36 @@ import org.apache.hadoop.hive.ql.exec.Task;
 public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private Path resFile;
-  private List<Task<? extends Serializable>> rootTasks;
+  private String resFile;
+  private ArrayList<Task<? extends Serializable>> rootTasks;
   private String astStringTree;
   boolean extended;
 
   public ExplainWork() {
   }
 
-  public ExplainWork(Path resFile,
+  public ExplainWork(String resFile,
       List<Task<? extends Serializable>> rootTasks, String astStringTree,
       boolean extended) {
     this.resFile = resFile;
-    this.rootTasks = rootTasks;
+    this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.astStringTree = astStringTree;
     this.extended = extended;
   }
 
-  public Path getResFile() {
+  public String getResFile() {
     return resFile;
   }
 
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 
-  public List<Task<? extends Serializable>> getRootTasks() {
+  public ArrayList<Task<? extends Serializable>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(List<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 

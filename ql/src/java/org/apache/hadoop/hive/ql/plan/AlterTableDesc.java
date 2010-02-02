@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,14 +39,14 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   alterTableTypes op;
   String oldName;
   String newName;
-  List<FieldSchema> newCols;
+  ArrayList<FieldSchema> newCols;
   String serdeName;
-  Map<String, String> props;
+  HashMap<String, String> props;
   String inputFormat;
   String outputFormat;
   int numberBuckets;
-  List<String> bucketColumns;
-  List<Order> sortColumns;
+  ArrayList<String> bucketColumns;
+  ArrayList<Order> sortColumns;
 
   String oldColName;
   String newColName;
@@ -53,6 +55,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean first;
   String afterCol;
 
+  public AlterTableDesc() {
+  }
+  
   /**
    * @param tblName
    *          table name
@@ -98,7 +103,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
       alterTableTypes alterType) {
     op = alterType;
     oldName = name;
-    this.newCols = newCols;
+    this.newCols = new ArrayList<FieldSchema>(newCols);
   }
 
   /**
@@ -133,10 +138,29 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     oldName = tableName;
     op = alterTableTypes.ADDCLUSTERSORTCOLUMN;
     numberBuckets = numBuckets;
-    bucketColumns = bucketCols;
-    sortColumns = sortCols;
+    bucketColumns = new ArrayList<String>(bucketCols);
+    sortColumns = new ArrayList<Order>(sortCols);
   }
 
+  @Explain(displayName = "new columns")
+  public List<String> getNewColsString() {
+    return Utilities.getFieldSchemaString(getNewCols());
+  }
+  
+  @Explain(displayName = "type")
+  public String getAlterTableTypeString() {
+    switch (op) {
+    case RENAME:
+      return "rename";
+    case ADDCOLS:
+      return "add columns";
+    case REPLACECOLS:
+      return "replace columns";
+    }
+
+    return "unknown";
+  }
+  
   /**
    * @return the old name of the table
    */
@@ -176,19 +200,6 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     return op;
   }
 
-  @Explain(displayName = "type")
-  public String getAlterTableTypeString() {
-    switch (op) {
-    case RENAME:
-      return "rename";
-    case ADDCOLS:
-      return "add columns";
-    case REPLACECOLS:
-      return "replace columns";
-    }
-
-    return "unknown";
-  }
 
   /**
    * @param op
@@ -201,20 +212,15 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the newCols
    */
-  public List<FieldSchema> getNewCols() {
+  public ArrayList<FieldSchema> getNewCols() {
     return newCols;
-  }
-
-  @Explain(displayName = "new columns")
-  public List<String> getNewColsString() {
-    return Utilities.getFieldSchemaString(getNewCols());
   }
 
   /**
    * @param newCols
    *          the newCols to set
    */
-  public void setNewCols(List<FieldSchema> newCols) {
+  public void setNewCols(ArrayList<FieldSchema> newCols) {
     this.newCols = newCols;
   }
 
@@ -238,7 +244,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @return the props
    */
   @Explain(displayName = "properties")
-  public Map<String, String> getProps() {
+  public HashMap<String, String> getProps() {
     return props;
   }
 
@@ -246,7 +252,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param props
    *          the props to set
    */
-  public void setProps(Map<String, String> props) {
+  public void setProps(HashMap<String, String> props) {
     this.props = props;
   }
 
@@ -300,7 +306,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the bucket columns
    */
-  public List<String> getBucketColumns() {
+  public ArrayList<String> getBucketColumns() {
     return bucketColumns;
   }
 
@@ -308,14 +314,14 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param bucketColumns
    *          the bucket columns to set
    */
-  public void setBucketColumns(List<String> bucketColumns) {
+  public void setBucketColumns(ArrayList<String> bucketColumns) {
     this.bucketColumns = bucketColumns;
   }
 
   /**
    * @return the sort columns
    */
-  public List<Order> getSortColumns() {
+  public ArrayList<Order> getSortColumns() {
     return sortColumns;
   }
 
@@ -323,7 +329,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param sortColumns
    *          the sort columns to set
    */
-  public void setSortColumns(List<Order> sortColumns) {
+  public void setSortColumns(ArrayList<Order> sortColumns) {
     this.sortColumns = sortColumns;
   }
 

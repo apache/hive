@@ -40,11 +40,11 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
   /**
    * table name for the result of show tables
    */
-  private final String table = "show";
+  private static final String table = "show";
   /**
    * thrift ddl for the result of show tables
    */
-  private final String schema = "tab_name#string";
+  private static final String schema = "tab_name#string";
 
   public String getTable() {
     return table;
@@ -54,6 +54,9 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
     return schema;
   }
 
+  public DescFunctionDesc() {
+  }
+  
   /**
    * @param resFile
    */

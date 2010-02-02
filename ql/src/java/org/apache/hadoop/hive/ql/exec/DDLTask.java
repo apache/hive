@@ -260,7 +260,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       checker.checkMetastore(MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc
-          .getTableName(), msckDesc.getPartitionSpec(), result);
+          .getTableName(), msckDesc.getPartSpecs(), result);
       if (msckDesc.isRepairPartitions()) {
         Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
             msckDesc.getTableName());

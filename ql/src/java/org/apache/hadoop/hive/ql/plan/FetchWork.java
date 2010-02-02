@@ -31,8 +31,8 @@ public class FetchWork implements Serializable {
   private String tblDir;
   private TableDesc tblDesc;
 
-  private List<String> partDir;
-  private List<PartitionDesc> partDesc;
+  private ArrayList<String> partDir;
+  private ArrayList<PartitionDesc> partDesc;
 
   private int limit;
 
@@ -59,8 +59,8 @@ public class FetchWork implements Serializable {
   }
 
   public FetchWork(List<String> partDir, List<PartitionDesc> partDesc, int limit) {
-    this.partDir = partDir;
-    this.partDesc = partDesc;
+    this.partDir = new ArrayList<String>(partDir);
+    this.partDesc = new ArrayList<PartitionDesc>(partDesc);
     this.limit = limit;
   }
 
@@ -112,7 +112,7 @@ public class FetchWork implements Serializable {
   /**
    * @return the partDir
    */
-  public List<String> getPartDir() {
+  public ArrayList<String> getPartDir() {
     return partDir;
   }
 
@@ -150,14 +150,14 @@ public class FetchWork implements Serializable {
    * @param partDir
    *          the partDir to set
    */
-  public void setPartDir(List<String> partDir) {
+  public void setPartDir(ArrayList<String> partDir) {
     this.partDir = partDir;
   }
 
   /**
    * @return the partDesc
    */
-  public List<PartitionDesc> getPartDesc() {
+  public ArrayList<PartitionDesc> getPartDesc() {
     return partDesc;
   }
 
@@ -165,7 +165,7 @@ public class FetchWork implements Serializable {
    * @param partDesc
    *          the partDesc to set
    */
-  public void setPartDesc(List<PartitionDesc> partDesc) {
+  public void setPartDesc(ArrayList<PartitionDesc> partDesc) {
     this.partDesc = partDesc;
   }
 

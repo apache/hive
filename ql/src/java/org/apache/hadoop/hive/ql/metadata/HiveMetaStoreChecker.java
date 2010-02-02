@@ -59,7 +59,7 @@ public class HiveMetaStoreChecker {
    *           Most likely filesystem related
    */
   public void checkMetastore(String dbName, String tableName,
-      List<Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, CheckResult result)
       throws HiveException, IOException {
 
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
@@ -161,7 +161,7 @@ public class HiveMetaStoreChecker {
    *           Failed to get required information from the metastore.
    */
   void checkTable(String dbName, String tableName,
-      List<Map<String, String>> partitions, CheckResult result)
+      List<? extends Map<String, String>> partitions, CheckResult result)
       throws MetaException, IOException, HiveException {
 
     Table table = null;

@@ -1,14 +1,17 @@
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
-public class MsckDesc {
+public class MsckDesc extends DDLWork implements Serializable {
 
   private String tableName;
-  private List<Map<String, String>> partitionSpec;
+  private ArrayList<LinkedHashMap<String, String>> partSpecs;
   private Path resFile;
   private boolean repairPartitions;
 
@@ -24,11 +27,14 @@ public class MsckDesc {
    * @param repairPartitions
    *          remove stale / add new partitions found during the check
    */
-  public MsckDesc(String tableName, List<Map<String, String>> partSpecs,
+  public MsckDesc(String tableName, List<? extends Map<String, String>> partSpecs,
       Path resFile, boolean repairPartitions) {
     super();
     this.tableName = tableName;
-    partitionSpec = partSpecs;
+    this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
+    for (int i = 0; i < partSpecs.size(); i++) {
+      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i))); 
+    }
     this.resFile = resFile;
     this.repairPartitions = repairPartitions;
   }
@@ -51,16 +57,16 @@ public class MsckDesc {
   /**
    * @return partitions to check.
    */
-  public List<Map<String, String>> getPartitionSpec() {
-    return partitionSpec;
+  public ArrayList<LinkedHashMap<String, String>> getPartSpecs() {
+    return partSpecs;
   }
 
   /**
    * @param partitionSpec
    *          partitions to check.
    */
-  public void setPartitionSpec(List<Map<String, String>> partitionSpec) {
-    this.partitionSpec = partitionSpec;
+  public void setPartSpecs(ArrayList<LinkedHashMap<String, String>> partSpecs) {
+    this.partSpecs = partSpecs;
   }
 
   /**

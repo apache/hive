@@ -30,11 +30,11 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
   /**
    * table name for the result of show tables
    */
-  private final String table = "showpartitions";
+  private static final String table = "showpartitions";
   /**
    * thrift ddl for the result of show tables
    */
-  private final String schema = "partition#string";
+  private static final String schema = "partition#string";
 
   public String getTable() {
     return table;
@@ -44,6 +44,9 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
     return schema;
   }
 
+  public ShowPartitionsDesc() {
+  }
+  
   /**
    * @param tabName
    *          Name of the table whose partitions need to be listed

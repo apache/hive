@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -51,8 +52,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public int execute() {
 
     try {
-      OutputStream outS = work.getResFile().getFileSystem(conf).create(
-          work.getResFile());
+      Path resFile = new Path(work.getResFile());
+      OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       PrintStream out = new PrintStream(outS);
 
       // Print out the parse AST

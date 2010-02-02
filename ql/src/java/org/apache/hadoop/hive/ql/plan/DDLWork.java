@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
+
   private CreateTableDesc createTblDesc;
   private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
@@ -395,6 +396,18 @@ public class DDLWork implements Serializable {
     this.showTblStatusDesc = showTblStatusDesc;
   }
 
+  public CreateViewDesc getCreateVwDesc() {
+    return createVwDesc;
+  }
+
+  public void setCreateVwDesc(CreateViewDesc createVwDesc) {
+    this.createVwDesc = createVwDesc;
+  }
+
+  public void setDescFunctionDesc(DescFunctionDesc descFunctionDesc) {
+    this.descFunctionDesc = descFunctionDesc;
+  }
+  
   public Set<ReadEntity> getInputs() {
     return inputs;
   }

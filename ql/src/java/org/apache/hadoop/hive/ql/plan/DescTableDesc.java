@@ -25,6 +25,10 @@ import org.apache.hadoop.fs.Path;
 
 @Explain(displayName = "Describe Table")
 public class DescTableDesc extends DDLDesc implements Serializable {
+  public void setPartSpec(HashMap<String, String> partSpec) {
+    this.partSpec = partSpec;
+  }
+
   private static final long serialVersionUID = 1L;
 
   String tableName;
@@ -34,20 +38,15 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   /**
    * table name for the result of describe table
    */
-  private final String table = "describe";
+  private static final String table = "describe";
   /**
    * thrift ddl for the result of describe table
    */
-  private final String schema = "col_name,data_type,comment#string:string:string";
+  private static final String schema = "col_name,data_type,comment#string:string:string";
 
-  public String getTable() {
-    return table;
+  public DescTableDesc() {
   }
-
-  public String getSchema() {
-    return schema;
-  }
-
+  
   /**
    * @param isExt
    * @param partSpec
@@ -60,6 +59,14 @@ public class DescTableDesc extends DDLDesc implements Serializable {
     this.partSpec = partSpec;
     this.resFile = resFile;
     this.tableName = tableName;
+  }
+
+  public String getTable() {
+    return table;
+  }
+
+  public String getSchema() {
+    return schema;
   }
 
   /**

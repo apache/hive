@@ -237,7 +237,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     ASTNode buckets = (ASTNode) ast.getChild(1);
     List<String> bucketCols = getColumnNames((ASTNode) buckets.getChild(0));
-    List<Order> sortCols = null;
+    List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     if (buckets.getChildCount() == 2) {
       numBuckets = (Integer.valueOf(buckets.getChild(1).getText())).intValue();

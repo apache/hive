@@ -29,6 +29,9 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   boolean ifNotExists;
   String likeTableName;
 
+  public CreateTableLikeDesc() {
+  }
+  
   public CreateTableLikeDesc(String tableName, boolean isExternal,
       String location, boolean ifNotExists, String likeTableName) {
     this.tableName = tableName;

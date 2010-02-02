@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,10 +33,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tableName;
   boolean isExternal;
-  List<FieldSchema> cols;
-  List<FieldSchema> partCols;
-  List<String> bucketCols;
-  List<Order> sortCols;
+  ArrayList<FieldSchema> cols;
+  ArrayList<FieldSchema> partCols;
+  ArrayList<String> bucketCols;
+  ArrayList<Order> sortCols;
   int numBuckets;
   String fieldDelim;
   String fieldEscape;
@@ -46,9 +48,12 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   String outputFormat;
   String location;
   String serName;
-  Map<String, String> mapProp;
+  HashMap<String, String> mapProp;
   boolean ifNotExists;
 
+  public CreateTableDesc() {
+  }
+  
   public CreateTableDesc(String tableName, boolean isExternal,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
@@ -58,10 +63,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> mapProp, boolean ifNotExists) {
     this.tableName = tableName;
     this.isExternal = isExternal;
-    this.bucketCols = bucketCols;
-    this.sortCols = sortCols;
+    this.bucketCols = new ArrayList<String>(bucketCols);
+    this.sortCols = new ArrayList<Order>(sortCols);
     this.collItemDelim = collItemDelim;
-    this.cols = cols;
+    this.cols = new ArrayList<FieldSchema>(cols);
     this.comment = comment;
     this.fieldDelim = fieldDelim;
     this.fieldEscape = fieldEscape;
@@ -71,12 +76,25 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.location = location;
     this.mapKeyDelim = mapKeyDelim;
     this.numBuckets = numBuckets;
-    this.partCols = partCols;
+    this.partCols = new ArrayList<FieldSchema>(partCols);
     this.serName = serName;
-    this.mapProp = mapProp;
+    this.mapProp = new HashMap<String, String>(mapProp);
     this.ifNotExists = ifNotExists;
   }
 
+  
+  @Explain(displayName = "columns")
+  public List<String> getColsString() {
+    return Utilities.getFieldSchemaString(getCols());
+  }
+
+  @Explain(displayName = "partition columns")
+  public List<String> getPartColsString() {
+    return Utilities.getFieldSchemaString(getPartCols());
+  }
+
+  
+  
   @Explain(displayName = "if not exists")
   public boolean getIfNotExists() {
     return ifNotExists;
@@ -95,38 +113,28 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.tableName = tableName;
   }
 
-  public List<FieldSchema> getCols() {
+  public ArrayList<FieldSchema> getCols() {
     return cols;
   }
 
-  @Explain(displayName = "columns")
-  public List<String> getColsString() {
-    return Utilities.getFieldSchemaString(getCols());
-  }
-
-  public void setCols(List<FieldSchema> cols) {
+  public void setCols(ArrayList<FieldSchema> cols) {
     this.cols = cols;
   }
 
-  public List<FieldSchema> getPartCols() {
+  public ArrayList<FieldSchema> getPartCols() {
     return partCols;
   }
 
-  @Explain(displayName = "partition columns")
-  public List<String> getPartColsString() {
-    return Utilities.getFieldSchemaString(getPartCols());
-  }
-
-  public void setPartCols(List<FieldSchema> partCols) {
+  public void setPartCols(ArrayList<FieldSchema> partCols) {
     this.partCols = partCols;
   }
 
   @Explain(displayName = "bucket columns")
-  public List<String> getBucketCols() {
+  public ArrayList<String> getBucketCols() {
     return bucketCols;
   }
 
-  public void setBucketCols(List<String> bucketCols) {
+  public void setBucketCols(ArrayList<String> bucketCols) {
     this.bucketCols = bucketCols;
   }
 
@@ -233,7 +241,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    * @return the sortCols
    */
   @Explain(displayName = "sort columns")
-  public List<Order> getSortCols() {
+  public ArrayList<Order> getSortCols() {
     return sortCols;
   }
 
@@ -241,7 +249,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    * @param sortCols
    *          the sortCols to set
    */
-  public void setSortCols(List<Order> sortCols) {
+  public void setSortCols(ArrayList<Order> sortCols) {
     this.sortCols = sortCols;
   }
 
@@ -265,7 +273,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    * @return the serDe properties
    */
   @Explain(displayName = "serde properties")
-  public Map<String, String> getMapProp() {
+  public HashMap<String, String> getMapProp() {
     return mapProp;
   }
 
@@ -273,7 +281,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    * @param mapProp
    *          the map properties to set
    */
-  public void setMapProp(Map<String, String> mapProp) {
+  public void setMapProp(HashMap<String, String> mapProp) {
     this.mapProp = mapProp;
   }
 

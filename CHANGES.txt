@@ -107,6 +107,8 @@ Trunk -  Unreleased
     HIVE-1092. Add job counter for conditional tasks
     (He Yongqiang via namit)
 
+    HIVE-1119. Serialize all tasks (Zheng Shao via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

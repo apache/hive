@@ -60,7 +60,7 @@ public class QueryPlan implements Serializable {
 
   static final private Log LOG = LogFactory.getLog(QueryPlan.class.getName());
 
-  private final String queryString;
+  private String queryString;
   
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
@@ -69,12 +69,15 @@ public class QueryPlan implements Serializable {
 
   private HashMap<String, String> idToTableNameMap;
   
-  private final String queryId;
-  private final org.apache.hadoop.hive.ql.plan.api.Query query;
-  private final HashMap<String, HashMap<String, Long>> counters;
-  private final HashSet<String> done;
-  private final HashSet<String> started;
+  private String queryId;
+  private org.apache.hadoop.hive.ql.plan.api.Query query;
+  private HashMap<String, HashMap<String, Long>> counters;
+  private HashSet<String> done;
+  private HashSet<String> started;
 
+  public QueryPlan() {
+  }
+  
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem) {
     this.queryString = queryString;
     
@@ -612,11 +615,11 @@ public class QueryPlan implements Serializable {
     done.add(queryId);
   }
 
-  public Set<String> getStarted() {
+  public HashSet<String> getStarted() {
     return started;
   }
 
-  public Set<String> getDone() {
+  public HashSet<String> getDone() {
     return done;
   }
 
@@ -660,4 +663,40 @@ public class QueryPlan implements Serializable {
     this.idToTableNameMap = idToTableNameMap;
   }
 
+  public String getQueryString() {
+    return queryString;
+  }
+
+  public void setQueryString(String queryString) {
+    this.queryString = queryString;
+  }
+
+  public org.apache.hadoop.hive.ql.plan.api.Query getQuery() {
+    return query;
+  }
+
+  public void setQuery(org.apache.hadoop.hive.ql.plan.api.Query query) {
+    this.query = query;
+  }
+
+  public HashMap<String, HashMap<String, Long>> getCounters() {
+    return counters;
+  }
+
+  public void setCounters(HashMap<String, HashMap<String, Long>> counters) {
+    this.counters = counters;
+  }
+
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
+  }
+
+  public void setDone(HashSet<String> done) {
+    this.done = done;
+  }
+
+  public void setStarted(HashSet<String> started) {
+    this.started = started;
+  }
+  
 }

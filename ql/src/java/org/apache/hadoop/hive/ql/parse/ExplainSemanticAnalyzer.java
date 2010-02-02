@@ -60,7 +60,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       tasks.add(fetchTask);
     }
 
-    rootTasks.add(TaskFactory.get(new ExplainWork(ctx.getResFile(), tasks,
-        ((ASTNode) ast.getChild(0)).toStringTree(), extended), conf));
+    rootTasks.add(TaskFactory.get(new ExplainWork(ctx.getResFile().toString(),
+        tasks, ((ASTNode) ast.getChild(0)).toStringTree(), extended), conf));
   }
 }

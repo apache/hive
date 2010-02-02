@@ -3104,7 +3104,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // update the create table descriptor with the resulting schema.
       if (tblDesc != null) {
-        tblDesc.setCols(field_schemas);
+        tblDesc.setCols(new ArrayList<FieldSchema>(field_schemas));
       }
 
       if (!ctx.isMRTmpFileURI(destStr)) {
@@ -5884,10 +5884,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     String likeTableName = null;
-    List<FieldSchema> cols = null;
-    List<FieldSchema> partCols = null;
-    List<String> bucketCols = null;
-    List<Order> sortCols = null;
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    List<String> bucketCols = new ArrayList<String>();
+    List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     String fieldDelim = null;
     String fieldEscape = null;
@@ -5899,7 +5899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String outputFormat = null;
     String location = null;
     String serde = null;
-    Map<String, String> mapProp = null;
+    Map<String, String> mapProp = new HashMap<String, String>();
     boolean ifNotExists = false;
     boolean isExt = false;
     ASTNode selectStmt = null;
@@ -5935,7 +5935,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               throw new SemanticException(ErrorMsg.CTAS_CTLT_COEXISTENCE
                   .getMsg());
             }
-            if (cols != null) {
+            if (cols.size() != 0) {
               throw new SemanticException(ErrorMsg.CTLT_COLLST_COEXISTENCE
                   .getMsg());
             }
@@ -5947,11 +5947,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (command_type == CTLT) {
           throw new SemanticException(ErrorMsg.CTAS_CTLT_COEXISTENCE.getMsg());
         }
-        if (cols != null) {
+        if (cols.size() != 0) {
           throw new SemanticException(ErrorMsg.CTAS_COLLST_COEXISTENCE.getMsg());
         }
         // TODO: support partition for CTAS?
-        if (partCols != null || bucketCols != null) {
+        if (partCols.size() != 0 || bucketCols.size() != 0) {
           throw new SemanticException(ErrorMsg.CTAS_PARCOL_COEXISTENCE.getMsg());
         }
         if (isExt) {
