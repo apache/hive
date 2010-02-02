@@ -386,7 +386,7 @@
 <property>
   <name>hive.merge.mapredfiles</name>
   <value>false</value>
-  <description>Merge small files at the end of any job(map only or map-reduce)</description>
+  <description>Merge small files at the end of a map-reduce job</description>
 </property>
 
 <property>
@@ -399,6 +399,12 @@
   <name>hive.merge.size.per.task</name>
   <value>256000000</value>
   <description>Size of merged files at the end of the job</description>
+</property>
+
+<property>
+  <name>hive.merge.size.smallfiles.avgsize</name>
+  <value>16000000</value>
+  <description>When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files.  This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.</description>
 </property>
 
 <property>
