@@ -118,6 +118,9 @@ Trunk -  Unreleased
     HIVE-1121. Support CombineHiveInputFormat for hadoop 0.19
     (Roberto Congiu via namit)
 
+    HIVE-1125. Correct console output message.
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -221,7 +221,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
             SessionState.get().getQueryId(), getId(), Keys.TASK_HADOOP_ID,
             rj.getJobID());
       }
-      console.printInfo(ExecDriver.getJobEndMsg(rj.getJobID())
+      console.printInfo(ExecDriver.getJobStartMsg(rj.getJobID())
           + ", Tracking URL = " + rj.getTrackingURL());
       console.printInfo("Kill Command = "
           + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
