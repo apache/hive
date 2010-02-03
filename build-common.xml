@@ -166,7 +166,7 @@
   </target>
   
   <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
-    description="Retrieve Ivy-managed Hadoop source artifacts">
+    description="Retrieve Ivy-managed Hadoop source artifacts" unless="offline">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
