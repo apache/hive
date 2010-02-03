@@ -1117,7 +1117,7 @@ functionName
 @init { msgs.push("function name"); }
 @after { msgs.pop(); }
     : // Keyword IF is also a function name
-    Identifier | KW_IF | KW_ARRAY | KW_MAP
+    Identifier | KW_IF | KW_ARRAY | KW_MAP | KW_STRUCT
     ;
 
 castExpression
@@ -1357,6 +1357,7 @@ sysFuncNames
     | KW_STRING
     | KW_ARRAY
     | KW_MAP
+    | KW_STRUCT
     | EQUAL
     | NOTEQUAL
     | LESSTHANOREQUALTO

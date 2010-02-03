@@ -152,6 +152,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
@@ -321,6 +322,7 @@ public class FunctionRegistry {
     // Generic UDFs
     registerGenericUDF("array", GenericUDFArray.class);
     registerGenericUDF("map", GenericUDFMap.class);
+    registerGenericUDF("struct", GenericUDFStruct.class);
 
     registerGenericUDF("case", GenericUDFCase.class);
     registerGenericUDF("when", GenericUDFWhen.class);

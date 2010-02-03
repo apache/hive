@@ -108,6 +108,7 @@ stddev
 stddev_pop
 stddev_samp
 string
+struct
 substr
 substring
 sum

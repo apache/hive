@@ -11,6 +11,8 @@ Trunk -  Unreleased
 
     HIVE-972. Support views. (John Sichi via zshao)
 
+    HIVE-1172. Add UDFS to create struct (Zheng Shao via Ning Zhang)
+
   IMPROVEMENTS
 
     HIVE-983. Function from_unixtime takes long.
