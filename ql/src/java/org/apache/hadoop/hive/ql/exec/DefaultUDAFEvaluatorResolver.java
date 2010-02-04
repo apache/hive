@@ -61,19 +61,20 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
 
     // Add all the public member classes that implement an evaluator
     for (Class<?> enclClass : udafClass.getClasses()) {
-      for (Class<?> iface : enclClass.getInterfaces()) {
-        if (iface == UDAFEvaluator.class) {
-          classList.add((Class<? extends UDAFEvaluator>) enclClass);
-        }
+      if (UDAFEvaluator.class.isAssignableFrom(enclClass)) {
+        classList.add((Class<? extends UDAFEvaluator>) enclClass);
       }
     }
 
     // Next we locate all the iterate methods for each of these classes.
     ArrayList<Method> mList = new ArrayList<Method>();
+    ArrayList<Class<? extends UDAFEvaluator>> cList =
+        new ArrayList<Class<? extends UDAFEvaluator>>();
     for (Class<? extends UDAFEvaluator> evaluator : classList) {
       for (Method m : evaluator.getMethods()) {
         if (m.getName().equalsIgnoreCase("iterate")) {
           mList.add(m);
+          cList.add(evaluator);
         }
       }
     }
@@ -83,7 +84,22 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
       throw new AmbiguousMethodException(udafClass, argClasses);
     }
 
-    return (Class<? extends UDAFEvaluator>) m.getDeclaringClass();
+    // Find the class that has this method.
+    // Note that Method.getDeclaringClass() may not work here because the method
+    // can be inherited from a base class.
+    int found = -1;
+    for (int i = 0; i < mList.size(); i++) {
+      if (mList.get(i) == m) {
+        if (found == -1) {
+          found = i;
+        } else {
+          throw new AmbiguousMethodException(udafClass, argClasses);
+        }
+      }
+    }
+    assert (found != -1);
+    
+    return cList.get(found);
   }
 
 }
