@@ -397,6 +397,33 @@ public class ObjectInspectorUtils {
   }
 
   /**
+   * Whether comparison is supported for this type.
+   * Currently all types that references any map are not comparable.
+   */
+  public static boolean compareSupported(ObjectInspector oi) {
+    switch (oi.getCategory()) {
+    case PRIMITIVE:
+      return true;
+    case LIST:
+      ListObjectInspector loi = (ListObjectInspector) oi;
+      return compareSupported(loi.getListElementObjectInspector());
+    case STRUCT:
+      StructObjectInspector soi = (StructObjectInspector) oi;
+      List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      for (int f = 0; f < fields.size(); f++) {
+        if (!compareSupported(fields.get(f).getFieldObjectInspector())) {
+          return false;
+        }
+      }
+      return true;
+    case MAP:
+      return false;
+    default:
+      return false;
+    }
+  }
+  
+  /**
    * Compare two objects with their respective ObjectInspectors.
    */
   public static int compare(Object o1, ObjectInspector oi1, Object o2,

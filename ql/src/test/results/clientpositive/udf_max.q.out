@@ -8,3 +8,55 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED max
 POSTHOOK: type: DESCFUNCTION
 max(expr) - Returns the maximum value of expr
+PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-47_651_8497222492783440005/10000
+POSTHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-47_651_8497222492783440005/10000
+{"col1":498,"col2":"val_498"}	{"col1":"98","col2":"val_98"}
+PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-51_371_6375977486441092466/10000
+POSTHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-51_371_6375977486441092466/10000
+{"col1":498,"col2":"val_498"}	{"col1":"98","col2":"val_98"}
+PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-54_873_9150909181262885229/10000
+POSTHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-44-54_873_9150909181262885229/10000
+{"col1":498,"col2":"val_498"}	{"col1":"98","col2":"val_98"}
+PREHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-45-01_378_1491726702598521931/10000
+POSTHOOK: query: SELECT max(struct(CAST(key as INT), value)),
+       max(struct(key, value))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-45-01_378_1491726702598521931/10000
+{"col1":498,"col2":"val_498"}	{"col1":"98","col2":"val_98"}

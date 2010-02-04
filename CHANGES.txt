@@ -48,6 +48,9 @@ Trunk -  Unreleased
     HIVE-1104. Suppress Checkstyle warnings for generated files.
     (Carl Steinbach via zshao)
 
+    HIVE-1128. Let max/min handle complex types like struct
+    (Zheng Shao via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

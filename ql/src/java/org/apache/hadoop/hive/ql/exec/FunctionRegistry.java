@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.UDAFMax;
-import org.apache.hadoop.hive.ql.udf.UDAFMin;
 import org.apache.hadoop.hive.ql.udf.UDFAbs;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAscii;
@@ -128,6 +126,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample;
@@ -304,6 +304,9 @@ public class FunctionRegistry {
         UDFToString.class.getSimpleName());
 
     // Aggregate functions
+    registerGenericUDAF("max", new GenericUDAFMax());
+    registerGenericUDAF("min", new GenericUDAFMin());
+    
     registerGenericUDAF("sum", new GenericUDAFSum());
     registerGenericUDAF("count", new GenericUDAFCount());
     registerGenericUDAF("avg", new GenericUDAFAverage());
@@ -315,9 +318,6 @@ public class FunctionRegistry {
     registerGenericUDAF("variance", new GenericUDAFVariance());
     registerGenericUDAF("var_pop", new GenericUDAFVariance());
     registerGenericUDAF("var_samp", new GenericUDAFVarianceSample());
-
-    registerUDAF("max", UDAFMax.class);
-    registerUDAF("min", UDAFMin.class);
 
     // Generic UDFs
     registerGenericUDF("array", GenericUDFArray.class);

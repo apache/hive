@@ -1,0 +1,97 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_min AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMin'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_min AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMin'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED example_min
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED example_min
+POSTHOOK: type: DESCFUNCTION
+example_min(expr) - Returns the minimum value of expr
+PREHOOK: query: EXPLAIN
+SELECT example_min(substr(value,5)),
+       example_min(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT example_min(substr(value,5)),
+       example_min(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_min (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5))) (TOK_SELEXPR (TOK_FUNCTION example_min (TOK_FUNCTION IF (> (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5) 250) TOK_NULL (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+              outputColumnNames: value
+              Group By Operator
+                aggregations:
+                      expr: example_min(substr(value, 5))
+                      expr: example_min(if((substr(value, 5) > 250), null, substr(value, 5)))
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: example_min(VALUE._col0)
+                expr: example_min(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT example_min(substr(value,5)),
+       example_min(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/contrib/scratchdir/hive_2010-02-03_15-56-27_091_4596988815419170888/10000
+POSTHOOK: query: SELECT example_min(substr(value,5)),
+       example_min(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/contrib/scratchdir/hive_2010-02-03_15-56-27_091_4596988815419170888/10000
+0	0
+PREHOOK: query: DROP TEMPORARY FUNCTION example_min
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_min
+POSTHOOK: type: DROPFUNCTION

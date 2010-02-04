@@ -66,7 +66,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1264705772</string> 
+          <string>1265240095</string> 
          </void> 
         </object> 
        </void> 
@@ -682,11 +682,7 @@
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
                       <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFBridge$GenericUDAFBridgeEvaluator0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge$GenericUDAFBridgeEvaluator"> 
-                        <void property="udafEvaluator"> 
-                         <class>org.apache.hadoop.hive.ql.udf.UDAFMax$MaxStringEvaluator</class> 
-                        </void> 
-                       </object> 
+                       <object id="GenericUDAFMax$GenericUDAFMaxEvaluator0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax$GenericUDAFMaxEvaluator"/> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>max</string> 
@@ -747,11 +743,7 @@
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
                       <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFBridge$GenericUDAFBridgeEvaluator1" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge$GenericUDAFBridgeEvaluator"> 
-                        <void property="udafEvaluator"> 
-                         <class>org.apache.hadoop.hive.ql.udf.UDAFMin$MinStringEvaluator</class> 
-                        </void> 
-                       </object> 
+                       <object id="GenericUDAFMin$GenericUDAFMinEvaluator0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin$GenericUDAFMinEvaluator"/> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>min</string> 
@@ -1159,7 +1151,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/144803262/10001</string> 
+                 <string>file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-34-56_784_7206588683002520939/10001</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -1597,7 +1589,7 @@
           <void method="add"> 
            <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
             <void property="genericUDAFEvaluator"> 
-             <object idref="GenericUDAFBridge$GenericUDAFBridgeEvaluator0"/> 
+             <object idref="GenericUDAFMax$GenericUDAFMaxEvaluator0"/> 
             </void> 
             <void property="genericUDAFName"> 
              <string>max</string> 
@@ -1624,7 +1616,7 @@
           <void method="add"> 
            <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
             <void property="genericUDAFEvaluator"> 
-             <object idref="GenericUDAFBridge$GenericUDAFBridgeEvaluator1"/> 
+             <object idref="GenericUDAFMin$GenericUDAFMinEvaluator0"/> 
             </void> 
             <void property="genericUDAFName"> 
              <string>min</string> 

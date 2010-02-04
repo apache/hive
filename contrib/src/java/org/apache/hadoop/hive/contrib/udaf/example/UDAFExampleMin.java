@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.contrib.udaf.example;
 
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
@@ -29,8 +29,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "min", value = "_FUNC_(expr) - Returns the minimum value of expr")
-public class UDAFMin extends UDAF {
+@Description(name = "example_min", value = "_FUNC_(expr) - Returns the minimum value of expr")
+public class UDAFExampleMin extends UDAF {
 
   static public class MinShortEvaluator implements UDAFEvaluator {
     private short mMin;
