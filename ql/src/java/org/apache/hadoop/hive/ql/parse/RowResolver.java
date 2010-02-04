@@ -39,6 +39,7 @@ public class RowResolver {
   private final HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
 
   private final HashMap<String, String[]> invRslvMap;
+  private final Map<String, ASTNode> expressionMap;
 
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
@@ -50,7 +51,37 @@ public class RowResolver {
     rowSchema = new RowSchema();
     rslvMap = new HashMap<String, LinkedHashMap<String, ColumnInfo>>();
     invRslvMap = new HashMap<String, String[]>();
+    expressionMap = new HashMap<String, ASTNode>();
     isExprResolver = false;
+  }
+
+  /**
+   * Puts a resolver entry corresponding to a source expression which is to be
+   * used for identical expression recognition (e.g. for matching expressions
+   * in the SELECT list with the GROUP BY clause).  The convention for such
+   * entries is an empty-string ("") as the table alias together with the
+   * string rendering of the ASTNode as the column alias.
+   */
+  public void putExpression(ASTNode node, ColumnInfo colInfo) {
+    String treeAsString = node.toStringTree();
+    expressionMap.put(treeAsString, node);
+    put("", treeAsString, colInfo);
+  }
+
+  /**
+   * Retrieves the ColumnInfo corresponding to a source expression which
+   * exactly matches the string rendering of the given ASTNode.
+   */
+  public ColumnInfo getExpression(ASTNode node) throws SemanticException {
+    return get("", node.toStringTree());
+  }
+
+  /**
+   * Retrieves the source expression matching a given ASTNode's
+   * string rendering exactly.
+   */
+  public ASTNode getExpressionSource(ASTNode node) {
+    return expressionMap.get(node.toStringTree());
   }
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {

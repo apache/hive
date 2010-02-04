@@ -130,6 +130,9 @@ Trunk -  Unreleased
     HIVE-1125. Correct console output message.
     (Paul Yang via namit)
 
+    HIVE-1124. Create view should expand the query text consistently.
+    (John Sichi via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

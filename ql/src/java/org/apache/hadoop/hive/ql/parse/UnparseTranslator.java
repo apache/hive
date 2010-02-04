@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -32,10 +34,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 class UnparseTranslator {
   // key is token start index
   private final NavigableMap<Integer, Translation> translations;
+  private final List<CopyTranslation> copyTranslations;
   private boolean enabled;
 
   public UnparseTranslator() {
     translations = new TreeMap<Integer, Translation>();
+    copyTranslations = new ArrayList<CopyTranslation>();
   }
 
   /**
@@ -54,9 +58,12 @@ class UnparseTranslator {
 
   /**
    * Register a translation to be performed as part of unparse.
+   * The translation must not overlap with any previously
+   * registered translations (unless it is identical to an
+   * existing translation, in which case it is ignored).
    * 
    * @param node
-   *          source node whose subtree is to be replaced
+   *          target node whose subtree is to be replaced
    * 
    * @param replacementText
    *          text to use as replacement
@@ -85,7 +92,7 @@ class UnparseTranslator {
     Map.Entry<Integer, Translation> existingEntry;
     existingEntry = translations.floorEntry(tokenStartIndex);
     if (existingEntry != null) {
-      if (existingEntry.getKey() == tokenStartIndex) {
+      if (existingEntry.getKey().equals(tokenStartIndex)) {
         if (existingEntry.getValue().tokenStopIndex == tokenStopIndex) {
           if (existingEntry.getValue().replacementText.equals(replacementText)) {
             // exact match for existing mapping: somebody is doing something
@@ -123,15 +130,64 @@ class UnparseTranslator {
   }
 
   /**
-   * Apply translations on the given token stream.
+   * Register a "copy" translation in which a node will be translated into
+   * whatever the translation turns out to be for another node (after
+   * previously registered translations have already been performed).  Deferred
+   * translations are performed in the order they are registered, and follow
+   * the same rules regarding overlap as non-copy translations.
+   *
+   * @param targetNode node whose subtree is to be replaced
+   *
+   * @param sourceNode the node providing the replacement text
+   *
+   */
+  void addCopyTranslation(ASTNode targetNode, ASTNode sourceNode) {
+    if (!enabled) {
+      return;
+    }
+
+    if (targetNode.getOrigin() != null) {
+      return;
+    }
+
+    CopyTranslation copyTranslation = new CopyTranslation();
+    copyTranslation.targetNode = targetNode;
+    copyTranslation.sourceNode = sourceNode;
+    copyTranslations.add(copyTranslation);
+  }
+
+  /**
+   * Apply all translations on the given token stream.
    * 
    * @param tokenRewriteStream
    *          rewrite-capable stream
    */
-  void applyTranslation(TokenRewriteStream tokenRewriteStream) {
+  void applyTranslations(TokenRewriteStream tokenRewriteStream) {
     for (Map.Entry<Integer, Translation> entry : translations.entrySet()) {
-      tokenRewriteStream.replace(entry.getKey(),
-          entry.getValue().tokenStopIndex, entry.getValue().replacementText);
+      tokenRewriteStream.replace(
+        entry.getKey(),
+        entry.getValue().tokenStopIndex,
+        entry.getValue().replacementText);
+    }
+    for (CopyTranslation copyTranslation : copyTranslations) {
+      String replacementText = tokenRewriteStream.toString(
+        copyTranslation.sourceNode.getTokenStartIndex(),
+        copyTranslation.sourceNode.getTokenStopIndex());
+      String currentText = tokenRewriteStream.toString(
+        copyTranslation.targetNode.getTokenStartIndex(),
+        copyTranslation.targetNode.getTokenStopIndex());
+      if (currentText.equals(replacementText)) {
+        // copy is a nop, so skip it--this is important for avoiding
+        // spurious overlap assertions
+        continue;
+      }
+      // Call addTranslation just to get the assertions for overlap
+      // checking.
+      addTranslation(copyTranslation.targetNode, replacementText);
+      tokenRewriteStream.replace(
+        copyTranslation.targetNode.getTokenStartIndex(),
+        copyTranslation.targetNode.getTokenStopIndex(),
+        replacementText);
     }
   }
 
@@ -143,5 +199,10 @@ class UnparseTranslator {
     public String toString() {
       return "" + tokenStopIndex + " -> " + replacementText;
     }
+  }
+
+  private static class CopyTranslation {
+    ASTNode targetNode;
+    ASTNode sourceNode;
   }
 }

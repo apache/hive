@@ -93,11 +93,15 @@ public class TypeCheckProcFactory {
     ExprNodeDesc desc = null;
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
-    ColumnInfo colInfo = input.get("", expr.toStringTree());
+    ColumnInfo colInfo = input.getExpression(expr);
     if (colInfo != null) {
       desc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
           .getInternalName(), colInfo.getTabAlias(), colInfo
           .getIsPartitionCol());
+      ASTNode source = input.getExpressionSource(expr);
+      if (source != null) {
+        ctx.getUnparseTranslator().addCopyTranslation(expr, source);
+      }
       return desc;
     }
     return desc;

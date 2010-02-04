@@ -12,6 +12,8 @@ DROP VIEW view11;
 DROP VIEW view12;
 DROP VIEW view13;
 DROP VIEW view14;
+DROP VIEW view15;
+DROP VIEW view16;
 DROP TEMPORARY FUNCTION test_translate;
 DROP TEMPORARY FUNCTION test_max;
 DROP TEMPORARY FUNCTION test_explode;
@@ -164,6 +166,25 @@ DESCRIBE EXTENDED view14;
 SELECT * FROM view14
 ORDER BY k1;
 
+-- test usage of GROUP BY within view
+CREATE VIEW view15 AS
+SELECT key,COUNT(value) AS value_count
+FROM src
+GROUP BY key;
+DESCRIBE EXTENDED view15;
+SELECT * FROM view15
+ORDER BY value_count DESC, key
+LIMIT 10;
+
+-- test usage of DISTINCT within view
+CREATE VIEW view16 AS
+SELECT DISTINCT value
+FROM src;
+DESCRIBE EXTENDED view16;
+SELECT * FROM view16
+ORDER BY value
+LIMIT 10;
+
 -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
 DROP TABLE table1;
@@ -182,6 +203,8 @@ DROP VIEW view11;
 DROP VIEW view12;
 DROP VIEW view13;
 DROP VIEW view14;
+DROP VIEW view15;
+DROP VIEW view16;
 DROP TEMPORARY FUNCTION test_translate;
 DROP TEMPORARY FUNCTION test_max;
 DROP TEMPORARY FUNCTION test_explode;

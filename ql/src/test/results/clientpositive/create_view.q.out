@@ -54,6 +54,14 @@ PREHOOK: query: DROP VIEW view14
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW view14
 POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW view15
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW view15
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW view16
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW view16
+POSTHOOK: type: DROPVIEW
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
@@ -73,60 +81,60 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: SELECT * FROM src WHERE key=86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1600701811/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-53_297_7782573084639735106/10000
 POSTHOOK: query: SELECT * FROM src WHERE key=86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1600701811/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-53_297_7782573084639735106/10000
 86	val_86
 PREHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1774941594/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_101_1140006614243920801/10000
 POSTHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1774941594/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_101_1140006614243920801/10000
 POSTHOOK: Output: default@view1
 PREHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/557479374/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_277_6299232103234711745/10000
 POSTHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/557479374/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_277_6299232103234711745/10000
 POSTHOOK: Output: default@view2
 PREHOOK: query: CREATE VIEW view3(valoo) AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/543421203/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_434_4725140610794013500/10000
 POSTHOOK: query: CREATE VIEW view3(valoo) AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/543421203/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_434_4725140610794013500/10000
 POSTHOOK: Output: default@view3
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/728576887/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_481_8837322274426963555/10000
 POSTHOOK: query: SELECT * from view1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/728576887/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-57-57_481_8837322274426963555/10000
 val_86
 PREHOOK: query: SELECT * from view2 where key=18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/850967798/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-00_909_533868798679407560/10000
 POSTHOOK: query: SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/850967798/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-00_909_533868798679407560/10000
 18	val_18
 18	val_18
 PREHOOK: query: SELECT * from view3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1364208710/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-04_450_191008179753881262/10000
 POSTHOOK: query: SELECT * from view3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1364208710/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-04_450_191008179753881262/10000
 VAL_86
 PREHOOK: query: -- test EXPLAIN output for CREATE VIEW
 EXPLAIN
@@ -227,7 +235,7 @@ POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view1, dbName:default, owner:jsichi, createTime:1264709888, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709888}, viewOriginalText:SELECT value FROM src WHERE key=86, viewExpandedText:SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view1, dbName:default, owner:jsichi, createTime:1265309877, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309877}, viewOriginalText:SELECT value FROM src WHERE key=86, viewExpandedText:SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: DESCRIBE view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view2
@@ -241,7 +249,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view2, dbName:default, owner:jsichi, createTime:1264709888, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709888}, viewOriginalText:SELECT * FROM src, viewExpandedText:SELECT `src`.`key`, `src`.`value` FROM `src`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view2, dbName:default, owner:jsichi, createTime:1265309877, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309877}, viewOriginalText:SELECT * FROM src, viewExpandedText:SELECT `src`.`key`, `src`.`value` FROM `src`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: DESCRIBE view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view3
@@ -253,7 +261,7 @@ POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
 valoo	string	
 	 	 
-Detailed Table Information	Table(tableName:view3, dbName:default, owner:jsichi, createTime:1264709888, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709888}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view3, dbName:default, owner:jsichi, createTime:1265309877, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309877}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: CREATE TABLE table1 (key int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table1 (key int)
@@ -269,7 +277,7 @@ DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:jsichi, createTime:1264709897, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709897}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:jsichi, createTime:1265309888, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309888}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: DESCRIBE EXTENDED src1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED src1
@@ -277,7 +285,7 @@ POSTHOOK: type: DESCTABLE
 key	string	default
 value	string	default
 	 	 
-Detailed Table Information	Table(tableName:src1, dbName:default, owner:null, createTime:1264709884, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709884}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:src1, dbName:default, owner:null, createTime:1265309872, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309872}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparison for
 -- view descriptions
 DESCRIBE EXTENDED table1
@@ -288,7 +296,7 @@ DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:jsichi, createTime:1264709897, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709897}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:jsichi, createTime:1265309888, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309888}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -300,27 +308,27 @@ POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2141444732/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_803_1284572417109920240/10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2141444732/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_803_1284572417109920240/10000
 86
 PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/898468153/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_845_6779990684786101439/10000
 POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/898468153/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_845_6779990684786101439/10000
 POSTHOOK: Output: default@view4
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/528396960/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_884_2398988658087884662/10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/528396960/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-12_884_2398988658087884662/10000
 86
 PREHOOK: query: DESCRIBE view4
 PREHOOK: type: DESCTABLE
@@ -336,20 +344,20 @@ POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/987067062/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-18_331_1242169140808223548/10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/987067062/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-18_331_1242169140808223548/10000
 86	NULL
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1541942127/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-18_365_7928861520958340144/10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1541942127/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-18_365_7928861520958340144/10000
 86
 PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
@@ -365,20 +373,20 @@ key	int
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/409117872/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-24_000_4695504796079686794/10000
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/409117872/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-24_000_4695504796079686794/10000
 POSTHOOK: Output: default@view5
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1552433053/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-24_296_7942853463626878015/10000
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1552433053/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-24_296_7942853463626878015/10000
 86	86
 PREHOOK: query: DESCRIBE view5
 PREHOOK: type: DESCTABLE
@@ -391,13 +399,13 @@ PREHOOK: query: -- verify that column name and comment in DDL portion
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/620020128/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_192_6828670885580433331/10000
 POSTHOOK: query: -- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/620020128/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_192_6828670885580433331/10000
 POSTHOOK: Output: default@view6
 PREHOOK: query: DESCRIBE view6
 PREHOOK: type: DESCTABLE
@@ -411,7 +419,7 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/339578208/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_286_6005363713007584990/10000
 POSTHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
 SELECT * FROM src
@@ -419,16 +427,16 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/339578208/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_286_6005363713007584990/10000
 POSTHOOK: Output: default@view7
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/242830582/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_335_579300007330547821/10000
 POSTHOOK: query: SELECT * FROM view7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/242830582/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-31_335_579300007330547821/10000
 82	val_82
 83	val_83
 83	val_83
@@ -445,14 +453,14 @@ PREHOOK: query: -- top-level ORDER BY should override the one inside the view
 SELECT * FROM view7 ORDER BY key DESC, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1636014325/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-37_066_9213562375794733620/10000
 POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
 -- (however, the inside ORDER BY should still influence the evaluation
 -- of the limit)
 SELECT * FROM view7 ORDER BY key DESC, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1636014325/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-37_066_9213562375794733620/10000
 90	val_90
 90	val_90
 87	val_87
@@ -467,12 +475,12 @@ PREHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/130847292/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-48_529_5840920753828411593/10000
 POSTHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/130847292/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-48_529_5840920753828411593/10000
 82	val_82
 83	val_83
 83	val_83
@@ -482,12 +490,12 @@ PREHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1942970084/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-55_996_55238509253219398/10000
 POSTHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1942970084/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-58-55_996_55238509253219398/10000
 82	val_82
 83	val_83
 83	val_83
@@ -510,12 +518,12 @@ PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2017981069/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-01_575_7723116161754412999/10000
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2017981069/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-01_575_7723116161754412999/10000
 POSTHOOK: Output: default@view8
 PREHOOK: query: DESCRIBE EXTENDED view8
 PREHOOK: type: DESCTABLE
@@ -523,17 +531,17 @@ POSTHOOK: query: DESCRIBE EXTENDED view8
 POSTHOOK: type: DESCTABLE
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:view8, dbName:default, owner:jsichi, createTime:1264709925, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709925}, viewOriginalText:SELECT test_translate('abc', 'a', 'b')	 
+Detailed Table Information	Table(tableName:view8, dbName:default, owner:jsichi, createTime:1265309941, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309941}, viewOriginalText:SELECT test_translate('abc', 'a', 'b')	 
 FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
 FROM `table1`) `view8`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1776598981/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-01_950_5622952838826584437/10000
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1776598981/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-01_950_5622952838826584437/10000
 bbc
 PREHOOK: query: -- test usage of a UDAF within a view
 CREATE TEMPORARY FUNCTION test_max AS
@@ -547,12 +555,12 @@ PREHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1642348691/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-07_044_5791517349444492101/10000
 POSTHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1642348691/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-07_044_5791517349444492101/10000
 POSTHOOK: Output: default@view9
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
@@ -560,28 +568,28 @@ POSTHOOK: query: DESCRIBE EXTENDED view9
 POSTHOOK: type: DESCTABLE
 m	int	
 	 	 
-Detailed Table Information	Table(tableName:view9, dbName:default, owner:jsichi, createTime:1264709928, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:m, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709928}, viewOriginalText:SELECT test_max(length(value))	 
+Detailed Table Information	Table(tableName:view9, dbName:default, owner:jsichi, createTime:1265309947, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:m, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309947}, viewOriginalText:SELECT test_max(length(value))	 
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
 FROM `src`) `view9`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2110694538/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-07_150_2335956643529213853/10000
 POSTHOOK: query: SELECT * FROM view9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2110694538/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-07_150_2335956643529213853/10000
 7
 PREHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/991232364/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-13_020_15297505204545248/10000
 POSTHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/991232364/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-13_020_15297505204545248/10000
 POSTHOOK: Output: default@view10
 PREHOOK: query: DESCRIBE EXTENDED view10
 PREHOOK: type: DESCTABLE
@@ -590,15 +598,15 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view10, dbName:default, owner:jsichi, createTime:1264709931, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709931}, viewOriginalText:SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp, viewExpandedText:SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view10, dbName:default, owner:jsichi, createTime:1265309953, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309953}, viewOriginalText:SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp, viewExpandedText:SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: SELECT * FROM view10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1318443718/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-13_203_2739584306564147849/10000
 POSTHOOK: query: SELECT * FROM view10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1318443718/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-13_203_2739584306564147849/10000
 86	val_86
 PREHOOK: query: -- test usage of a UDTF within a view
 CREATE TEMPORARY FUNCTION test_explode AS
@@ -612,12 +620,12 @@ PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1311725444/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-19_277_7422539496903079988/10000
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1311725444/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-19_277_7422539496903079988/10000
 POSTHOOK: Output: default@view11
 PREHOOK: query: DESCRIBE EXTENDED view11
 PREHOOK: type: DESCTABLE
@@ -625,17 +633,17 @@ POSTHOOK: query: DESCRIBE EXTENDED view11
 POSTHOOK: type: DESCTABLE
 boom	int	
 	 	 
-Detailed Table Information	Table(tableName:view11, dbName:default, owner:jsichi, createTime:1264709934, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:boom, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709934}, viewOriginalText:SELECT test_explode(array(1,2,3)) AS (boom)	 
+Detailed Table Information	Table(tableName:view11, dbName:default, owner:jsichi, createTime:1265309959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:boom, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309959}, viewOriginalText:SELECT test_explode(array(1,2,3)) AS (boom)	 
 FROM table1, viewExpandedText:SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 	 
 FROM `table1`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1246951240/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-19_569_7985933358186532472/10000
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1246951240/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-19_569_7985933358186532472/10000
 1
 2
 3
@@ -643,12 +651,12 @@ PREHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2101198350/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-23_419_7948720262934047061/10000
 POSTHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/2101198350/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-23_419_7948720262934047061/10000
 POSTHOOK: Output: default@view12
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
@@ -658,43 +666,43 @@ key	string
 value	string	
 mycol	int	
 	 	 
-Detailed Table Information	Table(tableName:view12, dbName:default, owner:jsichi, createTime:1264709937, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:mycol, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709937}, viewOriginalText:SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol, viewExpandedText:SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view12, dbName:default, owner:jsichi, createTime:1265309963, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:mycol, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309963}, viewOriginalText:SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol, viewExpandedText:SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1985809958/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-23_548_175005041541075187/10000
 POSTHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1985809958/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-23_548_175005041541075187/10000
 0	val_0	1
 PREHOOK: query: -- test usage of LATERAL with a view as the LHS
 SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1381956889/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-28_949_9146465034013760763/10000
 POSTHOOK: query: -- test usage of LATERAL with a view as the LHS
 SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1381956889/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-28_949_9146465034013760763/10000
 0	val_0	1
 PREHOOK: query: -- test usage of TABLESAMPLE within a view
 CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/782478113/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-34_556_5167422066613745240/10000
 POSTHOOK: query: -- test usage of TABLESAMPLE within a view
 CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/782478113/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-34_556_5167422066613745240/10000
 POSTHOOK: Output: default@view13
 PREHOOK: query: DESCRIBE EXTENDED view13
 PREHOOK: type: DESCTABLE
@@ -702,19 +710,19 @@ POSTHOOK: query: DESCRIBE EXTENDED view13
 POSTHOOK: type: DESCTABLE
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:view13, dbName:default, owner:jsichi, createTime:1264709944, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709944}, viewOriginalText:SELECT s.key	 
+Detailed Table Information	Table(tableName:view13, dbName:default, owner:jsichi, createTime:1265309974, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309974}, viewOriginalText:SELECT s.key	 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s, viewExpandedText:SELECT `s`.`key`	 	 
 FROM `srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/445413802/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-34_926_5685404605922996493/10000
 POSTHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/445413802/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-34_926_5685404605922996493/10000
 0
 0
 0
@@ -740,7 +748,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/937833676/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-40_014_1922756630317109324/10000
 POSTHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
 CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
@@ -754,7 +762,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/937833676/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-40_014_1922756630317109324/10000
 POSTHOOK: Output: default@view14
 PREHOOK: query: DESCRIBE EXTENDED view14
 PREHOOK: type: DESCTABLE
@@ -765,7 +773,7 @@ v1	string
 k2	string	
 v2	string	
 	 	 
-Detailed Table Information	Table(tableName:view14, dbName:default, owner:jsichi, createTime:1264709947, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:k1, type:string, comment:null), FieldSchema(name:v1, type:string, comment:null), FieldSchema(name:k2, type:string, comment:null), FieldSchema(name:v2, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1264709947}, viewOriginalText:SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
+Detailed Table Information	Table(tableName:view14, dbName:default, owner:jsichi, createTime:1265309980, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:k1, type:string, comment:null), FieldSchema(name:v1, type:string, comment:null), FieldSchema(name:k2, type:string, comment:null), FieldSchema(name:v2, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265309980}, viewOriginalText:SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
        unionsrc2.key as k2, unionsrc2.value as v2	 	 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1	 	 
                          UNION  ALL	 	 
@@ -788,12 +796,12 @@ PREHOOK: query: SELECT * FROM view14
 ORDER BY k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1988629463/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-40_181_5012774559220192463/10000
 POSTHOOK: query: SELECT * FROM view14
 ORDER BY k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/1988629463/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_10-59-40_181_5012774559220192463/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -817,6 +825,99 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/19
 8	val_8	8	val_8
 9	val_9	9	val_9
 tst1	500	tst1	500
+PREHOOK: query: -- test usage of GROUP BY within view
+CREATE VIEW view15 AS
+SELECT key,COUNT(value) AS value_count
+FROM src
+GROUP BY key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-22_865_3019206326718416825/10000
+POSTHOOK: query: -- test usage of GROUP BY within view
+CREATE VIEW view15 AS
+SELECT key,COUNT(value) AS value_count
+FROM src
+GROUP BY key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-22_865_3019206326718416825/10000
+POSTHOOK: Output: default@view15
+PREHOOK: query: DESCRIBE EXTENDED view15
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED view15
+POSTHOOK: type: DESCTABLE
+key	string	
+value_count	bigint	
+	 	 
+Detailed Table Information	Table(tableName:view15, dbName:default, owner:jsichi, createTime:1265310022, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value_count, type:bigint, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265310022}, viewOriginalText:SELECT key,COUNT(value) AS value_count	 
+FROM src	 	 
+GROUP BY key, viewExpandedText:SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 	 
+FROM `src`	 	 
+GROUP BY `src`.`key`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: SELECT * FROM view15
+ORDER BY value_count DESC, key
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-23_563_2588938435355559119/10000
+POSTHOOK: query: SELECT * FROM view15
+ORDER BY value_count DESC, key
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-23_563_2588938435355559119/10000
+230	5
+348	5
+401	5
+469	5
+138	4
+169	4
+277	4
+406	4
+468	4
+489	4
+PREHOOK: query: -- test usage of DISTINCT within view
+CREATE VIEW view16 AS
+SELECT DISTINCT value
+FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-33_769_3018721160278846303/10000
+POSTHOOK: query: -- test usage of DISTINCT within view
+CREATE VIEW view16 AS
+SELECT DISTINCT value
+FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-33_769_3018721160278846303/10000
+POSTHOOK: Output: default@view16
+PREHOOK: query: DESCRIBE EXTENDED view16
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED view16
+POSTHOOK: type: DESCTABLE
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:view16, dbName:default, owner:jsichi, createTime:1265310033, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:null, outputFormat:null, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1265310033}, viewOriginalText:SELECT DISTINCT value	 
+FROM src, viewExpandedText:SELECT DISTINCT `src`.`value`	 	 
+FROM `src`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: SELECT * FROM view16
+ORDER BY value
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-33_910_9138213782100084136/10000
+POSTHOOK: query: SELECT * FROM view16
+ORDER BY value
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-02-04_11-00-33_910_9138213782100084136/10000
+val_0
+val_10
+val_100
+val_103
+val_104
+val_105
+val_11
+val_111
+val_113
+val_114
 PREHOOK: query: -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
 DROP TABLE table1
@@ -896,6 +997,16 @@ PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW view14
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Output: default@view14
+PREHOOK: query: DROP VIEW view15
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW view15
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Output: default@view15
+PREHOOK: query: DROP VIEW view16
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW view16
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Output: default@view16
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
