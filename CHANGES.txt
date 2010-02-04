@@ -51,6 +51,8 @@ Trunk -  Unreleased
     HIVE-1128. Let max/min handle complex types like struct
     (Zheng Shao via Ning Zhang)
 
+    HIVE-1103. Add .gitignore file. (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -1,0 +1,8 @@
+build
+build-eclipse
+.classpath
+.externalToolBuilders
+.project
+.settings
+*.launch
+*~
