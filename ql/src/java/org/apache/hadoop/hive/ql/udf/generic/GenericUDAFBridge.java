@@ -154,7 +154,6 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() {
-      System.err.println("udafEvaluator = " + udafEvaluator);
       return new UDAFAgg((UDAFEvaluator) ReflectionUtils.newInstance(
           udafEvaluator, null));
     }
