@@ -177,7 +177,19 @@
     <iterate-all target="clean"/>
     <iterate-cpp target="clean"/>
     <delete dir="${target.dir}"/>
+    <antcall target="clean-online"/>
+    <antcall target="clean-offline"/>
+  </target>
+
+  <target name="clean-online" unless="offline">
     <delete dir="${build.dir.hive}"/>
+  </target>
+
+  <target name="clean-offline" if="offline">
+    <!-- preserve the downloaded ivy .jar  -->
+    <delete quiet="true" includeemptydirs="true">
+      <fileset dir="${build.dir.hive}" excludes="ivy/**/*"/>
+    </delete>
   </target>
 
   <!-- ====================================================== -->

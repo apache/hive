@@ -58,6 +58,9 @@ Trunk -  Unreleased
     HIVE-1132. Add metastore API method to get partition by name.
     (Paul Yang via zshao)
 
+    HIVE-1120. In ivy offline mode, don't delete downloaded jars.
+    (John Sichi via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -85,10 +85,19 @@
   <condition property="offline">
     <istrue value="${is-offline}"/>
   </condition>
+  <condition property="ivy.cache.name" value="offline" else="online">
+    <isset property="offline"/>
+  </condition>
+  <condition property="ivy.skip">
+    <and>
+      <isset property="offline"/>
+      <available file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
+    </and>
+  </condition>
 
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern" value="${ant.project.name}/[conf]/[artifact]-[revision].[ext]"/>
-      
+
   <target name="ivy-init-dirs">
     <mkdir dir="${build.ivy.dir}" />
     <mkdir dir="${build.ivy.lib.dir}" />
@@ -124,7 +133,7 @@
           <typefound uri="antlib:org.apache.ivy.ant" name="cleancache"/>
         </not>
       </condition>
-      You need Apache Ivy 2.0 or later from http://ant.apache.org/
+      You need Apache Ivy 2.1 or later from http://ant.apache.org/
       It could not be loaded from ${ivy_repo_url}
     </fail>
   </target>
@@ -149,14 +158,14 @@
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
       log="${ivyresolvelog}"/>
   </target>
-  
+
   <target name="ivy-retrieve" depends="ivy-resolve"
     description="Retrieve Ivy-managed artifacts">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
   </target>
-  
+
   <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
     description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
@@ -164,13 +173,13 @@
       log="${ivyresolvelog}"/>
     <ivy:cachepath pathid="checkstyle-classpath" conf="checkstyle"/>
   </target>
-  
+
   <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
-    description="Retrieve Ivy-managed Hadoop source artifacts" unless="offline">
+    description="Retrieve Ivy-managed Hadoop source artifacts" unless="ivy.skip">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
-  
+
   <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
     file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
 

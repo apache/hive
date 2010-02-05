@@ -73,4 +73,9 @@
   <modules>
      <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
   </modules>
+
+  <caches default="${ivy.cache.name}">
+    <cache name="online"/>
+    <cache name="offline" defaultTTL="eternal"/>
+  </caches>
 </ivysettings>
