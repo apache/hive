@@ -174,6 +174,19 @@ public interface IMetaStoreClient {
       List<String> partVals) throws MetaException, TException;
 
   /**
+   * @param dbName
+   * @param tblName
+   * @param name - partition name i.e. 'ds=2010-02-03/ts=2010-02-03 18%3A16%3A01'
+   * @return the partition object
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String,
+   *      java.lang.String, java.util.List)
+   */
+  public Partition getPartitionByName(String dbName, String tblName,
+      String name) throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+  
+  /**
    * @param tbl_name
    * @param db_name
    * @param max_parts

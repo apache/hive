@@ -40,6 +40,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Partition append_partition(string db_name, string tbl_name,  part_vals)'
   print '  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)'
   print '  Partition get_partition(string db_name, string tbl_name,  part_vals)'
+  print '  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '   get_partitions(string db_name, string tbl_name, i16 max_parts)'
   print '   get_partition_names(string db_name, string tbl_name, i16 max_parts)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
@@ -205,6 +206,12 @@ elif cmd == 'get_partition':
     print 'get_partition requires 3 args'
     sys.exit(1)
   pp.pprint(client.get_partition(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_partition_by_name':
+  if len(args) != 3:
+    print 'get_partition_by_name requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_partition_by_name(args[0],args[1],args[2],))
 
 elif cmd == 'get_partitions':
   if len(args) != 3:

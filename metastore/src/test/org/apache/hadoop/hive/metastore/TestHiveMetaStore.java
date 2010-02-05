@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -88,7 +89,7 @@ public class TestHiveMetaStore extends TestCase {
       String tblName = "comptbl";
       String typeName = "Person";
       List<String> vals = new ArrayList<String>(2);
-      vals.add("2008-07-01");
+      vals.add("2008-07-01 14:13:12");
       vals.add("14");
 
       client.dropTable(dbName, tblName);
@@ -149,6 +150,19 @@ public class TestHiveMetaStore extends TestCase {
       Partition part2 = client.getPartition(dbName, tblName, part.getValues());
       assertTrue("Partitions are not same", part.equals(part2));
 
+      String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
+      Partition part3 = client.getPartitionByName(dbName, tblName, partName);
+      assertTrue("Partitions are not the same", part.equals(part2));
+      
+      boolean exceptionThrown = false;
+      try {
+        String badPartName = "ds=2008-07-01 14%3A13%3A12/hrs=14";
+        client.getPartitionByName(dbName, tblName, badPartName);
+      } catch(NoSuchObjectException e) {
+        exceptionThrown = true;
+      }
+      assertTrue("Bad partition spec should have thrown an exception", exceptionThrown);
+      
       FileSystem fs = FileSystem.get(hiveConf);
       Path partPath = new Path(part2.getSd().getLocation());
 

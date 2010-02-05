@@ -544,4 +544,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_config_value(name, defaultValue);
   }
 
+  public Partition getPartitionByName(String db, String tableName, String partName)
+      throws MetaException, TException, UnknownTableException, NoSuchObjectException {
+    return client.get_partition_by_name(db, tableName, partName);
+  }
+
 }

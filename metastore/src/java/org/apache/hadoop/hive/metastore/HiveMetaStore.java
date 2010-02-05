@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -801,6 +803,41 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             + e.getMessage() + " cause: " + e.getCause());
       }
       return toReturn;
+    }
+
+    public Partition get_partition_by_name(String db_name, String tbl_name,
+        String part_name) throws MetaException, UnknownTableException, NoSuchObjectException, TException {
+      incrementCounter("get_partition_by_name");
+      logStartFunction("get_partition_by_name: db=" + db_name + " tbl_name="
+          + tbl_name + " part_name=" + part_name);
+     
+      // Unescape the partition name
+      LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(part_name);
+      
+      // getPartition expects partition values in a list. use info from the
+      // table to put the partition column values in order
+      Table t = getMS().getTable(db_name, tbl_name);
+      if (t == null) {
+        throw new UnknownTableException(db_name + "." + tbl_name
+            + " table not found");
+      }
+      
+      List<String> partVals = new ArrayList<String>();
+      for(FieldSchema field : t.getPartitionKeys()) {
+        String key = field.getName();
+        String val = hm.get(key);
+        if(val == null) {
+          throw new NoSuchObjectException("incomplete partition name - missing " + key);
+        }
+        partVals.add(val);
+      }
+      Partition p = getMS().getPartition(db_name, tbl_name, partVals);
+      
+      if(p == null) {
+        throw new NoSuchObjectException(db_name + "." + tbl_name
+            + " partition (" + part_name + ") not found");
+      }
+      return p;
     }
   }
 

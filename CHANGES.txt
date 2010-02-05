@@ -55,6 +55,9 @@ Trunk -  Unreleased
 
     HIVE-1103. Add .gitignore file. (Carl Steinbach via zshao)
 
+    HIVE-1132. Add metastore API method to get partition by name.
+    (Paul Yang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
