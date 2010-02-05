@@ -61,6 +61,9 @@ Trunk -  Unreleased
     HIVE-1120. In ivy offline mode, don't delete downloaded jars.
     (John Sichi via zshao)
 
+    HIVE-862. CommandProcessor should return DriverResponse.
+    (Bill Graham via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

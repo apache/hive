@@ -137,7 +137,7 @@ public class CliDriver {
           PrintStream out = ss.out;
           long start = System.currentTimeMillis();
 
-          ret = qp.run(cmd);
+          ret = qp.run(cmd).getResponseCode();
           if (ret != 0) {
             qp.close();
             return ret;
@@ -173,7 +173,7 @@ public class CliDriver {
           }
 
         } else {
-          ret = proc.run(cmd_1);
+          ret = proc.run(cmd_1).getResponseCode();
         }
       }
     }

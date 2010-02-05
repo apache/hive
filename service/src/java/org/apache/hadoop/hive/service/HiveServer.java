@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobTracker;
@@ -88,7 +89,7 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Executes a query.
-     * 
+     *
      * @param cmd
      *          HiveQL query to execute
      */
@@ -106,17 +107,19 @@ public class HiveServer extends ThriftHive {
 
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+        CommandProcessorResponse response = null;
         if (proc != null) {
           if (proc instanceof Driver) {
             isHiveQuery = true;
-            Driver.DriverResponse response = driver.runCommand(cmd);
-            ret = response.getResponseCode();
-            SQLState = response.getSQLState();
-            errorMessage = response.getErrorMessage();
+            response = driver.run(cmd);
           } else {
             isHiveQuery = false;
-            ret = proc.run(cmd_1);
+            response = proc.run(cmd_1);
           }
+
+          ret = response.getResponseCode();
+          SQLState = response.getSQLState();
+          errorMessage = response.getErrorMessage();
         }
       } catch (Exception e) {
         HiveServerException ex = new HiveServerException();
@@ -219,7 +222,7 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Fetches the next row in a query result set.
-     * 
+     *
      * @return the next row in a query result set. null if there is no more row
      *         to fetch.
      */
@@ -248,7 +251,7 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Fetches numRows rows.
-     * 
+     *
      * @param numRows
      *          Number of rows to fetch.
      * @return A list of rows. The size of the list is numRows if there are at
@@ -284,10 +287,10 @@ public class HiveServer extends ThriftHive {
 
     /**
      * Fetches all the rows in a result set.
-     * 
+     *
      * @return All the rows in a result set of a query executed using execute
      *         method.
-     * 
+     *
      *         TODO: Currently the server buffers all the rows before returning
      *         them to the client. Decide whether the buffering should be done
      *         in the client.

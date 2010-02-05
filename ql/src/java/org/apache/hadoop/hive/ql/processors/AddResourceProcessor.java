@@ -33,7 +33,7 @@ public class AddResourceProcessor implements CommandProcessor {
   public void init() {
   }
 
-  public int run(String command) {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
     SessionState.ResourceType t;
@@ -42,12 +42,12 @@ public class AddResourceProcessor implements CommandProcessor {
       console.printError("Usage: add ["
           + StringUtils.join(SessionState.ResourceType.values(), "|")
           + "] <value> [<value>]*");
-      return 1;
+      return new CommandProcessorResponse(1);
     }
     for (int i = 1; i < tokens.length; i++) {
       ss.add_resource(t, tokens[i]);
     }
-    return 0;
+    return new CommandProcessorResponse(0);
   }
 
 }

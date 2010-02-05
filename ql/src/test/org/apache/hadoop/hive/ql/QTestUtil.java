@@ -250,7 +250,7 @@ public class QTestUtil {
 
   private void runLoadCmd(String loadCmd) throws Exception {
     int ecode = 0;
-    ecode = drv.run(loadCmd);
+    ecode = drv.run(loadCmd).getResponseCode();
     if (ecode != 0) {
       throw new Exception("load command: " + loadCmd
           + " failed with exit code= " + ecode);
@@ -261,7 +261,7 @@ public class QTestUtil {
 
   private void runCreateTableCmd(String createTableCmd) throws Exception {
     int ecode = 0;
-    ecode = drv.run(createTableCmd);
+    ecode = drv.run(createTableCmd).getResponseCode();
     if (ecode != 0) {
       throw new Exception("create table command: " + createTableCmd
           + " failed with exit code= " + ecode);
@@ -485,7 +485,7 @@ public class QTestUtil {
   }
 
   public int execute(String tname) {
-    return drv.run(qMap.get(tname));
+    return drv.run(qMap.get(tname)).getResponseCode();
   }
 
   public int executeClient(String tname) {

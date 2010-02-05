@@ -41,7 +41,7 @@ public class DfsProcessor implements CommandProcessor {
   public void init() {
   }
 
-  public int run(String command) {
+  public CommandProcessorResponse run(String command) {
     String[] tokens = command.split("\\s+");
 
     try {
@@ -58,13 +58,13 @@ public class DfsProcessor implements CommandProcessor {
       }
 
       System.setOut(oldOut);
-      return (ret);
+      return new CommandProcessorResponse(ret);
 
     } catch (Exception e) {
       console.printError("Exception raised from DFSShell.run "
           + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
           .stringifyException(e));
-      return 1;
+      return new CommandProcessorResponse(1);
     }
   }
 

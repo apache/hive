@@ -18,14 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.DataInput;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,6 +70,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -98,7 +93,7 @@ public class Driver implements CommandProcessor {
   private Context ctx;
   private QueryPlan plan;
   private Schema schema;
-  
+
   private String errorMessage;
   private String SQLState;
 
@@ -155,17 +150,17 @@ public class Driver implements CommandProcessor {
     return cs;
   }
 
-  
+
   public Schema getSchema() {
     return schema;
   }
-  
+
   /**
    * Get a Schema with fields represented with native Hive types
    */
   public static Schema getSchema(BaseSemanticAnalyzer sem, HiveConf conf) {
     Schema schema = null;
-    
+
     // If we have a plan, prefer its logical result schema if it's
     // available; otherwise, try digging out a fetch task; failing that,
     // give up.
@@ -198,7 +193,7 @@ public class Driver implements CommandProcessor {
           lst = MetaStoreUtils.getFieldsFromDeserializer(
               tableName, td.getDeserializer());
         } catch (Exception e) {
-          LOG.warn("Error getting schema: " + 
+          LOG.warn("Error getting schema: " +
               org.apache.hadoop.util.StringUtils.stringifyException(e));
         }
         if (lst != null) {
@@ -325,10 +320,10 @@ public class Driver implements CommandProcessor {
       if (sem.getFetchTask() != null) {
         sem.getFetchTask().initialize(conf, plan, null);
       }
-      
+
       // get the output schema
       schema = getSchema(sem, conf);
-      
+
       return (0);
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
@@ -358,59 +353,21 @@ public class Driver implements CommandProcessor {
     return plan;
   }
 
-  public int run(String command) {
-    DriverResponse response = runCommand(command);
-    return response.getResponseCode();
-  }
-
-  public DriverResponse runCommand(String command) {
+  public CommandProcessorResponse run(String command) {
     errorMessage = null;
     SQLState = null;
 
     int ret = compile(command);
     if (ret != 0) {
-      return new DriverResponse(ret, errorMessage, SQLState);
+      return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
     ret = execute();
     if (ret != 0) {
-      return new DriverResponse(ret, errorMessage, SQLState);
+      return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
-    return new DriverResponse(ret);
-  }
-
-  /**
-   * Encapsulates the basic response info returned by the Driver. Typically
-   * <code>errorMessage</code> and <code>SQLState</code> will only be set if the
-   * <code>responseCode</code> is not 0.
-   */
-  public class DriverResponse {
-    private final int responseCode;
-    private final String errorMessage;
-    private final String SQLState;
-
-    public DriverResponse(int responseCode) {
-      this(responseCode, null, null);
-    }
-
-    public DriverResponse(int responseCode, String errorMessage, String SQLState) {
-      this.responseCode = responseCode;
-      this.errorMessage = errorMessage;
-      this.SQLState = SQLState;
-    }
-
-    public int getResponseCode() {
-      return responseCode;
-    }
-
-    public String getErrorMessage() {
-      return errorMessage;
-    }
-
-    public String getSQLState() {
-      return SQLState;
-    }
+    return new CommandProcessorResponse(ret);
   }
 
   private List<PreExecute> getPreExecHooks() throws Exception {
@@ -603,7 +560,7 @@ public class Driver implements CommandProcessor {
       }
     }
     console.printInfo("OK");
-    
+
     return (0);
   }
 

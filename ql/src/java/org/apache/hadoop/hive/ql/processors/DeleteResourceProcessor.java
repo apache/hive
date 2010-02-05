@@ -33,7 +33,7 @@ public class DeleteResourceProcessor implements CommandProcessor {
   public void init() {
   }
 
-  public int run(String command) {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");
 
@@ -43,7 +43,7 @@ public class DeleteResourceProcessor implements CommandProcessor {
       console.printError("Usage: delete ["
           + StringUtils.join(SessionState.ResourceType.values(), "|")
           + "] <value> [<value>]*");
-      return 1;
+      return new CommandProcessorResponse(1);
     }
 
     if (tokens.length >= 2) {
@@ -54,6 +54,6 @@ public class DeleteResourceProcessor implements CommandProcessor {
       ss.delete_resource(t);
     }
 
-    return 0;
+    return new CommandProcessorResponse(0);
   }
 }

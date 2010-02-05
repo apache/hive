@@ -61,18 +61,18 @@ public class SetProcessor implements CommandProcessor {
   public void init() {
   }
 
-  public int run(String command) {
+  public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
 
     String nwcmd = command.trim();
     if (nwcmd.equals("")) {
       dumpOptions(ss.getConf().getChangedProperties());
-      return 0;
+      return new CommandProcessorResponse(0);
     }
 
     if (nwcmd.equals("-v")) {
       dumpOptions(ss.getConf().getAllProperties());
-      return 0;
+      return new CommandProcessorResponse(0);
     }
 
     String[] part = new String[2];
@@ -81,7 +81,7 @@ public class SetProcessor implements CommandProcessor {
     if (eqIndex == -1) {
       // no equality sign - print the property out
       dumpOption(ss.getConf().getAllProperties(), nwcmd);
-      return (0);
+      return new CommandProcessorResponse(0);
     } else if (eqIndex == nwcmd.length() - 1) {
       part[0] = nwcmd.substring(0, nwcmd.length() - 1);
       part[1] = "";
@@ -99,8 +99,8 @@ public class SetProcessor implements CommandProcessor {
       }
     } catch (IllegalArgumentException err) {
       ss.err.println(err.getMessage());
-      return 1;
+      return new CommandProcessorResponse(1);
     }
-    return 0;
+    return new CommandProcessorResponse(0);
   }
 }

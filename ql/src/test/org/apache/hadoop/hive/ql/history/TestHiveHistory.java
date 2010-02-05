@@ -130,7 +130,7 @@ public class TestHiveHistory extends TestCase {
 
       String cmd = "select a.key from src a";
       Driver d = new Driver();
-      int ret = d.run(cmd);
+      int ret = d.run(cmd).getResponseCode();
       if (ret != 0) {
         fail("Failed");
       }

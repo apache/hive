@@ -330,7 +330,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
       if (proc != null) {
         if (proc instanceof Driver) {
           Driver qp = (Driver) proc;
-          queryRet.add(new Integer(qp.run(cmd)));
+          queryRet.add(new Integer(qp.run(cmd).getResponseCode()));
           ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
@@ -355,7 +355,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
           }
           qp.close();
         } else {
-          queryRet.add(new Integer(proc.run(cmd_1)));
+          queryRet.add(new Integer(proc.run(cmd_1).getResponseCode()));
         }
       } else {
         // processor was null
