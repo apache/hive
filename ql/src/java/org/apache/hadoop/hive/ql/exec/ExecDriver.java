@@ -566,8 +566,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
 
     // Turn on speculative execution for reducers
-    HiveConf.setVar(job, HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
-        HiveConf.getVar(job, HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS));
+    boolean useSpeculativeExecReducers =
+        HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
+    job.setBoolean(
+      HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS.varname,
+      useSpeculativeExecReducers);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
     if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat))) {
