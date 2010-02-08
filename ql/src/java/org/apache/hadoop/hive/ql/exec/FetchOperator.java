@@ -252,30 +252,26 @@ public class FetchOperator {
    **/
   public InspectableObject getNextRow() throws IOException {
     try {
-      if (currRecReader == null) {
-        currRecReader = getRecordReader();
+      while (true) {
         if (currRecReader == null) {
-          return null;
+          currRecReader = getRecordReader();
+          if (currRecReader == null) {
+            return null;
+          }
         }
-      }
-
-      boolean ret = currRecReader.next(key, value);
-      if (ret) {
-        if (tblDataDone) {
-          Object obj = serde.deserialize(value);
-          return new InspectableObject(obj, serde.getObjectInspector());
+  
+        boolean ret = currRecReader.next(key, value);
+        if (ret) {
+          if (tblDataDone) {
+            Object obj = serde.deserialize(value);
+            return new InspectableObject(obj, serde.getObjectInspector());
+          } else {
+            rowWithPart[0] = serde.deserialize(value);
+            return new InspectableObject(rowWithPart, rowObjectInspector);
+          }
         } else {
-          rowWithPart[0] = serde.deserialize(value);
-          return new InspectableObject(rowWithPart, rowObjectInspector);
-        }
-      } else {
-        currRecReader.close();
-        currRecReader = null;
-        currRecReader = getRecordReader();
-        if (currRecReader == null) {
-          return null;
-        } else {
-          return getNextRow();
+          currRecReader.close();
+          currRecReader = null;
         }
       }
     } catch (Exception e) {

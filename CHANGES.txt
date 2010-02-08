@@ -144,6 +144,9 @@ Trunk -  Unreleased
 
     HIVE-1129. Fix assertion in ExecDriver.execute. (John Sichi via zshao)
 
+    HIVE-1141. Remove recursive call in FetchOperator.getNextRow.
+    (Zheng Shao via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
