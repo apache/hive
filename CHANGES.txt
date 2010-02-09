@@ -149,6 +149,9 @@ Trunk -  Unreleased
     HIVE-1141. Remove recursive call in FetchOperator.getNextRow.
     (Zheng Shao via He Yongqiang)
 
+    HIVE-1140. Fix incorrect ambiguous column reference error message.
+    (Paul Yang via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

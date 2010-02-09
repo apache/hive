@@ -1805,8 +1805,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias)
             && (out_rwsch.get(null, colAlias) != null)) {
-          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(expr
-              .getChild(1)));
+          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(colAlias));
         }
         out_rwsch.put(tabAlias, colAlias, new ColumnInfo(
             getColumnInternalName(pos), exp.getTypeInfo(), tabAlias, false));
