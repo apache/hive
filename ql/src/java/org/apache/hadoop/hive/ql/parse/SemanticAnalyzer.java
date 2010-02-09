@@ -1526,9 +1526,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // child can be EXPR AS ALIAS, or EXPR.
       ASTNode child = (ASTNode) exprList.getChild(i);
       boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
-      
+
       // EXPR AS (ALIAS,...) parses, but is only allowed for UDTF's
-      // This check is not needed and invalid when there is a transform b/c the 
+      // This check is not needed and invalid when there is a transform b/c the
       // AST's are slightly different.
       if (!isInTransform && !isUDTF && child.getChildCount() > 2) {
         throw new SemanticException(ErrorMsg.INVALID_AS.getMsg());
@@ -1583,7 +1583,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias) &&
             (out_rwsch.get(null, colAlias) != null)) {
-          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(expr.getChild(1)));
+          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(colAlias));
         }
         out_rwsch.put(tabAlias, colAlias,
                       new ColumnInfo(getColumnInternalName(pos),
