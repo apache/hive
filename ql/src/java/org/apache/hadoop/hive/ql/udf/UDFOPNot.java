@@ -18,19 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BooleanWritable;
 
+/**
+ * UDFOPNot.
+ *
+ */
 @Description(name = "not,!", value = "_FUNC_ a - Logical not")
 public class UDFOPNot extends UDF {
-
-  private static Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPNot");
-
-  BooleanWritable result = new BooleanWritable();
+  private BooleanWritable result = new BooleanWritable();
 
   public UDFOPNot() {
   }

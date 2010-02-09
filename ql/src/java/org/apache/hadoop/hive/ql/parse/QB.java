@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
 /**
- * Implementation of the query block
+ * Implementation of the query block.
  * 
  **/
 
@@ -46,7 +46,8 @@ public class QB {
   private String id;
   private boolean isQuery;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
-                                          // results
+
+  // results
 
   public void print(String msg) {
     LOG.info(msg + "alias=" + qbp.getAlias());

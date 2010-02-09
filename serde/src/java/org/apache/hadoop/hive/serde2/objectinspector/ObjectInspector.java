@@ -37,6 +37,10 @@ package org.apache.hadoop.hive.serde2.objectinspector;
  */
 public interface ObjectInspector {
 
+  /**
+   * Category.
+   *
+   */
   public static enum Category {
     PRIMITIVE, LIST, MAP, STRUCT
   };
@@ -49,13 +53,13 @@ public interface ObjectInspector {
    * type name can be something like "list<int>", "map<int,string>", java class
    * names, or user-defined type names similar to typedef.
    */
-  public String getTypeName();
+  String getTypeName();
 
   /**
    * An ObjectInspector must inherit from one of the following interfaces if
    * getCategory() returns: PRIMITIVE: PrimitiveObjectInspector LIST:
-   * ListObjectInspector MAP: MapObjectInspector STRUCT: StructObjectInspector
+   * ListObjectInspector MAP: MapObjectInspector STRUCT: StructObjectInspector.
    */
-  public Category getCategory();
+  Category getCategory();
 
 }

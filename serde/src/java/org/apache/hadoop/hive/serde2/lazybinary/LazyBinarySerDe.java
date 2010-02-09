@@ -79,7 +79,7 @@ public class LazyBinarySerDe implements SerDe {
   LazyBinaryStruct cachedLazyBinaryStruct;
 
   /**
-   * Initialize the SerDe with configuration and table information
+   * Initialize the SerDe with configuration and table information.
    */
   @Override
   public void initialize(Configuration conf, Properties tbl)

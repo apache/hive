@@ -34,13 +34,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
  * on the context in which it is used.
  */
 public class GenericUDFIf extends GenericUDF {
-
-  ObjectInspector[] argumentOIs;
-  GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private ObjectInspector[] argumentOIs;
+  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     argumentOIs = arguments;
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
@@ -52,22 +50,22 @@ public class GenericUDFIf extends GenericUDF {
     boolean conditionTypeIsOk = (arguments[0].getCategory() == ObjectInspector.Category.PRIMITIVE);
     if (conditionTypeIsOk) {
       PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) arguments[0]);
-      conditionTypeIsOk = (poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN || poi
-          .getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VOID);
+      conditionTypeIsOk = (poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN
+          || poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VOID);
     }
     if (!conditionTypeIsOk) {
       throw new UDFArgumentTypeException(0,
           "The first argument of function IF should be \""
-              + Constants.BOOLEAN_TYPE_NAME + "\", but \""
-              + arguments[0].getTypeName() + "\" is found");
+          + Constants.BOOLEAN_TYPE_NAME + "\", but \""
+          + arguments[0].getTypeName() + "\" is found");
     }
 
     if (!(returnOIResolver.update(arguments[1]) && returnOIResolver
         .update(arguments[2]))) {
       throw new UDFArgumentTypeException(2,
           "The second and the third arguments of function IF should have the same type, "
-              + "but they are different: \"" + arguments[1].getTypeName()
-              + "\" and \"" + arguments[2].getTypeName() + "\"");
+          + "but they are different: \"" + arguments[1].getTypeName()
+          + "\" and \"" + arguments[2].getTypeName() + "\"");
     }
 
     return returnOIResolver.get();

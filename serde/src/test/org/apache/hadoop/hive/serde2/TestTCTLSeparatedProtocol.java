@@ -31,6 +31,10 @@ import org.apache.thrift.protocol.TMap;
 import org.apache.thrift.protocol.TStruct;
 import org.apache.thrift.transport.TMemoryBuffer;
 
+/**
+ * TestTCTLSeparatedProtocol.
+ *
+ */
 public class TestTCTLSeparatedProtocol extends TestCase {
 
   public TestTCTLSeparatedProtocol() throws Exception {
@@ -46,9 +50,9 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     String key2 = "24";
     String value2 = "TheValueAgain";
 
-    byte columnSeparator[] = { 1 };
-    byte elementSeparator[] = { 2 };
-    byte kvSeparator[] = { 3 };
+    byte columnSeparator[] = {1};
+    byte elementSeparator[] = {2};
+    byte kvSeparator[] = {3};
 
     trans.write(foo.getBytes(), 0, foo.getBytes().length);
     trans.write(columnSeparator, 0, 1);
@@ -152,11 +156,12 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     prot.writeStructEnd();
     trans.flush();
-    byte b[] = new byte[3 * 1024];
+    byte[] b = new byte[3 * 1024];
     int len = trans.read(b, 0, b.length);
     String test = new String(b, 0, len);
 
-    String testRef = "100348.55234.22hello world!key1val1key2val2key3val3elem1elem2bye!";
+    String testRef =
+      "100348.55234.22hello world!key1val1key2val2key3val3elem1elem2bye!";
     assertTrue(test.equals(testRef));
 
     trans = new TMemoryBuffer(1023);
@@ -302,7 +307,8 @@ public class TestTCTLSeparatedProtocol extends TestCase {
    * can do it.
    */
   public void test1ApacheLogFormat() throws Exception {
-    final String sample = "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
+    final String sample =
+      "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
 
     TMemoryBuffer trans = new TMemoryBuffer(4096);
     trans.write(sample.getBytes(), 0, sample.getBytes().length);

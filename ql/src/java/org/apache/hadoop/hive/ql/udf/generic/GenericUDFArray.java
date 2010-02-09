@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -31,15 +31,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-@Description(name = "array", value = "_FUNC_(n0, n1...) - Creates an array with the given elements ")
+/**
+ * GenericUDFArray.
+ *
+ */
+@Description(name = "array",
+    value = "_FUNC_(n0, n1...) - Creates an array with the given elements ")
 public class GenericUDFArray extends GenericUDF {
-
-  Converter[] converters;
-  ArrayList<Object> ret = new ArrayList<Object>();
+  private Converter[] converters;
+  private ArrayList<Object> ret = new ArrayList<Object>();
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 

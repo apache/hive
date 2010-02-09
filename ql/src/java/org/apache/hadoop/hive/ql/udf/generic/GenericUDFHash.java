@@ -19,10 +19,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -34,20 +32,16 @@ import org.apache.hadoop.io.IntWritable;
  */
 @Description(name = "hash", value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments")
 public class GenericUDFHash extends GenericUDF {
-
-  private static Log LOG = LogFactory.getLog(GenericUDFHash.class.getName());
-
-  ObjectInspector[] argumentOIs;
+  private ObjectInspector[] argumentOIs;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentTypeException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {

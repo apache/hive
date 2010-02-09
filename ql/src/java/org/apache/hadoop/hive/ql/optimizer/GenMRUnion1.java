@@ -44,14 +44,14 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
- * Processor for the rule - TableScan followed by Union
+ * Processor for the rule - TableScan followed by Union.
  */
 public class GenMRUnion1 implements NodeProcessor {
 
@@ -175,12 +175,13 @@ public class GenMRUnion1 implements NodeProcessor {
     // Create a file sink operator for this file name
     Operator<? extends Serializable> fs_op = OperatorFactory.get(
         new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
-            HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
+        HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
 
     assert parent.getChildOperators().size() == 1;
     parent.getChildOperators().set(0, fs_op);
 
-    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends Serializable>> parentOpList =
+      new ArrayList<Operator<? extends Serializable>>();
     parentOpList.add(parent);
     fs_op.setParentOperators(parentOpList);
 

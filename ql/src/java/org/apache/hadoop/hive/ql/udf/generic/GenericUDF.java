@@ -43,11 +43,11 @@ public abstract class GenericUDF {
    * GenericUDF use DeferedObject to pass arguments.
    */
   public static interface DeferredObject {
-    public Object get() throws HiveException;
+    Object get() throws HiveException;
   };
 
   /**
-   * The constructor
+   * The constructor.
    */
   public GenericUDF() {
   }

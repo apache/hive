@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
+/**
+ * DynamicSerDeSimpleNode.
+ *
+ */
 public class DynamicSerDeSimpleNode extends SimpleNode {
   protected static final boolean thrift_mode = true;
 

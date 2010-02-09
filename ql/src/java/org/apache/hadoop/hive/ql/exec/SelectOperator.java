@@ -29,13 +29,13 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
- * Select operator implementation
- **/
+ * Select operator implementation.
+ */
 public class SelectOperator extends Operator<SelectDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
-  transient protected ExprNodeEvaluator[] eval;
+  protected transient ExprNodeEvaluator[] eval;
 
   transient Object[] output;
 

@@ -51,7 +51,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     NEW, READY, QUERY_SET, QUERY_RUNNING, DESTROY, KILL_QUERY
   };
 
-  /** The Web Interface sessionName this is used to identify the session */
+  /** The Web Interface sessionName this is used to identify the session. */
   private final String sessionName;
 
   /**
@@ -63,38 +63,38 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   private CliSessionState ss;
 
-  /** Standard out from the session will be written to this local file */
+  /** Standard out from the session will be written to this local file. */
   private String resultFile;
 
-  /** Standard error from the session will be written to this local file */
+  /** Standard error from the session will be written to this local file. */
   private String errorFile;
 
   /**
    * The results from the Driver. This is used for storing the most result
-   * results from the driver in memory
+   * results from the driver in memory.
    */
   private ArrayList<ArrayList<String>> resultBucket;
 
-  /** Limits the resultBucket to be no greater then this size */
+  /** Limits the resultBucket to be no greater then this size. */
   private int resultBucketMaxSize;
 
-  /** List of queries that this item should/has operated on */
+  /** List of queries that this item should/has operated on. */
   private List<String> queries;
 
-  /** status code results of queries */
+  /** status code results of queries. */
   private List<Integer> queryRet;
 
-  /** Reference to the configuration */
+  /** Reference to the configuration. */
   private HiveConf conf;
 
-  /** User privileges */
+  /** User privileges. */
   private HWIAuth auth;
 
   public Thread runnable;
 
   /**
    * Threading SessionState issues require us to capture a reference to the hive
-   * history file and store it
+   * history file and store it.
    */
   private String historyFile;
 
@@ -150,7 +150,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
      * HiveHistoryFileName will not be accessible outside this thread. We must
      * capture this now.
      */
-    historyFile = ss.get().getHiveHistory().getHistFileName();
+    historyFile = SessionState.get().getHiveHistory().getHistFileName();
     l4j.debug("HWISessionItem itemInit Complete " + getSessionName());
     status = WebSessionItemStatus.READY;
 
@@ -214,7 +214,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * Helper function to get configuration variables
+   * Helper function to get configuration variables.
    * 
    * @param wanted
    *          a ConfVar
@@ -392,7 +392,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * This is a chained call to SessionState.getIsSilent()
+   * This is a chained call to SessionState.getIsSilent().
    */
   public boolean getSSIsSilent() throws HWIException {
     if (ss == null) {
@@ -401,7 +401,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     return ss.getIsSilent();
   }
 
-  /** to support sorting/Set */
+  /** to support sorting/Set. */
   public int compareTo(HWISessionItem other) {
     if (other == null) {
       return -1;
@@ -427,7 +427,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * Uses the sessionName property to compare to sessions
+   * Uses the sessionName property to compare to sessions.
    * 
    * @return true if sessionNames are equal false otherwise
    */
@@ -456,7 +456,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * The session name is an identifier to recognize the session
+   * The session name is an identifier to recognize the session.
    * 
    * @return the session's name
    */
@@ -476,7 +476,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * Currently unused
+   * Currently unused.
    * 
    * @return a String with the full path to the error file.
    */
@@ -485,7 +485,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * Currently unused
+   * Currently unused.
    * 
    * @param errorFile
    *          the full path to the file for results.
@@ -509,13 +509,13 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     this.auth = auth;
   }
 
-  /** returns an unmodifiable list of queries */
+  /** Returns an unmodifiable list of queries. */
   public List<String> getQueries() {
     return java.util.Collections.unmodifiableList(queries);
   }
 
   /**
-   * adds a new query to the execution list
+   * Adds a new query to the execution list.
    * 
    * @param query
    *          query to be added to the list
@@ -526,7 +526,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * removes a query from the execution list
+   * Removes a query from the execution list.
    * 
    * @param item
    *          the 0 based index of the item to be removed
@@ -541,13 +541,13 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     queries.clear();
   }
 
-  /** returns the value for resultBucketMaxSize */
+  /** returns the value for resultBucketMaxSize. */
   public int getResultBucketMaxSize() {
     return resultBucketMaxSize;
   }
 
   /**
-   * sets the value for resultBucketMaxSize
+   * sets the value for resultBucketMaxSize.
    * 
    * @param size
    *          the new size
@@ -556,13 +556,13 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
     resultBucketMaxSize = size;
   }
 
-  /** gets the value for resultBucket */
+  /** gets the value for resultBucket. */
   public ArrayList<ArrayList<String>> getResultBucket() {
     return resultBucket;
   }
 
   /**
-   * The HWISessionItem stores the result of each query in an array
+   * The HWISessionItem stores the result of each query in an array.
    * 
    * @return unmodifiable list of return codes
    */

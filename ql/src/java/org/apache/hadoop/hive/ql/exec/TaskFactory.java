@@ -24,20 +24,25 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
+import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 
 /**
- * TaskFactory implementation
+ * TaskFactory implementation.
  **/
-public class TaskFactory {
+public final class TaskFactory {
 
-  public final static class taskTuple<T extends Serializable> {
+  /**
+   * taskTuple.
+   *
+   * @param <T>
+   */
+  public static final class taskTuple<T extends Serializable> {
     public Class<T> workClass;
     public Class<? extends Task<T>> taskClass;
 
@@ -159,6 +164,10 @@ public class TaskFactory {
     }
 
     return (ret);
+  }
+
+  private TaskFactory() {
+    // prevent instantiation
   }
 
 }

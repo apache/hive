@@ -44,8 +44,7 @@ public interface Deserializer {
    *          table properties
    * @throws SerDeException
    */
-  public void initialize(Configuration conf, Properties tbl)
-      throws SerDeException;
+  void initialize(Configuration conf, Properties tbl) throws SerDeException;
 
   /**
    * Deserialize an object out of a Writable blob. In most cases, the return
@@ -58,12 +57,11 @@ public interface Deserializer {
    *          The Writable object containing a serialized object
    * @return A Java object representing the contents in the blob.
    */
-  public Object deserialize(Writable blob) throws SerDeException;
+  Object deserialize(Writable blob) throws SerDeException;
 
   /**
    * Get the object inspector that can be used to navigate through the internal
    * structure of the Object returned from deserialize(...).
    */
-  public ObjectInspector getObjectInspector() throws SerDeException;
-
+  ObjectInspector getObjectInspector() throws SerDeException;
 }

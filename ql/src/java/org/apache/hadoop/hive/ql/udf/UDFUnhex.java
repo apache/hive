@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "unhex", value = "_FUNC_(str) - Converts hexadecimal argument to string", extended = "Performs the inverse operation of HEX(str). That is, it interprets\n"
+/**
+ * UDFUnhex.
+ *
+ */
+@Description(name = "unhex",
+    value = "_FUNC_(str) - Converts hexadecimal argument to string",
+    extended = "Performs the inverse operation of HEX(str). That is, it interprets\n"
     + "each pair of hexadecimal digits in the argument as a number and\n"
     + "converts it to the character represented by the number. The\n"
     + "resulting characters are returned as a binary string.\n\n"
@@ -40,7 +46,7 @@ import org.apache.hadoop.io.Text;
 public class UDFUnhex extends UDF {
 
   /**
-   * Convert every two hex digits in s into
+   * Convert every two hex digits in s into.
    * 
    */
   public Text evaluate(Text s) {

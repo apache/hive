@@ -69,8 +69,7 @@ public class LazyShort extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as a short quantity.
    */
-  public static short parseShort(byte[] bytes, int start, int length)
-      throws NumberFormatException {
+  public static short parseShort(byte[] bytes, int start, int length) {
     return parseShort(bytes, start, length, 10);
   }
 
@@ -90,8 +89,7 @@ public class LazyShort extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as a short quantity.
    */
-  public static short parseShort(byte[] bytes, int start, int length, int radix)
-      throws NumberFormatException {
+  public static short parseShort(byte[] bytes, int start, int length, int radix) {
     int intValue = LazyInteger.parseInt(bytes, start, length, radix);
     short result = (short) intValue;
     if (result == intValue) {

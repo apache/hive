@@ -37,6 +37,10 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * S3LogDeserializer.
+ *
+ */
 public class S3LogDeserializer implements Deserializer {
 
   public static final Log LOG = LogFactory.getLog(S3LogDeserializer.class
@@ -73,7 +77,7 @@ public class S3LogDeserializer implements Deserializer {
 
     cachedObjectInspector = ObjectInspectorFactory
         .getReflectionObjectInspector(S3LogStruct.class,
-            ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+        ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
 
     LOG.debug(getClass().getName() + ": initialized");
   }

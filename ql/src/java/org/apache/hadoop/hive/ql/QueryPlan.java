@@ -58,17 +58,17 @@ import org.apache.thrift.transport.TMemoryBuffer;
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  static final private Log LOG = LogFactory.getLog(QueryPlan.class.getName());
+  private static final Log LOG = LogFactory.getLog(QueryPlan.class.getName());
 
   private String queryString;
-  
+
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
   private HashSet<ReadEntity> inputs;
   private HashSet<WriteEntity> outputs;
 
   private HashMap<String, String> idToTableNameMap;
-  
+
   private String queryId;
   private org.apache.hadoop.hive.ql.plan.api.Query query;
   private HashMap<String, HashMap<String, Long>> counters;
@@ -77,10 +77,10 @@ public class QueryPlan implements Serializable {
 
   public QueryPlan() {
   }
-  
+
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem) {
     this.queryString = queryString;
-    
+
     rootTasks = new ArrayList<Task<? extends Serializable>>();
     rootTasks.addAll(sem.getRootTasks());
     fetchTask = sem.getFetchTask();
@@ -88,7 +88,7 @@ public class QueryPlan implements Serializable {
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
-    
+
     queryId = makeQueryId();
     query = new org.apache.hadoop.hive.ql.plan.api.Query();
     query.setQueryId(queryId);
@@ -113,14 +113,14 @@ public class QueryPlan implements Serializable {
     return userid
         + "_"
         + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%5$02d", gc
-            .get(Calendar.YEAR), gc.get(Calendar.MONTH) + 1, gc
-            .get(Calendar.DAY_OF_MONTH), gc.get(Calendar.HOUR_OF_DAY), gc
-            .get(Calendar.MINUTE), gc.get(Calendar.SECOND));
+        .get(Calendar.YEAR), gc.get(Calendar.MONTH) + 1, gc
+        .get(Calendar.DAY_OF_MONTH), gc.get(Calendar.HOUR_OF_DAY), gc
+        .get(Calendar.MINUTE), gc.get(Calendar.SECOND));
   }
 
   /**
    * generate the operator graph and operator list for the given task based on
-   * the operators corresponding to that task
+   * the operators corresponding to that task.
    * 
    * @param task
    *          api.Task which needs its operator graph populated
@@ -135,20 +135,24 @@ public class QueryPlan implements Serializable {
     task.setOperatorGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     task.getOperatorGraph().setNodeType(NodeType.OPERATOR);
 
-    Queue<Operator<? extends Serializable>> opsToVisit = new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited = new HashSet<Operator<? extends Serializable>>();
+    Queue<Operator<? extends Serializable>> opsToVisit =
+      new LinkedList<Operator<? extends Serializable>>();
+    Set<Operator<? extends Serializable>> opsVisited =
+      new HashSet<Operator<? extends Serializable>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.peek() != null) {
       Operator<? extends Serializable> op = opsToVisit.remove();
       opsVisited.add(op);
       // populate the operator
-      org.apache.hadoop.hive.ql.plan.api.Operator operator = new org.apache.hadoop.hive.ql.plan.api.Operator();
+      org.apache.hadoop.hive.ql.plan.api.Operator operator =
+        new org.apache.hadoop.hive.ql.plan.api.Operator();
       operator.setOperatorId(op.getOperatorId());
       operator.setOperatorType(op.getType());
       task.addToOperatorList(operator);
       // done processing the operator
       if (op.getChildOperators() != null) {
-        org.apache.hadoop.hive.ql.plan.api.Adjacency entry = new org.apache.hadoop.hive.ql.plan.api.Adjacency();
+        org.apache.hadoop.hive.ql.plan.api.Adjacency entry =
+          new org.apache.hadoop.hive.ql.plan.api.Adjacency();
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(op.getOperatorId());
         for (Operator<? extends Serializable> childOp : op.getChildOperators()) {
@@ -172,14 +176,16 @@ public class QueryPlan implements Serializable {
     query.setStageGraph(new org.apache.hadoop.hive.ql.plan.api.Graph());
     query.getStageGraph().setNodeType(NodeType.STAGE);
 
-    Queue<Task<? extends Serializable>> tasksToVisit = new LinkedList<Task<? extends Serializable>>();
+    Queue<Task<? extends Serializable>> tasksToVisit =
+      new LinkedList<Task<? extends Serializable>>();
     Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.size() != 0) {
       Task<? extends Serializable> task = tasksToVisit.remove();
       tasksVisited.add(task);
       // populate stage
-      org.apache.hadoop.hive.ql.plan.api.Stage stage = new org.apache.hadoop.hive.ql.plan.api.Stage();
+      org.apache.hadoop.hive.ql.plan.api.Stage stage =
+        new org.apache.hadoop.hive.ql.plan.api.Stage();
       stage.setStageId(task.getId());
       stage.setStageType(task.getType());
       query.addToStageList(stage);
@@ -187,7 +193,8 @@ public class QueryPlan implements Serializable {
       if (task instanceof ExecDriver) {
         // populate map task
         ExecDriver mrTask = (ExecDriver) task;
-        org.apache.hadoop.hive.ql.plan.api.Task mapTask = new org.apache.hadoop.hive.ql.plan.api.Task();
+        org.apache.hadoop.hive.ql.plan.api.Task mapTask =
+          new org.apache.hadoop.hive.ql.plan.api.Task();
         mapTask.setTaskId(stage.getStageId() + "_MAP");
         mapTask.setTaskType(TaskType.MAP);
         stage.addToTaskList(mapTask);
@@ -196,29 +203,34 @@ public class QueryPlan implements Serializable {
 
         // populate reduce task
         if (mrTask.hasReduce()) {
-          org.apache.hadoop.hive.ql.plan.api.Task reduceTask = new org.apache.hadoop.hive.ql.plan.api.Task();
+          org.apache.hadoop.hive.ql.plan.api.Task reduceTask =
+            new org.apache.hadoop.hive.ql.plan.api.Task();
           reduceTask.setTaskId(stage.getStageId() + "_REDUCE");
           reduceTask.setTaskType(TaskType.REDUCE);
           stage.addToTaskList(reduceTask);
-          Collection<Operator<? extends Serializable>> reducerTopOps = new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends Serializable>> reducerTopOps =
+            new ArrayList<Operator<? extends Serializable>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           populateOperatorGraph(reduceTask, reducerTopOps);
         }
       } else {
-        org.apache.hadoop.hive.ql.plan.api.Task otherTask = new org.apache.hadoop.hive.ql.plan.api.Task();
+        org.apache.hadoop.hive.ql.plan.api.Task otherTask =
+          new org.apache.hadoop.hive.ql.plan.api.Task();
         otherTask.setTaskId(stage.getStageId() + "_OTHER");
         otherTask.setTaskType(TaskType.OTHER);
         stage.addToTaskList(otherTask);
       }
       if (task instanceof ConditionalTask) {
-        org.apache.hadoop.hive.ql.plan.api.Adjacency listEntry = new org.apache.hadoop.hive.ql.plan.api.Adjacency();
+        org.apache.hadoop.hive.ql.plan.api.Adjacency listEntry =
+          new org.apache.hadoop.hive.ql.plan.api.Adjacency();
         listEntry.setAdjacencyType(AdjacencyType.DISJUNCTIVE);
         listEntry.setNode(task.getId());
         ConditionalTask t = (ConditionalTask) task;
 
         for (Task<? extends Serializable> listTask : t.getListTasks()) {
           if (t.getChildTasks() != null) {
-            org.apache.hadoop.hive.ql.plan.api.Adjacency childEntry = new org.apache.hadoop.hive.ql.plan.api.Adjacency();
+            org.apache.hadoop.hive.ql.plan.api.Adjacency childEntry =
+              new org.apache.hadoop.hive.ql.plan.api.Adjacency();
             childEntry.setAdjacencyType(AdjacencyType.DISJUNCTIVE);
             childEntry.setNode(listTask.getId());
             // done processing the task
@@ -238,7 +250,8 @@ public class QueryPlan implements Serializable {
         }
         query.getStageGraph().addToAdjacencyList(listEntry);
       } else if (task.getChildTasks() != null) {
-        org.apache.hadoop.hive.ql.plan.api.Adjacency entry = new org.apache.hadoop.hive.ql.plan.api.Adjacency();
+        org.apache.hadoop.hive.ql.plan.api.Adjacency entry =
+          new org.apache.hadoop.hive.ql.plan.api.Adjacency();
         entry.setAdjacencyType(AdjacencyType.CONJUNCTIVE);
         entry.setNode(task.getId());
         // done processing the task
@@ -255,7 +268,7 @@ public class QueryPlan implements Serializable {
 
   /**
    * From the counters extracted via extractCounters(), update the counters in
-   * the query plan
+   * the query plan.
    */
   private void updateCountersInQueryPlan() {
     query.setStarted(started.contains(query.getQueryId()));
@@ -290,11 +303,13 @@ public class QueryPlan implements Serializable {
   }
 
   /**
-   * extract all the counters from tasks and operators
+   * Extract all the counters from tasks and operators.
    */
   private void extractCounters() throws IOException {
-    Queue<Task<? extends Serializable>> tasksToVisit = new LinkedList<Task<? extends Serializable>>();
-    Set<Task<? extends Serializable>> tasksVisited = new HashSet<Task<? extends Serializable>>();
+    Queue<Task<? extends Serializable>> tasksToVisit =
+      new LinkedList<Task<? extends Serializable>>();
+    Set<Task<? extends Serializable>> tasksVisited =
+      new HashSet<Task<? extends Serializable>>();
     tasksToVisit.addAll(rootTasks);
     while (tasksToVisit.peek() != null) {
       Task<? extends Serializable> task = tasksToVisit.remove();
@@ -333,7 +348,8 @@ public class QueryPlan implements Serializable {
           done.add(task.getId() + "_MAP");
         }
         if (mrTask.hasReduce()) {
-          Collection<Operator<? extends Serializable>> reducerTopOps = new ArrayList<Operator<? extends Serializable>>();
+          Collection<Operator<? extends Serializable>> reducerTopOps =
+            new ArrayList<Operator<? extends Serializable>>();
           reducerTopOps.add(mrTask.getWork().getReducer());
           extractOperatorCounters(reducerTopOps, task.getId() + "_REDUCE");
           if (mrTask.reduceStarted()) {
@@ -356,8 +372,10 @@ public class QueryPlan implements Serializable {
 
   private void extractOperatorCounters(
       Collection<Operator<? extends Serializable>> topOps, String taskId) {
-    Queue<Operator<? extends Serializable>> opsToVisit = new LinkedList<Operator<? extends Serializable>>();
-    Set<Operator<? extends Serializable>> opsVisited = new HashSet<Operator<? extends Serializable>>();
+    Queue<Operator<? extends Serializable>> opsToVisit =
+      new LinkedList<Operator<? extends Serializable>>();
+    Set<Operator<? extends Serializable>> opsVisited =
+      new HashSet<Operator<? extends Serializable>>();
     opsToVisit.addAll(topOps);
     while (opsToVisit.size() != 0) {
       Operator<? extends Serializable> op = opsToVisit.remove();
@@ -476,10 +494,8 @@ public class QueryPlan implements Serializable {
     sb.append("{");
     sb.append(getJSONKeyValue("operatorId", op.getOperatorId()));
     sb.append(getJSONKeyValue("operatorType", op.getOperatorType()));
-    sb.append(getJSONKeyValue("operatorAttributes", getJSONMap(op
-        .getOperatorAttributes())));
-    sb.append(getJSONKeyValue("operatorCounters", getJSONMap(op
-        .getOperatorCounters())));
+    sb.append(getJSONKeyValue("operatorAttributes", getJSONMap(op.getOperatorAttributes())));
+    sb.append(getJSONKeyValue("operatorCounters", getJSONMap(op.getOperatorCounters())));
     sb.append(getJSONKeyValue("done", op.isDone()));
     sb.append(getJSONKeyValue("started", op.isStarted()));
     sb.deleteCharAt(sb.length() - 1);
@@ -492,17 +508,13 @@ public class QueryPlan implements Serializable {
     sb.append("{");
     sb.append(getJSONKeyValue("taskId", task.getTaskId()));
     sb.append(getJSONKeyValue("taskType", task.getTaskType()));
-    sb.append(getJSONKeyValue("taskAttributes", getJSONMap(task
-        .getTaskAttributes())));
-    sb.append(getJSONKeyValue("taskCounters",
-        getJSONMap(task.getTaskCounters())));
-    sb.append(getJSONKeyValue("operatorGraph", getJSONGraph(task
-        .getOperatorGraph())));
+    sb.append(getJSONKeyValue("taskAttributes", getJSONMap(task.getTaskAttributes())));
+    sb.append(getJSONKeyValue("taskCounters", getJSONMap(task.getTaskCounters())));
+    sb.append(getJSONKeyValue("operatorGraph", getJSONGraph(task.getOperatorGraph())));
     // operator list
     List<String> opList = new ArrayList<String>();
     if (task.getOperatorList() != null) {
-      for (org.apache.hadoop.hive.ql.plan.api.Operator op : task
-          .getOperatorList()) {
+      for (org.apache.hadoop.hive.ql.plan.api.Operator op : task.getOperatorList()) {
         opList.add(getJSONOperator(op));
       }
     }
@@ -519,10 +531,8 @@ public class QueryPlan implements Serializable {
     sb.append("{");
     sb.append(getJSONKeyValue("stageId", stage.getStageId()));
     sb.append(getJSONKeyValue("stageType", stage.getStageType()));
-    sb.append(getJSONKeyValue("stageAttributes", getJSONMap(stage
-        .getStageAttributes())));
-    sb.append(getJSONKeyValue("stageCounters", getJSONMap(stage
-        .getStageCounters())));
+    sb.append(getJSONKeyValue("stageAttributes", getJSONMap(stage.getStageAttributes())));
+    sb.append(getJSONKeyValue("stageCounters", getJSONMap(stage.getStageCounters())));
     List<String> taskList = new ArrayList<String>();
     if (stage.getTaskList() != null) {
       for (org.apache.hadoop.hive.ql.plan.api.Task task : stage.getTaskList()) {
@@ -542,18 +552,13 @@ public class QueryPlan implements Serializable {
     sb.append("{");
     sb.append(getJSONKeyValue("queryId", query.getQueryId()));
     sb.append(getJSONKeyValue("queryType", query.getQueryType()));
-    sb.append(getJSONKeyValue("queryAttributes", getJSONMap(query
-        .getQueryAttributes())));
-    sb.append(getJSONKeyValue("queryCounters", getJSONMap(query
-        .getQueryCounters())));
-    sb
-        .append(getJSONKeyValue("stageGraph", getJSONGraph(query
-            .getStageGraph())));
+    sb.append(getJSONKeyValue("queryAttributes", getJSONMap(query.getQueryAttributes())));
+    sb.append(getJSONKeyValue("queryCounters", getJSONMap(query.getQueryCounters())));
+    sb.append(getJSONKeyValue("stageGraph", getJSONGraph(query.getStageGraph())));
     // stageList
     List<String> stageList = new ArrayList<String>();
     if (query.getStageList() != null) {
-      for (org.apache.hadoop.hive.ql.plan.api.Stage stage : query
-          .getStageList()) {
+      for (org.apache.hadoop.hive.ql.plan.api.Stage stage : query.getStageList()) {
         stageList.add(getJSONStage(stage));
       }
     }
@@ -698,5 +703,5 @@ public class QueryPlan implements Serializable {
   public void setStarted(HashSet<String> started) {
     this.started = started;
   }
-  
+
 }

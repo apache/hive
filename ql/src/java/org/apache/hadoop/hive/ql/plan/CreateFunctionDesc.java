@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * CreateFunctionDesc.
+ *
+ */
 @Explain(displayName = "Create Function")
 public class CreateFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;

@@ -22,10 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.FunctionWork;
 
+/**
+ * FunctionSemanticAnalyzer.
+ *
+ */
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory
       .getLog("hive.ql.parse.FunctionSemanticAnalyzer");

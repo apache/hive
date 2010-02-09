@@ -54,12 +54,12 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
- * FetchTask implementation
+ * FetchTask implementation.
  **/
 public class FetchOperator {
 
-  transient protected Log LOG;
-  transient protected LogHelper console;
+  protected transient Log LOG;
+  protected transient LogHelper console;
 
   public FetchOperator(FetchWork work, JobConf job) {
     LOG = LogFactory.getLog(this.getClass().getName());
@@ -99,13 +99,15 @@ public class FetchOperator {
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats =
+      new HashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
       Class inputFormatClass, Configuration conf) throws IOException {
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
+        InputFormat<WritableComparable, Writable> newInstance = 
+          (InputFormat<WritableComparable, Writable>) ReflectionUtils
             .newInstance(inputFormatClass, conf);
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
@@ -124,7 +126,7 @@ public class FetchOperator {
         .getTableDesc()
         .getProperties()
         .getProperty(
-            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
     LinkedHashMap<String, String> partSpec = currPart.getPartSpec();
 
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
@@ -142,8 +144,7 @@ public class FetchOperator {
     rowWithPart[1] = partValues;
     rowObjectInspector = ObjectInspectorFactory
         .getUnionStructObjectInspector(Arrays
-            .asList(new StructObjectInspector[] { rowObjectInspector,
-                partObjectInspector }));
+        .asList(new StructObjectInspector[] {rowObjectInspector, partObjectInspector}));
   }
 
   private void getNextPath() throws Exception {
@@ -197,8 +198,7 @@ public class FetchOperator {
     }
   }
 
-  private RecordReader<WritableComparable, Writable> getRecordReader()
-      throws Exception {
+  private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (currPath == null) {
       getNextPath();
       if (currPath == null) {

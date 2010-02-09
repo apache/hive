@@ -42,7 +42,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**
- * Implemention of shims against Hadoop 0.19.0
+ * Implemention of shims against Hadoop 0.19.0.
  */
 public class Hadoop19Shims implements HadoopShims {
   public boolean usesJobShell() {
@@ -61,7 +61,7 @@ public class Hadoop19Shims implements HadoopShims {
   }
 
   /**
-   * workaround for hadoop-17 - jobclient only looks at commandlineconfig
+   * workaround for hadoop-17 - jobclient only looks at commandlineconfig.
    */
   public void setTmpFiles(String prop, String files) {
     Configuration conf = JobClient.getCommandLineConfig();

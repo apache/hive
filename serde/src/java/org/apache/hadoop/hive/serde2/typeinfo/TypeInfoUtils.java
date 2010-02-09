@@ -24,7 +24,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
-public class TypeInfoUtils {
+/**
+ * TypeInfoUtils.
+ *
+ */
+public final class TypeInfoUtils {
+
+  private TypeInfoUtils() {
+    // prevent instantiation
+  }
 
   /**
    * Return the extended TypeInfo from a Java type. By extended TypeInfo, we
@@ -72,24 +80,24 @@ public class TypeInfoUtils {
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaType(c)) {
       return TypeInfoUtils
           .getTypeInfoFromObjectInspector(PrimitiveObjectInspectorFactory
-              .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-                  .getTypeEntryFromPrimitiveJavaType(c).primitiveCategory));
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveJavaType(c).primitiveCategory));
     }
 
     // Java Primitive Class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(c)) {
       return TypeInfoUtils
           .getTypeInfoFromObjectInspector(PrimitiveObjectInspectorFactory
-              .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-                  .getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory));
+          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory));
     }
 
     // Primitive Writable class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(c)) {
       return TypeInfoUtils
           .getTypeInfoFromObjectInspector(PrimitiveObjectInspectorFactory
-              .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
-                  .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory));
+          .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory));
     }
 
     // Must be a struct
@@ -137,7 +145,7 @@ public class TypeInfoUtils {
     // or String[] etc in the last argument.
     Type lastParaElementType = TypeInfoUtils
         .getArrayElementType(methodParameterTypes.length == 0 ? null
-            : methodParameterTypes[methodParameterTypes.length - 1]);
+        : methodParameterTypes[methodParameterTypes.length - 1]);
     boolean isVariableLengthArgument = (lastParaElementType != null);
 
     List<TypeInfo> typeInfos = null;
@@ -169,7 +177,8 @@ public class TypeInfoUtils {
 
   /**
    * Parse a recursive TypeInfo list String. For example, the following inputs
-   * are valid inputs:"int,string,map<string,int>,list<map<int,list<string>>>,list<struct<a:int,b:string>>"
+   * are valid inputs:
+   * "int,string,map<string,int>,list<map<int,list<string>>>,list<struct<a:int,b:string>>"
    * The separators between TypeInfos can be ",", ":", or ";".
    * 
    * In order to use this class: TypeInfoParser parser = new
@@ -232,7 +241,7 @@ public class TypeInfoUtils {
     private ArrayList<TypeInfo> typeInfos;
     private int iToken;
 
-    public ArrayList<TypeInfo> parseTypeInfos() throws IllegalArgumentException {
+    public ArrayList<TypeInfo> parseTypeInfos() {
       typeInfos = new ArrayList<TypeInfo>();
       iToken = 0;
       while (iToken < typeInfoTokens.size()) {
@@ -245,8 +254,8 @@ public class TypeInfoUtils {
           } else {
             throw new IllegalArgumentException(
                 "Error: ',', ':', or ';' expected at position "
-                    + separator.position + " from '" + typeInfoString + "' "
-                    + typeInfoTokens);
+                + separator.position + " from '" + typeInfoString + "' "
+                + typeInfoTokens);
           }
         }
       }
@@ -268,7 +277,7 @@ public class TypeInfoUtils {
             && !Constants.MAP_TYPE_NAME.equals(t.text)
             && !Constants.STRUCT_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
-                .getTypeEntryFromTypeName(t.text)
+            .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
           throw new IllegalArgumentException("Error: " + item
               + " expected at the position " + t.position + " of '"
@@ -352,7 +361,8 @@ public class TypeInfoUtils {
 
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardObjectInspector = new HashMap<TypeInfo, ObjectInspector>();
+  static HashMap<TypeInfo, ObjectInspector> cachedStandardObjectInspector =
+      new HashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an
@@ -366,11 +376,12 @@ public class TypeInfoUtils {
       case PRIMITIVE: {
         result = PrimitiveObjectInspectorFactory
             .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo)
-                .getPrimitiveCategory());
+            .getPrimitiveCategory());
         break;
       }
       case LIST: {
-        ObjectInspector elementObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(((ListTypeInfo) typeInfo)
+        ObjectInspector elementObjectInspector =
+            getStandardWritableObjectInspectorFromTypeInfo(((ListTypeInfo) typeInfo)
             .getListElementTypeInfo());
         result = ObjectInspectorFactory
             .getStandardListObjectInspector(elementObjectInspector);
@@ -378,10 +389,10 @@ public class TypeInfoUtils {
       }
       case MAP: {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
-        ObjectInspector keyObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo
-            .getMapKeyTypeInfo());
-        ObjectInspector valueObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo
-            .getMapValueTypeInfo());
+        ObjectInspector keyObjectInspector =
+            getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo.getMapKeyTypeInfo());
+        ObjectInspector valueObjectInspector =
+            getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
         result = ObjectInspectorFactory.getStandardMapObjectInspector(
             keyObjectInspector, valueObjectInspector);
         break;
@@ -396,7 +407,7 @@ public class TypeInfoUtils {
         for (int i = 0; i < fieldTypeInfos.size(); i++) {
           fieldObjectInspectors
               .add(getStandardWritableObjectInspectorFromTypeInfo(fieldTypeInfos
-                  .get(i)));
+              .get(i)));
         }
         result = ObjectInspectorFactory.getStandardStructObjectInspector(
             fieldNames, fieldObjectInspectors);
@@ -411,7 +422,8 @@ public class TypeInfoUtils {
     return result;
   }
 
-  static HashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector = new HashMap<TypeInfo, ObjectInspector>();
+  static HashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector =
+      new HashMap<TypeInfo, ObjectInspector>();
 
   /**
    * Returns the standard object inspector that can be used to translate an
@@ -427,11 +439,12 @@ public class TypeInfoUtils {
         // StandardPrimitiveObjectInspector
         result = PrimitiveObjectInspectorFactory
             .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-                .getTypeEntryFromTypeName(typeInfo.getTypeName()).primitiveCategory);
+            .getTypeEntryFromTypeName(typeInfo.getTypeName()).primitiveCategory);
         break;
       }
       case LIST: {
-        ObjectInspector elementObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(((ListTypeInfo) typeInfo)
+        ObjectInspector elementObjectInspector =
+            getStandardJavaObjectInspectorFromTypeInfo(((ListTypeInfo) typeInfo)
             .getListElementTypeInfo());
         result = ObjectInspectorFactory
             .getStandardListObjectInspector(elementObjectInspector);
@@ -441,8 +454,8 @@ public class TypeInfoUtils {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         ObjectInspector keyObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(mapTypeInfo
             .getMapKeyTypeInfo());
-        ObjectInspector valueObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(mapTypeInfo
-            .getMapValueTypeInfo());
+        ObjectInspector valueObjectInspector =
+            getStandardJavaObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
         result = ObjectInspectorFactory.getStandardMapObjectInspector(
             keyObjectInspector, valueObjectInspector);
         break;
@@ -457,7 +470,7 @@ public class TypeInfoUtils {
         for (int i = 0; i < fieldTypeInfos.size(); i++) {
           fieldObjectInspectors
               .add(getStandardJavaObjectInspectorFromTypeInfo(fieldTypeInfos
-                  .get(i)));
+              .get(i)));
         }
         result = ObjectInspectorFactory.getStandardStructObjectInspector(
             fieldNames, fieldObjectInspectors);
@@ -496,7 +509,7 @@ public class TypeInfoUtils {
       ListObjectInspector loi = (ListObjectInspector) oi;
       result = TypeInfoFactory
           .getListTypeInfo(getTypeInfoFromObjectInspector(loi
-              .getListElementObjectInspector()));
+          .getListElementObjectInspector()));
       break;
     }
     case MAP: {

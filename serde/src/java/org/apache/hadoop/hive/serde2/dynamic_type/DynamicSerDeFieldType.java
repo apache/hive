@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-// basically just a container for the real type so more like a proxy
+/**
+ * DynamicSerDeFieldType.
+ * Basically just a container for the real type so more like a proxy.
+ *
+ */
 public class DynamicSerDeFieldType extends DynamicSerDeSimpleNode {
 
   // production: this.name | BaseType() | MapType() | SetType() | ListType()

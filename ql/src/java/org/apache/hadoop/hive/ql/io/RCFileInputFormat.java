@@ -34,6 +34,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
+/**
+ * RCFileInputFormat.
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class RCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
     extends FileInputFormat<K, V> implements InputFormatChecker {
 

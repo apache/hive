@@ -24,12 +24,15 @@ import java.io.OutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * RecordWriter.
+ *
+ */
 public interface RecordWriter {
 
-  public void initialize(OutputStream in, Configuration conf)
-      throws IOException;
+  void initialize(OutputStream in, Configuration conf) throws IOException;
 
-  public void write(Writable row) throws IOException;
+  void write(Writable row) throws IOException;
 
-  public void close() throws IOException;
+  void close() throws IOException;
 }

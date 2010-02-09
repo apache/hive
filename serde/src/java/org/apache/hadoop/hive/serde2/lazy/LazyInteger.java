@@ -72,8 +72,7 @@ public class LazyInteger extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as an int quantity.
    */
-  public static int parseInt(byte[] bytes, int start, int length)
-      throws NumberFormatException {
+  public static int parseInt(byte[] bytes, int start, int length) {
     return parseInt(bytes, start, length, 10);
   }
 
@@ -93,8 +92,7 @@ public class LazyInteger extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as an int quantity.
    */
-  public static int parseInt(byte[] bytes, int start, int length, int radix)
-      throws NumberFormatException {
+  public static int parseInt(byte[] bytes, int start, int length, int radix) {
     if (bytes == null) {
       throw new NumberFormatException("String is null");
     }
@@ -136,7 +134,7 @@ public class LazyInteger extends
    *              if the argument could not be parsed as an int quantity.
    */
   private static int parse(byte[] bytes, int start, int length, int offset,
-      int radix, boolean negative) throws NumberFormatException {
+      int radix, boolean negative) {
     int max = Integer.MIN_VALUE / radix;
     int result = 0, end = start + length;
     while (offset < end) {

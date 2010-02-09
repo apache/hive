@@ -85,7 +85,7 @@ public class RowContainer<Row extends List<Object>> {
   // orginal read block
   private Row[] firstReadBlockPointer;
   private int blockSize; // number of objects in the block before it is spilled
-                         // to disk
+  // to disk
   private int numFlushedBlocks; // total # of blocks
   private int size; // total # of elements in the RowContainer
   private File tmpFile; // temporary file holding the spilled blocks
@@ -102,7 +102,7 @@ public class RowContainer<Row extends List<Object>> {
   private TableDesc tblDesc;
 
   boolean firstCalled = false; // once called first, it will never be able to
-                               // write again.
+  // write again.
   int acutalSplitNum = 0;
   int currentSplitPointer = 0;
   org.apache.hadoop.mapred.RecordReader rr = null; // record reader
@@ -201,15 +201,15 @@ public class RowContainer<Row extends List<Object>> {
       } else {
         if (inputSplits == null) {
           if (this.inputFormat == null) {
-            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils
+            inputFormat = (InputFormat<WritableComparable, Writable>)ReflectionUtils
                 .newInstance(tblDesc.getInputFileFormatClass(),
-                    jobCloneUsingLocalFs);
+                jobCloneUsingLocalFs);
           }
 
           HiveConf.setVar(jobCloneUsingLocalFs,
               HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
               org.apache.hadoop.util.StringUtils.escapeString(parentFile
-                  .getAbsolutePath()));
+              .getAbsolutePath()));
           inputSplits = inputFormat.getSplits(jobCloneUsingLocalFs, 1);
           acutalSplitNum = inputSplits.length;
         }
@@ -315,7 +315,7 @@ public class RowContainer<Row extends List<Object>> {
         tempOutPath = new Path(tmpFile.toString());
         rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
             hiveOutputFormat, serde.getSerializedClass(), false, tblDesc
-                .getProperties(), tempOutPath);
+            .getProperties(), tempOutPath);
       } else if (rw == null) {
         throw new HiveException(
             "RowContainer has already been closed for writing.");
@@ -382,7 +382,7 @@ public class RowContainer<Row extends List<Object>> {
           nextSplit = false;
           this.currentReadBlock[i++] = (Row) ObjectInspectorUtils
               .copyToStandardObject(serde.deserialize(val), serde
-                  .getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+              .getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         }
       }
 

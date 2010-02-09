@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -55,6 +54,10 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
+/**
+ * TestRCFile.
+ *
+ */
 public class TestRCFile extends TestCase {
 
   private static final Log LOG = LogFactory.getLog(TestRCFile.class);
@@ -89,10 +92,10 @@ public class TestRCFile extends TestCase {
   private static Writable[] expectedFieldsData = {
       new ByteWritable((byte) 123), new ShortWritable((short) 456),
       new IntWritable(789), new LongWritable(1000), new DoubleWritable(5.3),
-      new Text("hive and hadoop"), null, null };
+      new Text("hive and hadoop"), null, null};
 
-  private static Object[] expectedPartitalFieldsData = { null, null,
-      new IntWritable(789), new LongWritable(1000), null, null, null, null };
+  private static Object[] expectedPartitalFieldsData = {null, null,
+      new IntWritable(789), new LongWritable(1000), null, null, null, null};
   private static BytesRefArrayWritable patialS = new BytesRefArrayWritable();
 
   private static byte[][] bytesArray = null;
@@ -100,11 +103,11 @@ public class TestRCFile extends TestCase {
   private static BytesRefArrayWritable s = null;
   static {
     try {
-      bytesArray = new byte[][] { "123".getBytes("UTF-8"),
+      bytesArray = new byte[][] {"123".getBytes("UTF-8"),
           "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
           "1000".getBytes("UTF-8"), "5.3".getBytes("UTF-8"),
           "hive and hadoop".getBytes("UTF-8"), new byte[0],
-          "NULL".getBytes("UTF-8") };
+          "NULL".getBytes("UTF-8")};
       s = new BytesRefArrayWritable(bytesArray.length);
       s.set(0, new BytesRefWritable("123".getBytes("UTF-8")));
       s.set(1, new BytesRefWritable("456".getBytes("UTF-8")));
@@ -132,14 +135,14 @@ public class TestRCFile extends TestCase {
   public void testSimpleReadAndWrite() throws IOException, SerDeException {
     fs.delete(file, true);
 
-    byte[][] record_1 = { "123".getBytes("UTF-8"), "456".getBytes("UTF-8"),
+    byte[][] record_1 = {"123".getBytes("UTF-8"), "456".getBytes("UTF-8"),
         "789".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], "NULL".getBytes("UTF-8") };
-    byte[][] record_2 = { "100".getBytes("UTF-8"), "200".getBytes("UTF-8"),
+        new byte[0], "NULL".getBytes("UTF-8")};
+    byte[][] record_2 = {"100".getBytes("UTF-8"), "200".getBytes("UTF-8"),
         "123".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], "NULL".getBytes("UTF-8") };
+        new byte[0], "NULL".getBytes("UTF-8")};
 
     RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
@@ -160,15 +163,15 @@ public class TestRCFile extends TestCase {
     writer.append(bytes);
     writer.close();
 
-    Object[] expectedRecord_1 = { new ByteWritable((byte) 123),
+    Object[] expectedRecord_1 = {new ByteWritable((byte) 123),
         new ShortWritable((short) 456), new IntWritable(789),
         new LongWritable(1000), new DoubleWritable(5.3),
-        new Text("hive and hadoop"), null, null };
+        new Text("hive and hadoop"), null, null};
 
-    Object[] expectedRecord_2 = { new ByteWritable((byte) 100),
+    Object[] expectedRecord_2 = {new ByteWritable((byte) 100),
         new ShortWritable((short) 200), new IntWritable(123),
         new LongWritable(1000), new DoubleWritable(5.3),
-        new Text("hive and hadoop"), null, null };
+        new Text("hive and hadoop"), null, null};
 
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
@@ -189,7 +192,7 @@ public class TestRCFile extends TestCase {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(j));
         Object standardWritableData = ObjectInspectorUtils
             .copyToStandardObject(fieldData, fieldRefs.get(j)
-                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+            .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         if (i == 0) {
           assertEquals("Field " + i, standardWritableData, expectedRecord_1[j]);
         } else {
@@ -318,7 +321,7 @@ public class TestRCFile extends TestCase {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         Object standardWritableData = ObjectInspectorUtils
             .copyToStandardObject(fieldData, fieldRefs.get(i)
-                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+            .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         assertEquals("Field " + i, standardWritableData, expectedFieldsData[i]);
       }
       // Serialize
@@ -364,7 +367,7 @@ public class TestRCFile extends TestCase {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         Object standardWritableData = ObjectInspectorUtils
             .copyToStandardObject(fieldData, fieldRefs.get(i)
-                .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+            .getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         assertEquals("Field " + i, standardWritableData,
             expectedPartitalFieldsData[i]);
       }
@@ -380,7 +383,7 @@ public class TestRCFile extends TestCase {
     long cost = System.currentTimeMillis() - start;
     LOG.debug("reading fully costs:" + cost + " milliseconds");
   }
-  
+
   public void testSynAndSplit() throws IOException {
     splitBeforeSync();
     splitRightBeforeSync();
@@ -392,20 +395,20 @@ public class TestRCFile extends TestCase {
   private void splitBeforeSync() throws IOException {
     writeThenReadByRecordReader(600, 1000, 2, 1, null);
   }
-  
+
   private void splitRightBeforeSync() throws IOException {
     writeThenReadByRecordReader(500, 1000, 2, 17750, null);
   }
-  
+
   private void splitInMiddleOfSync() throws IOException {
     writeThenReadByRecordReader(500, 1000, 2, 17760, null);
-    
+
   }
-  
+
   private void splitRightAfterSync() throws IOException {
     writeThenReadByRecordReader(500, 1000, 2, 17770, null);
   }
-  
+
   private void splitAfterSync() throws IOException {
     writeThenReadByRecordReader(500, 1000, 2, 19950, null);
   }
@@ -413,7 +416,8 @@ public class TestRCFile extends TestCase {
   private void writeThenReadByRecordReader(int intervalRecordCount,
       int writeCount, int splitNumber, long minSplitSize, CompressionCodec codec)
       throws IOException {
-    Path testDir = new Path(System.getProperty("test.data.dir", ".") + "/mapred/testsmallfirstsplit");
+    Path testDir = new Path(System.getProperty("test.data.dir", ".")
+        + "/mapred/testsmallfirstsplit");
     Path testFile = new Path(testDir, "test_rcfile");
     fs.delete(testFile, true);
     Configuration cloneConf = new Configuration(conf);
@@ -429,12 +433,13 @@ public class TestRCFile extends TestCase {
       bytes.set(i, cu);
     }
     for (int i = 0; i < writeCount; i++) {
-      if(i == intervalRecordCount)
+      if (i == intervalRecordCount) {
         System.out.println("write position:" + writer.getLength());
+      }
       writer.append(bytes);
     }
     writer.close();
-    
+
     RCFileInputFormat inputFormat = new RCFileInputFormat();
     JobConf jonconf = new JobConf(cloneConf);
     jonconf.set("mapred.input.dir", testDir.toString());
@@ -447,12 +452,13 @@ public class TestRCFile extends TestCase {
       RecordReader rr = inputFormat.getRecordReader(splits[i], jonconf, Reporter.NULL);
       Object key = rr.createKey();
       Object value = rr.createValue();
-      while(rr.next(key, value)) 
-        readCount ++;
+      while (rr.next(key, value)) {
+        readCount++;
+      }
       System.out.println("The " + i + "th split read "
           + (readCount - previousReadCount));
     }
     assertEquals("readCount should be equal to writeCount", readCount, writeCount);
   }
-  
+
 }

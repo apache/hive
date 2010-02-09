@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.io.Text;
 
 /**
- * Mimics oracle's function translate(str1, str2, str3)
+ * Mimics oracle's function translate(str1, str2, str3).
  */
 public class GenericUDFTestTranslate extends GenericUDF {
   ObjectInspector[] argumentOIs;
@@ -44,16 +44,15 @@ public class GenericUDFTestTranslate extends GenericUDF {
     int unit = i % 10;
     return (i <= 0) ? "" : (i != 11 && unit == 1) ? i + "st"
         : (i != 12 && unit == 2) ? i + "nd" : (i != 13 && unit == 3) ? i + "rd"
-            : i + "th";
+        : i + "th";
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 3) {
       throw new UDFArgumentLengthException(
           "The function TRANSLATE(expr,from_string,to_string) accepts exactly 3 arguments, but "
-              + arguments.length + " arguments is found.");
+          + arguments.length + " arguments is found.");
     }
 
     for (int i = 0; i < 3; i++) {

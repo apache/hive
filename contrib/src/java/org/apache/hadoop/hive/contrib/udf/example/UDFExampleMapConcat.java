@@ -23,6 +23,10 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFExampleMapConcat.
+ *
+ */
 public class UDFExampleMapConcat extends UDF {
 
   public String evaluate(Map<String, String> a) {

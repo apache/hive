@@ -35,6 +35,10 @@ import java.util.List;
  */
 public class UnionStructObjectInspector extends StructObjectInspector {
 
+  /**
+   * MyField.
+   *
+   */
   public static class MyField implements StructField {
     public int structID;
     StructField structField;

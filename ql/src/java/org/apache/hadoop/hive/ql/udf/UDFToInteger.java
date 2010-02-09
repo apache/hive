@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -32,11 +30,12 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFToInteger.
+ *
+ */
 public class UDFToInteger extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFToInteger.class.getName());
-
-  IntWritable intWritable = new IntWritable();
+  private IntWritable intWritable = new IntWritable();
 
   public UDFToInteger() {
   }

@@ -48,14 +48,14 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 /**
- * Thrift Hive Server Implementation
+ * Thrift Hive Server Implementation.
  */
 public class HiveServer extends ThriftHive {
-  private final static String VERSION = "0";
+  private static final String VERSION = "0";
 
   /**
    * Handler which implements the Hive Interface This class can be used in lieu
-   * of the HiveClient class to get an embedded server
+   * of the HiveClient class to get an embedded server.
    */
   public static class HiveServerHandler extends HiveMetaStore.HMSHandler
       implements HiveInterface {
@@ -66,7 +66,7 @@ public class HiveServer extends ThriftHive {
     private final Driver driver;
 
     /**
-     * Flag that indicates whether the last executed command was a Hive query
+     * Flag that indicates whether the last executed command was a Hive query.
      */
     private boolean isHiveQuery;
 
@@ -134,7 +134,7 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
-     * Return the status information about the Map-Reduce cluster
+     * Return the status information about the Map-Reduce cluster.
      */
     public HiveClusterStatus getClusterStatus() throws HiveServerException,
         TException {
@@ -171,7 +171,7 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
-     * Return the Hive schema of the query result
+     * Return the Hive schema of the query result.
      */
     public Schema getSchema() throws HiveServerException, TException {
       if (!isHiveQuery) {
@@ -196,7 +196,7 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
-     * Return the Thrift schema of the query result
+     * Return the Thrift schema of the query result.
      */
     public Schema getThriftSchema() throws HiveServerException, TException {
       if (!isHiveQuery) {
@@ -317,7 +317,7 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
-     * Return the status of the server
+     * Return the status of the server.
      */
     @Override
     public int getStatus() {
@@ -325,7 +325,7 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
-     * Return the version of the server software
+     * Return the version of the server software.
      */
     @Override
     public String getVersion() {
@@ -350,6 +350,10 @@ public class HiveServer extends ThriftHive {
 
   }
 
+  /**
+   * ThriftHiveProcessorFactory.
+   *
+   */
   public static class ThriftHiveProcessorFactory extends TProcessorFactory {
     public ThriftHiveProcessorFactory(TProcessor processor) {
       super(processor);

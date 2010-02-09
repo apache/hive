@@ -19,13 +19,17 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.Map;
 
+/**
+ * MapObjectInspector.
+ *
+ */
 public interface MapObjectInspector extends ObjectInspector {
 
   // ** Methods that does not need a data object **
   // Map Type
-  public ObjectInspector getMapKeyObjectInspector();
+  ObjectInspector getMapKeyObjectInspector();
 
-  public ObjectInspector getMapValueObjectInspector();
+  ObjectInspector getMapValueObjectInspector();
 
   // ** Methods that need a data object **
   // In this function, key has to be of the same structure as the Map expects.
@@ -33,7 +37,7 @@ public interface MapObjectInspector extends ObjectInspector {
   // In rare cases that key is not primitive, the user is responsible for
   // defining
   // the hashCode() and equals() methods of the key class.
-  public Object getMapValueElement(Object data, Object key);
+  Object getMapValueElement(Object data, Object key);
 
   /**
    * returns null for data = null.
@@ -44,10 +48,10 @@ public interface MapObjectInspector extends ObjectInspector {
    * 
    * However it's OK if the Map object is part of the Object data.
    */
-  public Map<?, ?> getMap(Object data);
+  Map<?, ?> getMap(Object data);
 
   /**
    * returns -1 for NULL map.
    */
-  public int getMapSize(Object data);
+  int getMapSize(Object data);
 }

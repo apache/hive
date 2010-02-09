@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 
 /**
- * Implementation of the Row Resolver
+ * Implementation of the Row Resolver.
  * 
  */
 public class RowResolver {
@@ -132,8 +132,7 @@ public class RowResolver {
    * @return ColumnInfo
    * @throws SemanticException
    */
-  public ColumnInfo get(String tab_alias, String col_alias)
-      throws SemanticException {
+  public ColumnInfo get(String tab_alias, String col_alias) throws SemanticException {
     col_alias = col_alias.toLowerCase();
     ColumnInfo ret = null;
 
@@ -167,11 +166,11 @@ public class RowResolver {
     return rowSchema.getSignature();
   }
 
-  public HashMap<String, ColumnInfo> getFieldMap(String tab_alias) {
-    if (tab_alias == null) {
+  public HashMap<String, ColumnInfo> getFieldMap(String tabAlias) {
+    if (tabAlias == null) {
       return rslvMap.get(null);
     } else {
-      return rslvMap.get(tab_alias.toLowerCase());
+      return rslvMap.get(tabAlias.toLowerCase());
     }
   }
 

@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFToDate.
+ *
+ */
 public class UDFToDate extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFToDate.class.getName());
 
   public UDFToDate() {
   }

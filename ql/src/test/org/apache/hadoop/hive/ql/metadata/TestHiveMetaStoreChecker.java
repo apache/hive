@@ -18,6 +18,10 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.TException;
 
+/**
+ * TestHiveMetaStoreChecker.
+ *
+ */
 public class TestHiveMetaStoreChecker extends TestCase {
 
   private Hive hive;

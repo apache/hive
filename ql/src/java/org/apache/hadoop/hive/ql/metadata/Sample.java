@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 /**
- * A sample defines a subset of data based on sampling on a given dimension
+ * A sample defines a subset of data based on sampling on a given dimension.
  * 
  **/
 public class Sample {

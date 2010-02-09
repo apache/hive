@@ -26,9 +26,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 /**
- * Collection of file manipulation utilities common across Hive
+ * Collection of file manipulation utilities common across Hive.
  */
-public class FileUtils {
+public final class FileUtils {
 
   /**
    * Variant of Path.makeQualified that qualifies the input path against the
@@ -44,8 +44,7 @@ public class FileUtils {
    *          Configuration file
    * @return path qualified relative to default file system
    */
-  public static Path makeQualified(Path path, Configuration conf)
-      throws IOException {
+  public static Path makeQualified(Path path, Configuration conf) throws IOException {
 
     if (!path.isAbsolute()) {
       // in this case we need to get the working directory
@@ -76,5 +75,9 @@ public class FileUtils {
     }
 
     return new Path(scheme + ":" + "//" + authority + pathUri.getPath());
+  }
+
+  private FileUtils() {
+    // prevent instantiation
   }
 }

@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -34,8 +34,7 @@ import org.apache.hadoop.io.LongWritable;
 public class GenericUDAFCount implements GenericUDAFResolver {
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
@@ -43,13 +42,16 @@ public class GenericUDAFCount implements GenericUDAFResolver {
     return new GenericUDAFCountEvaluator();
   }
 
+  /**
+   * GenericUDAFCountEvaluator.
+   *
+   */
   public static class GenericUDAFCountEvaluator extends GenericUDAFEvaluator {
-    ObjectInspector inputOI;
-    LongWritable result;
+    private ObjectInspector inputOI;
+    private LongWritable result;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-        throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
       assert (parameters.length == 1);
       inputOI = parameters[0];
@@ -57,7 +59,7 @@ public class GenericUDAFCount implements GenericUDAFResolver {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
 
-    /** class for storing count value */
+    /** class for storing count value. */
     static class CountAgg implements AggregationBuffer {
       long value;
     }
@@ -75,8 +77,7 @@ public class GenericUDAFCount implements GenericUDAFResolver {
     }
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters)
-        throws HiveException {
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       if (parameters[0] != null) {
         ((CountAgg) agg).value++;
@@ -84,8 +85,7 @@ public class GenericUDAFCount implements GenericUDAFResolver {
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial)
-        throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         long p = ((LongObjectInspector) inputOI).get(partial);
         ((CountAgg) agg).value += p;

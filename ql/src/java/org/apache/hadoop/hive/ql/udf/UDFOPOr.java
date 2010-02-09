@@ -18,18 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BooleanWritable;
 
+/**
+ * UDFOPOr.
+ *
+ */
 @Description(name = "or", value = "a _FUNC_ b - Logical or")
 public class UDFOPOr extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFOPOr.class.getName());
-
-  BooleanWritable result = new BooleanWritable();
+  private BooleanWritable result = new BooleanWritable();
 
   public UDFOPOr() {
   }

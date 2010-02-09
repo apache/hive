@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * Internal representation of the join tree
+ * Internal representation of the join tree.
  * 
  */
 public class QBJoinTree {
@@ -56,7 +56,7 @@ public class QBJoinTree {
   private List<String> streamAliases;
 
   /**
-   * constructor
+   * constructor.
    */
   public QBJoinTree() {
     nextTag = 0;
@@ -66,7 +66,7 @@ public class QBJoinTree {
   }
 
   /**
-   * returns left alias if any - this is used for merging later on
+   * returns left alias if any - this is used for merging later on.
    * 
    * @return left alias if any
    */
@@ -75,7 +75,7 @@ public class QBJoinTree {
   }
 
   /**
-   * set left alias for the join expression
+   * set left alias for the join expression.
    * 
    * @param leftAlias
    *          String

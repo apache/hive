@@ -31,6 +31,6 @@ public interface WriteTextProtocol {
   /**
    * Write Text.
    */
-  public void writeText(Text text) throws TException;
+  void writeText(Text text) throws TException;
 
 }

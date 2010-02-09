@@ -17,25 +17,29 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+/**
+ * SettableMapObjectInspector.
+ *
+ */
 public interface SettableMapObjectInspector extends MapObjectInspector {
 
   /**
    * Create an empty map.
    */
-  public Object create();
+  Object create();
 
   /**
    * Add a key-value pair to the map. Return the map.
    */
-  public Object put(Object map, Object key, Object value);
+  Object put(Object map, Object key, Object value);
 
   /**
    * Remove a key-value pair from the map. Return the map.
    */
-  public Object remove(Object map, Object key);
+  Object remove(Object map, Object key);
 
   /**
    * Clear the map. Return the map.
    */
-  public Object clear(Object map);
+  Object clear(Object map);
 }

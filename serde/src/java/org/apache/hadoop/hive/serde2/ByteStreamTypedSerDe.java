@@ -23,6 +23,10 @@ import java.lang.reflect.Type;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * ByteStreamTypedSerDe.
+ *
+ */
 public abstract class ByteStreamTypedSerDe extends TypedSerDe {
 
   protected ByteStream.Input bis;

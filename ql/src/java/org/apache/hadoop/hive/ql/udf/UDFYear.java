@@ -23,25 +23,26 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "year", value = "_FUNC_(date) - Returns the year of date", extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
+/**
+ * UDFYear.
+ *
+ */
+@Description(name = "year", 
+    value = "_FUNC_(date) - Returns the year of date", 
+    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
     + "'yyyy-MM-dd'.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" + "  2009")
 public class UDFYear extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFYear.class.getName());
-
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   public UDFYear() {
   }

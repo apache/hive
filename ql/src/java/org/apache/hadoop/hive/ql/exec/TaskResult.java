@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-
 /**
- * TaskResult implementation
+ * TaskResult implementation.
  **/
 
 public class TaskResult {

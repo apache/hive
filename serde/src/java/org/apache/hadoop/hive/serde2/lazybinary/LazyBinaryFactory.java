@@ -32,7 +32,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 
-public class LazyBinaryFactory {
+/**
+ * LazyBinaryFactory.
+ *
+ */
+public final class LazyBinaryFactory {
 
   /**
    * Create a lazy binary primitive class given the type name.
@@ -41,33 +45,24 @@ public class LazyBinaryFactory {
       PrimitiveObjectInspector oi) {
     PrimitiveCategory p = oi.getPrimitiveCategory();
     switch (p) {
-    case BOOLEAN: {
+    case BOOLEAN:
       return new LazyBinaryBoolean((WritableBooleanObjectInspector) oi);
-    }
-    case BYTE: {
+    case BYTE:
       return new LazyBinaryByte((WritableByteObjectInspector) oi);
-    }
-    case SHORT: {
+    case SHORT:
       return new LazyBinaryShort((WritableShortObjectInspector) oi);
-    }
-    case INT: {
+    case INT:
       return new LazyBinaryInteger((WritableIntObjectInspector) oi);
-    }
-    case LONG: {
+    case LONG:
       return new LazyBinaryLong((WritableLongObjectInspector) oi);
-    }
-    case FLOAT: {
+    case FLOAT:
       return new LazyBinaryFloat((WritableFloatObjectInspector) oi);
-    }
-    case DOUBLE: {
+    case DOUBLE:
       return new LazyBinaryDouble((WritableDoubleObjectInspector) oi);
-    }
-    case STRING: {
+    case STRING:
       return new LazyBinaryString((WritableStringObjectInspector) oi);
-    }
-    default: {
+    default:
       throw new RuntimeException("Internal error: no LazyBinaryObject for " + p);
-    }
     }
   }
 
@@ -88,5 +83,9 @@ public class LazyBinaryFactory {
     }
 
     throw new RuntimeException("Hive LazyBinarySerDe Internal error.");
+  }
+
+  private LazyBinaryFactory() {
+    // prevent instantiation
   }
 }

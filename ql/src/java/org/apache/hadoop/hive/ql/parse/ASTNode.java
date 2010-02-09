@@ -36,7 +36,7 @@ public class ASTNode extends CommonTree implements Node {
   }
 
   /**
-   * Constructor
+   * Constructor.
    * 
    * @param t
    *          Token for the CommonTree Node

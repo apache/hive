@@ -23,6 +23,10 @@ import java.util.LinkedHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 
+/**
+ * MapredLocalWork.
+ *
+ */
 @Explain(displayName = "Map Reduce Local Work")
 public class MapredLocalWork implements Serializable {
   private static final long serialVersionUID = 1L;

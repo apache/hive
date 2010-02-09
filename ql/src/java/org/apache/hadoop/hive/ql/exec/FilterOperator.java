@@ -30,21 +30,25 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 
 /**
- * Filter operator implementation
+ * Filter operator implementation.
  **/
 public class FilterOperator extends Operator<FilterDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Counter.
+   *
+   */
   public static enum Counter {
     FILTERED, PASSED
   }
 
-  transient private final LongWritable filtered_count, passed_count;
-  transient private ExprNodeEvaluator conditionEvaluator;
-  transient private PrimitiveObjectInspector conditionInspector;
-  transient private int consecutiveFails;
+  private final transient LongWritable filtered_count, passed_count;
+  private transient ExprNodeEvaluator conditionEvaluator;
+  private transient PrimitiveObjectInspector conditionInspector;
+  private transient int consecutiveFails;
   transient int heartbeatInterval;
 
   public FilterOperator() {

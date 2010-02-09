@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -42,16 +42,16 @@ import org.apache.hadoop.io.Text;
  * </pre>
  * <p>
  */
-@Description(name = "locate", value = "_FUNC_(substr, str[, pos]) - Returns the position of the first "
-    + "occurance of substr in str after position pos", extended = "Example:\n"
+@Description(name = "locate",
+    value = "_FUNC_(substr, str[, pos]) - Returns the position of the first "
+    + "occurance of substr in str after position pos",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('bar', 'foobarbar', 5) FROM src LIMIT 1;\n" + "  7")
 public class GenericUDFLocate extends GenericUDF {
-
-  ObjectInspectorConverters.Converter[] converters;
+  private ObjectInspectorConverters.Converter[] converters;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 2 && arguments.length != 3) {
       throw new UDFArgumentLengthException(
           "The function LOCATE accepts exactly 2 or 3 arguments.");
@@ -82,7 +82,7 @@ public class GenericUDFLocate extends GenericUDF {
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
-  IntWritable intWritable = new IntWritable(0);
+  private IntWritable intWritable = new IntWritable(0);
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {

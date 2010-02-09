@@ -28,6 +28,10 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
+/**
+ * CreateTableDesc.
+ *
+ */
 @Explain(displayName = "Create Table")
 public class CreateTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -53,7 +57,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public CreateTableDesc() {
   }
-  
+
   public CreateTableDesc(String tableName, boolean isExternal,
       List<FieldSchema> cols, List<FieldSchema> partCols,
       List<String> bucketCols, List<Order> sortCols, int numBuckets,
@@ -82,7 +86,6 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  
   @Explain(displayName = "columns")
   public List<String> getColsString() {
     return Utilities.getFieldSchemaString(getCols());
@@ -93,8 +96,6 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     return Utilities.getFieldSchemaString(getPartCols());
   }
 
-  
-  
   @Explain(displayName = "if not exists")
   public boolean getIfNotExists() {
     return ifNotExists;

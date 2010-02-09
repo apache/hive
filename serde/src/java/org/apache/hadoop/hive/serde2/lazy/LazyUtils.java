@@ -33,7 +33,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
-public class LazyUtils {
+/**
+ * LazyUtils.
+ *
+ */
+public final class LazyUtils {
 
   /**
    * Returns the digit represented by character b.
@@ -108,8 +112,8 @@ public class LazyUtils {
     }
   }
 
-  static byte[] trueBytes = { (byte) 't', 'r', 'u', 'e' };
-  static byte[] falseBytes = { (byte) 'f', 'a', 'l', 's', 'e' };
+  private static byte[] trueBytes = {(byte) 't', 'r', 'u', 'e'};
+  private static byte[] falseBytes = {(byte) 'f', 'a', 'l', 's', 'e'};
 
   /**
    * Write the bytes with special characters escaped.
@@ -216,6 +220,10 @@ public class LazyUtils {
       hash = (31 * hash) + data[i];
     }
     return hash;
+  }
+
+  private LazyUtils() {
+    // prevent instantiation
   }
 
 }

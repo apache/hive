@@ -22,20 +22,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFUnixTimeStamp.
+ *
+ */
 @UDFType(deterministic = false)
-@Description(name = "unix_timestamp", value = "_FUNC_([date[, pattern]]) - Returns the UNIX timestamp", extended = "Converts the current or specified time to number of seconds "
+@Description(name = "unix_timestamp",
+    value = "_FUNC_([date[, pattern]]) - Returns the UNIX timestamp",
+    extended = "Converts the current or specified time to number of seconds "
     + "since 1970-01-01.")
 public class UDFUnixTimeStamp extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFUnixTimeStamp.class.getName());
-
   // For now, we just use the default time zone.
   private final SimpleDateFormat formatter = new SimpleDateFormat(
       "yyyy-MM-dd HH:mm:ss");

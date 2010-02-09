@@ -24,6 +24,10 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+/**
+ * ExprNodeDesc.
+ *
+ */
 public abstract class ExprNodeDesc implements Serializable, Node {
   private static final long serialVersionUID = 1L;
   TypeInfo typeInfo;

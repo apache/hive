@@ -39,34 +39,54 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
- * File Sink operator implementation
+ * File Sink operator implementation.
  **/
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Serializable {
 
+  /**
+   * RecordWriter.
+   *
+   */
   public static interface RecordWriter {
-    public void write(Writable w) throws IOException;
+    void write(Writable w) throws IOException;
 
-    public void close(boolean abort) throws IOException;
+    void close(boolean abort) throws IOException;
   }
 
   private static final long serialVersionUID = 1L;
-  transient protected RecordWriter outWriter;
-  transient protected FileSystem fs;
-  transient protected Path outPath;
-  transient protected Path finalPath;
-  transient protected Serializer serializer;
-  transient protected BytesWritable commonKey = new BytesWritable();
-  transient protected TableIdEnum tabIdEnum = null;
-  transient private LongWritable row_count;
+  protected transient RecordWriter outWriter;
+  protected transient FileSystem fs;
+  protected transient Path outPath;
+  protected transient Path finalPath;
+  protected transient Serializer serializer;
+  protected transient BytesWritable commonKey = new BytesWritable();
+  protected transient TableIdEnum tabIdEnum = null;
+  private transient LongWritable row_count;
 
+  /**
+   * TableIdEnum.
+   *
+   */
   public static enum TableIdEnum {
-
-    TABLE_ID_1_ROWCOUNT, TABLE_ID_2_ROWCOUNT, TABLE_ID_3_ROWCOUNT, TABLE_ID_4_ROWCOUNT, TABLE_ID_5_ROWCOUNT, TABLE_ID_6_ROWCOUNT, TABLE_ID_7_ROWCOUNT, TABLE_ID_8_ROWCOUNT, TABLE_ID_9_ROWCOUNT, TABLE_ID_10_ROWCOUNT, TABLE_ID_11_ROWCOUNT, TABLE_ID_12_ROWCOUNT, TABLE_ID_13_ROWCOUNT, TABLE_ID_14_ROWCOUNT, TABLE_ID_15_ROWCOUNT;
-
+    TABLE_ID_1_ROWCOUNT,
+    TABLE_ID_2_ROWCOUNT,
+    TABLE_ID_3_ROWCOUNT,
+    TABLE_ID_4_ROWCOUNT,
+    TABLE_ID_5_ROWCOUNT,
+    TABLE_ID_6_ROWCOUNT,
+    TABLE_ID_7_ROWCOUNT,
+    TABLE_ID_8_ROWCOUNT,
+    TABLE_ID_9_ROWCOUNT,
+    TABLE_ID_10_ROWCOUNT,
+    TABLE_ID_11_ROWCOUNT,
+    TABLE_ID_12_ROWCOUNT,
+    TABLE_ID_13_ROWCOUNT,
+    TABLE_ID_14_ROWCOUNT,
+    TABLE_ID_15_ROWCOUNT;
   }
 
-  transient protected boolean autoDelete = false;
+  protected transient boolean autoDelete = false;
 
   private void commit() throws IOException {
     if (!fs.rename(outPath, finalPath)) {
@@ -204,8 +224,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success)
-      throws HiveException {
+  public void jobClose(Configuration hconf, boolean success) throws HiveException {
     try {
       if (conf != null) {
         String specPath = conf.getDirName();
@@ -218,7 +237,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   public static void mvFileToFinalPath(String specPath, Configuration hconf,
-      boolean success, Log LOG) throws IOException, HiveException {
+      boolean success, Log log) throws IOException, HiveException {
     FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
@@ -229,12 +248,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // Step1: rename tmp output folder to intermediate path. After this
         // point, updates from speculative tasks still writing to tmpPath
         // will not appear in finalPath.
-        LOG.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
         Utilities.rename(fs, tmpPath, intermediatePath);
         // Step2: remove any tmp file or double-committed output files
         Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
         // Step3: move to the file destination
-        LOG.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
+        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
         Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
       }
     } else {

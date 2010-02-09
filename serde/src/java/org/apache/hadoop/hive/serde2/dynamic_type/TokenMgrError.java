@@ -97,8 +97,8 @@ public class TokenMgrError extends Error {
         + errorColumn
         + ".  Encountered: "
         + (EOFSeen ? "<EOF> "
-            : ("\"" + addEscapes(String.valueOf(curChar)) + "\"") + " ("
-                + (int) curChar + "), ") + "after : \""
+        : ("\"" + addEscapes(String.valueOf(curChar)) + "\"") + " ("
+        + (int) curChar + "), ") + "after : \""
         + addEscapes(errorAfter) + "\"");
   }
 

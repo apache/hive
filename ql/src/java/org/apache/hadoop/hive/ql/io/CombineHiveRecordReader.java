@@ -33,6 +33,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
+/**
+ * CombineHiveRecordReader.
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class CombineHiveRecordReader<K extends WritableComparable, V extends Writable>
     implements RecordReader<K, V> {
 

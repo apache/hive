@@ -26,6 +26,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.SequenceFile;
 
+/**
+ * SequenceFileInputFormatChecker.
+ *
+ */
 public class SequenceFileInputFormatChecker implements InputFormatChecker {
 
   @Override

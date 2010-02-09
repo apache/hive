@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 
+/**
+ * ParseException.
+ *
+ */
 public class ParseException extends Exception {
 
   private static final long serialVersionUID = 1L;

@@ -22,9 +22,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Task;
 
+/**
+ * ExplainWork.
+ *
+ */
 public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 

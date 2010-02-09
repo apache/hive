@@ -22,7 +22,7 @@ import org.apache.thrift.protocol.TProtocol;
 
 /**
  * Thrift Hive Client Just an empty class that can be used to run queries on a
- * stand alone hive server
+ * stand alone hive server.
  */
 public class HiveClient extends ThriftHive.Client implements HiveInterface {
   public HiveClient(TProtocol prot) {

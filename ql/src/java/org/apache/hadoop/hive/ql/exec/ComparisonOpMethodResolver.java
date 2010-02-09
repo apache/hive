@@ -56,8 +56,7 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
    * .List)
    */
   @Override
-  public Method getEvalMethod(List<TypeInfo> argTypeInfos)
-      throws AmbiguousMethodException {
+  public Method getEvalMethod(List<TypeInfo> argTypeInfos) throws AmbiguousMethodException {
     assert (argTypeInfos.size() == 2);
 
     List<TypeInfo> pTypeInfos = null;

@@ -56,7 +56,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
   }
 
   /**
-   * Iterator a task with a rule dispatcher for its reducer operator tree,
+   * Iterator a task with a rule dispatcher for its reducer operator tree.
    */
   class SkewJoinTaskDispatcher implements Dispatcher {
 

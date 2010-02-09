@@ -23,26 +23,27 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "yearweek", value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
-    + "is considered to start on a Monday and week 1 is the first week with >3 days.", extended = "Examples:\n"
+/**
+ * UDFWeekOfYear.
+ *
+ */
+@Description(name = "yearweek", 
+    value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
+    + "is considered to start on a Monday and week 1 is the first week with >3 days.", 
+    extended = "Examples:\n"
     + "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n"
     + "  8\n"
     + "  > SELECT _FUNC_('1980-12-31 12:59:59') FROM src LIMIT 1;\n" + "  1")
 public class UDFWeekOfYear extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFWeekOfYear.class.getName());
-
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   public UDFWeekOfYear() {
     calendar.setFirstDayOfWeek(Calendar.MONDAY);

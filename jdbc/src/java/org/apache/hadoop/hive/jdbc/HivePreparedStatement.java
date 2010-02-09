@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.NClob;
 import java.sql.ParameterMetaData;
+import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -42,7 +43,11 @@ import java.util.Calendar;
 
 import org.apache.hadoop.hive.service.HiveInterface;
 
-public class HivePreparedStatement implements java.sql.PreparedStatement {
+/**
+ * HivePreparedStatement.
+ *
+ */
+public class HivePreparedStatement implements PreparedStatement {
   String sql;
   JdbcSessionState session;
   HiveInterface client;
@@ -155,8 +160,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream)
    */
 
-  public void setAsciiStream(int parameterIndex, InputStream x)
-      throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -168,8 +172,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * int)
    */
 
-  public void setAsciiStream(int parameterIndex, InputStream x, int length)
-      throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -181,8 +184,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * long)
    */
 
-  public void setAsciiStream(int parameterIndex, InputStream x, long length)
-      throws SQLException {
+  public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -193,8 +195,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setBigDecimal(int, java.math.BigDecimal)
    */
 
-  public void setBigDecimal(int parameterIndex, BigDecimal x)
-      throws SQLException {
+  public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -205,8 +206,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream)
    */
 
-  public void setBinaryStream(int parameterIndex, InputStream x)
-      throws SQLException {
+  public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -218,8 +218,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * int)
    */
 
-  public void setBinaryStream(int parameterIndex, InputStream x, int length)
-      throws SQLException {
+  public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -231,8 +230,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * long)
    */
 
-  public void setBinaryStream(int parameterIndex, InputStream x, long length)
-      throws SQLException {
+  public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -254,8 +252,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream)
    */
 
-  public void setBlob(int parameterIndex, InputStream inputStream)
-      throws SQLException {
+  public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -266,8 +263,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream, long)
    */
 
-  public void setBlob(int parameterIndex, InputStream inputStream, long length)
-      throws SQLException {
+  public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -311,8 +307,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader)
    */
 
-  public void setCharacterStream(int parameterIndex, Reader reader)
-      throws SQLException {
+  public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -371,8 +366,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setClob(int, java.io.Reader, long)
    */
 
-  public void setClob(int parameterIndex, Reader reader, long length)
-      throws SQLException {
+  public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -395,8 +389,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * java.util.Calendar)
    */
 
-  public void setDate(int parameterIndex, Date x, Calendar cal)
-      throws SQLException {
+  public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -451,8 +444,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader)
    */
 
-  public void setNCharacterStream(int parameterIndex, Reader value)
-      throws SQLException {
+  public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -498,8 +490,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setNClob(int, java.io.Reader, long)
    */
 
-  public void setNClob(int parameterIndex, Reader reader, long length)
-      throws SQLException {
+  public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -532,8 +523,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setNull(int, int, java.lang.String)
    */
 
-  public void setNull(int paramIndex, int sqlType, String typeName)
-      throws SQLException {
+  public void setNull(int paramIndex, int sqlType, String typeName) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -567,8 +557,8 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int, int)
    */
 
-  public void setObject(int parameterIndex, Object x, int targetSqlType,
-      int scale) throws SQLException {
+  public void setObject(int parameterIndex, Object x, int targetSqlType, int scale)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -601,8 +591,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.PreparedStatement#setSQLXML(int, java.sql.SQLXML)
    */
 
-  public void setSQLXML(int parameterIndex, SQLXML xmlObject)
-      throws SQLException {
+  public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -647,8 +636,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * java.util.Calendar)
    */
 
-  public void setTime(int parameterIndex, Time x, Calendar cal)
-      throws SQLException {
+  public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -839,8 +827,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.Statement#executeUpdate(java.lang.String, int)
    */
 
-  public int executeUpdate(String sql, int autoGeneratedKeys)
-      throws SQLException {
+  public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -862,8 +849,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
    */
 
-  public int executeUpdate(String sql, String[] columnNames)
-      throws SQLException {
+  public int executeUpdate(String sql, String[] columnNames) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }

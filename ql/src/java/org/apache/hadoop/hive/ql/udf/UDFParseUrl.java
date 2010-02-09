@@ -22,10 +22,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 
 /**
  * UDF to extract specfic parts from URL For example,
@@ -40,7 +38,9 @@ import org.apache.hadoop.hive.ql.exec.Description;
  * HOST,PATH,QUERY,REF,PROTOCOL,AUTHORITY,FILE,USERINFO Also you can get a value
  * of particular key in QUERY, using syntax QUERY:<KEY_NAME> eg: QUERY:k1.
  */
-@Description(name = "parse_url", value = "_FUNC_(url, partToExtract[, key]) - extracts a part from a URL", extended = "Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, "
+@Description(name = "parse_url",
+    value = "_FUNC_(url, partToExtract[, key]) - extracts a part from a URL",
+    extended = "Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, "
     + "USERINFO\nkey specifies which query to extract\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', "
@@ -52,8 +52,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
     + "  > SELECT _FUNC_('http://facebook.com/path/p1.php?query=1', "
     + "'QUERY', 'query') FROM src LIMIT 1;\n" + "  '1'")
 public class UDFParseUrl extends UDF {
-  private static Log LOG = LogFactory.getLog(UDFParseUrl.class.getName());
-
   private String lastUrlStr = null;
   private URL url = null;
   private Pattern p = null;

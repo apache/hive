@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.jdbc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+/**
+ * JdbcSessionState.
+ *
+ */
 public class JdbcSessionState extends SessionState {
 
   public JdbcSessionState() {

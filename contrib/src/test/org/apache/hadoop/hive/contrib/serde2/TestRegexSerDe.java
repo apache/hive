@@ -29,6 +29,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Text;
 
+/**
+ * TestRegexSerDe.
+ *
+ */
 public class TestRegexSerDe extends TestCase {
 
   private SerDe createSerDe(String fieldNames, String fieldTypes,
@@ -53,14 +57,16 @@ public class TestRegexSerDe extends TestCase {
       SerDe serDe = createSerDe(
           "host,identity,user,time,request,status,size,referer,agent",
           "string,string,string,string,string,string,string,string,string",
-          "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") ([0-9]*) ([0-9]*) ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\")",
+          "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") " 
+          + "([0-9]*) ([0-9]*) ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\")",
           "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s");
 
       // Data
       Text t = new Text(
           "127.0.0.1 - - [26/May/2009:00:00:00 +0000] "
               + "\"GET /someurl/?track=Blabla(Main) HTTP/1.1\" 200 5864 - "
-              + "\"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19\"");
+              + "\"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) " 
+              + "AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19\"");
 
       // Deserialize
       Object row = serDe.deserialize(t);

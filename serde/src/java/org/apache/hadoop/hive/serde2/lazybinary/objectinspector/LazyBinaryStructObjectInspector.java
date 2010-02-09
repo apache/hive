@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
 /**
- * ObjectInspector for LazyBinaryStruct
+ * ObjectInspector for LazyBinaryStruct.
  * 
  * @see LazyBinaryStruct
  */

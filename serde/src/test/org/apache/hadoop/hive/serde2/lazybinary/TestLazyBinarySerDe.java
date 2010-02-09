@@ -44,10 +44,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.BytesWritable;
 
+/**
+ * TestLazyBinarySerDe.
+ *
+ */
 public class TestLazyBinarySerDe extends TestCase {
 
   /**
-   * Generate a random struct array
+   * Generate a random struct array.
    * 
    * @param r
    *          random number generator
@@ -65,7 +69,7 @@ public class TestLazyBinarySerDe extends TestCase {
   }
 
   /**
-   * Initialize the LazyBinarySerDe
+   * Initialize the LazyBinarySerDe.
    * 
    * @param fieldNames
    *          table field names
@@ -161,7 +165,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI1 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClassBigger.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames1 = ObjectInspectorUtils.getFieldNames(rowOI1);
     String fieldTypes1 = ObjectInspectorUtils.getFieldTypes(rowOI1);
     SerDe serde1 = getSerDe(fieldNames1, fieldTypes1);
@@ -169,7 +173,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI2 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClass.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames2 = ObjectInspectorUtils.getFieldNames(rowOI2);
     String fieldTypes2 = ObjectInspectorUtils.getFieldTypes(rowOI2);
     SerDe serde2 = getSerDe(fieldNames2, fieldTypes2);
@@ -227,7 +231,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI1 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClass.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames1 = ObjectInspectorUtils.getFieldNames(rowOI1);
     String fieldTypes1 = ObjectInspectorUtils.getFieldTypes(rowOI1);
     SerDe serde1 = getSerDe(fieldNames1, fieldTypes1);
@@ -235,7 +239,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI2 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClassSmaller.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames2 = ObjectInspectorUtils.getFieldNames(rowOI2);
     String fieldTypes2 = ObjectInspectorUtils.getFieldTypes(rowOI2);
     SerDe serde2 = getSerDe(fieldNames2, fieldTypes2);
@@ -282,7 +286,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI1 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClass.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames1 = ObjectInspectorUtils.getFieldNames(rowOI1);
     String fieldTypes1 = ObjectInspectorUtils.getFieldTypes(rowOI1);
     SerDe serde1 = getSerDe(fieldNames1, fieldTypes1);
@@ -290,7 +294,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI2 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClassBigger.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames2 = ObjectInspectorUtils.getFieldNames(rowOI2);
     String fieldTypes2 = ObjectInspectorUtils.getFieldTypes(rowOI2);
     SerDe serde2 = getSerDe(fieldNames2, fieldTypes2);
@@ -337,7 +341,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI1 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClassSmaller.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames1 = ObjectInspectorUtils.getFieldNames(rowOI1);
     String fieldTypes1 = ObjectInspectorUtils.getFieldTypes(rowOI1);
     SerDe serde1 = getSerDe(fieldNames1, fieldTypes1);
@@ -345,7 +349,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI2 = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClass.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames2 = ObjectInspectorUtils.getFieldNames(rowOI2);
     String fieldTypes2 = ObjectInspectorUtils.getFieldTypes(rowOI2);
     SerDe serde2 = getSerDe(fieldNames2, fieldTypes2);
@@ -386,7 +390,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
     StructObjectInspector rowOI = (StructObjectInspector) ObjectInspectorFactory
         .getReflectionObjectInspector(MyTestClassBigger.class,
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
     String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);
     String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
     SerDe serde = getSerDe(fieldNames, fieldTypes);
@@ -450,14 +454,14 @@ public class TestLazyBinarySerDe extends TestCase {
         if (!bEqual) {
           throw new RuntimeException(
               "Could not find matched key in deserialized map : "
-                  + entryinput.getKey());
+              + entryinput.getKey());
         }
       }
     }
   }
 
   /**
-   * The test entrance function
+   * The test entrance function.
    * 
    * @throws Throwable
    */
@@ -490,7 +494,7 @@ public class TestLazyBinarySerDe extends TestCase {
 
       StructObjectInspector rowOI = (StructObjectInspector) ObjectInspectorFactory
           .getReflectionObjectInspector(MyTestClass.class,
-              ObjectInspectorOptions.JAVA);
+          ObjectInspectorOptions.JAVA);
 
       String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);

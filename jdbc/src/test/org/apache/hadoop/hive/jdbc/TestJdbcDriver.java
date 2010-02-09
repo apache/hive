@@ -33,6 +33,10 @@ import junit.framework.TestCase;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
+/**
+ * TestJdbcDriver.
+ *
+ */
 public class TestJdbcDriver extends TestCase {
   private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
   private static String tableName = "testHiveDriverTable";
@@ -136,17 +140,16 @@ public class TestJdbcDriver extends TestCase {
 
   public final void testSelectAllPartioned() throws Exception {
     doTestSelectAll(partitionedTableName, -1); // tests not setting maxRows
-                                               // (return all)
+    // (return all)
     doTestSelectAll(partitionedTableName, 0); // tests setting maxRows to 0
-                                              // (return all)
+    // (return all)
   }
 
   public final void testSelectAllMaxRows() throws Exception {
     doTestSelectAll(tableName, 100);
   }
 
-  private final void doTestSelectAll(String tableName, int maxRows)
-      throws Exception {
+  private void doTestSelectAll(String tableName, int maxRows) throws Exception {
     Statement stmt = con.createStatement();
     if (maxRows >= 0) {
       stmt.setMaxRows(maxRows);
@@ -241,7 +244,8 @@ public class TestJdbcDriver extends TestCase {
     // code. This should be refactored.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "Query returned non-zero code: 9, cause: FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
+        "Query returned non-zero code: 9, cause: FAILED: Execution Error, "
+        + "return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
         "08S01", 9);
   }
 
@@ -324,7 +328,7 @@ public class TestJdbcDriver extends TestCase {
     res = stmt.executeQuery("create table " + tableName
         + " (a string, b boolean, c bigint, d int, f double)");
     res = stmt.executeQuery(
-      "select a,b,c,d,f as e,f*2 from " + tableName + " limit 1");
+        "select a,b,c,d,f as e,f*2 from " + tableName + " limit 1");
 
     ResultSetMetaData meta = res.getMetaData();
     assertEquals("Unexpected column count", 6, meta.getColumnCount());
@@ -340,30 +344,18 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("Unexpected column type", Types.INTEGER, meta.getColumnType(4));
     assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(5));
     assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(6));
-    assertEquals("Unexpected column type name", "string", meta
-        .getColumnTypeName(1));
-    assertEquals("Unexpected column type name", "boolean", meta
-        .getColumnTypeName(2));
-    assertEquals("Unexpected column type name", "bigint", meta
-        .getColumnTypeName(3));
-    assertEquals("Unexpected column type name", "int", meta
-        .getColumnTypeName(4));
-    assertEquals("Unexpected column type name", "double", meta
-        .getColumnTypeName(5));
-    assertEquals("Unexpected column type name", "double", meta
-        .getColumnTypeName(6));
-    assertEquals("Unexpected column display size", 32, meta
-        .getColumnDisplaySize(1));
-    assertEquals("Unexpected column display size", 8, meta
-        .getColumnDisplaySize(2));
-    assertEquals("Unexpected column display size", 32, meta
-        .getColumnDisplaySize(3));
-    assertEquals("Unexpected column display size", 16, meta
-        .getColumnDisplaySize(4));
-    assertEquals("Unexpected column display size", 16, meta
-        .getColumnDisplaySize(5));
-    assertEquals("Unexpected column display size", 16, meta
-        .getColumnDisplaySize(6));
+    assertEquals("Unexpected column type name", "string", meta.getColumnTypeName(1));
+    assertEquals("Unexpected column type name", "boolean", meta.getColumnTypeName(2));
+    assertEquals("Unexpected column type name", "bigint", meta.getColumnTypeName(3));
+    assertEquals("Unexpected column type name", "int", meta.getColumnTypeName(4));
+    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(5));
+    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(6));
+    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(1));
+    assertEquals("Unexpected column display size", 8, meta.getColumnDisplaySize(2));
+    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(3));
+    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(4));
+    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(5));
+    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(6));
 
     for (int i = 1; i <= 6; i++) {
       assertFalse(meta.isAutoIncrement(i));
@@ -380,10 +372,10 @@ public class TestJdbcDriver extends TestCase {
 
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
-      { "jdbc:hive://", "", "", "default" },
-      { "jdbc:hive://localhost:10001/default", "localhost", "10001", "default" },
-      { "jdbc:hive://localhost/notdefault", "localhost", "10000", "notdefault" },
-      { "jdbc:hive://foo:1243", "foo", "1243", "default" } };
+      {"jdbc:hive://", "", "", "default"},
+      {"jdbc:hive://localhost:10001/default", "localhost", "10001", "default"},
+      {"jdbc:hive://localhost/notdefault", "localhost", "10000", "notdefault"},
+      {"jdbc:hive://foo:1243", "foo", "1243", "default"}};
 
   public void testDriverProperties() throws SQLException {
     HiveDriver driver = new HiveDriver();

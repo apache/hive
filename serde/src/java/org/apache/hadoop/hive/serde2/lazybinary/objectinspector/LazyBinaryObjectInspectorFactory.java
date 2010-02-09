@@ -18,7 +18,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * should result in exactly the same ObjectInspector.
  */
 
-public class LazyBinaryObjectInspectorFactory {
+public final class LazyBinaryObjectInspectorFactory {
 
   static HashMap<ArrayList<Object>, LazyBinaryStructObjectInspector> cachedLazyBinaryStructObjectInspector = new HashMap<ArrayList<Object>, LazyBinaryStructObjectInspector>();
 
@@ -69,5 +69,9 @@ public class LazyBinaryObjectInspectorFactory {
       cachedLazyBinaryMapObjectInspector.put(signature, result);
     }
     return result;
+  }
+
+  private LazyBinaryObjectInspectorFactory() {
+    // prevent instantiation
   }
 }

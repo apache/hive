@@ -47,6 +47,10 @@ import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 
+/**
+ * ExecReducer.
+ *
+ */
 public class ExecReducer extends MapReduceBase implements Reducer {
 
   private JobConf jc;
@@ -95,7 +99,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
       l4j.info("thread classpath = "
           + Arrays.asList(((URLClassLoader) Thread.currentThread()
-              .getContextClassLoader()).getURLs()));
+          .getContextClassLoader()).getURLs()));
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
@@ -103,7 +107,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     MapredWork gWork = Utilities.getMapRedWork(job);
     reducer = gWork.getReducer();
     reducer.setParentOperators(null); // clear out any parents as reducer is the
-                                      // root
+    // root
     isTagged = gWork.getNeedsTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
@@ -192,9 +196,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         } catch (Exception e) {
           throw new HiveException(
               "Unable to deserialize reduce input key from "
-                  + Utilities.formatBinaryString(keyWritable.get(), 0,
-                      keyWritable.getSize()) + " with properties "
-                  + keyTableDesc.getProperties(), e);
+              + Utilities.formatBinaryString(keyWritable.get(), 0,
+              keyWritable.getSize()) + " with properties "
+              + keyTableDesc.getProperties(), e);
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
@@ -212,11 +216,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         } catch (SerDeException e) {
           throw new HiveException(
               "Unable to deserialize reduce input value (tag="
-                  + tag.get()
-                  + ") from "
-                  + Utilities.formatBinaryString(valueWritable.get(), 0,
-                      valueWritable.getSize()) + " with properties "
-                  + valueTableDesc[tag.get()].getProperties(), e);
+              + tag.get()
+              + ") from "
+              + Utilities.formatBinaryString(valueWritable.get(), 0,
+              valueWritable.getSize()) + " with properties "
+              + valueTableDesc[tag.get()].getProperties(), e);
         }
         row.clear();
         row.add(keyObject);

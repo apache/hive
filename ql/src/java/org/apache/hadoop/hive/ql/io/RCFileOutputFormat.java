@@ -38,6 +38,10 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ReflectionUtils;
 
+/**
+ * RCFileOutputFormat.
+ *
+ */
 public class RCFileOutputFormat extends
     FileOutputFormat<WritableComparable, BytesRefArrayWritable> implements
     HiveOutputFormat<WritableComparable, Writable> {
@@ -57,7 +61,7 @@ public class RCFileOutputFormat extends
   }
 
   /**
-   * Returns the number of columns set in the conf for writers
+   * Returns the number of columns set in the conf for writers.
    * 
    * @param conf
    * @return number of columns for RCFile's writer
@@ -69,8 +73,7 @@ public class RCFileOutputFormat extends
   /** {@inheritDoc} */
   @Override
   public RecordWriter<WritableComparable, BytesRefArrayWritable> getRecordWriter(
-      FileSystem ignored, JobConf job, String name, Progressable progress)
-      throws IOException {
+      FileSystem ignored, JobConf job, String name, Progressable progress) throws IOException {
 
     Path outputPath = getWorkOutputPath(job);
     FileSystem fs = outputPath.getFileSystem(job);
@@ -101,7 +104,7 @@ public class RCFileOutputFormat extends
   }
 
   /**
-   * create the final out file,
+   * create the final out file.
    * 
    * @param jc
    *          the job configuration file
@@ -120,8 +123,7 @@ public class RCFileOutputFormat extends
   @Override
   public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass,
-      boolean isCompressed, Properties tableProperties, Progressable progress)
-      throws IOException {
+      boolean isCompressed, Properties tableProperties, Progressable progress) throws IOException {
 
     String[] cols = null;
     String columns = tableProperties.getProperty("columns");

@@ -36,7 +36,7 @@ public class ColumnInfo implements Serializable {
   private String internalName;
 
   private String alias = null; // [optional] alias of the column (external name
-                               // as seen by the users)
+  // as seen by the users)
 
   /**
    * Store the alias of the table where available.
@@ -48,7 +48,7 @@ public class ColumnInfo implements Serializable {
    */
   private boolean isPartitionCol;
 
-  transient private TypeInfo type;
+  private transient TypeInfo type;
 
   public ColumnInfo() {
   }

@@ -22,27 +22,27 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "datediff", value = "_FUNC_(date1, date2) - Returns the number of days between date1 "
-    + "and date2", extended = "date1 and date2 are strings in the format "
+/**
+ * UDFDateDiff.
+ *
+ */
+@Description(name = "datediff",
+    value = "_FUNC_(date1, date2) - Returns the number of days between date1 and date2",
+    extended = "date1 and date2 are strings in the format "
     + "'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time parts are ignored."
     + "If date1 is earlier than date2, the result is negative.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-30-07', '2009-31-07') FROM src LIMIT 1;\n"
     + "  1")
 public class UDFDateDiff extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFDateDiff.class.getName());
-
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   public UDFDateDiff() {
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));

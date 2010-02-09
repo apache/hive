@@ -49,7 +49,7 @@ public class PrunedPartitionList {
   }
 
   /**
-   * get confirmed partitions
+   * get confirmed partitions.
    * 
    * @return confirmedPartns confirmed paritions
    */
@@ -58,7 +58,7 @@ public class PrunedPartitionList {
   }
 
   /**
-   * get unknown partitions
+   * get unknown partitions.
    * 
    * @return unknownPartns unknown paritions
    */
@@ -67,7 +67,7 @@ public class PrunedPartitionList {
   }
 
   /**
-   * get denied partitions
+   * get denied partitions.
    * 
    * @return deniedPartns denied paritions
    */
@@ -76,7 +76,7 @@ public class PrunedPartitionList {
   }
 
   /**
-   * set confirmed partitions
+   * set confirmed partitions.
    * 
    * @param confirmedPartns
    *          confirmed paritions
@@ -86,7 +86,7 @@ public class PrunedPartitionList {
   }
 
   /**
-   * set unknown partitions
+   * set unknown partitions.
    * 
    * @param unknownPartns
    *          unknown partitions

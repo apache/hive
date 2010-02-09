@@ -43,9 +43,9 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  final static String hadoopMemKey = "HADOOP_HEAPSIZE";
-  final static String hadoopOptsKey = "HADOOP_OPTS";
-  final static String HIVE_SYS_PROP[] = { "build.dir", "build.dir.hive" };
+  static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
+  static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
+  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
 
   public MapRedTask() {
     super();
@@ -60,28 +60,24 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
       String hiveJar = conf.getJar();
 
       String libJarsOption;
-      {
-        String addedJars = ExecDriver.getResourceFiles(conf,
-            SessionState.ResourceType.JAR);
-        conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
-
-        String auxJars = conf.getAuxJars();
-        // Put auxjars and addedjars together into libjars
-        if (StringUtils.isEmpty(addedJars)) {
-          if (StringUtils.isEmpty(auxJars)) {
-            libJarsOption = " ";
-          } else {
-            libJarsOption = " -libjars " + auxJars + " ";
-          }
+      String addedJars = ExecDriver.getResourceFiles(conf,
+          SessionState.ResourceType.JAR);
+      conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
+      String auxJars = conf.getAuxJars();
+      // Put auxjars and addedjars together into libjars
+      if (StringUtils.isEmpty(addedJars)) {
+        if (StringUtils.isEmpty(auxJars)) {
+          libJarsOption = " ";
         } else {
-          if (StringUtils.isEmpty(auxJars)) {
-            libJarsOption = " -libjars " + addedJars + " ";
-          } else {
-            libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
-          }
+          libJarsOption = " -libjars " + auxJars + " ";
+        }
+      } else {
+        if (StringUtils.isEmpty(auxJars)) {
+          libJarsOption = " -libjars " + addedJars + " ";
+        } else {
+          libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
         }
       }
-
       // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
       File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
@@ -117,47 +113,38 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
 
       // Inherit Java system variables
       String hadoopOpts;
-      {
-        StringBuilder sb = new StringBuilder();
-        Properties p = System.getProperties();
-        for (String element : HIVE_SYS_PROP) {
-          if (p.containsKey(element)) {
-            sb.append(" -D" + element + "=" + p.getProperty(element));
-          }
+      StringBuilder sb = new StringBuilder();
+      Properties p = System.getProperties();
+      for (String element : HIVE_SYS_PROP) {
+        if (p.containsKey(element)) {
+          sb.append(" -D" + element + "=" + p.getProperty(element));
         }
-        hadoopOpts = sb.toString();
       }
-
+      hadoopOpts = sb.toString();
       // Inherit the environment variables
       String[] env;
-      {
-        Map<String, String> variables = new HashMap(System.getenv());
-        // The user can specify the hadoop memory
-        int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
-
-        if (hadoopMem == 0) {
-          variables.remove(hadoopMemKey);
-        } else {
-          // user specified the memory - only applicable for local mode
-          variables.put(hadoopMemKey, String.valueOf(hadoopMem));
-        }
-
-        if (variables.containsKey(hadoopOptsKey)) {
-          variables.put(hadoopOptsKey, variables.get(hadoopOptsKey)
-              + hadoopOpts);
-        } else {
-          variables.put(hadoopOptsKey, hadoopOpts);
-        }
-
-        env = new String[variables.size()];
-        int pos = 0;
-        for (Map.Entry<String, String> entry : variables.entrySet()) {
-          String name = entry.getKey();
-          String value = entry.getValue();
-          env[pos++] = name + "=" + value;
-        }
+      Map<String, String> variables = new HashMap(System.getenv());
+      // The user can specify the hadoop memory
+      int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+      if (hadoopMem == 0) {
+        variables.remove(HADOOP_MEM_KEY);
+      } else {
+        // user specified the memory - only applicable for local mode
+        variables.put(HADOOP_MEM_KEY, String.valueOf(hadoopMem));
       }
-
+      if (variables.containsKey(HADOOP_OPTS_KEY)) {
+        variables.put(HADOOP_OPTS_KEY, variables.get(HADOOP_OPTS_KEY)
+            + hadoopOpts);
+      } else {
+        variables.put(HADOOP_OPTS_KEY, hadoopOpts);
+      }
+      env = new String[variables.size()];
+      int pos = 0;
+      for (Map.Entry<String, String> entry : variables.entrySet()) {
+        String name = entry.getKey();
+        String value = entry.getValue();
+        env[pos++] = name + "=" + value;
+      }
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env);
 

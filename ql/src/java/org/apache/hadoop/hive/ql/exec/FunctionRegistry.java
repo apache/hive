@@ -165,10 +165,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
-public class FunctionRegistry {
+/**
+ * FunctionRegistry.
+ *
+ */
+public final class FunctionRegistry {
 
-  private static Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.exec.FunctionRegistry");
+  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.exec.FunctionRegistry");
 
   /**
    * The mapping from expression function names to expression classes.
@@ -644,11 +647,10 @@ public class FunctionRegistry {
       Class<? extends UDAF> udafClass) {
     mFunctions.put(functionName.toLowerCase(), new FunctionInfo(isNative,
         functionName.toLowerCase(), new GenericUDAFBridge(
-            (UDAF) ReflectionUtils.newInstance(udafClass, null))));
+        (UDAF) ReflectionUtils.newInstance(udafClass, null))));
   }
 
-  public static void unregisterTemporaryUDF(String functionName)
-      throws HiveException {
+  public static void unregisterTemporaryUDF(String functionName) throws HiveException {
     FunctionInfo fi = mFunctions.get(functionName.toLowerCase());
     if (fi != null) {
       if (!fi.isNative()) {
@@ -929,4 +931,7 @@ public class FunctionRegistry {
     return UDFOPPositive.class == udfClass;
   }
 
+  private FunctionRegistry() {
+    // prevent instantiation
+  }
 }

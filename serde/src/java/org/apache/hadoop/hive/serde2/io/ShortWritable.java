@@ -24,6 +24,10 @@ import java.io.IOException;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
+/**
+ * ShortWritable.
+ *
+ */
 public class ShortWritable implements WritableComparable {
   private short value;
 

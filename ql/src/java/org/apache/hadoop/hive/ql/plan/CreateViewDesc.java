@@ -24,6 +24,10 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
+/**
+ * CreateViewDesc.
+ *
+ */
 @Explain(displayName = "Create View")
 public class CreateViewDesc implements Serializable {
   private static final long serialVersionUID = 1L;

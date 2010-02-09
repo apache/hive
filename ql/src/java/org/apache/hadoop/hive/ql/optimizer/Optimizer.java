@@ -29,14 +29,14 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 
 /**
- * Implementation of the optimizer
+ * Implementation of the optimizer.
  */
 public class Optimizer {
   private ParseContext pctx;
   private List<Transform> transformations;
 
   /**
-   * create the list of transformations
+   * Create the list of transformations.
    * 
    * @param hiveConf
    */
@@ -61,7 +61,7 @@ public class Optimizer {
   }
 
   /**
-   * invoke all the transformations one-by-one, and alter the query plan
+   * Invoke all the transformations one-by-one, and alter the query plan.
    * 
    * @return ParseContext
    * @throws SemanticException

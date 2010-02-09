@@ -26,6 +26,10 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypeString.
+ *
+ */
 public class DynamicSerDeTypeString extends DynamicSerDeTypeBase {
 
   // production is: string
@@ -61,8 +65,7 @@ public class DynamicSerDeTypeString extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     StringObjectInspector poi = (StringObjectInspector) oi;
     if (oprot instanceof WriteTextProtocol) {
       ((WriteTextProtocol) oprot).writeText(poi.getPrimitiveWritableObject(o));

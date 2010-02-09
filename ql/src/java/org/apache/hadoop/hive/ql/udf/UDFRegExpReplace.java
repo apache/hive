@@ -21,11 +21,16 @@ package org.apache.hadoop.hive.ql.udf;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "regexp_replace", value = "_FUNC_(str, regexp, rep) - replace all substrings of str that "
+/**
+ * UDFRegExpReplace.
+ *
+ */
+@Description(name = "regexp_replace",
+    value = "_FUNC_(str, regexp, rep) - replace all substrings of str that "
     + "match regexp with rep", extended = "Example:\n"
     + "  > SELECT _FUNC_('100-200', '(\\d+)', 'num') FROM src LIMIT 1;\n"
     + "  'num-num'")
@@ -37,7 +42,7 @@ public class UDFRegExpReplace extends UDF {
   private final Text lastReplacement = new Text();
   private String replacementString = "";
 
-  Text result = new Text();
+  private Text result = new Text();
 
   public UDFRegExpReplace() {
   }

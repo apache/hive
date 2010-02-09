@@ -39,8 +39,7 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector)
-      throws HiveException {
+  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
 
     // We need to support field names like KEY.0, VALUE.1 between
     // map-reduce boundary.

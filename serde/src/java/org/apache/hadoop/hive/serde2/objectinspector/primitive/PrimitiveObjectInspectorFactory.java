@@ -34,29 +34,48 @@ import org.apache.hadoop.io.Writable;
  * same construction parameters should result in exactly the same
  * ObjectInspector.
  */
-public class PrimitiveObjectInspectorFactory {
+public final class PrimitiveObjectInspectorFactory {
 
-  public final static JavaBooleanObjectInspector javaBooleanObjectInspector = new JavaBooleanObjectInspector();
-  public final static JavaByteObjectInspector javaByteObjectInspector = new JavaByteObjectInspector();
-  public final static JavaShortObjectInspector javaShortObjectInspector = new JavaShortObjectInspector();
-  public final static JavaIntObjectInspector javaIntObjectInspector = new JavaIntObjectInspector();
-  public final static JavaLongObjectInspector javaLongObjectInspector = new JavaLongObjectInspector();
-  public final static JavaFloatObjectInspector javaFloatObjectInspector = new JavaFloatObjectInspector();
-  public final static JavaDoubleObjectInspector javaDoubleObjectInspector = new JavaDoubleObjectInspector();
-  public final static JavaStringObjectInspector javaStringObjectInspector = new JavaStringObjectInspector();
-  public final static JavaVoidObjectInspector javaVoidObjectInspector = new JavaVoidObjectInspector();
+  public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
+      new JavaBooleanObjectInspector();
+  public static final JavaByteObjectInspector javaByteObjectInspector =
+      new JavaByteObjectInspector();
+  public static final JavaShortObjectInspector javaShortObjectInspector =
+      new JavaShortObjectInspector();
+  public static final JavaIntObjectInspector javaIntObjectInspector =
+      new JavaIntObjectInspector();
+  public static final JavaLongObjectInspector javaLongObjectInspector =
+      new JavaLongObjectInspector();
+  public static final JavaFloatObjectInspector javaFloatObjectInspector =
+      new JavaFloatObjectInspector();
+  public static final JavaDoubleObjectInspector javaDoubleObjectInspector =
+      new JavaDoubleObjectInspector();
+  public static final JavaStringObjectInspector javaStringObjectInspector =
+      new JavaStringObjectInspector();
+  public static final JavaVoidObjectInspector javaVoidObjectInspector =
+      new JavaVoidObjectInspector();
 
-  public final static WritableBooleanObjectInspector writableBooleanObjectInspector = new WritableBooleanObjectInspector();
-  public final static WritableByteObjectInspector writableByteObjectInspector = new WritableByteObjectInspector();
-  public final static WritableShortObjectInspector writableShortObjectInspector = new WritableShortObjectInspector();
-  public final static WritableIntObjectInspector writableIntObjectInspector = new WritableIntObjectInspector();
-  public final static WritableLongObjectInspector writableLongObjectInspector = new WritableLongObjectInspector();
-  public final static WritableFloatObjectInspector writableFloatObjectInspector = new WritableFloatObjectInspector();
-  public final static WritableDoubleObjectInspector writableDoubleObjectInspector = new WritableDoubleObjectInspector();
-  public final static WritableStringObjectInspector writableStringObjectInspector = new WritableStringObjectInspector();
-  public final static WritableVoidObjectInspector writableVoidObjectInspector = new WritableVoidObjectInspector();
+  public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
+      new WritableBooleanObjectInspector();
+  public static final WritableByteObjectInspector writableByteObjectInspector =
+      new WritableByteObjectInspector();
+  public static final WritableShortObjectInspector writableShortObjectInspector =
+      new WritableShortObjectInspector();
+  public static final WritableIntObjectInspector writableIntObjectInspector =
+      new WritableIntObjectInspector();
+  public static final WritableLongObjectInspector writableLongObjectInspector =
+      new WritableLongObjectInspector();
+  public static final WritableFloatObjectInspector writableFloatObjectInspector =
+      new WritableFloatObjectInspector();
+  public static final WritableDoubleObjectInspector writableDoubleObjectInspector =
+      new WritableDoubleObjectInspector();
+  public static final WritableStringObjectInspector writableStringObjectInspector =
+      new WritableStringObjectInspector();
+  public static final WritableVoidObjectInspector writableVoidObjectInspector =
+      new WritableVoidObjectInspector();
 
-  private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache = new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
+  private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
+      new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
   static {
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BOOLEAN,
         writableBooleanObjectInspector);
@@ -78,7 +97,8 @@ public class PrimitiveObjectInspectorFactory {
         writableVoidObjectInspector);
   }
 
-  private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache = new HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector>();
+  private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
+      new HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector>();
   static {
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BOOLEAN,
         javaBooleanObjectInspector);
@@ -107,8 +127,8 @@ public class PrimitiveObjectInspectorFactory {
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
       PrimitiveCategory primitiveCategory) {
-    AbstractPrimitiveWritableObjectInspector result = cachedPrimitiveWritableInspectorCache
-        .get(primitiveCategory);
+    AbstractPrimitiveWritableObjectInspector result =
+        cachedPrimitiveWritableInspectorCache.get(primitiveCategory);
     if (result == null) {
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
@@ -123,8 +143,8 @@ public class PrimitiveObjectInspectorFactory {
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
       PrimitiveCategory primitiveCategory) {
-    AbstractPrimitiveJavaObjectInspector result = cachedPrimitiveJavaInspectorCache
-        .get(primitiveCategory);
+    AbstractPrimitiveJavaObjectInspector result =
+        cachedPrimitiveJavaInspectorCache.get(primitiveCategory);
     if (result == null) {
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
@@ -162,4 +182,7 @@ public class PrimitiveObjectInspectorFactory {
     }
   }
 
+  private PrimitiveObjectInspectorFactory() {
+    // prevent instantiation
+  }
 }

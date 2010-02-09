@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 
+/**
+ * AggregationDesc.
+ *
+ */
 public class AggregationDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;

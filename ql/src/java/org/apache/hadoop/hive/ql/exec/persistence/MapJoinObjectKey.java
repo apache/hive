@@ -32,12 +32,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.io.Writable;
 
 /**
- * Map Join Object used for both key
+ * Map Join Object used for both key.
  */
 public class MapJoinObjectKey implements Externalizable {
 
-  transient protected int metadataTag;
-  transient protected ArrayList<Object> obj;
+  protected transient int metadataTag;
+  protected transient ArrayList<Object> obj;
 
   public MapJoinObjectKey() {
   }

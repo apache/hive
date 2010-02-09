@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 
 /**
- * LazyBinaryObject for double which takes eight bytes
+ * LazyBinaryObject for double which takes eight bytes.
  */
 public class LazyBinaryDouble extends
     LazyBinaryPrimitive<WritableDoubleObjectInspector, DoubleWritable> {

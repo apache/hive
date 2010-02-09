@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * CreateTableLikeDesc.
+ *
+ */
 @Explain(displayName = "Create Table")
 public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -31,7 +35,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
 
   public CreateTableLikeDesc() {
   }
-  
+
   public CreateTableLikeDesc(String tableName, boolean isExternal,
       String location, boolean ifNotExists, String likeTableName) {
     this.tableName = tableName;

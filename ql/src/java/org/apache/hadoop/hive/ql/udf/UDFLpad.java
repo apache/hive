@@ -18,13 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "lpad", value = "_FUNC_(str, len, pad) - Returns str, left-padded with pad to a "
-    + "length of len", extended = "If str is longer than len, the return value is shortened to "
+/**
+ * UDFLpad.
+ *
+ */
+@Description(name = "lpad",
+    value = "_FUNC_(str, len, pad) - Returns str, left-padded with pad to a length of len",
+    extended = "If str is longer than len, the return value is shortened to "
     + "len characters.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('hi', 5, '??') FROM src LIMIT 1;\n"

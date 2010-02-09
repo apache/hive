@@ -37,6 +37,10 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * TestSerDe.
+ *
+ */
 public class TestSerDe implements SerDe {
 
   public static final Log LOG = LogFactory.getLog(TestSerDe.class.getName());
@@ -62,7 +66,7 @@ public class TestSerDe implements SerDe {
     }
   }
 
-  final public static String DefaultSeparator = "\002";
+  public static final String DefaultSeparator = "\002";
 
   private String separator;
   // constant for now, will make it configurable later.
@@ -79,17 +83,16 @@ public class TestSerDe implements SerDe {
     separator = DefaultSeparator;
   }
 
-  public void initialize(Configuration job, Properties tbl)
-      throws SerDeException {
+  public void initialize(Configuration job, Properties tbl) throws SerDeException {
     separator = DefaultSeparator;
-    String alt_sep = tbl.getProperty("testserde.default.serialization.format");
-    if (alt_sep != null && alt_sep.length() > 0) {
+    String altSep = tbl.getProperty("testserde.default.serialization.format");
+    if (altSep != null && altSep.length() > 0) {
       try {
-        byte b[] = new byte[1];
-        b[0] = Byte.valueOf(alt_sep).byteValue();
+        byte[] b = new byte[1];
+        b[0] = Byte.valueOf(altSep).byteValue();
         separator = new String(b);
       } catch (NumberFormatException e) {
-        separator = alt_sep;
+        separator = altSep;
       }
     }
 
@@ -99,7 +102,7 @@ public class TestSerDe implements SerDe {
       // Treat it as a table with a single column called "col"
       cachedObjectInspector = ObjectInspectorFactory
           .getReflectionObjectInspector(ColumnSet.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
@@ -166,8 +169,7 @@ public class TestSerDe implements SerDe {
 
   Text serializeCache = new Text();
 
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
       throw new SerDeException(getClass().toString()

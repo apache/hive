@@ -40,7 +40,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * SessionState encapsulates common data associated with a session
+ * SessionState encapsulates common data associated with a session.
  * 
  * Also provides support for a thread static session object that can be accessed
  * from any point in the code to interact with the user and to retrieve
@@ -49,12 +49,12 @@ import org.apache.log4j.PropertyConfigurator;
 public class SessionState {
 
   /**
-   * current configuration
+   * current configuration.
    */
   protected HiveConf conf;
 
   /**
-   * silent mode
+   * silent mode.
    */
   protected boolean isSilent;
 
@@ -63,14 +63,14 @@ public class SessionState {
    */
   protected HiveHistory hiveHist;
   /**
-   * Streams to read/write from
+   * Streams to read/write from.
    */
   public PrintStream out;
   public InputStream in;
   public PrintStream err;
 
   /**
-   * type of the command
+   * type of the command.
    */
   private String commandType;
 
@@ -122,7 +122,7 @@ public class SessionState {
   private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState>();
 
   /**
-   * start a new session and set it to current session
+   * start a new session and set it to current session.
    */
   public static SessionState start(HiveConf conf) {
     SessionState ss = new SessionState(conf);
@@ -135,7 +135,7 @@ public class SessionState {
   /**
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
-   * when switching from one session to another
+   * when switching from one session to another.
    */
   public static SessionState start(SessionState startSs) {
 
@@ -153,14 +153,14 @@ public class SessionState {
   }
 
   /**
-   * get the current session
+   * get the current session.
    */
   public static SessionState get() {
     return tss.get();
   }
 
   /**
-   * get hiveHitsory object which does structured logging
+   * get hiveHitsory object which does structured logging.
    * 
    * @return The hive history object
    */
@@ -175,8 +175,8 @@ public class SessionState {
     return userid
         + "_"
         + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d", gc.get(Calendar.YEAR),
-            gc.get(Calendar.MONTH) + 1, gc.get(Calendar.DAY_OF_MONTH), gc
-                .get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE));
+        gc.get(Calendar.MONTH) + 1, gc.get(Calendar.DAY_OF_MONTH), gc
+        .get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE));
   }
 
   public static final String HIVE_L4J = "hive-log4j.properties";
@@ -199,7 +199,7 @@ public class SessionState {
    * 
    * NEVER write directly to the SessionStates standard output other than to
    * emit result data DO use printInfo and printError provided by LogHelper to
-   * emit non result data strings
+   * emit non result data strings.
    * 
    * It is perfectly acceptable to have global static LogHelper objects (for
    * example - once per module) LogHelper always emits info/error to current
@@ -259,7 +259,7 @@ public class SessionState {
   private static LogHelper _console;
 
   /**
-   * initialize or retrieve console object for SessionState
+   * initialize or retrieve console object for SessionState.
    */
   public static LogHelper getConsole() {
     if (_console == null) {
@@ -319,12 +319,20 @@ public class SessionState {
     }
   }
 
+  /**
+   * ResourceHook.
+   *
+   */
   public static interface ResourceHook {
-    public String preHook(Set<String> cur, String s);
+    String preHook(Set<String> cur, String s);
 
-    public boolean postHook(Set<String> cur, String s);
+    boolean postHook(Set<String> cur, String s);
   }
 
+  /**
+   * ResourceType.
+   *
+   */
   public static enum ResourceType {
     FILE(new ResourceHook() {
       public String preHook(Set<String> cur, String s) {
@@ -391,7 +399,8 @@ public class SessionState {
     return null;
   }
 
-  private final HashMap<ResourceType, HashSet<String>> resource_map = new HashMap<ResourceType, HashSet<String>>();
+  private final HashMap<ResourceType, HashSet<String>> resource_map =
+    new HashMap<ResourceType, HashSet<String>>();
 
   public void add_resource(ResourceType t, String value) {
     if (resource_map.get(t) == null) {

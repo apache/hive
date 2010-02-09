@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * MoveTask implementation
+ * MoveTask implementation.
  **/
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
@@ -102,7 +102,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           } else {
             throw new AccessControlException(
                 "Unable to delete the existing destination directory: "
-                    + targetPath);
+                + targetPath);
           }
         }
       }
@@ -113,7 +113,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         String mesg = "Loading data to table "
             + tbd.getTable().getTableName()
             + ((tbd.getPartitionSpec().size() > 0) ? " partition "
-                + tbd.getPartitionSpec().toString() : "");
+            + tbd.getPartitionSpec().toString() : "");
         String mesg_detail = " from " + tbd.getSourceDir();
         console.printInfo(mesg, mesg_detail);
         Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd

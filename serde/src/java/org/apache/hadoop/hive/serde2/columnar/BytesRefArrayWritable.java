@@ -246,11 +246,11 @@ public class BytesRefArrayWritable implements Writable,
     WritableFactories.setFactory(BytesRefArrayWritable.class,
         new WritableFactory() {
 
-          @Override
-          public Writable newInstance() {
-            return new BytesRefArrayWritable();
-          }
+      @Override
+      public Writable newInstance() {
+        return new BytesRefArrayWritable();
+      }
 
-        });
+    });
   }
 }

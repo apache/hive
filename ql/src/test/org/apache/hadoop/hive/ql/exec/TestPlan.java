@@ -35,6 +35,10 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
+/**
+ * TestPlan.
+ *
+ */
 public class TestPlan extends TestCase {
 
   public void testPlan() throws Exception {
@@ -65,7 +69,8 @@ public class TestPlan extends TestCase {
       LinkedHashMap<String, PartitionDesc> pt = new LinkedHashMap<String, PartitionDesc>();
       pt.put("/tmp/testfolder", partDesc);
 
-      LinkedHashMap<String, Operator<? extends Serializable>> ao = new LinkedHashMap<String, Operator<? extends Serializable>>();
+      LinkedHashMap<String, Operator<? extends Serializable>> ao =
+        new LinkedHashMap<String, Operator<? extends Serializable>>();
       ao.put("a", op);
 
       MapredWork mrwork = new MapredWork();

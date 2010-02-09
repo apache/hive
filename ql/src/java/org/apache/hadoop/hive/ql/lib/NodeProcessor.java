@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public interface NodeProcessor {
 
   /**
-   * generic process for all ops that don't have specific implementations
+   * Generic process for all ops that don't have specific implementations.
    * 
    * @param nd
    *          operator to process
@@ -39,6 +39,6 @@ public interface NodeProcessor {
    * @return Object to be returned by the process call
    * @throws SemanticException
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException;
 }

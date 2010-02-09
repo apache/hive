@@ -21,31 +21,31 @@ package org.apache.hadoop.hive.ql.udf;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "from_unixtime", value = "_FUNC_(unix_time, format) - returns unix_time in the specified "
-    + "format", extended = "Example:\n"
+/**
+ * UDFFromUnixTime.
+ *
+ */
+@Description(name = "from_unixtime",
+    value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
     + "  '1970-01-01 00:00:00'")
 public class UDFFromUnixTime extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFFromUnixTime.class.getName());
-
   private SimpleDateFormat formatter;
 
-  Text result = new Text();
-  Text lastFormat = new Text();
+  private Text result = new Text();
+  private Text lastFormat = new Text();
 
   public UDFFromUnixTime() {
   }
 
-  Text defaultFormat = new Text("yyyy-MM-dd HH:mm:ss");
+  private Text defaultFormat = new Text("yyyy-MM-dd HH:mm:ss");
 
   public Text evaluate(IntWritable unixtime) {
     return evaluate(unixtime, defaultFormat);

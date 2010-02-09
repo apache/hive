@@ -110,7 +110,7 @@ public class LazyBinaryMap extends
 
   /**
    * Adjust the size of arrays: keyStart, keyLength valueStart, valueLength
-   * keyInited, keyIsNull valueInited, valueIsNull
+   * keyInited, keyIsNull valueInited, valueIsNull.
    */
   protected void adjustArraySize(int newSize) {
     if (keyStart == null || keyStart.length < newSize) {
@@ -133,7 +133,7 @@ public class LazyBinaryMap extends
 
   /**
    * Parse the byte[] and fill keyStart, keyLength, keyIsNull valueStart,
-   * valueLength and valueIsNull
+   * valueLength and valueIsNull.
    */
   private void parse() {
 
@@ -210,7 +210,7 @@ public class LazyBinaryMap extends
       if (valueObjects[index] == null) {
         valueObjects[index] = LazyBinaryFactory
             .createLazyBinaryObject(((MapObjectInspector) oi)
-                .getMapValueObjectInspector());
+            .getMapValueObjectInspector());
       }
       valueObjects[index].init(bytes, valueStart[index], valueLength[index]);
     }
@@ -273,7 +273,7 @@ public class LazyBinaryMap extends
         // Keys are always primitive
         keyObjects[index] = LazyBinaryFactory
             .createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) ((MapObjectInspector) oi)
-                .getMapKeyObjectInspector());
+            .getMapKeyObjectInspector());
       }
       keyObjects[index].init(bytes, keyStart[index], keyLength[index]);
     }

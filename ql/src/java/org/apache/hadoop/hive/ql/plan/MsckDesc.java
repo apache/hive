@@ -8,6 +8,10 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * MsckDesc.
+ *
+ */
 public class MsckDesc extends DDLWork implements Serializable {
 
   private String tableName;
@@ -33,7 +37,7 @@ public class MsckDesc extends DDLWork implements Serializable {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
-      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i))); 
+      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i)));
     }
     this.resFile = resFile;
     this.repairPartitions = repairPartitions;

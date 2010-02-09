@@ -37,7 +37,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * FetchTask implementation
+ * FetchTask implementation.
  **/
 public class FetchTask extends Task<FetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -83,21 +83,21 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   /**
-   * Return the tableDesc of the fetchWork
+   * Return the tableDesc of the fetchWork.
    */
   public TableDesc getTblDesc() {
     return work.getTblDesc();
   }
 
   /**
-   * Return the maximum number of rows returned by fetch
+   * Return the maximum number of rows returned by fetch.
    */
   public int getMaxRows() {
     return maxRows;
   }
 
   /**
-   * Set the maximum number of rows returned by fetch
+   * Set the maximum number of rows returned by fetch.
    */
   public void setMaxRows(int maxRows) {
     this.maxRows = maxRows;

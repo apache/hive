@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  transient protected int limit;
-  transient protected int currCount;
+  protected transient int limit;
+  protected transient int currCount;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

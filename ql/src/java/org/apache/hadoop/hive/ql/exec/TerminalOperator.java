@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 
 /**
- * Terminal Operator Base Class
+ * Terminal Operator Base Class.
  **/
 public abstract class TerminalOperator<T extends Serializable> extends
     Operator<T> implements Serializable {

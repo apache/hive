@@ -50,6 +50,10 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.io.BytesWritable;
 
+/**
+ * HiveResultSet.
+ *
+ */
 public class HiveResultSet implements java.sql.ResultSet {
   HiveInterface client;
   ArrayList<?> row;
@@ -79,7 +83,7 @@ public class HiveResultSet implements java.sql.ResultSet {
   }
 
   /**
-   * Instantiate the dynamic serde used to deserialize the result row
+   * Instantiate the dynamic serde used to deserialize the result row.
    */
   public void initDynamicSerde() throws SQLException {
     try {
@@ -111,7 +115,7 @@ public class HiveResultSet implements java.sql.ResultSet {
       Properties dsp = new Properties();
       dsp.setProperty(Constants.SERIALIZATION_FORMAT,
           org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
-              .getName());
+          .getName());
       dsp.setProperty(
           org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
           "result");
@@ -295,8 +299,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#getBigDecimal(int, int)
    */
 
-  public BigDecimal getBigDecimal(int columnIndex, int scale)
-      throws SQLException {
+  public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -307,8 +310,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
    */
 
-  public BigDecimal getBigDecimal(String columnName, int scale)
-      throws SQLException {
+  public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -832,8 +834,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#getObject(java.lang.String, java.util.Map)
    */
 
-  public Object getObject(String colName, Map<String, Class<?>> map)
-      throws SQLException {
+  public Object getObject(String colName, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1055,8 +1056,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
    */
 
-  public Timestamp getTimestamp(int columnIndex, Calendar cal)
-      throws SQLException {
+  public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1067,8 +1067,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
    */
 
-  public Timestamp getTimestamp(String columnName, Calendar cal)
-      throws SQLException {
+  public Timestamp getTimestamp(String columnName, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1250,12 +1249,12 @@ public class HiveResultSet implements java.sql.ResultSet {
       return false;
     }
 
-    String row_str = "";
+    String rowStr = "";
     try {
-      row_str = (String) client.fetchOne();
+      rowStr = (String) client.fetchOne();
       rowsFetched++;
-      if (!row_str.equals("")) {
-        Object o = ds.deserialize(new BytesWritable(row_str.getBytes()));
+      if (!rowStr.equals("")) {
+        Object o = ds.deserialize(new BytesWritable(rowStr.getBytes()));
         row = (ArrayList<?>) o;
       }
     } catch (Exception ex) {
@@ -1263,7 +1262,7 @@ public class HiveResultSet implements java.sql.ResultSet {
       throw new SQLException("Error retrieving next row");
     }
     // NOTE: fetchOne dosn't throw new SQLException("Method not supported").
-    return !row_str.equals("");
+    return !rowStr.equals("");
   }
 
   /*
@@ -1382,8 +1381,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateAsciiStream(int, java.io.InputStream)
    */
 
-  public void updateAsciiStream(int columnIndex, InputStream x)
-      throws SQLException {
+  public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1395,8 +1393,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.io.InputStream)
    */
 
-  public void updateAsciiStream(String columnLabel, InputStream x)
-      throws SQLException {
+  public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1457,8 +1454,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateBigDecimal(int, java.math.BigDecimal)
    */
 
-  public void updateBigDecimal(int columnIndex, BigDecimal x)
-      throws SQLException {
+  public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1470,8 +1466,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.math.BigDecimal)
    */
 
-  public void updateBigDecimal(String columnName, BigDecimal x)
-      throws SQLException {
+  public void updateBigDecimal(String columnName, BigDecimal x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1482,8 +1477,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateBinaryStream(int, java.io.InputStream)
    */
 
-  public void updateBinaryStream(int columnIndex, InputStream x)
-      throws SQLException {
+  public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1495,8 +1489,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.io.InputStream)
    */
 
-  public void updateBinaryStream(String columnLabel, InputStream x)
-      throws SQLException {
+  public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1579,8 +1572,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateBlob(int, java.io.InputStream)
    */
 
-  public void updateBlob(int columnIndex, InputStream inputStream)
-      throws SQLException {
+  public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1591,8 +1583,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateBlob(java.lang.String, java.io.InputStream)
    */
 
-  public void updateBlob(String columnLabel, InputStream inputStream)
-      throws SQLException {
+  public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1694,8 +1685,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateCharacterStream(int, java.io.Reader)
    */
 
-  public void updateCharacterStream(int columnIndex, Reader x)
-      throws SQLException {
+  public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1707,8 +1697,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.io.Reader)
    */
 
-  public void updateCharacterStream(String columnLabel, Reader reader)
-      throws SQLException {
+  public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1813,8 +1802,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateClob(int, java.io.Reader, long)
    */
 
-  public void updateClob(int columnIndex, Reader reader, long length)
-      throws SQLException {
+  public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1825,8 +1813,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateClob(java.lang.String, java.io.Reader, long)
    */
 
-  public void updateClob(String columnLabel, Reader reader, long length)
-      throws SQLException {
+  public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1947,8 +1934,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNCharacterStream(int, java.io.Reader)
    */
 
-  public void updateNCharacterStream(int columnIndex, Reader x)
-      throws SQLException {
+  public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1960,8 +1946,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.io.Reader)
    */
 
-  public void updateNCharacterStream(String columnLabel, Reader reader)
-      throws SQLException {
+  public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1972,8 +1957,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNCharacterStream(int, java.io.Reader, long)
    */
 
-  public void updateNCharacterStream(int columnIndex, Reader x, long length)
-      throws SQLException {
+  public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2030,8 +2014,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNClob(java.lang.String, java.io.Reader)
    */
 
-  public void updateNClob(String columnLabel, Reader reader)
-      throws SQLException {
+  public void updateNClob(String columnLabel, Reader reader) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2042,8 +2025,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNClob(int, java.io.Reader, long)
    */
 
-  public void updateNClob(int columnIndex, Reader reader, long length)
-      throws SQLException {
+  public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2054,8 +2036,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNClob(java.lang.String, java.io.Reader, long)
    */
 
-  public void updateNClob(String columnLabel, Reader reader, long length)
-      throws SQLException {
+  public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2077,8 +2058,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateNString(java.lang.String, java.lang.String)
    */
 
-  public void updateNString(String columnLabel, String string)
-      throws SQLException {
+  public void updateNString(String columnLabel, String string) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2133,8 +2113,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateObject(int, java.lang.Object, int)
    */
 
-  public void updateObject(int columnIndex, Object x, int scale)
-      throws SQLException {
+  public void updateObject(int columnIndex, Object x, int scale) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2146,8 +2125,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * int)
    */
 
-  public void updateObject(String columnName, Object x, int scale)
-      throws SQLException {
+  public void updateObject(String columnName, Object x, int scale) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2213,8 +2191,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateSQLXML(int, java.sql.SQLXML)
    */
 
-  public void updateSQLXML(int columnIndex, SQLXML xmlObject)
-      throws SQLException {
+  public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2225,8 +2202,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * @see java.sql.ResultSet#updateSQLXML(java.lang.String, java.sql.SQLXML)
    */
 
-  public void updateSQLXML(String columnLabel, SQLXML xmlObject)
-      throws SQLException {
+  public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -2315,8 +2291,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    * java.sql.Timestamp)
    */
 
-  public void updateTimestamp(String columnName, Timestamp x)
-      throws SQLException {
+  public void updateTimestamp(String columnName, Timestamp x) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }

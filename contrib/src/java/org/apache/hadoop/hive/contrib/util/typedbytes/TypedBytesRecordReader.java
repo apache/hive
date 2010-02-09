@@ -49,23 +49,27 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * TypedBytesRecordReader.
+ *
+ */
 public class TypedBytesRecordReader implements RecordReader {
 
   private DataInputStream din;
   private TypedBytesWritableInput tbIn;
 
-  NonSyncDataOutputBuffer barrStr = new NonSyncDataOutputBuffer();
-  TypedBytesWritableOutput tbOut;
+  private NonSyncDataOutputBuffer barrStr = new NonSyncDataOutputBuffer();
+  private TypedBytesWritableOutput tbOut;
 
-  ArrayList<Writable> row = new ArrayList<Writable>(0);
-  ArrayList<String> rowTypeName = new ArrayList<String>(0);
-  List<String> columnTypes;
+  private ArrayList<Writable> row = new ArrayList<Writable>(0);
+  private ArrayList<String> rowTypeName = new ArrayList<String>(0);
+  private List<String> columnTypes;
 
-  ArrayList<ObjectInspector> srcOIns = new ArrayList<ObjectInspector>();
-  ArrayList<ObjectInspector> dstOIns = new ArrayList<ObjectInspector>();
-  ArrayList<Converter> converters = new ArrayList<Converter>();
+  private ArrayList<ObjectInspector> srcOIns = new ArrayList<ObjectInspector>();
+  private ArrayList<ObjectInspector> dstOIns = new ArrayList<ObjectInspector>();
+  private ArrayList<Converter> converters = new ArrayList<Converter>();
 
-  static private Map<Type, String> typedBytesToTypeName = new HashMap<Type, String>();
+  private static Map<Type, String> typedBytesToTypeName = new HashMap<Type, String>();
   static {
     typedBytesToTypeName.put(getType(1), Constants.TINYINT_TYPE_NAME);
     typedBytesToTypeName.put(getType(2), Constants.BOOLEAN_TYPE_NAME);
@@ -77,8 +81,7 @@ public class TypedBytesRecordReader implements RecordReader {
     typedBytesToTypeName.put(getType(11), Constants.SMALLINT_TYPE_NAME);
   }
 
-  public void initialize(InputStream in, Configuration conf, Properties tbl)
-      throws IOException {
+  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     din = new DataInputStream(in);
     tbIn = new TypedBytesWritableInput(din);
     tbOut = new TypedBytesWritableOutput(barrStr);
@@ -152,7 +155,7 @@ public class TypedBytesRecordReader implements RecordReader {
             .getTypeEntryFromTypeName(typeName);
         srcOIns
             .add(PrimitiveObjectInspectorFactory
-                .getPrimitiveWritableObjectInspector(srcTypeEntry.primitiveCategory));
+            .getPrimitiveWritableObjectInspector(srcTypeEntry.primitiveCategory));
         converters.add(ObjectInspectorConverters.getConverter(srcOIns.get(pos),
             dstOIns.get(pos)));
       } else {
@@ -164,38 +167,30 @@ public class TypedBytesRecordReader implements RecordReader {
 
       Writable w = row.get(pos);
       switch (type) {
-      case BYTE: {
+      case BYTE:
         tbIn.readByte((ByteWritable) w);
         break;
-      }
-      case BOOL: {
+      case BOOL:
         tbIn.readBoolean((BooleanWritable) w);
         break;
-      }
-      case INT: {
+      case INT:
         tbIn.readInt((IntWritable) w);
         break;
-      }
-      case SHORT: {
+      case SHORT:
         tbIn.readShort((ShortWritable) w);
         break;
-      }
-      case LONG: {
+      case LONG:
         tbIn.readLong((LongWritable) w);
         break;
-      }
-      case FLOAT: {
+      case FLOAT:
         tbIn.readFloat((FloatWritable) w);
         break;
-      }
-      case DOUBLE: {
+      case DOUBLE:
         tbIn.readDouble((DoubleWritable) w);
         break;
-      }
-      case STRING: {
+      case STRING:
         tbIn.readText((Text) w);
         break;
-      }
       default:
         assert false; // should never come here
       }
@@ -237,7 +232,7 @@ public class TypedBytesRecordReader implements RecordReader {
     }
   }
 
-  static public Type getType(int code) {
+  public static Type getType(int code) {
     for (Type type : Type.values()) {
       if (type.code == code) {
         return type;

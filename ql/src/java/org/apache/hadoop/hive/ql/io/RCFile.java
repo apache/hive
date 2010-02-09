@@ -148,19 +148,20 @@ public class RCFile {
 
   private static final Log LOG = LogFactory.getLog(RCFile.class);
 
-  public static String RECORD_INTERVAL_CONF_STR = "hive.io.rcfile.record.interval";
+  public static final String RECORD_INTERVAL_CONF_STR = "hive.io.rcfile.record.interval";
 
-  public static String COLUMN_NUMBER_METADATA_STR = "hive.io.rcfile.column.number";
+  public static final String COLUMN_NUMBER_METADATA_STR = "hive.io.rcfile.column.number";
 
-  public static String COLUMN_NUMBER_CONF_STR = "hive.io.rcfile.column.number.conf";
+  public static final String COLUMN_NUMBER_CONF_STR = "hive.io.rcfile.column.number.conf";
 
   /*
    * these header and Sync are kept from SequenceFile, for compatible of
    * SequenceFile's format.
    */
   private static final byte VERSION_WITH_METADATA = (byte) 6;
-  private static byte[] VERSION = new byte[] { (byte) 'S', (byte) 'E',
-      (byte) 'Q', VERSION_WITH_METADATA };
+  private static final byte[] VERSION = new byte[] {
+      (byte) 'S', (byte) 'E', (byte) 'Q', VERSION_WITH_METADATA
+      };
 
   private static final int SYNC_ESCAPE = -1; // "length" of sync entries
   private static final int SYNC_HASH_SIZE = 16; // number of bytes in hash
@@ -263,7 +264,7 @@ public class RCFile {
     }
 
     /**
-     * get number of bytes to store the keyBuffer
+     * get number of bytes to store the keyBuffer.
      * 
      * @return number of bytes used to store this KeyBuffer on disk
      * @throws IOException
@@ -593,8 +594,7 @@ public class RCFile {
     }
 
     /** Constructs a RCFile Writer. */
-    public Writer(FileSystem fs, Configuration conf, Path name)
-        throws IOException {
+    public Writer(FileSystem fs, Configuration conf, Path name) throws IOException {
       this(fs, conf, name, null, new Metadata(), null);
     }
 
@@ -628,10 +628,9 @@ public class RCFile {
      * @throws IOException
      */
     public Writer(FileSystem fs, Configuration conf, Path name,
-        Progressable progress, Metadata metadata, CompressionCodec codec)
-        throws IOException {
-      this(fs, conf, name, fs.getConf().getInt("io.file.buffer.size", 4096), fs
-          .getDefaultReplication(), fs.getDefaultBlockSize(), progress,
+        Progressable progress, Metadata metadata, CompressionCodec codec) throws IOException {
+      this(fs, conf, name, fs.getConf().getInt("io.file.buffer.size", 4096),
+          fs.getDefaultReplication(), fs.getDefaultBlockSize(), progress,
           metadata, codec);
     }
 
@@ -746,7 +745,7 @@ public class RCFile {
       return codec;
     }
 
-    /** create a sync point */
+    /** create a sync point. */
     public void sync() throws IOException {
       if (sync != null && lastSyncPos != out.getPos()) {
         out.writeInt(SYNC_ESCAPE); // mark the start of the sync
@@ -769,8 +768,8 @@ public class RCFile {
     private int columnBufferSize = 0;
 
     /**
-     * append a row of values. Currently it only can accept <
-     * {@link BytesRefArrayWritable}. If its<code>size()</code> is less than the
+     * Append a row of values. Currently it only can accept <
+     * {@link BytesRefArrayWritable}. If its <code>size()</code> is less than the
      * column number in the file, zero bytes are appended for the empty columns.
      * If its size() is greater then the column number in the file, the exceeded
      * columns' bytes are ignored.
@@ -865,7 +864,7 @@ public class RCFile {
         out.writeInt(compressedKeyLen);
         out.write(keyCompressionBuffer.getData(), 0, compressedKeyLen);
       }
-      value.write(out);// value
+      value.write(out); // value
 
       // clear the columnBuffers
       clearColumnBuffers();
@@ -961,8 +960,7 @@ public class RCFile {
     int[] prjColIDs = null; // selected column IDs
 
     /** Create a new RCFile reader. */
-    public Reader(FileSystem fs, Path file, Configuration conf)
-        throws IOException {
+    public Reader(FileSystem fs, Path file, Configuration conf) throws IOException {
       this(fs, file, conf.getInt("io.file.buffer.size", 4096), conf, 0, fs
           .getFileStatus(file).getLen());
     }
@@ -1129,7 +1127,7 @@ public class RCFile {
         seek(end);
         return;
       }
-      
+
       //this is to handle syn(pos) where pos < headerEnd.
       if (position < headerEnd) {
         // seek directly to first record
@@ -1162,8 +1160,7 @@ public class RCFile {
       }
     }
 
-    private void handleChecksumException(ChecksumException e)
-        throws IOException {
+    private void handleChecksumException(ChecksumException e) throws IOException {
       if (conf.getBoolean("io.skip.checksum.errors", false)) {
         LOG.warn("Bad checksum at " + getPosition() + ". Skipping entries.");
         sync(getPosition() + conf.getInt("io.bytes.per.checksum", 512));
@@ -1392,8 +1389,7 @@ public class RCFile {
      * 
      * @throws IOException
      */
-    public synchronized void getCurrentRow(BytesRefArrayWritable ret)
-        throws IOException {
+    public synchronized void getCurrentRow(BytesRefArrayWritable ret) throws IOException {
 
       if (!keyInit || rowFetched) {
         return;
@@ -1453,8 +1449,8 @@ public class RCFile {
     public boolean syncSeen() {
       return syncSeen;
     }
-    
-    /** Returns the last seen sync position */
+
+    /** Returns the last seen sync position. */
     public long lastSeenSyncPos() {
       return lastSeenSyncPos;
     }

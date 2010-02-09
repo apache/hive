@@ -29,6 +29,10 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.ReflectionUtils;
 
+/**
+ * TypedSerDe.
+ *
+ */
 public abstract class TypedSerDe implements SerDe {
 
   protected Type objectType;
@@ -66,8 +70,7 @@ public abstract class TypedSerDe implements SerDe {
     return ObjectInspectorFactory.ObjectInspectorOptions.JAVA;
   }
 
-  public void initialize(Configuration job, Properties tbl)
-      throws SerDeException {
+  public void initialize(Configuration job, Properties tbl) throws SerDeException {
     // do nothing
   }
 
@@ -75,8 +78,7 @@ public abstract class TypedSerDe implements SerDe {
     return BytesWritable.class;
   }
 
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     throw new RuntimeException("not supported");
   }
 

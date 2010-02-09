@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "concat", value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN", extended = "Returns NULL if any argument is NULL.\n"
+/**
+ * UDFConcat.
+ *
+ */
+@Description(name = "concat",
+    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN",
+    extended = "Returns NULL if any argument is NULL.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
     + "  'abcdef'")
@@ -31,7 +37,7 @@ public class UDFConcat extends UDF {
   public UDFConcat() {
   }
 
-  Text text = new Text();
+  private Text text = new Text();
 
   public Text evaluate(Text... args) {
     text.clear();

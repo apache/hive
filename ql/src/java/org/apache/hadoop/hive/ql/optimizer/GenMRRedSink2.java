@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Processor for the rule - reduce sink followed by reduce sink
+ * Processor for the rule - reduce sink followed by reduce sink.
  */
 public class GenMRRedSink2 implements NodeProcessor {
 
@@ -40,7 +40,7 @@ public class GenMRRedSink2 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered
+   * Reduce Scan encountered.
    * 
    * @param nd
    *          the reduce sink operator encountered

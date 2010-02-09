@@ -31,10 +31,17 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 
-public class ConditionalResolverSkewJoin implements ConditionalResolver,
-    Serializable {
+/**
+ * ConditionalResolverSkewJoin.
+ *
+ */
+public class ConditionalResolverSkewJoin implements ConditionalResolver, Serializable {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * ConditionalResolverSkewJoinCtx.
+   *
+   */
   public static class ConditionalResolverSkewJoinCtx implements Serializable {
     private static final long serialVersionUID = 1L;
     // we store big keys in one table into one dir, and same keys in other

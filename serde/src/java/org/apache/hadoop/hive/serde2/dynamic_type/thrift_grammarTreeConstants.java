@@ -50,7 +50,7 @@ public interface thrift_grammarTreeConstants {
   public int JJTTYPESET = 45;
   public int JJTTYPELIST = 46;
 
-  public String[] jjtNodeName = { "Start", "HeaderList", "Header", "Namespace",
+  public String[] jjtNodeName = {"Start", "HeaderList", "Header", "Namespace",
       "Include", "Definition", "TypeDefinition", "Typedef", "CommaOrSemicolon",
       "Enum", "EnumDefList", "EnumDef", "Senum", "SenumDefList", "SenumDef",
       "Const", "ConstValue", "ConstList", "ConstListContents", "ConstMap",
@@ -59,7 +59,7 @@ public interface thrift_grammarTreeConstants {
       "Field", "FieldRequiredness", "FieldValue", "DefinitionType",
       "FunctionType", "FieldType", "TypeString", "TypeByte", "Typei16",
       "Typei32", "Typei64", "TypeDouble", "TypeBool", "TypeMap", "TypeSet",
-      "TypeList", };
+      "TypeList",};
 }
 /*
  * JavaCC - OriginalChecksum=7edd3e61472739e9fede55c18a336638 (do not edit this

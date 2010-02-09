@@ -33,11 +33,11 @@ public interface WriteNullsProtocol {
    * the caller will then check if it was actually null For boolean this is
    * false.
    */
-  public boolean lastPrimitiveWasNull() throws TException;
+  boolean lastPrimitiveWasNull() throws TException;
 
   /**
-   * Write a null
+   * Write a null.
    */
-  public void writeNull() throws TException;
+  void writeNull() throws TException;
 
 }

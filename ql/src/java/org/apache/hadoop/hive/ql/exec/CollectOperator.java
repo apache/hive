@@ -29,14 +29,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
- * Buffers rows emitted by other operators
+ * Buffers rows emitted by other operators.
  **/
 public class CollectOperator extends Operator<CollectDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
-  transient protected ArrayList<Object> rowList;
-  transient protected ObjectInspector standardRowInspector;
+  protected transient ArrayList<Object> rowList;
+  protected transient ObjectInspector standardRowInspector;
   transient int maxSize;
 
   @Override

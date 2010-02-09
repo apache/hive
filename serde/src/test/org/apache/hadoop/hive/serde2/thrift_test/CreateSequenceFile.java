@@ -39,17 +39,29 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TIOStreamTransport;
 
-public class CreateSequenceFile {
+/**
+ * CreateSequenceFile.
+ *
+ */
+public final class CreateSequenceFile {
+
+  private CreateSequenceFile() {
+    // prevent instantiation
+  }
 
   public static void usage() {
     System.out.println("Usage: CreateSequenceFile <output_sequencefile>");
     System.exit(1);
   }
 
+  /**
+   * ThriftSerializer.
+   *
+   */
   public static class ThriftSerializer {
 
-    ByteStream.Output bos;
-    TProtocol outProtocol;
+    private ByteStream.Output bos;
+    private TProtocol outProtocol;
 
     public ThriftSerializer() {
       bos = new ByteStream.Output();
@@ -58,7 +70,7 @@ public class CreateSequenceFile {
       outProtocol = outFactory.getProtocol(outTransport);
     }
 
-    BytesWritable bw = new BytesWritable();
+    private BytesWritable bw = new BytesWritable();
 
     public BytesWritable serialize(TBase base) throws TException {
       bos.reset();

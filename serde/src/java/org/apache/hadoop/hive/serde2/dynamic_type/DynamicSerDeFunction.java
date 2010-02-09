@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import org.apache.thrift.protocol.TMessageType;
 
+/**
+ * DynamicSerDeFunction.
+ *
+ */
 public class DynamicSerDeFunction extends DynamicSerDeStructBase {
 
   // production is: Async() FunctionType() NAME FieldList() Throws()

@@ -23,11 +23,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 
+/**
+ * DynamicSerDeTypedef.
+ *
+ */
 public class DynamicSerDeTypedef extends DynamicSerDeTypeBase {
 
   // production is: typedef DefinitionType() this.name
 
-  private final static int FD_DEFINITION_TYPE = 0;
+  private static final int FD_DEFINITION_TYPE = 0;
 
   public DynamicSerDeTypedef(int i) {
     super(i);
@@ -68,8 +72,7 @@ public class DynamicSerDeTypedef extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     throw new RuntimeException("not implemented");
   }
 

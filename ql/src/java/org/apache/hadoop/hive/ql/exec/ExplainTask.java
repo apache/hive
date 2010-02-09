@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * ExplainTask implementation
+ * ExplainTask implementation.
  * 
  **/
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
@@ -285,7 +285,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
   }
 
-  private final Set<Task<? extends Serializable>> dependeciesTaskSet = new HashSet<Task<? extends Serializable>>();
+  private final Set<Task<? extends Serializable>> dependeciesTaskSet =
+    new HashSet<Task<? extends Serializable>>();
 
   private void outputDependencies(Task<? extends Serializable> task,
       PrintStream out, int indent, boolean rootTskCandidate) throws Exception {
@@ -353,8 +354,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   public void outputDependencies(PrintStream out,
-      List<Task<? extends Serializable>> rootTasks, int indent)
-      throws Exception {
+      List<Task<? extends Serializable>> rootTasks, int indent) throws Exception {
     out.print(indentString(indent));
     out.println("STAGE DEPENDENCIES:");
     for (Task<? extends Serializable> rootTask : rootTasks) {
@@ -363,16 +363,20 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   public void outputStagePlans(PrintStream out,
-      List<Task<? extends Serializable>> rootTasks, int indent)
-      throws Exception {
+      List<Task<? extends Serializable>> rootTasks, int indent) throws Exception {
     out.print(indentString(indent));
     out.println("STAGE PLANS:");
-    HashSet<Task<? extends Serializable>> displayedSet = new HashSet<Task<? extends Serializable>>();
+    HashSet<Task<? extends Serializable>> displayedSet = 
+      new HashSet<Task<? extends Serializable>>();
     for (Task<? extends Serializable> rootTask : rootTasks) {
       outputPlan(rootTask, out, work.getExtended(), displayedSet, indent + 2);
     }
   }
 
+  /**
+   * MethodComparator.
+   *
+   */
   public static class MethodComparator implements Comparator {
     public int compare(Object o1, Object o2) {
       Method m1 = (Method) o1;

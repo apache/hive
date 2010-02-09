@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DropTableDesc.
+ *
+ */
 @Explain(displayName = "Drop Table")
 public class DropTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -33,10 +36,9 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   ArrayList<LinkedHashMap<String, String>> partSpecs;
   boolean expectView;
 
-  
   public DropTableDesc() {
   }
-  
+
   /**
    * @param tableName
    */
@@ -50,7 +52,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
-      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i))); 
+      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i)));
     }
     expectView = false;
   }

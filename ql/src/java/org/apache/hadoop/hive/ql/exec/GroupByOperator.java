@@ -56,42 +56,42 @@ import org.apache.hadoop.io.Text;
 public class GroupByOperator extends Operator<GroupByDesc> implements
     Serializable {
 
-  static final private Log LOG = LogFactory.getLog(GroupByOperator.class
+  private static final Log LOG = LogFactory.getLog(GroupByOperator.class
       .getName());
 
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
 
-  transient protected ExprNodeEvaluator[] keyFields;
-  transient protected ObjectInspector[] keyObjectInspectors;
-  transient protected Object[] keyObjects;
+  protected transient ExprNodeEvaluator[] keyFields;
+  protected transient ObjectInspector[] keyObjectInspectors;
+  protected transient Object[] keyObjects;
 
-  transient protected ExprNodeEvaluator[][] aggregationParameterFields;
-  transient protected ObjectInspector[][] aggregationParameterObjectInspectors;
-  transient protected ObjectInspector[][] aggregationParameterStandardObjectInspectors;
-  transient protected Object[][] aggregationParameterObjects;
+  protected transient ExprNodeEvaluator[][] aggregationParameterFields;
+  protected transient ObjectInspector[][] aggregationParameterObjectInspectors;
+  protected transient ObjectInspector[][] aggregationParameterStandardObjectInspectors;
+  protected transient Object[][] aggregationParameterObjects;
   // In the future, we may allow both count(DISTINCT a) and sum(DISTINCT a) in
   // the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number.
-  transient protected boolean[] aggregationIsDistinct;
+  protected transient boolean[] aggregationIsDistinct;
 
   transient GenericUDAFEvaluator[] aggregationEvaluators;
 
-  transient protected ArrayList<ObjectInspector> objectInspectors;
+  protected transient ArrayList<ObjectInspector> objectInspectors;
   transient ArrayList<String> fieldNames;
 
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2,
   // MERGEPARTIAL
-  transient protected ArrayList<Object> currentKeys;
-  transient protected ArrayList<Object> newKeys;
-  transient protected AggregationBuffer[] aggregations;
-  transient protected Object[][] aggregationsParametersLastInvoke;
+  protected transient ArrayList<Object> currentKeys;
+  protected transient ArrayList<Object> newKeys;
+  protected transient AggregationBuffer[] aggregations;
+  protected transient Object[][] aggregationsParametersLastInvoke;
 
   // Used by hash-based GroupBy: Mode = HASH, PARTIALS
-  transient protected HashMap<KeyWrapper, AggregationBuffer[]> hashAggregations;
+  protected transient HashMap<KeyWrapper, AggregationBuffer[]> hashAggregations;
 
   // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
-  transient protected HashSet<ArrayList<Object>> keysCurrentGroup;
+  protected transient HashSet<ArrayList<Object>> keysCurrentGroup;
 
   transient boolean bucketGroup;
 
@@ -111,7 +111,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   transient float minReductionHashAggr;
 
   // current Key ObjectInspectors are standard ObjectInspectors
-  transient protected ObjectInspector[] currentKeyObjectInspectors;
+  protected transient ObjectInspector[] currentKeyObjectInspectors;
   // new Key ObjectInspectors are objectInspectors from the parent
   transient StructObjectInspector newKeyObjectInspector;
   transient StructObjectInspector currentKeyObjectInspector;
@@ -171,7 +171,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils
           .getStandardObjectInspector(keyObjectInspectors[i],
-              ObjectInspectorCopyOption.WRITABLE);
+          ObjectInspectorCopyOption.WRITABLE);
       keyObjects[i] = null;
     }
     newKeys = new ArrayList<Object>(keyFields.length);
@@ -200,8 +200,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
             .initialize(rowInspector);
         aggregationParameterStandardObjectInspectors[i][j] = ObjectInspectorUtils
             .getStandardObjectInspector(
-                aggregationParameterObjectInspectors[i][j],
-                ObjectInspectorCopyOption.WRITABLE);
+            aggregationParameterObjectInspectors[i][j],
+            ObjectInspectorCopyOption.WRITABLE);
         aggregationParameterObjects[i][j] = null;
       }
     }
@@ -268,10 +268,10 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
     newKeyObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(keyNames, Arrays
-            .asList(keyObjectInspectors));
+        .asList(keyObjectInspectors));
     currentKeyObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(keyNames, Arrays
-            .asList(currentKeyObjectInspectors));
+        .asList(currentKeyObjectInspectors));
 
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, objectInspectors);
@@ -295,11 +295,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    * @return number of entries that can fit in hash table - useful for map-side
    *         aggregation only
    **/
-  private void computeMaxEntriesHashAggr(Configuration hconf)
-      throws HiveException {
+  private void computeMaxEntriesHashAggr(Configuration hconf) throws HiveException {
     maxHashTblMemory = (long) (HiveConf.getFloatVar(hconf,
-        HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY) * Runtime.getRuntime()
-        .maxMemory());
+        HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY) * Runtime.getRuntime().maxMemory());
     estimateRowSize();
   }
 
@@ -329,16 +327,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     case INT:
     case LONG:
     case FLOAT:
-    case DOUBLE: {
+    case DOUBLE:
       return javaSizePrimitiveType;
-    }
-    case STRING: {
+    case STRING:
       keyPositionsSize.add(new Integer(pos));
       return javaObjectOverHead;
-    }
-    default: {
+    default:
       return javaSizeUnknownType;
-    }
     }
   }
 
@@ -357,10 +352,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    * @return the size of this datatype
    **/
   private int getSize(int pos, Class<?> c, Field f) {
-    if (c.isPrimitive() || c.isInstance(new Boolean(true))
+    if (c.isPrimitive()
+        || c.isInstance(new Boolean(true))
         || c.isInstance(new Byte((byte) 0))
-        || c.isInstance(new Short((short) 0)) || c.isInstance(new Integer(0))
-        || c.isInstance(new Long(0)) || c.isInstance(new Float(0))
+        || c.isInstance(new Short((short) 0))
+        || c.isInstance(new Integer(0))
+        || c.isInstance(new Long(0))
+        || c.isInstance(new Float(0))
         || c.isInstance(new Double(0))) {
       return javaSizePrimitiveType;
     }
@@ -443,8 +441,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     return aggs;
   }
 
-  protected void resetAggregations(AggregationBuffer[] aggs)
-      throws HiveException {
+  protected void resetAggregations(AggregationBuffer[] aggs) throws HiveException {
     for (int i = 0; i < aggs.length; i++) {
       aggregationEvaluators[i].reset(aggs[i]);
     }
@@ -771,7 +768,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       numEntriesVarSize++;
 
       // Update the number of entries that can fit in the hash table
-      numEntriesHashTable = (int) (maxHashTblMemory / (fixedRowSize + (totalVariableSize / numEntriesVarSize)));
+      numEntriesHashTable =
+          (int) (maxHashTblMemory / (fixedRowSize + (totalVariableSize / numEntriesVarSize)));
       LOG.trace("Hash Aggr: #hash table = " + numEntries
           + " #max in hash table = " + numEntriesHashTable);
     }

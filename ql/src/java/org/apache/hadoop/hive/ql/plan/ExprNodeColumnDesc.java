@@ -25,6 +25,10 @@ import java.util.List;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+/**
+ * ExprNodeColumnDesc.
+ *
+ */
 public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 

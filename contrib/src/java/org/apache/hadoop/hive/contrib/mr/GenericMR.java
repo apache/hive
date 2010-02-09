@@ -54,12 +54,10 @@ public final class GenericMR {
     map(new InputStreamReader(in), new OutputStreamWriter(out), mapper);
   }
 
-  public void map(final Reader in, final Writer out, final Mapper mapper)
-      throws Exception {
+  public void map(final Reader in, final Writer out, final Mapper mapper) throws Exception {
     handle(in, out, new RecordProcessor() {
       @Override
-      public void processNext(RecordReader reader, Output output)
-          throws Exception {
+      public void processNext(RecordReader reader, Output output) throws Exception {
         mapper.map(reader.next(), output);
       }
     });
@@ -70,12 +68,10 @@ public final class GenericMR {
     reduce(new InputStreamReader(in), new OutputStreamWriter(out), reducer);
   }
 
-  public void reduce(final Reader in, final Writer out, final Reducer reducer)
-      throws Exception {
+  public void reduce(final Reader in, final Writer out, final Reducer reducer) throws Exception {
     handle(in, out, new RecordProcessor() {
       @Override
-      public void processNext(RecordReader reader, Output output)
-          throws Exception {
+      public void processNext(RecordReader reader, Output output) throws Exception {
         reducer.reduce(reader.peek()[0], new KeyRecordIterator(
             reader.peek()[0], reader), output);
       }
@@ -101,8 +97,7 @@ public final class GenericMR {
   }
 
   private static interface RecordProcessor {
-    void processNext(final RecordReader reader, final Output output)
-        throws Exception;
+    void processNext(final RecordReader reader, final Output output) throws Exception;
   }
 
   private static final class KeyRecordIterator implements Iterator<String[]> {

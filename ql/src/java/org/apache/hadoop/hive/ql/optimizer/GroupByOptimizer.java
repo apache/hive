@@ -98,8 +98,7 @@ public class GroupByOptimizer implements Transform {
     return new NodeProcessor() {
       @Override
       public Object process(Node nd, Stack<Node> stack,
-          NodeProcessorCtx procCtx, Object... nodeOutputs)
-          throws SemanticException {
+          NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
         return null;
       }
     };
@@ -109,6 +108,10 @@ public class GroupByOptimizer implements Transform {
     return new BucketGroupByProcessor(pctx);
   }
 
+  /**
+   * BucketGroupByProcessor.
+   *
+   */
   public class BucketGroupByProcessor implements NodeProcessor {
 
     protected ParseContext pGraphContext;
@@ -177,7 +180,8 @@ public class GroupByOptimizer implements Transform {
         if (topOp == null || (!(topOp instanceof TableScanOperator))) {
           // this is in a sub-query.
           // In future, we need to infer subq's columns propery. For example
-          // "select key, count(1) from (from clustergroupbyselect key, value where ds='210') group by key, 3;",
+          // "select key, count(1) 
+          // from (from clustergroupbyselect key, value where ds='210') group by key, 3;",
           // even though the group by op is in a subquery, it can be changed to
           // bucket groupby.
           return;
@@ -245,8 +249,7 @@ public class GroupByOptimizer implements Transform {
      * @throws SemanticException
      */
     private boolean matchBucketOrSortedColumns(List<String> groupByCols,
-        List<String> bucketCols, List<String> sortCols)
-        throws SemanticException {
+        List<String> bucketCols, List<String> sortCols) throws SemanticException {
       boolean ret = false;
 
       if (sortCols == null || sortCols.size() == 0) {
@@ -294,6 +297,10 @@ public class GroupByOptimizer implements Transform {
     }
   }
 
+  /**
+   * GroupByOptProcCtx.
+   *
+   */
   public class GroupByOptProcCtx implements NodeProcessorCtx {
   }
 }

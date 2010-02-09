@@ -19,16 +19,20 @@
 package org.apache.hadoop.hive.jdbc;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-public class HiveDriver implements java.sql.Driver {
+/**
+ * HiveDriver.
+ *
+ */
+public class HiveDriver implements Driver {
   static {
     try {
-      java.sql.DriverManager
-          .registerDriver(new org.apache.hadoop.hive.jdbc.HiveDriver());
+      java.sql.DriverManager.registerDriver(new HiveDriver());
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -51,27 +55,27 @@ public class HiveDriver implements java.sql.Driver {
   private static final boolean JDBC_COMPLIANT = false;
 
   /**
-   * The required prefix for the connection url
+   * The required prefix for the connection URL.
    */
   private static final String URL_PREFIX = "jdbc:hive://";
 
   /**
-   * If host is provided, without a port
+   * If host is provided, without a port.
    */
   private static final String DEFAULT_PORT = "10000";
 
   /**
-   * Property key for the database name
+   * Property key for the database name.
    */
   private static final String DBNAME_PROPERTY_KEY = "DBNAME";
 
   /**
-   * Property key for the Hive Server host
+   * Property key for the Hive Server host.
    */
   private static final String HOST_PROPERTY_KEY = "HOST";
 
   /**
-   * Property key for the Hive Server port
+   * Property key for the Hive Server port.
    */
   private static final String PORT_PROPERTY_KEY = "PORT";
 
@@ -122,8 +126,7 @@ public class HiveDriver implements java.sql.Driver {
     return MINOR_VERSION;
   }
 
-  public DriverPropertyInfo[] getPropertyInfo(String url, Properties info)
-      throws SQLException {
+  public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
     if (info == null) {
       info = new Properties();
     }
@@ -173,8 +176,7 @@ public class HiveDriver implements java.sql.Driver {
    * @return
    * @throws java.sql.SQLException
    */
-  private Properties parseURL(String url, Properties defaults)
-      throws java.sql.SQLException {
+  private Properties parseURL(String url, Properties defaults) throws SQLException {
     Properties urlProps = (defaults != null) ? new Properties(defaults)
         : new Properties();
 

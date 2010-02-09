@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of the query block expression
+ * Implementation of the query block expression.
  * 
  **/
 
@@ -30,6 +30,10 @@ public class QBExpr {
 
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.QBExpr");
 
+  /**
+   * Opcode.
+   *
+   */
   public static enum Opcode {
     NULLOP, UNION, INTERSECT, DIFF
   };

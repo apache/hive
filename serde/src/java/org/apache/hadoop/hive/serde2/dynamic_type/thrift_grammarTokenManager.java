@@ -970,8 +970,8 @@ public class thrift_grammarTokenManager implements thrift_grammarConstants {
     return jjMoveNfa_0(state, pos + 1);
   }
 
-  static final long[] jjbitVec0 = { 0x0L, 0x0L, 0xffffffffffffffffL,
-      0xffffffffffffffffL };
+  static final long[] jjbitVec0 = {0x0L, 0x0L, 0xffffffffffffffffL,
+      0xffffffffffffffffL};
 
   private int jjMoveNfa_0(int startState, int curPos) {
     int startsAt = 0;
@@ -1381,8 +1381,8 @@ public class thrift_grammarTokenManager implements thrift_grammarConstants {
     }
   }
 
-  static final int[] jjnextStates = { 5, 29, 30, 17, 22, 1, 2, 4, 18, 19, 21,
-      25, 27, 9, 10, 12, 13, 33, 34, };
+  static final int[] jjnextStates = {5, 29, 30, 17, 22, 1, 2, 4, 18, 19, 21,
+      25, 27, 9, 10, 12, 13, 33, 34,};
 
   /** Token literal values. */
   public static final String[] jjstrLiteralImages = {
@@ -1424,12 +1424,12 @@ public class thrift_grammarTokenManager implements thrift_grammarConstants {
       "\162\145\161\165\151\162\145\144", "\157\160\164\151\157\156\141\154",
       "\163\153\151\160", null, null, null, null, null, null, null, "\54",
       "\73", "\173", "\175", "\75", "\133", "\135", "\72", "\50", "\51", "\74",
-      "\76", };
+      "\76",};
 
   /** Lexer state names. */
-  public static final String[] lexStateNames = { "DEFAULT", };
-  static final long[] jjtoToken = { 0xfe7fffffffffff01L, 0x7fL, };
-  static final long[] jjtoSkip = { 0xfeL, 0x0L, };
+  public static final String[] lexStateNames = {"DEFAULT",};
+  static final long[] jjtoToken = {0xfe7fffffffffff01L, 0x7fL,};
+  static final long[] jjtoSkip = {0xfeL, 0x0L,};
   protected SimpleCharStream input_stream;
   private final int[] jjrounds = new int[35];
   private final int[] jjstateSet = new int[70];

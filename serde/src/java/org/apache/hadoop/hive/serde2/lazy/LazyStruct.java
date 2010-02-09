@@ -203,8 +203,8 @@ public class LazyStruct extends
     int fieldLength = startPosition[fieldID + 1] - startPosition[fieldID] - 1;
     if ((fieldLength < 0)
         || (fieldLength == nullSequence.getLength() && LazyUtils.compare(bytes
-            .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
-            0, nullSequence.getLength()) == 0)) {
+        .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
+        0, nullSequence.getLength()) == 0)) {
       return null;
     }
     if (!fieldInited[fieldID]) {

@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.common;
 
 /**
  * Collection of Java class loading/reflection related utilities common across
- * Hive
+ * Hive.
  */
-public class JavaUtils {
+public final class JavaUtils {
 
   /**
    * Standard way of getting classloader in Hive code (outside of Hadoop).
@@ -40,4 +40,7 @@ public class JavaUtils {
     return classLoader;
   }
 
+  private JavaUtils() {
+    // prevent instantiation
+  }
 }

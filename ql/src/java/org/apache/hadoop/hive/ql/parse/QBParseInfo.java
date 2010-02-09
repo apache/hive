@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of the parse information related to a query block
+ * Implementation of the parse information related to a query block.
  * 
  **/
 
@@ -63,7 +63,7 @@ public class QBParseInfo {
   private final HashMap<String, ASTNode> destToSortby;
 
   /**
-   * Maping from table/subquery aliases to all the associated lateral view nodes
+   * Maping from table/subquery aliases to all the associated lateral view nodes.
    */
   private final HashMap<String, ArrayList<ASTNode>> aliasToLateralViews;
 

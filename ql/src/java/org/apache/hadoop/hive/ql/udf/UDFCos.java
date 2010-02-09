@@ -18,25 +18,26 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@Description(name = "cos", value = "_FUNC_(x) - returns the cosine of x (x is in radians)", extended = "Example:\n "
+/**
+ * UDFCos.
+ *
+ */
+@Description(name = "cos",
+    value = "_FUNC_(x) - returns the cosine of x (x is in radians)",
+    extended = "Example:\n "
     + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" + "  1")
 public class UDFCos extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFCos.class.getName());
-
-  DoubleWritable result = new DoubleWritable();
+  private DoubleWritable result = new DoubleWritable();
 
   public UDFCos() {
   }
 
   /**
-   * Take Cosine of a
+   * Take Cosine of a.
    */
   public DoubleWritable evaluate(DoubleWritable a) {
     if (a == null) {

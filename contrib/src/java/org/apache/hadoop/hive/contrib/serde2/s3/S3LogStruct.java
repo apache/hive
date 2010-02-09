@@ -1,5 +1,9 @@
 package org.apache.hadoop.hive.contrib.serde2.s3;
 
+/**
+ * S3LogStruct.
+ *
+ */
 public class S3LogStruct {
 
   public String bucketowner;

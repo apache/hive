@@ -30,7 +30,7 @@ public interface SettableStringObjectInspector extends StringObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, Text value);
+  Object set(Object o, Text value);
 
   /**
    * Set the object with the value. Return the object that has the new value.
@@ -38,15 +38,15 @@ public interface SettableStringObjectInspector extends StringObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, String value);
+  Object set(Object o, String value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(Text value);
+  Object create(Text value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(String value);
+  Object create(String value);
 }

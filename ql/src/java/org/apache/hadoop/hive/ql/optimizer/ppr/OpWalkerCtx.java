@@ -33,12 +33,12 @@ public class OpWalkerCtx implements NodeProcessorCtx {
 
   /**
    * Map from tablescan operator to partition pruning predicate that is
-   * initialized from the ParseContext
+   * initialized from the ParseContext.
    */
   private final HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
 
   /**
-   * Constructor
+   * Constructor.
    */
   public OpWalkerCtx(HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;

@@ -39,6 +39,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 
+/**
+ * TestExpressionEvaluator.
+ *
+ */
 public class TestExpressionEvaluator extends TestCase {
 
   // this is our row to test expressions on
@@ -166,7 +170,7 @@ public class TestExpressionEvaluator extends TestCase {
       Object resultO = eval.evaluate(r.o);
       assertEquals(Double.valueOf("1"), ObjectInspectorUtils
           .copyToStandardObject(resultO, resultOI,
-              ObjectInspectorCopyOption.JAVA));
+          ObjectInspectorCopyOption.JAVA));
       System.out.println("testExprNodeConversionEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -199,92 +203,92 @@ public class TestExpressionEvaluator extends TestCase {
       int basetimes = 100000;
       measureSpeed("1 + 2", basetimes * 100, ExprNodeEvaluatorFactory
           .get(TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(
-              "+", new ExprNodeConstantDesc(1), new ExprNodeConstantDesc(2))),
+          "+", new ExprNodeConstantDesc(1), new ExprNodeConstantDesc(2))),
           r, Integer.valueOf(1 + 2));
       measureSpeed("1 + 2 - 3", basetimes * 100, ExprNodeEvaluatorFactory
           .get(TypeCheckProcFactory.DefaultExprProcessor
-              .getFuncExprNodeDesc("-",
-                  TypeCheckProcFactory.DefaultExprProcessor
-                      .getFuncExprNodeDesc("+", new ExprNodeConstantDesc(1),
-                          new ExprNodeConstantDesc(2)),
-                  new ExprNodeConstantDesc(3))), r, Integer.valueOf(1 + 2 - 3));
+          .getFuncExprNodeDesc("-",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("+", new ExprNodeConstantDesc(1),
+          new ExprNodeConstantDesc(2)),
+          new ExprNodeConstantDesc(3))), r, Integer.valueOf(1 + 2 - 3));
       measureSpeed("1 + 2 - 3 + 4", basetimes * 100, ExprNodeEvaluatorFactory
           .get(TypeCheckProcFactory.DefaultExprProcessor
-              .getFuncExprNodeDesc("+",
-                  TypeCheckProcFactory.DefaultExprProcessor
-                      .getFuncExprNodeDesc("-",
-                          TypeCheckProcFactory.DefaultExprProcessor
-                              .getFuncExprNodeDesc("+",
-                                  new ExprNodeConstantDesc(1),
-                                  new ExprNodeConstantDesc(2)),
-                          new ExprNodeConstantDesc(3)),
-                  new ExprNodeConstantDesc(4))), r, Integer
+          .getFuncExprNodeDesc("+",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("-",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("+",
+          new ExprNodeConstantDesc(1),
+          new ExprNodeConstantDesc(2)),
+          new ExprNodeConstantDesc(3)),
+          new ExprNodeConstantDesc(4))), r, Integer
           .valueOf(1 + 2 - 3 + 4));
       measureSpeed("concat(\"1\", \"2\")", basetimes * 100,
           ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat", new ExprNodeConstantDesc("1"),
-                      new ExprNodeConstantDesc("2"))), r, "12");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat", new ExprNodeConstantDesc("1"),
+          new ExprNodeConstantDesc("2"))), r, "12");
       measureSpeed("concat(concat(\"1\", \"2\"), \"3\")", basetimes * 100,
           ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat",
-                      TypeCheckProcFactory.DefaultExprProcessor
-                          .getFuncExprNodeDesc("concat",
-                              new ExprNodeConstantDesc("1"),
-                              new ExprNodeConstantDesc("2")),
-                      new ExprNodeConstantDesc("3"))), r, "123");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          new ExprNodeConstantDesc("1"),
+          new ExprNodeConstantDesc("2")),
+          new ExprNodeConstantDesc("3"))), r, "123");
       measureSpeed("concat(concat(concat(\"1\", \"2\"), \"3\"), \"4\")",
           basetimes * 100, ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat",
-                      TypeCheckProcFactory.DefaultExprProcessor
-                          .getFuncExprNodeDesc("concat",
-                              TypeCheckProcFactory.DefaultExprProcessor
-                                  .getFuncExprNodeDesc("concat",
-                                      new ExprNodeConstantDesc("1"),
-                                      new ExprNodeConstantDesc("2")),
-                              new ExprNodeConstantDesc("3")),
-                      new ExprNodeConstantDesc("4"))), r, "1234");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          new ExprNodeConstantDesc("1"),
+          new ExprNodeConstantDesc("2")),
+          new ExprNodeConstantDesc("3")),
+          new ExprNodeConstantDesc("4"))), r, "1234");
       ExprNodeDesc constant1 = new ExprNodeConstantDesc(1);
       ExprNodeDesc constant2 = new ExprNodeConstantDesc(2);
       measureSpeed("concat(col1[1], cola[1])", basetimes * 10,
           ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat", getListIndexNode(
-                      new ExprNodeColumnDesc(col1Type, "col1", "", false),
-                      constant1), getListIndexNode(new ExprNodeColumnDesc(
-                      colaType, "cola", "", false), constant1))), r, "1b");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat", getListIndexNode(
+          new ExprNodeColumnDesc(col1Type, "col1", "", false),
+          constant1), getListIndexNode(new ExprNodeColumnDesc(
+          colaType, "cola", "", false), constant1))), r, "1b");
       measureSpeed("concat(concat(col1[1], cola[1]), col1[2])", basetimes * 10,
           ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat",
-                      TypeCheckProcFactory.DefaultExprProcessor
-                          .getFuncExprNodeDesc("concat", getListIndexNode(
-                              new ExprNodeColumnDesc(col1Type, "col1", "",
-                                  false), constant1), getListIndexNode(
-                              new ExprNodeColumnDesc(colaType, "cola", "",
-                                  false), constant1)), getListIndexNode(
-                          new ExprNodeColumnDesc(col1Type, "col1", "", false),
-                          constant2))), r, "1b2");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat", getListIndexNode(
+          new ExprNodeColumnDesc(col1Type, "col1", "",
+          false), constant1), getListIndexNode(
+          new ExprNodeColumnDesc(colaType, "cola", "",
+          false), constant1)), getListIndexNode(
+          new ExprNodeColumnDesc(col1Type, "col1", "", false),
+          constant2))), r, "1b2");
       measureSpeed(
           "concat(concat(concat(col1[1], cola[1]), col1[2]), cola[2])",
           basetimes * 10, ExprNodeEvaluatorFactory
-              .get(TypeCheckProcFactory.DefaultExprProcessor
-                  .getFuncExprNodeDesc("concat",
-                      TypeCheckProcFactory.DefaultExprProcessor
-                          .getFuncExprNodeDesc("concat",
-                              TypeCheckProcFactory.DefaultExprProcessor
-                                  .getFuncExprNodeDesc("concat",
-                                      getListIndexNode(new ExprNodeColumnDesc(
-                                          col1Type, "col1", "", false),
-                                          constant1), getListIndexNode(
-                                          new ExprNodeColumnDesc(colaType,
-                                              "cola", "", false), constant1)),
-                              getListIndexNode(new ExprNodeColumnDesc(col1Type,
-                                  "col1", "", false), constant2)),
-                      getListIndexNode(new ExprNodeColumnDesc(colaType, "cola",
-                          "", false), constant2))), r, "1b2c");
+          .get(TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          TypeCheckProcFactory.DefaultExprProcessor
+          .getFuncExprNodeDesc("concat",
+          getListIndexNode(new ExprNodeColumnDesc(
+          col1Type, "col1", "", false),
+          constant1), getListIndexNode(
+          new ExprNodeColumnDesc(colaType,
+          "cola", "", false), constant1)),
+          getListIndexNode(new ExprNodeColumnDesc(col1Type,
+          "col1", "", false), constant2)),
+          getListIndexNode(new ExprNodeColumnDesc(colaType, "cola",
+          "", false), constant2))), r, "1b2c");
 
     } catch (Throwable e) {
       e.printStackTrace();

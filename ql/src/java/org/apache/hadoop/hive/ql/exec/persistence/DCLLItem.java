@@ -59,7 +59,7 @@ public class DCLLItem {
   }
 
   /**
-   * Set the previous item as itm
+   * Set the previous item as itm.
    * 
    * @param itm
    *          the item to be set as previous.

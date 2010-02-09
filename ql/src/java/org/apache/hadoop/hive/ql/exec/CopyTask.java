@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * CopyTask implementation
+ * CopyTask implementation.
  **/
 public class CopyTask extends Task<CopyWork> implements Serializable {
 
@@ -70,7 +70,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       for (FileStatus oneSrc : srcs) {
         LOG.debug("Copying file: " + oneSrc.getPath().toString());
         if (!FileUtil.copy(srcFs, oneSrc.getPath(), dstFs, toPath, false, // delete
-                                                                          // source
+            // source
             true, // overwrite destination
             conf)) {
           console.printError("Failed to copy: '" + oneSrc.getPath().toString()

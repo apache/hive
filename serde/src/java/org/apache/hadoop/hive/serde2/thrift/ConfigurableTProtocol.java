@@ -30,7 +30,7 @@ import org.apache.thrift.TException;
  */
 public interface ConfigurableTProtocol {
   /**
-   * Initialize the TProtocol
+   * Initialize the TProtocol.
    * 
    * @param conf
    *          System properties
@@ -38,6 +38,6 @@ public interface ConfigurableTProtocol {
    *          table properties
    * @throws TException
    */
-  public void initialize(Configuration conf, Properties tbl) throws TException;
+  void initialize(Configuration conf, Properties tbl) throws TException;
 
 }

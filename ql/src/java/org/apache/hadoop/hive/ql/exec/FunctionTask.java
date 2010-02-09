@@ -25,9 +25,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -35,6 +35,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
+/**
+ * FunctionTask.
+ *
+ */
 public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog("hive.ql.exec.FunctionTask");
@@ -110,8 +114,7 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   @SuppressWarnings("unchecked")
-  private Class<?> getUdfClass(CreateFunctionDesc desc)
-      throws ClassNotFoundException {
+  private Class<?> getUdfClass(CreateFunctionDesc desc) throws ClassNotFoundException {
     return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
   }
 

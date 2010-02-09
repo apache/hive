@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.HashMap;
 
+/**
+ * LoadTableDesc.
+ *
+ */
 public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     implements Serializable {
   private static final long serialVersionUID = 1L;

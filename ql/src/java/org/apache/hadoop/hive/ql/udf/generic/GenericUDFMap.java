@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -32,24 +32,28 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-@Description(name = "map", value = "_FUNC_(key0, value0, key1, value1...) - Creates a map with the given key/value pairs ")
+/**
+ * GenericUDFMap.
+ *
+ */
+@Description(name = "map", value = "_FUNC_(key0, value0, key1, value1...) - "
+    + "Creates a map with the given key/value pairs ")
 public class GenericUDFMap extends GenericUDF {
   Converter[] converters;
   HashMap<Object, Object> ret = new HashMap<Object, Object>();
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     if (arguments.length % 2 != 0) {
       throw new UDFArgumentLengthException(
           "Arguments must be in key/value pairs");
     }
 
-    GenericUDFUtils.ReturnObjectInspectorResolver keyOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(
-        true);
-    GenericUDFUtils.ReturnObjectInspectorResolver valueOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(
-        true);
+    GenericUDFUtils.ReturnObjectInspectorResolver keyOIResolver =
+        new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+    GenericUDFUtils.ReturnObjectInspectorResolver valueOIResolver =
+        new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     for (int i = 0; i < arguments.length; i++) {
       if (i % 2 == 0) {
@@ -57,7 +61,7 @@ public class GenericUDFMap extends GenericUDF {
         if (!(arguments[i] instanceof PrimitiveObjectInspector)) {
           throw new UDFArgumentTypeException(1,
               "Primitive Type is expected but " + arguments[i].getTypeName()
-                  + "\" is found");
+              + "\" is found");
         }
         if (!keyOIResolver.update(arguments[i])) {
           throw new UDFArgumentTypeException(i, "Key type \""

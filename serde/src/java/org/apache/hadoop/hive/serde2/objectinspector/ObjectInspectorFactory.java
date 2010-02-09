@@ -43,7 +43,7 @@ import org.apache.hadoop.io.Text;
  * same construction parameters should result in exactly the same
  * ObjectInspector.
  */
-public class ObjectInspectorFactory {
+public final class ObjectInspectorFactory {
 
   /**
    * ObjectInspectorOptions describes what ObjectInspector to use. JAVA is to
@@ -72,7 +72,7 @@ public class ObjectInspectorFactory {
     if ((options.equals(ObjectInspectorOptions.JAVA) && oi.getClass().equals(
         ThriftStructObjectInspector.class))
         || (options.equals(ObjectInspectorOptions.THRIFT) && oi.getClass()
-            .equals(ReflectionStructObjectInspector.class))) {
+        .equals(ReflectionStructObjectInspector.class))) {
       throw new RuntimeException(
           "Cannot call getObjectInspectorByReflection with both JAVA and THRIFT !");
     }
@@ -99,7 +99,7 @@ public class ObjectInspectorFactory {
         return getStandardMapObjectInspector(getReflectionObjectInspector(pt
             .getActualTypeArguments()[0], options),
             getReflectionObjectInspector(pt.getActualTypeArguments()[1],
-                options));
+            options));
       }
       // Otherwise convert t to RawType so we will fall into the following if
       // block.
@@ -117,21 +117,21 @@ public class ObjectInspectorFactory {
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaType(c)) {
       return PrimitiveObjectInspectorFactory
           .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveJavaType(c).primitiveCategory);
+          .getTypeEntryFromPrimitiveJavaType(c).primitiveCategory);
     }
 
     // Java Primitive Class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(c)) {
       return PrimitiveObjectInspectorFactory
           .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory);
+          .getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory);
     }
 
     // Primitive Writable class?
     if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(c)) {
       return PrimitiveObjectInspectorFactory
           .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
+          .getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
     }
 
     // Must be struct because List and Map need to be ParameterizedType
@@ -246,6 +246,10 @@ public class ObjectInspectorFactory {
       cachedColumnarStructObjectInspector.put(signature, result);
     }
     return result;
+  }
+
+  private ObjectInspectorFactory() {
+    // prevent instantiation
   }
 
 }

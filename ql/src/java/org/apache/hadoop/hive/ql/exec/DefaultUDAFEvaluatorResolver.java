@@ -57,7 +57,8 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
   public Class<? extends UDAFEvaluator> getEvaluatorClass(
       List<TypeInfo> argClasses) throws AmbiguousMethodException {
 
-    ArrayList<Class<? extends UDAFEvaluator>> classList = new ArrayList<Class<? extends UDAFEvaluator>>();
+    ArrayList<Class<? extends UDAFEvaluator>> classList =
+        new ArrayList<Class<? extends UDAFEvaluator>>();
 
     // Add all the public member classes that implement an evaluator
     for (Class<?> enclClass : udafClass.getClasses()) {

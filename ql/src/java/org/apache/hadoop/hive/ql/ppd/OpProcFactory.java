@@ -61,10 +61,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * from filter operators that have been pushed. Currently these pushed
  * predicates are evaluated twice.
  */
-public class OpProcFactory {
+public final class OpProcFactory {
 
   /**
-   * Processor for Script Operator Prevents any predicates being pushed
+   * Processor for Script Operator Prevents any predicates being pushed.
    */
   public static class ScriptPPD extends DefaultPPD implements NodeProcessor {
 
@@ -83,7 +83,7 @@ public class OpProcFactory {
 
   /**
    * Combines predicates of its child into a single expression and adds a filter
-   * op as new child
+   * op as new child.
    */
   public static class TableScanPPD extends DefaultPPD implements NodeProcessor {
 
@@ -103,7 +103,7 @@ public class OpProcFactory {
 
   /**
    * Determines the push down predicates in its where expression and then
-   * combines it with the push down predicates that are passed from its children
+   * combines it with the push down predicates that are passed from its children.
    */
   public static class FilterPPD extends DefaultPPD implements NodeProcessor {
 
@@ -123,7 +123,7 @@ public class OpProcFactory {
         if (op.getChildren() != null && op.getChildren().size() == 1) {
           createFilter(op, owi
               .getPrunedPreds((Operator<? extends Serializable>) (op
-                  .getChildren().get(0))), owi);
+              .getChildren().get(0))), owi);
         }
 
         return null;
@@ -140,7 +140,7 @@ public class OpProcFactory {
 
   /**
    * Determines predicates for which alias can be pushed to it's parents. See
-   * the comments for getQualifiedAliases function
+   * the comments for getQualifiedAliases function.
    */
   public static class JoinPPD extends DefaultPPD implements NodeProcessor {
     @Override
@@ -243,7 +243,7 @@ public class OpProcFactory {
   }
 
   /**
-   * Default processor which just merges its children
+   * Default processor which just merges its children.
    */
   public static class DefaultPPD implements NodeProcessor {
 
@@ -276,7 +276,7 @@ public class OpProcFactory {
 
     /**
      * Take current operators pushdown predicates and merges them with
-     * children's pushdown predicates
+     * children's pushdown predicates.
      * 
      * @param nd
      *          current operator
@@ -301,7 +301,7 @@ public class OpProcFactory {
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
       ExprWalkerInfo childPreds = owi
           .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
-              .get(0));
+          .get(0));
       if (childPreds == null) {
         return;
       }
@@ -408,4 +408,7 @@ public class OpProcFactory {
     return new ScriptPPD();
   }
 
+  private OpProcFactory() {
+    // prevent instantiation
+  }
 }

@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -54,14 +53,20 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-public class GenMRSkewJoinProcessor {
+/**
+ * GenMRSkewJoinProcessor.
+ *
+ */
+public final class GenMRSkewJoinProcessor {
 
-  public GenMRSkewJoinProcessor() {
+  private GenMRSkewJoinProcessor() {
+    // prevent instantiation
   }
 
   /**
@@ -139,7 +144,8 @@ public class GenMRSkewJoinProcessor {
     joinDescriptor.setSkewKeyDefinition(HiveConf.getIntVar(parseCtx.getConf(),
         HiveConf.ConfVars.HIVESKEWJOINKEY));
 
-    Map<String, Task<? extends Serializable>> bigKeysDirToTaskMap = new HashMap<String, Task<? extends Serializable>>();
+    Map<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
+      new HashMap<String, Task<? extends Serializable>>();
     List<Serializable> listWorks = new ArrayList<Serializable>();
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
     MapredWork currPlan = (MapredWork) currTask.getWork();
@@ -156,7 +162,7 @@ public class GenMRSkewJoinProcessor {
     // used for create mapJoinDesc, should be in order
     List<TableDesc> newJoinValueTblDesc = new ArrayList<TableDesc>();
 
-    for (int k = 0; k < tags.length; k++) {
+    for (Byte tag : tags) {
       newJoinValueTblDesc.add(null);
     }
 
@@ -261,7 +267,7 @@ public class GenMRSkewJoinProcessor {
 
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
           newJoinValues, newJoinValueTblDesc, joinDescriptor
-              .getOutputColumnNames(), i, joinDescriptor.getConds());
+          .getOutputColumnNames(), i, joinDescriptor.getConds());
       mapJoinDescriptor.setNoOuterJoin(joinDescriptor.isNoOuterJoin());
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
@@ -300,8 +306,10 @@ public class GenMRSkewJoinProcessor {
       HiveConf jc = new HiveConf(parseCtx.getConf(),
           GenMRSkewJoinProcessor.class);
 
-      newPlan.setNumMapTasks(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINNUMMAPTASK));
-      newPlan.setMinSplitSize(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
+      newPlan.setNumMapTasks(HiveConf
+          .getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINNUMMAPTASK));
+      newPlan
+          .setMinSplitSize(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
       newPlan.setInputformat(HiveInputFormat.class.getName());
       Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(
           newPlan, jc);
@@ -317,7 +325,7 @@ public class GenMRSkewJoinProcessor {
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk
         .setResolverCtx(new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(
-            bigKeysDirToTaskMap));
+        bigKeysDirToTaskMap));
     List<Task<? extends Serializable>> oldChildTasks = currTask.getChildTasks();
     currTask.setChildTasks(new ArrayList<Task<? extends Serializable>>());
     currTask.addDependentTask(cndTsk);

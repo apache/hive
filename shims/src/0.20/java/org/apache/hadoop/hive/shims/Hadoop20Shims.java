@@ -17,32 +17,29 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
-
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.RecordReader;
-
 /**
- * Implemention of shims against Hadoop 0.20.0
+ * Implemention of shims against Hadoop 0.20.0.
  */
 public class Hadoop20Shims implements HadoopShims {
   public boolean usesJobShell() {
@@ -50,32 +47,37 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   public boolean fileSystemDeleteOnExit(FileSystem fs, Path path)
-    throws IOException {
+      throws IOException {
 
     return fs.deleteOnExit(path);
   }
 
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
-    throws IOException {
+      throws IOException {
     // gone in 0.18+
   }
 
   /**
-   * workaround for hadoop-17 - jobclient only looks at commandlineconfig
+   * Workaround for hadoop-17 - jobclient only looks at commandlineconfig.
    */
   public void setTmpFiles(String prop, String files) {
     // gone in 20+
   }
 
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
-                                int numDataNodes,
-                                boolean format,
-                                String[] racks) throws IOException {
+      int numDataNodes,
+      boolean format,
+      String[] racks) throws IOException {
     return new MiniDFSShim(new MiniDFSCluster(conf, numDataNodes, format, racks));
   }
 
+  /**
+   * MiniDFSShim.
+   *
+   */
   public class MiniDFSShim implements HadoopShims.MiniDFSShim {
     private MiniDFSCluster cluster;
+
     public MiniDFSShim(MiniDFSCluster cluster) {
       this.cluster = cluster;
     }
@@ -107,11 +109,11 @@ public class Hadoop20Shims implements HadoopShims {
     return file.getAccessTime();
   }
 
-
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
     return new CombineFileInputFormatShim() {
+      @Override
       public RecordReader getRecordReader(InputSplit split,
-                                          JobConf job, Reporter reporter) throws IOException {
+          JobConf job, Reporter reporter) throws IOException {
         throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
       }
     };
@@ -133,11 +135,12 @@ public class Hadoop20Shims implements HadoopShims {
    */
   public static class CombineFileRecordReader<K, V> implements RecordReader<K, V> {
 
-    static final Class [] constructorSignature = new Class []
-      {InputSplit.class,
-       Configuration.class,
-       Reporter.class,
-       Integer.class};
+    static final Class[] constructorSignature = new Class[] {
+        InputSplit.class,
+        Configuration.class,
+        Reporter.class,
+        Integer.class
+        };
 
     protected CombineFileSplit split;
     protected JobConf jc;
@@ -169,7 +172,7 @@ public class Hadoop20Shims implements HadoopShims {
     }
 
     /**
-     * return the amount of data processed
+     * Return the amount of data processed.
      */
     public long getPos() throws IOException {
       return progress;
@@ -183,10 +186,10 @@ public class Hadoop20Shims implements HadoopShims {
     }
 
     /**
-     * return progress based on the amount of data processed so far.
+     * Return progress based on the amount of data processed so far.
      */
     public float getProgress() throws IOException {
-      return Math.min(1.0f,  progress/(float)(split.getLength()));
+      return Math.min(1.0f, progress / (float) (split.getLength()));
     }
 
     /**
@@ -194,9 +197,9 @@ public class Hadoop20Shims implements HadoopShims {
      * for each chunk in the CombineFileSplit.
      */
     public CombineFileRecordReader(JobConf job, CombineFileSplit split,
-                                   Reporter reporter,
-                                   Class<RecordReader<K, V>> rrClass)
-      throws IOException {
+        Reporter reporter,
+        Class<RecordReader<K, V>> rrClass)
+        throws IOException {
       this.split = split;
       this.jc = job;
       this.rrClass = rrClass;
@@ -210,7 +213,7 @@ public class Hadoop20Shims implements HadoopShims {
         rrConstructor.setAccessible(true);
       } catch (Exception e) {
         throw new RuntimeException(rrClass.getName() +
-                                   " does not have valid constructor", e);
+            " does not have valid constructor", e);
       }
       initNextRecordReader();
     }
@@ -224,7 +227,7 @@ public class Hadoop20Shims implements HadoopShims {
         curReader.close();
         curReader = null;
         if (idx > 0) {
-          progress += split.getLength(idx-1);    // done processing so far
+          progress += split.getLength(idx - 1); // done processing so far
         }
       }
 
@@ -235,60 +238,68 @@ public class Hadoop20Shims implements HadoopShims {
 
       // get a record reader for the idx-th chunk
       try {
-        curReader =  rrConstructor.newInstance(new Object []
-          {(InputSplit)split, jc, reporter, Integer.valueOf(idx)});
+        curReader = rrConstructor.newInstance(new Object[]
+            {split, jc, reporter, Integer.valueOf(idx)});
 
         // setup some helper config variables.
         jc.set("map.input.file", split.getPath(idx).toString());
         jc.setLong("map.input.start", split.getOffset(idx));
         jc.setLong("map.input.length", split.getLength(idx));
       } catch (Exception e) {
-        throw new RuntimeException (e);
+        throw new RuntimeException(e);
       }
       idx++;
       return true;
     }
   }
 
-  public abstract static class CombineFileInputFormatShim<K, V> extends CombineFileInputFormat<K, V>
-    implements HadoopShims.CombineFileInputFormatShim<K, V> {
+  public abstract static class CombineFileInputFormatShim<K, V> extends
+      CombineFileInputFormat<K, V>
+      implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
     public Path[] getInputPathsShim(JobConf conf) {
       Path[] paths;
       try {
-        paths = CombineFileInputFormat.getInputPaths(conf);
+        paths = FileInputFormat.getInputPaths(conf);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
       Path[] newPaths = new Path[paths.length];
       // remove file:
-      for (int pos = 0; pos < paths.length; pos++)
+      for (int pos = 0; pos < paths.length; pos++) {
         newPaths[pos] = new Path(paths[pos].toUri().getPath());
+      }
       return newPaths;
     }
 
+    @Override
     public void createPool(JobConf conf, PathFilter... filters) {
       super.createPool(conf, filters);
     }
 
+    @Override
     public InputSplitShim[] getSplits(JobConf job, int numSplits) throws IOException {
       long minSize = job.getLong("mapred.min.split.size", 0);
 
       // For backward compatibility, let the above parameter be used
-      if (job.getLong("mapred.min.split.size.per.node", 0) == 0)
+      if (job.getLong("mapred.min.split.size.per.node", 0) == 0) {
         super.setMinSplitSizeNode(minSize);
+      }
 
-      if (job.getLong("mapred.min.split.size.per.rack", 0) == 0)
+      if (job.getLong("mapred.min.split.size.per.rack", 0) == 0) {
         super.setMinSplitSizeRack(minSize);
+      }
 
-      if (job.getLong("mapred.max.split.size", 0) == 0)
+      if (job.getLong("mapred.max.split.size", 0) == 0) {
         super.setMaxSplitSize(minSize);
+      }
 
-      CombineFileSplit[] splits = (CombineFileSplit[])super.getSplits(job, numSplits);
+      CombineFileSplit[] splits = (CombineFileSplit[]) super.getSplits(job, numSplits);
 
       InputSplitShim[] isplits = new InputSplitShim[splits.length];
-      for (int pos = 0; pos < splits.length; pos++)
+      for (int pos = 0; pos < splits.length; pos++) {
         isplits[pos] = new InputSplitShim(splits[pos]);
+      }
 
       return isplits;
     }
@@ -297,10 +308,11 @@ public class Hadoop20Shims implements HadoopShims {
       return new InputSplitShim();
     }
 
-    public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split, Reporter reporter,
-                                        Class<RecordReader<K, V>> rrClass)
-      throws IOException {
-      CombineFileSplit cfSplit = (CombineFileSplit)split;
+    public RecordReader getRecordReader(JobConf job, HadoopShims.InputSplitShim split,
+        Reporter reporter,
+        Class<RecordReader<K, V>> rrClass)
+        throws IOException {
+      CombineFileSplit cfSplit = (CombineFileSplit) split;
       return new CombineFileRecordReader(job, cfSplit, reporter, rrClass);
     }
 
@@ -310,9 +322,10 @@ public class Hadoop20Shims implements HadoopShims {
     return "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat";
   }
 
-  String [] ret = new String[2];
+  String[] ret = new String[2];
+
   @Override
-  public String [] getTaskJobIDs(TaskCompletionEvent t) {
+  public String[] getTaskJobIDs(TaskCompletionEvent t) {
     TaskID tid = t.getTaskAttemptId().getTaskID();
     ret[0] = tid.toString();
     ret[1] = tid.getJobID().toString();

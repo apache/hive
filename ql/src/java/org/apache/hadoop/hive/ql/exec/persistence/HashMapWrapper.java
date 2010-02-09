@@ -48,12 +48,12 @@ public class HashMapWrapper<K, V> {
   private static final int THRESHOLD = 25000;
 
   private int threshold; // threshold to put data into persistent hash table
-                         // instead
+  // instead
   private HashMap<K, MRUItem> mHash; // main memory HashMap
   private HTree pHash; // persistent HashMap
   private RecordManager recman; // record manager required by HTree
   private File tmpFile; // temp file holding the persistent data from record
-                        // manager.
+  // manager.
   private MRU<MRUItem> MRUList; // MRU cache entry
 
   /**

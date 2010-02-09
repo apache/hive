@@ -86,7 +86,7 @@ public class JoinReorder implements Transform {
   }
 
   /**
-   * Find all big tables from STREAMTABLE hints
+   * Find all big tables from STREAMTABLE hints.
    * 
    * @param joinCtx
    *          The join context
@@ -106,7 +106,7 @@ public class JoinReorder implements Transform {
 
   /**
    * Reorder the tables in a join operator appropriately (by reordering the tags
-   * of the reduces sinks)
+   * of the reduces sinks).
    * 
    * @param joinOp
    *          The join operator to be processed

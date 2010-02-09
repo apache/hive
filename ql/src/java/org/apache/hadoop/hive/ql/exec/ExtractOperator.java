@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 public class ExtractOperator extends Operator<ExtractDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
-  transient protected ExprNodeEvaluator eval;
+  protected transient ExprNodeEvaluator eval;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {

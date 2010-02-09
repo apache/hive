@@ -24,6 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
+/**
+ * AddResourceProcessor.
+ *
+ */
 public class AddResourceProcessor implements CommandProcessor {
 
   public static final Log LOG = LogFactory.getLog(AddResourceProcessor.class

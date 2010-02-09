@@ -386,7 +386,7 @@ public class BinarySortableSerDe implements SerDe {
       for (int eid = 0; eid < size; eid++) {
         r
             .set(eid, deserialize(buffer, fieldTypes.get(eid), invert, r
-                .get(eid)));
+            .get(eid)));
       }
       return r;
     }
@@ -400,8 +400,7 @@ public class BinarySortableSerDe implements SerDe {
   OutputByteBuffer outputByteBuffer = new OutputByteBuffer();
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     outputByteBuffer.reset();
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();

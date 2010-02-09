@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.hwi;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -200,7 +200,7 @@ public class HWISessionManager implements Runnable {
   }
 
   /**
-   * Used to list all users that have at least one session
+   * Used to list all users that have at least one session.
    * 
    * @return keySet of items all users that have any sessions
    */
@@ -209,7 +209,7 @@ public class HWISessionManager implements Runnable {
   }
 
   /**
-   * Used to list all the sessions of a user
+   * Used to list all the sessions of a user.
    * 
    * @param auth
    *          the user being enquired about

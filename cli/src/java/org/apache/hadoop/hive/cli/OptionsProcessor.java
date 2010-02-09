@@ -37,18 +37,19 @@ import org.apache.commons.cli2.resource.ResourceConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * OptionsProcessor.
+ * 
+ */
 public class OptionsProcessor {
 
-  protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class
-      .getName());
+  protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class.getName());
 
   private final Parser parser = new Parser();
-  private final Option confOptions, isSilentOption, execOption, fileOption,
-      isHelpOption;
+  private final Option confOptions, isSilentOption, execOption, fileOption, isHelpOption;
 
   /**
-   * shameless cloned from hadoop streaming take in multiple -hiveconf x=y
-   * parameters
+   * Shamelessly cloned from Hadoop streaming take in multiple -hiveconf x=y parameters.
    */
   class MultiPropertyOption extends PropertyOption {
     private String optionString;
@@ -57,23 +58,21 @@ public class OptionsProcessor {
       super();
     }
 
-    MultiPropertyOption(final String optionString, final String description,
-        final int id) {
+    MultiPropertyOption(final String optionString, final String description, final int id) {
       super(optionString, description, id);
       this.optionString = optionString;
     }
 
     @Override
-    public boolean canProcess(final WriteableCommandLine commandLine,
-        final String argument) {
+    public boolean canProcess(final WriteableCommandLine commandLine, final String argument) {
       boolean ret = (argument != null) && argument.startsWith(optionString);
 
       return ret;
     }
 
     @Override
-    public void process(final WriteableCommandLine commandLine,
-        final ListIterator arguments) throws OptionException {
+    public void process(final WriteableCommandLine commandLine, final ListIterator arguments)
+        throws OptionException {
       final String arg = (String) arguments.next();
 
       if (!canProcess(commandLine, arg)) {
@@ -87,8 +86,8 @@ public class OptionsProcessor {
         if (!next.startsWith("-")) {
 
           if (next.indexOf("=") == -1) {
-            throw new OptionException(this, ResourceConstants.UNEXPECTED_TOKEN,
-                "argument: '" + next + "' is not of the form x=y");
+            throw new OptionException(this, ResourceConstants.UNEXPECTED_TOKEN, "argument: '"
+                + next + "' is not of the form x=y");
           }
           properties.add(next);
         } else {
@@ -107,23 +106,22 @@ public class OptionsProcessor {
     }
   }
 
-  private Option createBoolOption(DefaultOptionBuilder builder,
-      String longName, String shortName, String desc) {
+  private Option createBoolOption(DefaultOptionBuilder builder, String longName, String shortName,
+      String desc) {
     builder.reset();
     if (longName == null) {
       return builder.withShortName(shortName).withDescription(desc).create();
     } else {
-      return builder.withShortName(shortName).withLongName(longName)
-          .withDescription(desc).create();
+      return builder.withShortName(shortName).withLongName(longName).withDescription(desc).create();
     }
   }
 
-  private Option createOptionWithArg(DefaultOptionBuilder builder,
-      String longName, String shortName, String desc, Argument arg) {
+  private Option createOptionWithArg(DefaultOptionBuilder builder, String longName,
+      String shortName, String desc, Argument arg) {
     builder.reset();
 
-    DefaultOptionBuilder dob = builder.withShortName(shortName).withArgument(
-        arg).withDescription(desc);
+    DefaultOptionBuilder dob = builder.withShortName(shortName).withArgument(arg).withDescription(
+        desc);
 
     if (longName != null) {
       dob = dob.withLongName(longName);
@@ -138,14 +136,13 @@ public class OptionsProcessor {
     ArgumentBuilder argBuilder = new ArgumentBuilder();
 
     // -e
-    execOption = createOptionWithArg(builder, "exec", "e",
-        "execute the following command", argBuilder.withMinimum(1).withMaximum(
-            1).create());
+    execOption = createOptionWithArg(builder, "exec", "e", "execute the following command",
+        argBuilder.withMinimum(1).withMaximum(1).create());
 
     // -f
     fileOption = createOptionWithArg(builder, "file", "f",
-        "execute commands from the following file", argBuilder.withMinimum(1)
-            .withMaximum(1).create());
+        "execute commands from the following file", argBuilder.withMinimum(1).withMaximum(1)
+            .create());
 
     // -S
     isSilentOption = createBoolOption(builder, "silent", "S", "silent mode");
@@ -158,9 +155,8 @@ public class OptionsProcessor {
         "(n=v) Optional. Add or override Hive/Hadoop properties.", 'D');
 
     new PropertyOption();
-    Group allOptions = new GroupBuilder().withOption(confOptions).withOption(
-        isSilentOption).withOption(isHelpOption).withOption(execOption)
-        .withOption(fileOption).create();
+    Group allOptions = new GroupBuilder().withOption(confOptions).withOption(isSilentOption)
+        .withOption(isHelpOption).withOption(execOption).withOption(fileOption).create();
     parser.setGroup(allOptions);
   }
 
@@ -223,11 +219,9 @@ public class OptionsProcessor {
     System.err.println("");
     System.err.println("  -e 'quoted query string'  Sql from command line");
     System.err.println("  -f <filename>             Sql from files");
-    System.err
-        .println("  -S                        Silent mode in interactive shell");
+    System.err.println("  -S                        Silent mode in interactive shell");
     System.err.println("");
-    System.err
-        .println("-e and -f cannot be specified together. In the absence of these");
+    System.err.println("-e and -f cannot be specified together. In the absence of these");
     System.err.println("options, interactive shell is started");
     System.err.println("");
 

@@ -25,8 +25,6 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -47,10 +45,7 @@ import org.apache.hadoop.io.Text;
 /**
  * Util functions for GenericUDF classes.
  */
-public class GenericUDFUtils {
-
-  private static Log LOG = LogFactory.getLog(GenericUDFUtils.class.getName());
-
+public final class GenericUDFUtils {
   /**
    * Checks if b is the first byte of a UTF-8 character.
    * 
@@ -121,7 +116,7 @@ public class GenericUDFUtils {
         // but ObjectInspectors are different.
         returnObjectInspector = ObjectInspectorUtils
             .getStandardObjectInspector(returnObjectInspector,
-                ObjectInspectorCopyOption.WRITABLE);
+            ObjectInspectorCopyOption.WRITABLE);
         return true;
       }
 
@@ -220,7 +215,7 @@ public class GenericUDFUtils {
       // or String[] etc in the last argument.
       lastParaElementType = TypeInfoUtils
           .getArrayElementType(methodParameterTypes.length == 0 ? null
-              : methodParameterTypes[methodParameterTypes.length - 1]);
+          : methodParameterTypes[methodParameterTypes.length - 1]);
       isVariableLengthArgument = (lastParaElementType != null);
 
       // Create the output OI array
@@ -244,11 +239,11 @@ public class GenericUDFUtils {
           if (methodParameterTypes[i] == Object.class) {
             methodParameterOIs[i] = ObjectInspectorUtils
                 .getStandardObjectInspector(parameterOIs[i],
-                    ObjectInspectorCopyOption.JAVA);
+                ObjectInspectorCopyOption.JAVA);
           } else {
             methodParameterOIs[i] = ObjectInspectorFactory
                 .getReflectionObjectInspector(methodParameterTypes[i],
-                    ObjectInspectorOptions.JAVA);
+                ObjectInspectorOptions.JAVA);
           }
         }
 
@@ -259,14 +254,14 @@ public class GenericUDFUtils {
           for (int i = methodParameterTypes.length - 1; i < parameterOIs.length; i++) {
             methodParameterOIs[i] = ObjectInspectorUtils
                 .getStandardObjectInspector(parameterOIs[i],
-                    ObjectInspectorCopyOption.JAVA);
+                ObjectInspectorCopyOption.JAVA);
           }
         } else {
           // This method takes something like String[], so it only accepts
           // something like String
           ObjectInspector oi = ObjectInspectorFactory
               .getReflectionObjectInspector(lastParaElementType,
-                  ObjectInspectorOptions.JAVA);
+              ObjectInspectorOptions.JAVA);
           for (int i = methodParameterTypes.length - 1; i < parameterOIs.length; i++) {
             methodParameterOIs[i] = oi;
           }
@@ -289,11 +284,11 @@ public class GenericUDFUtils {
           if (methodParameterTypes[i] == Object.class) {
             methodParameterOIs[i] = ObjectInspectorUtils
                 .getStandardObjectInspector(parameterOIs[i],
-                    ObjectInspectorCopyOption.JAVA);
+                ObjectInspectorCopyOption.JAVA);
           } else {
             methodParameterOIs[i] = ObjectInspectorFactory
                 .getReflectionObjectInspector(methodParameterTypes[i],
-                    ObjectInspectorOptions.JAVA);
+                ObjectInspectorOptions.JAVA);
           }
         }
       }
@@ -314,7 +309,7 @@ public class GenericUDFUtils {
         convertedParameters = new Object[methodParameterTypes.length];
         convertedParametersInArray = (Object[]) Array.newInstance(
             getClassFromType(lastParaElementType), parameterOIs.length
-                - methodParameterTypes.length + 1);
+            - methodParameterTypes.length + 1);
         convertedParameters[convertedParameters.length - 1] = convertedParametersInArray;
       } else {
         convertedParameters = new Object[parameterOIs.length];
@@ -358,7 +353,7 @@ public class GenericUDFUtils {
     int unit = i % 10;
     return (i <= 0) ? "" : (i != 11 && unit == 1) ? i + "st"
         : (i != 12 && unit == 2) ? i + "nd" : (i != 13 && unit == 3) ? i + "rd"
-            : i + "th";
+        : i + "th";
   }
 
   /**
@@ -406,4 +401,7 @@ public class GenericUDFUtils {
     return -1; // not found
   }
 
+  private GenericUDFUtils() {
+    // prevent instantiation
+  }
 }

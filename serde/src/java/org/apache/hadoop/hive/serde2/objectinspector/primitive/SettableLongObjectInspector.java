@@ -28,10 +28,10 @@ public interface SettableLongObjectInspector extends LongObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, long value);
+  Object set(Object o, long value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(long value);
+  Object create(long value);
 }

@@ -22,10 +22,14 @@ import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
 
 /**
- * Extensions to bytearrayinput/output streams
+ * Extensions to bytearrayinput/output streams.
  * 
  */
 public class ByteStream {
+  /**
+   * Input.
+   *
+   */
   public static class Input extends NonSyncByteArrayInputStream {
     public byte[] getData() {
       return buf;
@@ -54,6 +58,10 @@ public class ByteStream {
     }
   }
 
+  /**
+   * Output.
+   *
+   */
   public static class Output extends NonSyncByteArrayOutputStream {
     @Override
     public byte[] getData() {

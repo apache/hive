@@ -32,7 +32,7 @@ public class PreOrderWalker extends DefaultGraphWalker {
    */
 
   /**
-   * Constructor
+   * Constructor.
    * 
    * @param disp
    *          dispatcher to call for each op encountered
@@ -42,7 +42,7 @@ public class PreOrderWalker extends DefaultGraphWalker {
   }
 
   /**
-   * walk the current operator and its descendants
+   * Walk the current operator and its descendants.
    * 
    * @param nd
    *          current operator in the graph

@@ -70,13 +70,13 @@ import org.apache.thrift.transport.TTransport;
 public class TBinarySortableProtocol extends TProtocol implements
     ConfigurableTProtocol, WriteNullsProtocol, WriteTextProtocol {
 
-  final static Log LOG = LogFactory.getLog(TBinarySortableProtocol.class
+  static final Log LOG = LogFactory.getLog(TBinarySortableProtocol.class
       .getName());
 
   static byte ORDERED_TYPE = (byte) -1;
 
   /**
-   * Factory for TBinarySortableProtocol objects
+   * Factory for TBinarySortableProtocol objects.
    */
   public static class Factory implements TProtocolFactory {
 
@@ -222,7 +222,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   // This method takes care of bit-flipping for descending order
   // Declare this method as final for performance reasons
-  final private void writeRawBytes(byte[] bytes, int begin, int length)
+  private void writeRawBytes(byte[] bytes, int begin, int length)
       throws TException {
     if (ascending) {
       trans_.write(bytes, begin, length);
@@ -320,18 +320,18 @@ public class TBinarySortableProtocol extends TProtocol implements
     writeRawBytes(i64out, 0, 8);
   }
 
-  final protected byte[] nullByte = new byte[] { 0 };
-  final protected byte[] nonNullByte = new byte[] { 1 };
+  protected final byte[] nullByte = new byte[] {0};
+  protected final byte[] nonNullByte = new byte[] {1};
   /**
    * The escaped byte sequence for the null byte. This cannot be changed alone
    * without changing the readString() code.
    */
-  final protected byte[] escapedNull = new byte[] { 1, 1 };
+  protected final byte[] escapedNull = new byte[] {1, 1};
   /**
    * The escaped byte sequence for the "\1" byte. This cannot be changed alone
    * without changing the readString() code.
    */
-  final protected byte[] escapedOne = new byte[] { 1, 2 };
+  protected final byte[] escapedOne = new byte[] {1, 2};
 
   @Override
   public void writeString(String str) throws TException {
@@ -475,7 +475,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   // This method takes care of bit-flipping for descending order
   // Make this method final to improve performance.
-  final private int readRawAll(byte[] buf, int off, int len) throws TException {
+  private int readRawAll(byte[] buf, int off, int len) throws TException {
     int bytes = trans_.readAll(buf, off, len);
     if (!ascending) {
       for (int i = off; i < off + bytes; i++) {
@@ -494,7 +494,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   private final byte[] wasNull = new byte[1];
 
-  final public boolean readIsNull() throws TException {
+  public final boolean readIsNull() throws TException {
     readRawAll(wasNull, 0, 1);
     lastPrimitiveWasNull = (wasNull[0] == 0);
     return lastPrimitiveWasNull;

@@ -50,6 +50,10 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
  */
 public class SamplePruner implements Transform {
 
+  /**
+   * SamplePrunerCtx.
+   *
+   */
   public static class SamplePrunerCtx implements NodeProcessorCtx {
     HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
 
@@ -109,7 +113,10 @@ public class SamplePruner implements Transform {
     return pctx;
   }
 
-  // Filter processor
+  /**
+   * FilterPPR filter processor.
+   *
+   */
   public static class FilterPPR implements NodeProcessor {
 
     @Override
@@ -134,7 +141,10 @@ public class SamplePruner implements Transform {
     return new FilterPPR();
   }
 
-  // Default processor which does nothing
+  /**
+   * DefaultPPR default processor which does nothing.
+   *
+   */
   public static class DefaultPPR implements NodeProcessor {
 
     @Override
@@ -151,7 +161,7 @@ public class SamplePruner implements Transform {
 
   /**
    * Prunes to get all the files in the partition that satisfy the TABLESAMPLE
-   * clause
+   * clause.
    * 
    * @param part
    *          The partition to prune

@@ -27,16 +27,15 @@ import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
- * Hive Configuration
+ * Hive Configuration.
  */
 public class HiveConf extends Configuration {
 
@@ -46,19 +45,23 @@ public class HiveConf extends Configuration {
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
 
   /**
-   * metastore related options that the db is initialized against
+   * Metastore related options that the db is initialized against.
    */
-  public final static HiveConf.ConfVars [] metaVars = {
-    HiveConf.ConfVars.METASTOREDIRECTORY,
-    HiveConf.ConfVars.METASTOREWAREHOUSE,
-    HiveConf.ConfVars.METASTOREURIS
-  };
+  public static final HiveConf.ConfVars[] metaVars = {
+      HiveConf.ConfVars.METASTOREDIRECTORY,
+      HiveConf.ConfVars.METASTOREWAREHOUSE,
+      HiveConf.ConfVars.METASTOREURIS
+      };
 
+  /**
+   * ConfVars.
+   *
+   */
   public static enum ConfVars {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", null),
-    SCRATCHDIR("hive.exec.scratchdir", "/tmp/"+System.getProperty("user.name")+"/hive"),
+    SCRATCHDIR("hive.exec.scratchdir", "/tmp/" + System.getProperty("user.name") + "/hive"),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
@@ -66,13 +69,13 @@ public class HiveConf extends Configuration {
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", ""),
     COMPRESSINTERMEDIATETYPE("hive.intermediate.compression.type", ""),
-    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long)(1000*1000*1000)),
+    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long) (1000 * 1000 * 1000)),
     MAXREDUCERS("hive.exec.reducers.max", 999),
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
-    EXECPARALLEL("hive.exec.parallel",false), // parallel query launching
-    EXECPARALLETHREADNUMBER ("hive.exec.parallel.thread.number", 8),
-    HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution",true),
+    EXECPARALLEL("hive.exec.parallel", false), // parallel query launching
+    EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),
+    HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", true),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
@@ -107,7 +110,7 @@ public class HiveConf extends Configuration {
 
     // id of the mapred plan being executed (multiple per query)
     HIVEPLANID("hive.query.planid", ""),
-    // max jobname length
+        // max jobname length
     HIVEJOBNAMELENGTH("hive.jobname.length", 50),
 
     // hive jar
@@ -133,8 +136,8 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINROWSIZE("hive.mapjoin.size.key", 10000),
     HIVEMAPJOINCACHEROWS("hive.mapjoin.cache.numrows", 25000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
-    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
-    HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),
+    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5),
+    HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.5),
 
     // for hive udtf operator
     HIVEUDTFAUTOPROGRESS("hive.udtf.auto.progress", false),
@@ -144,17 +147,19 @@ public class HiveConf extends Configuration {
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
 
     //Location of Hive run time structured log file
-    HIVEHISTORYFILELOC("hive.querylog.location",  "/tmp/"+System.getProperty("user.name")),
+    HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
 
     // Default serde and record reader for user scripts
     HIVESCRIPTSERDE("hive.script.serde", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"),
-    HIVESCRIPTRECORDREADER("hive.script.recordreader", "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
-    HIVESCRIPTRECORDWRITER("hive.script.recordwriter", "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
+    HIVESCRIPTRECORDREADER("hive.script.recordreader",
+        "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
+    HIVESCRIPTRECORDWRITER("hive.script.recordwriter",
+        "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
 
     // HWI
-    HIVEHWILISTENHOST("hive.hwi.listen.host","0.0.0.0"),
-    HIVEHWILISTENPORT("hive.hwi.listen.port","9999"),
-    HIVEHWIWARFILE("hive.hwi.war.file",System.getenv("HWI_WAR_FILE")),
+    HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0"),
+    HIVEHWILISTENPORT("hive.hwi.listen.port", "9999"),
+    HIVEHWIWARFILE("hive.hwi.war.file", System.getenv("HWI_WAR_FILE")),
 
     // mapper/reducer memory in local mode
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
@@ -167,15 +172,15 @@ public class HiveConf extends Configuration {
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
-    HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(256*1000*1000)),
-    HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long)(16*1000*1000)),
+    HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000)),
+    HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000)),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVESKEWJOINKEY("hive.skewjoin.key", 1000000),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432), //32M
     MAPREDMINSPLITSIZE("mapred.min.split.size", 1),
-    
+
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),
 
@@ -186,8 +191,7 @@ public class HiveConf extends Configuration {
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
-    HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by
-    ;
+    HIVEOPTGROUPBY("hive.optimize.groupby", true); // optimize group by
 
     public final String varname;
     public final String defaultVal;
@@ -253,7 +257,7 @@ public class HiveConf extends Configuration {
   }
 
   public static int getIntVar(Configuration conf, ConfVars var) {
-    assert(var.valClass == Integer.class);
+    assert (var.valClass == Integer.class);
     return conf.getInt(var.varname, var.defaultIntVal);
   }
 
@@ -262,7 +266,7 @@ public class HiveConf extends Configuration {
   }
 
   public static long getLongVar(Configuration conf, ConfVars var) {
-    assert(var.valClass == Long.class);
+    assert (var.valClass == Long.class);
     return conf.getLong(var.varname, var.defaultLongVal);
   }
 
@@ -271,7 +275,7 @@ public class HiveConf extends Configuration {
   }
 
   public static float getFloatVar(Configuration conf, ConfVars var) {
-    assert(var.valClass == Float.class);
+    assert (var.valClass == Float.class);
     return conf.getFloat(var.varname, var.defaultFloatVal);
   }
 
@@ -280,7 +284,7 @@ public class HiveConf extends Configuration {
   }
 
   public static boolean getBoolVar(Configuration conf, ConfVars var) {
-    assert(var.valClass == Boolean.class);
+    assert (var.valClass == Boolean.class);
     return conf.getBoolean(var.varname, var.defaultBoolVal);
   }
 
@@ -289,12 +293,12 @@ public class HiveConf extends Configuration {
   }
 
   public static String getVar(Configuration conf, ConfVars var) {
-    assert(var.valClass == String.class);
+    assert (var.valClass == String.class);
     return conf.get(var.varname, var.defaultVal);
   }
 
   public static void setVar(Configuration conf, ConfVars var, String val) {
-    assert(var.valClass == String.class);
+    assert (var.valClass == String.class);
     conf.set(var.varname, val);
   }
 
@@ -307,7 +311,7 @@ public class HiveConf extends Configuration {
   }
 
   public void logVars(PrintStream ps) {
-    for(ConfVars one: ConfVars.values()) {
+    for (ConfVars one : ConfVars.values()) {
       ps.println(one.varname + "=" + ((get(one.varname) != null) ? get(one.varname) : ""));
     }
   }
@@ -329,13 +333,12 @@ public class HiveConf extends Configuration {
   private Properties getUnderlyingProps() {
     Iterator<Map.Entry<String, String>> iter = this.iterator();
     Properties p = new Properties();
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
       p.setProperty(e.getKey(), e.getValue());
     }
     return p;
   }
-
 
   private void initialize(Class<?> cls) {
     hiveJar = (new JobConf(cls)).getJar();
@@ -345,13 +348,13 @@ public class HiveConf extends Configuration {
 
     // let's add the hive configuration
     URL hconfurl = getClassLoader().getResource("hive-default.xml");
-    if(hconfurl == null) {
+    if (hconfurl == null) {
       l4j.debug("hive-default.xml not found.");
     } else {
       addResource(hconfurl);
     }
     URL hsiteurl = getClassLoader().getResource("hive-site.xml");
-    if(hsiteurl == null) {
+    if (hsiteurl == null) {
       l4j.debug("hive-site.xml not found.");
     } else {
       addResource(hsiteurl);
@@ -360,9 +363,10 @@ public class HiveConf extends Configuration {
     // if hadoop configuration files are already in our path - then define
     // the containing directory as the configuration directory
     URL hadoopconfurl = getClassLoader().getResource("hadoop-default.xml");
-    if(hadoopconfurl == null)
+    if (hadoopconfurl == null) {
       hadoopconfurl = getClassLoader().getResource("hadoop-site.xml");
-    if(hadoopconfurl != null) {
+    }
+    if (hadoopconfurl != null) {
       String conffile = hadoopconfurl.getPath();
       this.setVar(ConfVars.HADOOPCONF, conffile.substring(0, conffile.lastIndexOf('/')));
     }
@@ -371,21 +375,22 @@ public class HiveConf extends Configuration {
 
     // if the running class was loaded directly (through eclipse) rather than through a
     // jar then this would be needed
-    if(hiveJar == null) {
+    if (hiveJar == null) {
       hiveJar = this.get(ConfVars.HIVEJAR.varname);
     }
 
-    if(auxJars == null) {
+    if (auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
     }
 
   }
 
   public void applySystemProperties() {
-    for(ConfVars oneVar: ConfVars.values()) {
-      if(System.getProperty(oneVar.varname) != null) {
-        if(System.getProperty(oneVar.varname).length() > 0)
-        this.set(oneVar.varname, System.getProperty(oneVar.varname));
+    for (ConfVars oneVar : ConfVars.values()) {
+      if (System.getProperty(oneVar.varname) != null) {
+        if (System.getProperty(oneVar.varname).length() > 0) {
+          this.set(oneVar.varname, System.getProperty(oneVar.varname));
+        }
       }
     }
   }
@@ -394,10 +399,10 @@ public class HiveConf extends Configuration {
     Properties ret = new Properties();
     Properties newProp = getUnderlyingProps();
 
-    for(Object one: newProp.keySet()) {
-      String oneProp = (String)one;
+    for (Object one : newProp.keySet()) {
+      String oneProp = (String) one;
       String oldValue = origProp.getProperty(oneProp);
-      if(!StringUtils.equals(oldValue, newProp.getProperty(oneProp))) {
+      if (!StringUtils.equals(oldValue, newProp.getProperty(oneProp))) {
         ret.setProperty(oneProp, newProp.getProperty(oneProp));
       }
     }
@@ -433,17 +438,17 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-       UserGroupInformation ugi = UserGroupInformation.readFrom(this);
-       if(ugi == null) {
-         ugi = UserGroupInformation.login(this);
-       }
-       return ugi.getUserName();
+      UserGroupInformation ugi = UserGroupInformation.readFrom(this);
+      if (ugi == null) {
+        ugi = UserGroupInformation.login(this);
+      }
+      return ugi.getUserName();
     } catch (LoginException e) {
-      throw (IOException)new IOException().initCause(e);
+      throw (IOException) new IOException().initCause(e);
     }
   }
 
-  public static String getColumnInternalName(int pos){
-    return "_col"+pos;
+  public static String getColumnInternalName(int pos) {
+    return "_col" + pos;
   }
 }

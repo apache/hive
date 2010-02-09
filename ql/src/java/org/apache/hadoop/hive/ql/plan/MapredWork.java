@@ -28,6 +28,10 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
+/**
+ * MapredWork.
+ *
+ */
 @Explain(displayName = "Map Reduce")
 public class MapredWork implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -178,7 +182,6 @@ public class MapredWork implements Serializable {
   public void setReducer(final Operator<?> reducer) {
     this.reducer = reducer;
   }
-  
 
   public Integer getNumMapTasks() {
     return numMapTasks;
@@ -187,7 +190,7 @@ public class MapredWork implements Serializable {
   public void setNumMapTasks(Integer numMapTasks) {
     this.numMapTasks = numMapTasks;
   }
-  
+
   /**
    * If the number of reducers is -1, the runtime will automatically figure it
    * out by input data size.

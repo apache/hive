@@ -34,6 +34,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
+/**
+ * UDTFOperator.
+ *
+ */
 public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -54,8 +58,8 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
     conf.getGenericUDTF().setCollector(new UDTFCollector(this));
 
     // Make an object inspector [] of the arguments to the UDTF
-    List<? extends StructField> inputFields = ((StandardStructObjectInspector) inputObjInspectors[0])
-        .getAllStructFieldRefs();
+    List<? extends StructField> inputFields =
+        ((StandardStructObjectInspector) inputObjInspectors[0]).getAllStructFieldRefs();
 
     udtfInputOIs = new ObjectInspector[inputFields.size()];
     for (int i = 0; i < inputFields.size(); i++) {

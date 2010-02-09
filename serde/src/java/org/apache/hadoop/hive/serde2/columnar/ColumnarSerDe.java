@@ -62,10 +62,10 @@ public class ColumnarSerDe implements SerDe {
         + Arrays.asList(serdeParams.getSeparators())
         + ":"
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-            .getAllStructFieldNames()
+        .getAllStructFieldNames()
         + ":"
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-            .getAllStructFieldTypeInfos() + "]";
+        .getAllStructFieldTypeInfos() + "]";
   }
 
   public static final Log LOG = LogFactory
@@ -81,20 +81,18 @@ public class ColumnarSerDe implements SerDe {
    * 
    * @see SerDe#initialize(Configuration, Properties)
    */
-  public void initialize(Configuration job, Properties tbl)
-      throws SerDeException {
-    serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass()
-        .getName());
+  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+
+    serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass().getName());
 
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
         serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence(), serdeParams
-            .isEscaped(), serdeParams.getEscapeChar());
+        .getSeparators(), serdeParams.getNullSequence(), serdeParams
+        .isEscaped(), serdeParams.getEscapeChar());
 
-    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils
-        .getReadColumnIDs(job);
+    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
 
     cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs);
 
@@ -160,8 +158,7 @@ public class ColumnarSerDe implements SerDe {
    * @return The serialized Writable object
    * @see SerDe#serialize(Object, ObjectInspector)
    */
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
       throw new SerDeException(getClass().toString()
@@ -203,14 +200,14 @@ public class ColumnarSerDe implements SerDe {
         // delimited way.
         if (!foi.getCategory().equals(Category.PRIMITIVE)
             && (declaredFields == null || declaredFields.get(i)
-                .getFieldObjectInspector().getCategory().equals(
-                    Category.PRIMITIVE))) {
+            .getFieldObjectInspector().getCategory().equals(
+            Category.PRIMITIVE))) {
           LazySimpleSerDe.serialize(serializeStream, SerDeUtils.getJSONString(
               f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
               serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
               serdeParams.isEscaped(), serdeParams.getEscapeChar(), serdeParams
-                  .getNeedsEscape());
+              .getNeedsEscape());
         } else {
           LazySimpleSerDe.serialize(serializeStream, f, foi, serdeParams
               .getSeparators(), 1, serdeParams.getNullSequence(), serdeParams

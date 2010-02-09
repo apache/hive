@@ -18,18 +18,21 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
+/**
+ * GenericUDFOPNull.
+ *
+ */
 @Description(name = "isnull", value = "_FUNC_ a - Returns true if a is NULL and false otherwise")
 public class GenericUDFOPNull extends GenericUDF {
-
-  BooleanWritable result = new BooleanWritable();
+  private BooleanWritable result = new BooleanWritable();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

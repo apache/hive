@@ -75,19 +75,23 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
 
+/**
+ * ExecDriver.
+ *
+ */
 public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  transient protected JobConf job;
-  transient protected int mapProgress = 0;
-  transient protected int reduceProgress = 0;
-  transient protected boolean success = false; // if job execution is successful
+  protected transient JobConf job;
+  protected transient int mapProgress = 0;
+  protected transient int reduceProgress = 0;
+  protected transient boolean success = false; // if job execution is successful
 
   public static Random randGen = new Random();
 
   /**
-   * Constructor when invoked from QL
+   * Constructor when invoked from QL.
    */
   public ExecDriver() {
     super();
@@ -122,7 +126,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * Initialization when invoked from QL
+   * Initialization when invoked from QL.
    */
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan,
@@ -152,10 +156,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * Constructor/Initialization for invocation as independent utility
+   * Constructor/Initialization for invocation as independent utility.
    */
-  public ExecDriver(MapredWork plan, JobConf job, boolean isSilent)
-      throws HiveException {
+  public ExecDriver(MapredWork plan, JobConf job, boolean isSilent) throws HiveException {
     setWork(plan);
     this.job = job;
     LOG = LogFactory.getLog(this.getClass().getName());
@@ -167,8 +170,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    * used to kill all running jobs in the event of an unexpected shutdown -
    * i.e., the JVM shuts down while there are still jobs running.
    */
-  public static Map<String, String> runningJobKillURIs = Collections
-      .synchronizedMap(new HashMap<String, String>());
+  public static Map<String, String> runningJobKillURIs =
+      Collections.synchronizedMap(new HashMap<String, String>());
 
   /**
    * In Hive, when the user control-c's the command line, any running jobs
@@ -195,7 +198,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
                 if (retCode != 200) {
                   System.err
                       .println("Got an error trying to kill job with URI: "
-                          + uri + " = " + retCode);
+                      + uri + " = " + retCode);
                 }
               } catch (Exception e) {
                 System.err.println("trying to kill job, caught: " + e);
@@ -209,7 +212,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * from StreamJob.java
+   * from StreamJob.java.
    */
   public void jobInfo(RunningJob rj) {
     if (job.get("mapred.job.tracker", "local").equals("local")) {
@@ -232,7 +235,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   /**
    * This class contains the state of the running task Going forward, we will
    * return this handle from execute and Driver can split execute into start,
-   * monitorProgess and postProcess
+   * monitorProgess and postProcess.
    */
   public static class ExecDriverTaskHandle extends TaskHandle {
     JobClient jc;
@@ -412,13 +415,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         work.setNumReduceTasks(reducers);
         console
             .printInfo("Number of reduce tasks not specified. Defaulting to jobconf value of: "
-                + reducers);
+            + reducers);
       } else {
         int reducers = estimateNumberOfReducers(conf, job, work);
         work.setNumReduceTasks(reducers);
         console
             .printInfo("Number of reduce tasks not specified. Estimated from input data size: "
-                + reducers);
+            + reducers);
 
       }
       console
@@ -442,8 +445,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    * @return the total size in bytes.
    * @throws IOException
    */
-  public long getTotalInputFileSize(JobConf job, MapredWork work)
-      throws IOException {
+  public long getTotalInputFileSize(JobConf job, MapredWork work) throws IOException {
     long r = 0;
     // For each input path, calculate the total size.
     for (String path : work.getPathToAliases().keySet()) {
@@ -460,7 +462,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * update counters relevant to this task
+   * Update counters relevant to this task.
    */
   @Override
   public void updateCounters(TaskHandle t) throws IOException {
@@ -498,7 +500,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * Execute a query plan using Hadoop
+   * Execute a query plan using Hadoop.
    */
   public int execute() {
 
@@ -551,17 +553,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
     job.setMapOutputKeyClass(HiveKey.class);
     job.setMapOutputValueClass(BytesWritable.class);
-    if(work.getNumMapTasks() != null) {
-      job.setNumMapTasks(work.getNumMapTasks().intValue());      
+    if (work.getNumMapTasks() != null) {
+      job.setNumMapTasks(work.getNumMapTasks().intValue());
     }
-    if(work.getMinSplitSize() != null) {
-      job.setInt(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname, 
-         work.getMinSplitSize().intValue());
+    if (work.getMinSplitSize() != null) {
+      job.setInt(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname,
+          work.getMinSplitSize().intValue());
     }
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);
-    
-    if(work.getInputformat() != null) {
+
+    if (work.getInputformat() != null) {
       HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, work.getInputformat());
     }
 
@@ -731,7 +733,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * this msg pattern is used to track when a job is started
+   * This msg pattern is used to track when a job is started.
    * 
    * @param jobId
    * @return
@@ -750,8 +752,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     return "Ended Job = " + jobId;
   }
 
-  private void showJobFailDebugInfo(JobConf conf, RunningJob rj)
-      throws IOException {
+  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
 
     Map<String, Integer> failures = new HashMap<String, Integer>();
     Set<String> successes = new HashSet<String>();
@@ -840,7 +841,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   private static void printUsage() {
     System.out
         .println("ExecDriver -plan <plan-file> [-jobconf k1=v1 [-jobconf k2=v2] ...] "
-            + "[-files <file1>[,<file2>] ...]");
+        + "[-files <file1>[,<file2>] ...]");
     System.exit(1);
   }
 
@@ -955,7 +956,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   /**
    * Given a Hive Configuration object - generate a command line fragment for
-   * passing such configuration information to ExecDriver
+   * passing such configuration information to ExecDriver.
    */
   public static String generateCmdLine(HiveConf hconf) {
     try {
@@ -1033,7 +1034,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   /**
-   * Handle a empty/null path for a given alias
+   * Handle a empty/null path for a given alias.
    */
   private int addInputPath(String path, JobConf job, MapredWork work,
       String hiveScratchDir, int numEmptyPaths, boolean isEmptyPath,

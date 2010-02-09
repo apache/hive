@@ -21,6 +21,10 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+/**
+ * TestHiveInputOutputBuffer.
+ *
+ */
 public class TestHiveInputOutputBuffer extends TestCase {
 
   public void testReadAndWrite() throws IOException {

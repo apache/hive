@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  * that table alias and store a mapping from the table scan operator to that
  * pruner. We call that pruner later during plan generation.
  */
-public class OpProcFactory {
+public final class OpProcFactory {
 
   /**
    * Determines the partition pruner for the filter. This is called only when
@@ -116,7 +116,7 @@ public class OpProcFactory {
   }
 
   /**
-   * Default processor which just merges its children
+   * Default processor which just merges its children.
    */
   public static class DefaultPPR implements NodeProcessor {
 
@@ -136,4 +136,7 @@ public class OpProcFactory {
     return new DefaultPPR();
   }
 
+  private OpProcFactory() {
+    // prevent instantiation
+  }
 }

@@ -27,6 +27,6 @@ import java.io.IOException;
  */
 public interface LazyDecompressionCallback {
 
-  public byte[] decompress() throws IOException;
+  byte[] decompress() throws IOException;
 
 }

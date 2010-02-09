@@ -42,7 +42,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * An {@link org.apache.hadoop.mapred.InputFormat} for Plain files with
- * {@link Deserializer} records
+ * {@link Deserializer} records.
  */
 public class FlatFileInputFormat<T> extends
     FileInputFormat<Void, FlatFileInputFormat.RowContainer<T>> {
@@ -53,7 +53,7 @@ public class FlatFileInputFormat<T> extends
    * Allows boolean next(k,v) to be called by reference but still allow the
    * deserializer to create a new object (i.e., row) on every call to next.
    */
-  static public class RowContainer<T> {
+  public static class RowContainer<T> {
     T row;
   }
 
@@ -69,25 +69,25 @@ public class FlatFileInputFormat<T> extends
    * not have a way of configuring the actual Java class being
    * serialized/deserialized.
    */
-  static public interface SerializationContext<S> extends Configurable {
+  public static interface SerializationContext<S> extends Configurable {
 
     /**
-     * An {@link Serialization} object for objects of type S
+     * An {@link Serialization} object for objects of type S.
      * 
      * @return a serialization object for this context
      */
-    public Serialization<S> getSerialization() throws IOException;
+    Serialization<S> getSerialization() throws IOException;
 
     /**
-     * Produces the specific class to deserialize
+     * Produces the specific class to deserialize.
      */
-    public Class<? extends S> getRealClass() throws IOException;
+    Class<? extends S> getRealClass() throws IOException;
   }
 
   /**
-   * The JobConf keys for the Serialization implementation
+   * The JobConf keys for the Serialization implementation.
    */
-  static public final String SerializationImplKey = "mapred.input.serialization.implKey";
+  public static final String SerializationImplKey = "mapred.input.serialization.implKey";
 
   /**
    * An implementation of {@link SerializationContext} that reads the
@@ -95,13 +95,13 @@ public class FlatFileInputFormat<T> extends
    * JobConf.
    * 
    */
-  static public class SerializationContextFromConf<S> implements
+  public static class SerializationContextFromConf<S> implements
       FlatFileInputFormat.SerializationContext<S> {
 
     /**
      * The JobConf keys for the Class that is being deserialized.
      */
-    static public final String SerializationSubclassKey = "mapred.input.serialization.subclassKey";
+    public static final String SerializationSubclassKey = "mapred.input.serialization.subclassKey";
 
     /**
      * Implements configurable so it can use the configuration to find the right
@@ -119,7 +119,7 @@ public class FlatFileInputFormat<T> extends
     }
 
     /**
-     * @return the actual class being deserialized
+     * @return the actual class being deserialized.
      * @exception does
      *              not currently throw IOException
      */
@@ -182,29 +182,29 @@ public class FlatFileInputFormat<T> extends
     private final FSDataInputStream fsin;
 
     /**
-     * For calculating progress
+     * For calculating progress.
      */
     private final long end;
 
     /**
-     * The constructed deserializer
+     * The constructed deserializer.
      */
     private final Deserializer<R> deserializer;
 
     /**
-     * Once EOF is reached, stop calling the deserializer
+     * Once EOF is reached, stop calling the deserializer.
      */
     private boolean isEOF;
 
     /**
      * The JobConf which contains information needed to instantiate the correct
-     * Deserializer
+     * Deserializer.
      */
     private final Configuration conf;
 
     /**
      * The actual class of the row's we are deserializing, not just the base
-     * class
+     * class.
      */
     private final Class<R> realRowClass;
 
@@ -217,8 +217,7 @@ public class FlatFileInputFormat<T> extends
      * @param split
      *          the split for this file
      */
-    public FlatFileRecordReader(Configuration conf, FileSplit split)
-        throws IOException {
+    public FlatFileRecordReader(Configuration conf, FileSplit split) throws IOException {
       final Path path = split.getPath();
       FileSystem fileSys = path.getFileSystem(conf);
       CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(
@@ -244,10 +243,9 @@ public class FlatFileInputFormat<T> extends
       SerializationContext<R> sinfo;
       Class<SerializationContext<R>> sinfoClass = (Class<SerializationContext<R>>) conf
           .getClass(SerializationContextImplKey,
-              SerializationContextFromConf.class);
+          SerializationContextFromConf.class);
 
-      sinfo = (SerializationContext<R>) ReflectionUtils.newInstance(sinfoClass,
-          conf);
+      sinfo = (SerializationContext<R>)ReflectionUtils.newInstance(sinfoClass, conf);
 
       // Get the Serialization object and the class being deserialized
       Serialization<R> serialization = sinfo.getSerialization();
@@ -258,9 +256,10 @@ public class FlatFileInputFormat<T> extends
     }
 
     /**
-     * The JobConf key of the SerializationContext to use
+     * The JobConf key of the SerializationContext to use.
      */
-    static public final String SerializationContextImplKey = "mapred.input.serialization.context_impl";
+    public static final String SerializationContextImplKey =
+      "mapred.input.serialization.context_impl";
 
     /**
      * @return null
@@ -274,12 +273,12 @@ public class FlatFileInputFormat<T> extends
      */
     public RowContainer<R> createValue() {
       RowContainer<R> r = new RowContainer<R>();
-      r.row = (R) ReflectionUtils.newInstance(realRowClass, conf);
+      r.row = (R)ReflectionUtils.newInstance(realRowClass, conf);
       return r;
     }
 
     /**
-     * Returns the next row # and value
+     * Returns the next row # and value.
      * 
      * @param key
      *          - void as these files have a value only
@@ -291,8 +290,7 @@ public class FlatFileInputFormat<T> extends
      * @exception IOException
      *              from the deserializer
      */
-    public synchronized boolean next(Void key, RowContainer<R> value)
-        throws IOException {
+    public synchronized boolean next(Void key, RowContainer<R> value) throws IOException {
       if (isEOF || in.available() == 0) {
         isEOF = true;
         return false;

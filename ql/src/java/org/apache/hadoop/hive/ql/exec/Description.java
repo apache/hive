@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.exec;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Description.
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Description {
   String value() default "_FUNC_ is undocumented";

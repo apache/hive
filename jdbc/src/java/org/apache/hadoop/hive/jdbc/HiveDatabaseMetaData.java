@@ -28,6 +28,10 @@ import java.sql.SQLException;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+/**
+ * HiveDatabaseMetaData.
+ *
+ */
 public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   /**

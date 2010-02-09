@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
- * Implementation of the metadata information related to a query block
+ * Implementation of the metadata information related to a query block.
  * 
  **/
 

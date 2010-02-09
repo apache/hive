@@ -177,7 +177,7 @@ public class ColumnarStruct {
 
     if (fieldLen == nullSequence.getLength()
         && LazyUtils.compare(data, rawBytesField[fieldID].getStart(), fieldLen,
-            nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
+        nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
       return null;
     }
 

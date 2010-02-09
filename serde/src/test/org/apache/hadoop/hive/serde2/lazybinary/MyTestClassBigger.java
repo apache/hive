@@ -22,6 +22,10 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 
+/**
+ * MyTestClassBigger.
+ *
+ */
 public class MyTestClassBigger {
   Byte myByte;
   Short myShort;

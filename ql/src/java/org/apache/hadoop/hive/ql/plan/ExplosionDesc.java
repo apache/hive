@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * ExplosionDesc.
+ *
+ */
 @Explain(displayName = "Explosion")
 public class ExplosionDesc implements Serializable {
   private static final long serialVersionUID = 1L;

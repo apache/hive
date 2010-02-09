@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -65,7 +65,7 @@ import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalR
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * Processor for the rule - table scan followed by reduce sink
+ * Processor for the rule - table scan followed by reduce sink.
  */
 public class GenMRFileSink1 implements NodeProcessor {
 
@@ -73,7 +73,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   }
 
   /**
-   * File Sink Operator encountered
+   * File Sink Operator encountered.
    * 
    * @param nd
    *          the file sink operator encountered
@@ -108,8 +108,8 @@ public class GenMRFileSink1 implements NodeProcessor {
               HiveConf.ConfVars.HIVEMERGEMAPFILES) && (((MapredWork) currTask
               .getWork()).getReducer() == null))
               || (parseCtx.getConf().getBoolVar(
-                  HiveConf.ConfVars.HIVEMERGEMAPREDFILES) && (((MapredWork) currTask
-                  .getWork()).getReducer() != null))) {
+              HiveConf.ConfVars.HIVEMERGEMAPREDFILES) && (((MapredWork) currTask
+              .getWork()).getReducer() != null))) {
             chDir = true;
           }
         }
@@ -176,18 +176,18 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     Operator extract = OperatorFactory.getAndMakeChild(new ExtractDesc(
         new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
-            Utilities.ReduceField.VALUE.toString(), "", false)), 
-            new RowSchema(out_rwsch.getColumnInfos()));
+        Utilities.ReduceField.VALUE.toString(), "", false)),
+        new RowSchema(out_rwsch.getColumnInfos()));
 
     TableDesc ts = (TableDesc) fsConf.getTableInfo().clone();
     fsConf
         .getTableInfo()
         .getProperties()
         .remove(
-            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
     FileSinkOperator newOutput = (FileSinkOperator) OperatorFactory
         .getAndMakeChild(new FileSinkDesc(finalName, ts, parseCtx.getConf()
-            .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT)), fsRS, extract);
+        .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT)), fsRS, extract);
 
     cplan.setReducer(extract);
     ArrayList<String> aliases = new ArrayList<String>();

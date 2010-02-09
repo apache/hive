@@ -19,13 +19,19 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "conv", value = "_FUNC_(num, from_base, to_base) - convert num from from_base to"
-    + " to_base", extended = "If to_base is negative, treat num as a signed integer,"
+/**
+ * UDFConv.
+ *
+ */
+@Description(name = "conv",
+    value = "_FUNC_(num, from_base, to_base) - convert num from from_base to"
+    + " to_base",
+    extended = "If to_base is negative, treat num as a signed integer,"
     + "otherwise, treat it as an unsigned integer.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('100', 2, 10) FROM src LIMIT 1;\n"
@@ -59,7 +65,7 @@ public class UDFConv extends UDF {
   }
 
   /**
-   * Decode val into value[]
+   * Decode val into value[].
    * 
    * @param val
    *          is treated as an unsigned 64-bit integer
@@ -86,7 +92,7 @@ public class UDFConv extends UDF {
   private long encode(int radix) {
     long val = 0;
     long bound = unsignedLongDiv(-1 - radix, radix); // Possible overflow once
-                                                     // val
+    // val
     // exceeds this value
     for (int i = 0; i < value.length && value[i] >= 0; i++) {
       if (val >= bound) {

@@ -28,10 +28,10 @@ public interface SettableShortObjectInspector extends ShortObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, short value);
+  Object set(Object o, short value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(short value);
+  Object create(short value);
 }

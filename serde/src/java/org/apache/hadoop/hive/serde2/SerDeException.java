@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2;
 
 /**
- * Generic exception class for SerDes
+ * Generic exception class for SerDes.
  * 
  */
 

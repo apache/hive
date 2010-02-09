@@ -40,7 +40,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Reduce Sink Operator sends output to the reduce stage
+ * Reduce Sink Operator sends output to the reduce stage.
  **/
 public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable {
@@ -51,18 +51,18 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * The evaluators for the key columns. Key columns decide the sort order on
    * the reducer side. Key columns are passed to the reducer in the "key".
    */
-  transient protected ExprNodeEvaluator[] keyEval;
+  protected transient ExprNodeEvaluator[] keyEval;
   /**
    * The evaluators for the value columns. Value columns are passed to reducer
    * in the "value".
    */
-  transient protected ExprNodeEvaluator[] valueEval;
+  protected transient ExprNodeEvaluator[] valueEval;
   /**
    * The evaluators for the partition columns (CLUSTER BY or DISTRIBUTE BY in
    * Hive language). Partition columns decide the reducer that the current row
    * goes to. Partition columns are not passed to reducer.
    */
-  transient protected ExprNodeEvaluator[] partitionEval;
+  protected transient ExprNodeEvaluator[] partitionEval;
 
   // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is
   // ready

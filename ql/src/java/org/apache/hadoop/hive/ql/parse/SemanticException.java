@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Exception from SemanticAnalyzer
+ * Exception from SemanticAnalyzer.
  */
 
 public class SemanticException extends HiveException {

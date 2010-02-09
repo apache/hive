@@ -40,7 +40,7 @@ public class PhysicalOptimizer {
   }
 
   /**
-   * create the list of physical plan resolvers
+   * create the list of physical plan resolvers.
    * 
    * @param hiveConf
    */
@@ -52,7 +52,7 @@ public class PhysicalOptimizer {
   }
 
   /**
-   * invoke all the resolvers one-by-one, and alter the physical plan
+   * invoke all the resolvers one-by-one, and alter the physical plan.
    * 
    * @return PhysicalContext
    * @throws HiveException

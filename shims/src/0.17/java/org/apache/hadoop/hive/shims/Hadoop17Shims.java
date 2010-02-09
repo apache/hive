@@ -31,7 +31,7 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import java.io.IOException;
 
 /**
- * Implemention of shims against Hadoop 0.17.0
+ * Implemention of shims against Hadoop 0.17.0.
  */
 public class Hadoop17Shims implements HadoopShims {
   public boolean usesJobShell() {
@@ -49,7 +49,7 @@ public class Hadoop17Shims implements HadoopShims {
   }
 
   /**
-   * workaround for hadoop-17 - jobclient only looks at commandlineconfig
+   * workaround for hadoop-17 - jobclient only looks at commandlineconfig.
    */
   public void setTmpFiles(String prop, String files) {
     Configuration conf = JobClient.getCommandLineConfig();

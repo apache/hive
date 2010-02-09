@@ -18,19 +18,20 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-@Description(name = "power,pow", value = "_FUNC_(x1, x2) - raise x1 to the power of x2", extended = "Example:\n"
+/**
+ * UDFPower.
+ *
+ */
+@Description(name = "power,pow",
+    value = "_FUNC_(x1, x2) - raise x1 to the power of x2",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_(2, 3) FROM src LIMIT 1;\n" + "  8")
 public class UDFPower extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFPower.class.getName());
-
-  DoubleWritable result = new DoubleWritable();
+  private DoubleWritable result = new DoubleWritable();
 
   public UDFPower() {
   }

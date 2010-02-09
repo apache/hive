@@ -26,6 +26,10 @@ import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * TypedBytesRecordWriter.
+ *
+ */
 public class TypedBytesRecordWriter implements RecordWriter {
 
   private OutputStream out;

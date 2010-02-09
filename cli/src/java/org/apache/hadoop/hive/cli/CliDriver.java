@@ -25,8 +25,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +51,14 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
+/**
+ * CliDriver.
+ * 
+ */
 public class CliDriver {
 
-  public final static String prompt = "hive";
-  public final static String prompt2 = "    "; // when ';' is not yet seen
+  public static final String prompt = "hive";
+  public static final String prompt2 = "    "; // when ';' is not yet seen
 
   private final LogHelper console;
   private final Configuration conf;
@@ -74,8 +78,7 @@ public class CliDriver {
     String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
     int ret = 0;
 
-    if (cmd_trimmed.toLowerCase().equals("quit")
-        || cmd_trimmed.toLowerCase().equals("exit")) {
+    if (cmd_trimmed.toLowerCase().equals("quit") || cmd_trimmed.toLowerCase().equals("exit")) {
 
       // if we have come this far - either the previous commands
       // are all successful or this is command line. in either case
@@ -89,10 +92,8 @@ public class CliDriver {
       // shell_cmd = "/bin/bash -c \'" + shell_cmd + "\'";
       try {
         Process executor = Runtime.getRuntime().exec(shell_cmd);
-        StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-            null, ss.out);
-        StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-            null, ss.err);
+        StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, ss.out);
+        StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, ss.err);
 
         outPrinter.start();
         errPrinter.start();
@@ -102,20 +103,17 @@ public class CliDriver {
           console.printError("Command failed with exit code = " + ret);
         }
       } catch (Exception e) {
-        console.printError("Exception raised from Shell command "
-            + e.getLocalizedMessage(), org.apache.hadoop.util.StringUtils
-            .stringifyException(e));
+        console.printError("Exception raised from Shell command " + e.getLocalizedMessage(),
+            org.apache.hadoop.util.StringUtils.stringifyException(e));
         ret = 1;
       }
 
     } else if (tokens[0].toLowerCase().equals("list")) {
 
       SessionState.ResourceType t;
-      if (tokens.length < 2
-          || (t = SessionState.find_resource_type(tokens[1])) == null) {
+      if (tokens.length < 2 || (t = SessionState.find_resource_type(tokens[1])) == null) {
         console.printError("Usage: list ["
-            + StringUtils.join(SessionState.ResourceType.values(), "|")
-            + "] [<value> [<value>]*]");
+            + StringUtils.join(SessionState.ResourceType.values(), "|") + "] [<value> [<value>]*]");
         ret = 1;
       } else {
         List<String> filter = null;
@@ -155,9 +153,8 @@ public class CliDriver {
               }
             }
           } catch (IOException e) {
-            console.printError("Failed with exception "
-                + e.getClass().getName() + ":" + e.getMessage(), "\n"
-                + org.apache.hadoop.util.StringUtils.stringifyException(e));
+            console.printError("Failed with exception " + e.getClass().getName() + ":"
+                + e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
             ret = 1;
           }
 
@@ -200,8 +197,7 @@ public class CliDriver {
       ret = processCmd(command);
       command = "";
       lastRet = ret;
-      boolean ignoreErrors = HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.CLIIGNOREERRORS);
+      boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
       if (ret != 0 && !ignoreErrors) {
         return ret;
       }
@@ -258,8 +254,7 @@ public class CliDriver {
       ClassLoader loader = conf.getClassLoader();
       String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
       if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars,
-            ","));
+        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
       }
       conf.setClassLoader(loader);
       Thread.currentThread().setContextClassLoader(loader);
@@ -275,12 +270,10 @@ public class CliDriver {
 
     try {
       if (ss.fileName != null) {
-        System.exit(cli.processReader(new BufferedReader(new FileReader(
-            ss.fileName))));
+        System.exit(cli.processReader(new BufferedReader(new FileReader(ss.fileName))));
       }
     } catch (FileNotFoundException e) {
-      System.err.println("Could not open input file for reading. ("
-          + e.getMessage() + ")");
+      System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");
       System.exit(3);
     }
 
@@ -289,14 +282,13 @@ public class CliDriver {
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
 
     List<SimpleCompletor> completors = new LinkedList<SimpleCompletor>();
-    completors.add(new SimpleCompletor(new String[] { "set", "from", "create",
-        "load", "describe", "quit", "exit" }));
+    completors.add(new SimpleCompletor(new String[] {"set", "from", "create", "load", "describe",
+        "quit", "exit"}));
     reader.addCompletor(new ArgumentCompletor(completors));
 
     String line;
     final String HISTORYFILE = ".hivehistory";
-    String historyFile = System.getProperty("user.home") + File.separator
-        + HISTORYFILE;
+    String historyFile = System.getProperty("user.home") + File.separator + HISTORYFILE;
     reader.setHistory(new History(new File(historyFile)));
     int ret = 0;
 

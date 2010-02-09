@@ -28,10 +28,10 @@ public interface SettableFloatObjectInspector extends FloatObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, float value);
+  Object set(Object o, float value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(float value);
+  Object create(float value);
 }

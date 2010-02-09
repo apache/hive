@@ -18,13 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "hex", value = "_FUNC_(n or str) - Convert the argument to hexadecimal ", extended = "If the argument is a string, returns two hex digits for each "
+/**
+ * UDFHex.
+ *
+ */
+@Description(name = "hex",
+    value = "_FUNC_(n or str) - Convert the argument to hexadecimal ",
+    extended = "If the argument is a string, returns two hex digits for each "
     + "character in the string.\n"
     + "If the argument is a number, returns the hexadecimal representation.\n"
     + "Example:\n"
@@ -34,7 +40,7 @@ import org.apache.hadoop.io.Text;
     + "  '46616365626F6F6B'")
 public class UDFHex extends UDF {
   private final Text result = new Text();
-  byte[] value = new byte[16];
+  private byte[] value = new byte[16];
 
   /**
    * Convert num to hex.

@@ -50,8 +50,7 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector)
-      throws HiveException {
+  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
 
     leftInspector = leftEvaluator.initialize(rowInspector);
     if (desc.getIsList()) {
@@ -72,7 +71,7 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
     return resultObjectInspector;
   }
 
-  List<Object> cachedList = new ArrayList<Object>();
+  private List<Object> cachedList = new ArrayList<Object>();
 
   @Override
   public Object evaluate(Object row) throws HiveException {

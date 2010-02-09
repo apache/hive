@@ -36,6 +36,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * TestStandardObjectInspectors.
+ *
+ */
 public class TestStandardObjectInspectors extends TestCase {
 
   void doTestStandardPrimitiveObjectInspector(Class<?> writableClass,
@@ -43,10 +47,10 @@ public class TestStandardObjectInspectors extends TestCase {
     try {
       PrimitiveObjectInspector oi1 = PrimitiveObjectInspectorFactory
           .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
+          .getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
       PrimitiveObjectInspector oi2 = PrimitiveObjectInspectorFactory
           .getPrimitiveWritableObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
+          .getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
       assertEquals(oi1, oi2);
       assertEquals(Category.PRIMITIVE, oi1.getCategory());
       assertEquals(writableClass, oi1.getPrimitiveWritableClass());
@@ -89,10 +93,10 @@ public class TestStandardObjectInspectors extends TestCase {
     try {
       PrimitiveObjectInspector oi1 = PrimitiveObjectInspectorFactory
           .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
+          .getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
       PrimitiveObjectInspector oi2 = PrimitiveObjectInspectorFactory
           .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
+          .getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
       assertEquals(oi1, oi2);
       assertEquals(Category.PRIMITIVE, oi1.getCategory());
       assertEquals(javaClass, oi1.getJavaPrimitiveClass());
@@ -195,12 +199,12 @@ public class TestStandardObjectInspectors extends TestCase {
     try {
       StandardMapObjectInspector moi1 = ObjectInspectorFactory
           .getStandardMapObjectInspector(
-              PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector);
       StandardMapObjectInspector moi2 = ObjectInspectorFactory
           .getStandardMapObjectInspector(
-              PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector);
       assertEquals(moi1, moi2);
 
       // metadata
@@ -217,10 +221,10 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(-1, moi1.getMapSize(null));
       assertEquals("map<"
           + PrimitiveObjectInspectorFactory.javaStringObjectInspector
-              .getTypeName()
+          .getTypeName()
           + ","
           + PrimitiveObjectInspectorFactory.javaIntObjectInspector
-              .getTypeName() + ">", moi1.getTypeName());
+          .getTypeName() + ">", moi1.getTypeName());
 
       // HashMap
       HashMap<String, Integer> map = new HashMap<String, Integer>();
@@ -270,8 +274,8 @@ public class TestStandardObjectInspectors extends TestCase {
           .getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
       StandardStructObjectInspector soi2 = ObjectInspectorFactory
           .getStandardStructObjectInspector((ArrayList<String>) fieldNames
-              .clone(), (ArrayList<ObjectInspector>) fieldObjectInspectors
-              .clone());
+          .clone(), (ArrayList<ObjectInspector>) fieldObjectInspectors
+          .clone());
       assertEquals(soi1, soi2);
 
       // metadata

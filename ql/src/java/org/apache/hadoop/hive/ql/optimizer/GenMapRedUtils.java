@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -55,13 +56,13 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -69,18 +70,17 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
  * General utility common functions for the Processor to convert operator into
- * map-reduce tasks
+ * map-reduce tasks.
  */
-public class GenMapRedUtils {
+public final class GenMapRedUtils {
   private static Log LOG;
 
   static {
-    LOG = LogFactory
-        .getLog("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
+    LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
   }
 
   /**
-   * Initialize the current plan by adding it to root tasks
+   * Initialize the current plan by adding it to root tasks.
    * 
    * @param op
    *          the reduce sink operator encountered
@@ -128,7 +128,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * Initialize the current plan by adding it to root tasks
+   * Initialize the current plan by adding it to root tasks.
    * 
    * @param op
    *          the map join operator encountered
@@ -287,7 +287,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * Merge the current task with the task for the current reducer
+   * Merge the current task with the task for the current reducer.
    * 
    * @param op
    *          operator being processed
@@ -388,7 +388,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * Split the current plan by creating a temporary destination
+   * Split the current plan by creating a temporary destination.
    * 
    * @param op
    *          the reduce sink operator encountered
@@ -420,7 +420,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * set the current task in the mapredWork
+   * set the current task in the mapredWork.
    * 
    * @param alias_id
    *          current alias
@@ -497,7 +497,7 @@ public class GenMapRedUtils {
 
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
-      Path paths[];
+      Path[] paths;
       sampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
 
       if (sampleDescr != null) {
@@ -567,9 +567,9 @@ public class GenMapRedUtils {
       if (tblDir == null) {
         localPlan.getAliasToFetchWork()
             .put(
-                alias_id,
-                new FetchWork(FetchWork.convertPathToStringArray(partDir),
-                    partDesc));
+            alias_id,
+            new FetchWork(FetchWork.convertPathToStringArray(partDir),
+            partDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir.toString(), tblDesc));
@@ -579,7 +579,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * set the current task in the mapredWork
+   * set the current task in the mapredWork.
    * 
    * @param alias
    *          current alias
@@ -621,7 +621,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * set key and value descriptor
+   * set key and value descriptor.
    * 
    * @param plan
    *          current plan
@@ -655,7 +655,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * create a new plan and return
+   * create a new plan and return.
    * 
    * @return the new plan
    */
@@ -671,7 +671,7 @@ public class GenMapRedUtils {
   }
 
   /**
-   * insert in the map for the operator to row resolver
+   * insert in the map for the operator to row resolver.
    * 
    * @param op
    *          operator created
@@ -747,7 +747,8 @@ public class GenMapRedUtils {
       }
     }
 
-    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends Serializable>> parentOpList =
+        new ArrayList<Operator<? extends Serializable>>();
     parentOpList.add(parent);
     fs_op.setParentOperators(parentOpList);
 
@@ -815,7 +816,7 @@ public class GenMapRedUtils {
     opProcCtx.setCurrTask(childTask);
   }
 
-  static public void mergeMapJoinUnion(UnionOperator union,
+  public static void mergeMapJoinUnion(UnionOperator union,
       GenMRProcContext ctx, int pos) throws SemanticException {
     ParseContext parseCtx = ctx.getParseCtx();
     UnionProcContext uCtx = parseCtx.getUCtx();
@@ -866,7 +867,7 @@ public class GenMapRedUtils {
           }
           notDone = false;
         }
-      } catch (java.util.ConcurrentModificationException e) {
+      } catch (ConcurrentModificationException e) {
       }
     } else {
       setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), uPlan, false, ctx);
@@ -879,5 +880,9 @@ public class GenMapRedUtils {
 
     ctx.getMapCurrCtx().put(union,
         new GenMapRedCtx(ctx.getCurrTask(), null, null));
+  }
+
+  private GenMapRedUtils() {
+    // prevent instantiation
   }
 }

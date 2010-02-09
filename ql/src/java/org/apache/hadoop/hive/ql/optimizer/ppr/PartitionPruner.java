@@ -122,7 +122,7 @@ public class PartitionPruner implements Transform {
     // It cannot contain a non-deterministic function
     if ((expr instanceof ExprNodeGenericFuncDesc)
         && !FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) expr)
-            .getGenericUDF())) {
+        .getGenericUDF())) {
       return false;
     }
 
@@ -157,8 +157,7 @@ public class PartitionPruner implements Transform {
    */
   public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias,
-      Map<String, PrunedPartitionList> prunedPartitionsMap)
-      throws HiveException {
+      Map<String, PrunedPartitionList> prunedPartitionsMap) throws HiveException {
     LOG.trace("Started pruning partiton");
     LOG.trace("tabname = " + tab.getName());
     LOG.trace("prune Expression = " + prunerExpr);
@@ -215,7 +214,7 @@ public class PartitionPruner implements Transform {
             if (!hasColumnExpr(prunerExpr)) {
               throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE
                   .getMsg("for Alias \"" + alias + "\" Table \""
-                      + tab.getName() + "\""));
+                  + tab.getName() + "\""));
             }
           }
 

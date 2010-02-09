@@ -35,7 +35,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.WritableUtils;
 
-public class LazyBinaryUtils {
+/**
+ * LazyBinaryUtils.
+ *
+ */
+public final class LazyBinaryUtils {
 
   /**
    * Convert the byte array to an int starting from the given offset. Refer to
@@ -189,7 +193,7 @@ public class LazyBinaryUtils {
   }
 
   /**
-   * A zero-compressed encoded long
+   * A zero-compressed encoded long.
    */
   public static class VLong {
     public VLong() {
@@ -228,7 +232,7 @@ public class LazyBinaryUtils {
   }
 
   /**
-   * A zero-compressed encoded integer
+   * A zero-compressed encoded integer.
    */
   public static class VInt {
     public VInt() {
@@ -331,7 +335,7 @@ public class LazyBinaryUtils {
       case PRIMITIVE: {
         result = PrimitiveObjectInspectorFactory
             .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo)
-                .getPrimitiveCategory());
+            .getPrimitiveCategory());
         break;
       }
       case LIST: {
@@ -349,7 +353,7 @@ public class LazyBinaryUtils {
             .getMapValueTypeInfo());
         result = LazyBinaryObjectInspectorFactory
             .getLazyBinaryMapObjectInspector(keyObjectInspector,
-                valueObjectInspector);
+            valueObjectInspector);
         break;
       }
       case STRUCT: {
@@ -362,11 +366,11 @@ public class LazyBinaryUtils {
         for (int i = 0; i < fieldTypeInfos.size(); i++) {
           fieldObjectInspectors
               .add(getLazyBinaryObjectInspectorFromTypeInfo(fieldTypeInfos
-                  .get(i)));
+              .get(i)));
         }
         result = LazyBinaryObjectInspectorFactory
             .getLazyBinaryStructObjectInspector(fieldNames,
-                fieldObjectInspectors);
+            fieldObjectInspectors);
         break;
       }
       default: {
@@ -376,5 +380,9 @@ public class LazyBinaryUtils {
       cachedLazyBinaryObjectInspector.put(typeInfo, result);
     }
     return result;
+  }
+
+  private LazyBinaryUtils() {
+    // prevent instantiation
   }
 }

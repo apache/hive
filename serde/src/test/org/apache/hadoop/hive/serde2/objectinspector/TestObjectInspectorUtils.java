@@ -28,13 +28,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;
 
+/**
+ * TestObjectInspectorUtils.
+ *
+ */
 public class TestObjectInspectorUtils extends TestCase {
 
   public void testObjectInspectorUtils() throws Throwable {
     try {
       ObjectInspector oi1 = ObjectInspectorFactory
           .getReflectionObjectInspector(Complex.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.THRIFT);
+          ObjectInspectorFactory.ObjectInspectorOptions.THRIFT);
 
       // metadata
       assertEquals(Category.STRUCT, oi1.getCategory());
@@ -54,9 +58,9 @@ public class TestObjectInspectorUtils extends TestCase {
       Complex cc = new Complex();
       cc.aint = 1;
       cc.aString = "test";
-      List<Integer> c2 = Arrays.asList(new Integer[] { 1, 2, 3 });
+      List<Integer> c2 = Arrays.asList(new Integer[] {1, 2, 3});
       cc.lint = c2;
-      List<String> c3 = Arrays.asList(new String[] { "one", "two" });
+      List<String> c3 = Arrays.asList(new String[] {"one", "two"});
       cc.lString = c3;
       List<IntString> c4 = new ArrayList<IntString>();
       cc.lintString = c4;
@@ -83,7 +87,7 @@ public class TestObjectInspectorUtils extends TestCase {
           fields.get(1).getFieldObjectInspector());
       assertEquals(
           ObjectInspectorFactory
-              .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector),
+          .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector),
           fields.get(2).getFieldObjectInspector());
       assertEquals(
           ObjectInspectorFactory
@@ -91,9 +95,9 @@ public class TestObjectInspectorUtils extends TestCase {
           fields.get(3).getFieldObjectInspector());
       assertEquals(ObjectInspectorUtils
           .getStandardObjectInspector(ObjectInspectorFactory
-              .getStandardListObjectInspector(ObjectInspectorFactory
-                  .getReflectionObjectInspector(IntString.class,
-                      ObjectInspectorFactory.ObjectInspectorOptions.THRIFT))),
+          .getStandardListObjectInspector(ObjectInspectorFactory
+          .getReflectionObjectInspector(IntString.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.THRIFT))),
           fields.get(4).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector,

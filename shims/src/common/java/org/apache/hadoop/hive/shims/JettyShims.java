@@ -26,12 +26,19 @@ import java.io.IOException;
  */
 public interface JettyShims {
 
-  public Server startServer(String listen, int port) throws IOException;
+  Server startServer(String listen, int port) throws IOException;
 
-  public interface Server {
-    public void addWar(String war, String mount);
-    public void start() throws Exception;
-    public void join() throws java.lang.InterruptedException;
-    public void stop() throws Exception;
+  /**
+   * Server.
+   *
+   */
+  interface Server {
+    void addWar(String war, String mount);
+
+    void start() throws Exception;
+
+    void join() throws InterruptedException;
+
+    void stop() throws Exception;
   }
 }

@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * SelectDesc.
+ *
+ */
 @Explain(displayName = "Select Operator")
 public class SelectDesc implements Serializable {
   private static final long serialVersionUID = 1L;

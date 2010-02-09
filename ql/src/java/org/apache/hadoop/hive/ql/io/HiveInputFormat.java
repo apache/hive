@@ -142,7 +142,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } catch (Exception e) {
         throw new IOException(
             "Cannot create an instance of InputSplit class = "
-                + inputSplitClassName + ":" + e.getMessage());
+            + inputSplitClassName + ":" + e.getMessage());
       }
       inputSplit.readFields(in);
       inputFormatClassName = in.readUTF();

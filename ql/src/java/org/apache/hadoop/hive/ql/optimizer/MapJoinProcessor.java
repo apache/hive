@@ -51,11 +51,11 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -71,7 +71,7 @@ public class MapJoinProcessor implements Transform {
   private ParseContext pGraphContext;
 
   /**
-   * empty constructor
+   * empty constructor.
    */
   public MapJoinProcessor() {
     pGraphContext = null;
@@ -192,7 +192,7 @@ public class MapJoinProcessor implements Transform {
             outputColumnNames.add(outputCol);
             ExprNodeDesc colDesc = new ExprNodeColumnDesc(valueInfo.getType(),
                 valueInfo.getInternalName(), valueInfo.getTabAlias(), valueInfo
-                    .getIsPartitionCol());
+                .getIsPartitionCol());
             values.add(colDesc);
             outputRS.put(key, field, new ColumnInfo(outputCol, valueInfo
                 .getType(), valueInfo.getTabAlias(), valueInfo
@@ -240,9 +240,9 @@ public class MapJoinProcessor implements Transform {
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) putOpInsertMap(
         OperatorFactory.getAndMakeChild(new MapJoinDesc(keyExprMap,
-            keyTableDesc, valueExprMap, valueTableDescs, outputColumnNames,
-            mapJoinPos, joinCondns), new RowSchema(outputRS.getColumnInfos()),
-            newPar), outputRS);
+        keyTableDesc, valueExprMap, valueTableDescs, outputColumnNames,
+        mapJoinPos, joinCondns), new RowSchema(outputRS.getColumnInfos()),
+        newPar), outputRS);
 
     mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
     mapJoinOp.setColumnExprMap(colExprMap);
@@ -297,7 +297,7 @@ public class MapJoinProcessor implements Transform {
 
     SelectOperator sel = (SelectOperator) putOpInsertMap(
         OperatorFactory.getAndMakeChild(select, new RowSchema(inputRR
-            .getColumnInfos()), input), inputRR);
+        .getColumnInfos()), input), inputRR);
 
     sel.setColumnExprMap(colExprMap);
 
@@ -420,10 +420,14 @@ public class MapJoinProcessor implements Transform {
     return pGraphContext;
   }
 
+  /**
+   * CurrentMapJoin.
+   *
+   */
   public static class CurrentMapJoin implements NodeProcessor {
 
     /**
-     * Store the current mapjoin in the context
+     * Store the current mapjoin in the context.
      */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -436,10 +440,14 @@ public class MapJoinProcessor implements Transform {
     }
   }
 
+  /**
+   * MapJoinFS.
+   *
+   */
   public static class MapJoinFS implements NodeProcessor {
 
     /**
-     * Store the current mapjoin in a list of mapjoins followed by a filesink
+     * Store the current mapjoin in a list of mapjoins followed by a filesink.
      */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -466,10 +474,14 @@ public class MapJoinProcessor implements Transform {
     }
   }
 
+  /**
+   * MapJoinDefault.
+   *
+   */
   public static class MapJoinDefault implements NodeProcessor {
 
     /**
-     * Store the mapjoin in a rejected list
+     * Store the mapjoin in a rejected list.
      */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -487,10 +499,14 @@ public class MapJoinProcessor implements Transform {
     }
   }
 
+  /**
+   * Default.
+   *
+   */
   public static class Default implements NodeProcessor {
 
     /**
-     * nothing to do
+     * Nothing to do.
      */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -515,10 +531,14 @@ public class MapJoinProcessor implements Transform {
     return new CurrentMapJoin();
   }
 
+  /**
+   * MapJoinWalkerCtx.
+   *
+   */
   public static class MapJoinWalkerCtx implements NodeProcessorCtx {
-    List<MapJoinOperator> listMapJoinsNoRed;
-    List<MapJoinOperator> listRejectedMapJoins;
-    MapJoinOperator currMapJoinOp;
+    private List<MapJoinOperator> listMapJoinsNoRed;
+    private List<MapJoinOperator> listRejectedMapJoins;
+    private MapJoinOperator currMapJoinOp;
 
     /**
      * @param listMapJoinsNoRed

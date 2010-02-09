@@ -43,13 +43,17 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.Counters.Group;
 
+/**
+ * HiveHistory.
+ *
+ */
 public class HiveHistory {
 
   PrintWriter histStream; // History File stream
 
   String histFileName; // History file name
 
-  static final private Log LOG = LogFactory.getLog("hive.ql.exec.HiveHistory");
+  private static final Log LOG = LogFactory.getLog("hive.ql.exec.HiveHistory");
 
   private LogHelper console;
 
@@ -63,12 +67,40 @@ public class HiveHistory {
 
   private static final String DELIMITER = " ";
 
+  /**
+   * RecordTypes.
+   *
+   */
   public static enum RecordTypes {
-    QueryStart, QueryEnd, TaskStart, TaskEnd, TaskProgress, SessionStart, SessionEnd, Counters
+    QueryStart,
+    QueryEnd,
+    TaskStart,
+    TaskEnd,
+    TaskProgress,
+    SessionStart,
+    SessionEnd,
+    Counters
   };
 
+  /**
+   * Keys.
+   *
+   */
   public static enum Keys {
-    SESSION_ID, QUERY_ID, TASK_ID, QUERY_RET_CODE, QUERY_NUM_TASKS, QUERY_STRING, TIME, TASK_RET_CODE, TASK_NAME, TASK_HADOOP_ID, TASK_HADOOP_PROGRESS, TASK_COUNTERS, TASK_NUM_REDUCERS, ROWS_INSERTED
+    SESSION_ID,
+    QUERY_ID,
+    TASK_ID,
+    QUERY_RET_CODE,
+    QUERY_NUM_TASKS,
+    QUERY_STRING,
+    TIME,
+    TASK_RET_CODE,
+    TASK_NAME,
+    TASK_HADOOP_ID,
+    TASK_HADOOP_PROGRESS,
+    TASK_COUNTERS,
+    TASK_NUM_REDUCERS,
+    ROWS_INSERTED
   };
 
   private static final String KEY = "(\\w+)";
@@ -78,30 +110,27 @@ public class HiveHistory {
   private static final Pattern pattern = Pattern.compile(KEY + "=" + "\""
       + VALUE + "\"");
 
-  private static final Pattern rowCountPattern = Pattern
-      .compile(ROW_COUNT_PATTERN);
+  private static final Pattern rowCountPattern = Pattern.compile(ROW_COUNT_PATTERN);
 
   // temp buffer for parsed dataa
   private static Map<String, String> parseBuffer = new HashMap<String, String>();
 
   /**
-   * Listner interface Parser will call handle function for each record type
+   * Listner interface Parser will call handle function for each record type.
    */
   public static interface Listener {
 
-    public void handle(RecordTypes recType, Map<String, String> values)
-        throws IOException;
+    void handle(RecordTypes recType, Map<String, String> values) throws IOException;
   }
 
   /**
-   * Parses history file and calls call back functions
+   * Parses history file and calls call back functions.
    * 
    * @param path
    * @param l
    * @throws IOException
    */
-  public static void parseHiveHistory(String path, Listener l)
-      throws IOException {
+  public static void parseHiveHistory(String path, Listener l) throws IOException {
     FileInputStream fi = new FileInputStream(path);
     BufferedReader reader = new BufferedReader(new InputStreamReader(fi));
     try {
@@ -151,19 +180,35 @@ public class HiveHistory {
     parseBuffer.clear();
   }
 
+  /**
+   * Info.
+   *
+   */
   public static class Info {
 
   }
 
+  /**
+   * SessionInfo.
+   *
+   */
   public static class SessionInfo extends Info {
     public String sessionId;
   };
 
+  /**
+   * QueryInfo.
+   *
+   */
   public static class QueryInfo extends Info {
     public Map<String, String> hm = new HashMap<String, String>();
     public Map<String, Long> rowCountMap = new HashMap<String, Long>();
   };
 
+  /**
+   * TaskInfo.
+   *
+   */
   public static class TaskInfo extends Info {
     public Map<String, String> hm = new HashMap<String, String>();
 
@@ -218,7 +263,7 @@ public class HiveHistory {
   }
 
   /**
-   * Write the a history record to history file
+   * Write the a history record to history file.
    * 
    * @param rt
    * @param keyValMap
@@ -249,7 +294,7 @@ public class HiveHistory {
   }
 
   /**
-   * Called at the start of job Driver.run()
+   * Called at the start of job Driver.run().
    */
   public void startQuery(String cmd, String id) {
     SessionState ss = SessionState.get();
@@ -268,7 +313,7 @@ public class HiveHistory {
   }
 
   /**
-   * Used to set job status and other attributes of a job
+   * Used to set job status and other attributes of a job.
    * 
    * @param queryId
    * @param propName
@@ -433,7 +478,7 @@ public class HiveHistory {
   }
 
   /**
-   * write out counters
+   * write out counters.
    */
   static Map<String, String> ctrmap = null;
 
@@ -446,7 +491,7 @@ public class HiveHistory {
   }
 
   /**
-   * Set the table to id map
+   * Set the table to id map.
    * 
    * @param map
    */
@@ -455,7 +500,7 @@ public class HiveHistory {
   }
 
   /**
-   * Returns table name for the counter name
+   * Returns table name for the counter name.
    * 
    * @param name
    * @return tableName

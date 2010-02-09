@@ -23,7 +23,11 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class extracturl {
+/**
+ * extracturl.
+ *
+ */
+public final class extracturl {
 
   protected static final Pattern pattern = Pattern.compile(
       "<a href=\"http://([\\w\\d]+\\.html)\">link</a>",
@@ -46,5 +50,9 @@ public class extracturl {
       e.printStackTrace();
       System.exit(1);
     }
+  }
+
+  private extracturl() {
+    // prevent instantiation
   }
 }

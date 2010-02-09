@@ -28,6 +28,10 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
+/**
+ * PrintOpTreeProcessor.
+ *
+ */
 public class PrintOpTreeProcessor implements NodeProcessor {
 
   private final PrintStream out;

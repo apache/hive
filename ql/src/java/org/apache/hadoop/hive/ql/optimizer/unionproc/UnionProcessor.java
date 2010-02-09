@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class UnionProcessor implements Transform {
 
   /**
-   * empty constructor
+   * empty constructor.
    */
   public UnionProcessor() {
   }

@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
- * Processor for the rule - table scan followed by reduce sink
+ * Processor for the rule - table scan followed by reduce sink.
  */
 public class GenMRRedSink1 implements NodeProcessor {
 
@@ -42,7 +42,7 @@ public class GenMRRedSink1 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered
+   * Reduce Scan encountered.
    * 
    * @param nd
    *          the reduce sink operator encountered
@@ -77,13 +77,10 @@ public class GenMRRedSink1 implements NodeProcessor {
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
       }
-    }
-    // This will happen in case of joins. The current plan can be thrown away
-    // after being merged with the
-    // original plan
-    else {
-      GenMapRedUtils
-          .joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
+    } else {
+      // This will happen in case of joins. The current plan can be thrown away
+      // after being merged with the original plan
+      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }

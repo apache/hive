@@ -25,18 +25,21 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * RecordReader.
+ *
+ */
 public interface RecordReader {
 
-  public void initialize(InputStream in, Configuration conf, Properties tbl)
-      throws IOException;
+  void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException;
 
-  public Writable createRow() throws IOException;
+  Writable createRow() throws IOException;
 
   /**
    * Returns the number of bytes that we consumed.
    * -1 means end of stream.
    */
-  public int next(Writable row) throws IOException;
+  int next(Writable row) throws IOException;
 
-  public void close() throws IOException;
+  void close() throws IOException;
 }

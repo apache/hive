@@ -21,8 +21,8 @@ import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -45,14 +45,14 @@ import org.apache.hadoop.util.StringUtils;
  * GenericUDAFStd GenericUDAFStdSample
  * 
  */
-@Description(name = "variance,var_pop", value = "_FUNC_(x) - Returns the variance of a set of numbers")
+@Description(name = "variance,var_pop",
+    value = "_FUNC_(x) - Returns the variance of a set of numbers")
 public class GenericUDAFVariance implements GenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFVariance.class.getName());
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
@@ -61,7 +61,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
@@ -76,7 +76,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
   }
 
@@ -96,26 +96,25 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
   public static class GenericUDAFVarianceEvaluator extends GenericUDAFEvaluator {
 
     // For PARTIAL1 and COMPLETE
-    PrimitiveObjectInspector inputOI;
+    private PrimitiveObjectInspector inputOI;
 
     // For PARTIAL2 and FINAL
-    StructObjectInspector soi;
-    StructField countField;
-    StructField sumField;
-    StructField varianceField;
-    LongObjectInspector countFieldOI;
-    DoubleObjectInspector sumFieldOI;
-    DoubleObjectInspector varianceFieldOI;
+    private StructObjectInspector soi;
+    private StructField countField;
+    private StructField sumField;
+    private StructField varianceField;
+    private LongObjectInspector countFieldOI;
+    private DoubleObjectInspector sumFieldOI;
+    private DoubleObjectInspector varianceFieldOI;
 
     // For PARTIAL1 and PARTIAL2
-    Object[] partialResult;
+    private Object[] partialResult;
 
     // For FINAL and COMPLETE
-    DoubleWritable result;
+    private DoubleWritable result;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-        throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
 
@@ -161,7 +160,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
             foi);
 
       } else {
-        result = new DoubleWritable(0);
+        setResult(new DoubleWritable(0));
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
       }
     }
@@ -187,7 +186,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
       myagg.variance = 0;
     }
 
-    boolean warned = false;
+    private boolean warned = false;
 
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters)
@@ -200,7 +199,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
           double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
 
           if (myagg.count != 0) { // if count==0 => the variance is going to be
-                                  // 0
+            // 0
             // after 1 iteration
             double alpha = (myagg.sum + v) / (myagg.count + 1) - myagg.sum
                 / myagg.count;
@@ -234,8 +233,7 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial)
-        throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         StdAgg myagg = (StdAgg) agg;
 
@@ -280,12 +278,20 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
         return null;
       } else {
         if (myagg.count > 1) {
-          result.set(myagg.variance / (myagg.count));
+          getResult().set(myagg.variance / (myagg.count));
         } else { // for one element the variance is always 0
-          result.set(0);
+          getResult().set(0);
         }
-        return result;
+        return getResult();
       }
+    }
+
+    public void setResult(DoubleWritable result) {
+      this.result = result;
+    }
+
+    public DoubleWritable getResult() {
+      return result;
     }
   }
 

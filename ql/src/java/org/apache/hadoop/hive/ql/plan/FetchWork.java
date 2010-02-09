@@ -24,6 +24,10 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * FetchWork.
+ *
+ */
 @Explain(displayName = "Fetch Operator")
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -37,7 +41,7 @@ public class FetchWork implements Serializable {
   private int limit;
 
   /**
-   * Serialization Null Format for the serde used to fetch data
+   * Serialization Null Format for the serde used to fetch data.
    */
   private String serializationNullFormat = "NULL";
 

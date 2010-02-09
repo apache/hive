@@ -33,15 +33,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 
-public class ObjectInspectorConverters {
+/**
+ * ObjectInspectorConverters.
+ *
+ */
+public final class ObjectInspectorConverters {
 
   /**
    * A converter which will convert objects with one ObjectInspector to another.
    */
   public static interface Converter {
-    public Object convert(Object input);
+    Object convert(Object input);
   }
 
+  /**
+   * IdentityConverter.
+   *
+   */
   public static class IdentityConverter implements Converter {
     public Object convert(Object input) {
       return input;
@@ -104,18 +112,15 @@ public class ObjectInspectorConverters {
             + inputOI.getTypeName() + " to " + outputOI.getTypeName()
             + " not supported yet.");
       }
-    case STRUCT: {
+    case STRUCT:
       return new StructConverter((StructObjectInspector) inputOI,
           (SettableStructObjectInspector) outputOI);
-    }
-    case LIST: {
+    case LIST:
       return new ListConverter((ListObjectInspector) inputOI,
           (SettableListObjectInspector) outputOI);
-    }
-    case MAP: {
+    case MAP:
       return new MapConverter((MapObjectInspector) inputOI,
           (SettableMapObjectInspector) outputOI);
-    }
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -299,6 +304,10 @@ public class ObjectInspectorConverters {
       return output;
     }
 
+  }
+
+  private ObjectInspectorConverters() {
+    // prevent instantiation
   }
 
 }

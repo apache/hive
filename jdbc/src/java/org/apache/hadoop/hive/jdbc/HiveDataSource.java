@@ -24,6 +24,10 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+/**
+ * HiveDataSource.
+ *
+ */
 public class HiveDataSource implements DataSource {
 
   /**

@@ -37,6 +37,10 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class ReflectionStructObjectInspector extends
     SettableStructObjectInspector {
 
+  /**
+   * MyField.
+   *
+   */
   public static class MyField implements StructField {
     protected Field field;
     protected ObjectInspector fieldObjectInspector;

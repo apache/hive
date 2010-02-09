@@ -28,13 +28,13 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -48,6 +48,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 
+/**
+ * TestOperators.
+ *
+ */
 public class TestOperators extends TestCase {
 
   // this is our row to test expressions on
@@ -106,7 +110,7 @@ public class TestOperators extends TestCase {
 
       // runtime initialization
       op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] { r[0].oi });
+          new ObjectInspector[] {r[0].oi});
 
       for (InspectableObject oner : r) {
         op.process(oner.o, 0);
@@ -165,7 +169,7 @@ public class TestOperators extends TestCase {
       // Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
 
       op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] { r[0].oi });
+          new ObjectInspector[] {r[0].oi});
 
       // evaluate on row
       for (int i = 0; i < 5; i++) {
@@ -220,7 +224,7 @@ public class TestOperators extends TestCase {
           cd, sop);
 
       op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] { r[0].oi });
+          new ObjectInspector[] {r[0].oi});
 
       // evaluate on row
       for (int i = 0; i < 5; i++) {
@@ -265,14 +269,16 @@ public class TestOperators extends TestCase {
       ArrayList<String> aliases = new ArrayList<String>();
       aliases.add("a");
       aliases.add("b");
-      LinkedHashMap<String, ArrayList<String>> pathToAliases = new LinkedHashMap<String, ArrayList<String>>();
+      LinkedHashMap<String, ArrayList<String>> pathToAliases =
+        new LinkedHashMap<String, ArrayList<String>>();
       pathToAliases.put("/testDir", aliases);
 
       // initialize pathToTableInfo
       // Default: treat the table as a single column "col"
       TableDesc td = Utilities.defaultTd;
       PartitionDesc pd = new PartitionDesc(td, null);
-      LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo = new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc>();
+      LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc> pathToPartitionInfo =
+        new LinkedHashMap<String, org.apache.hadoop.hive.ql.plan.PartitionDesc>();
       pathToPartitionInfo.put("/testDir", pd);
 
       // initialize aliasToWork

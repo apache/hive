@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Processor for the rule - no specific rule fired
+ * Processor for the rule - no specific rule fired.
  */
 public class GenMROperator implements NodeProcessor {
 
@@ -38,7 +38,7 @@ public class GenMROperator implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered
+   * Reduce Scan encountered.
    * 
    * @param nd
    *          the reduce sink operator encountered
@@ -54,7 +54,7 @@ public class GenMROperator implements NodeProcessor {
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
     mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
         mapredCtx.getCurrTask(), mapredCtx.getCurrTopOp(), mapredCtx
-            .getCurrAliasId()));
+        .getCurrAliasId()));
     return null;
   }
 }

@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * ForwardDesc.
+ *
+ */
 @Explain(displayName = "Forward")
 public class ForwardDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  @SuppressWarnings("nls")
   public ForwardDesc() {
-    // throw new
-    // RuntimeException("This class does not need to be instantiated");
   }
 }

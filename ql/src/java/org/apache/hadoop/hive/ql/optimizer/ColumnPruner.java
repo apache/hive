@@ -53,7 +53,7 @@ public class ColumnPruner implements Transform {
   private HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
 
   /**
-   * empty constructor
+   * empty constructor.
    */
   public ColumnPruner() {
     pGraphContext = null;
@@ -62,7 +62,7 @@ public class ColumnPruner implements Transform {
   /**
    * Transform the query tree. For each table under consideration, check if all
    * columns are needed. If not, only select the operators needed at the
-   * beginning and proceed
+   * beginning and proceed.
    * 
    * @param pactx
    *          the current parse context
@@ -108,7 +108,7 @@ public class ColumnPruner implements Transform {
 
   /**
    * Walks the op tree in post order fashion (skips selects with file sink or
-   * script op children)
+   * script op children).
    */
   public static class ColumnPrunerWalker extends DefaultGraphWalker {
 
@@ -117,7 +117,7 @@ public class ColumnPruner implements Transform {
     }
 
     /**
-     * Walk the given operator
+     * Walk the given operator.
      */
     @Override
     public void walk(Node nd) throws SemanticException {

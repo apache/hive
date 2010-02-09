@@ -22,6 +22,10 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+/**
+ * SetProcessor.
+ *
+ */
 public class SetProcessor implements CommandProcessor {
 
   private static String prefix = "set: ";

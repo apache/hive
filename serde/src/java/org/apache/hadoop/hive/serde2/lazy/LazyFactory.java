@@ -44,7 +44,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
 
-public class LazyFactory {
+/**
+ * LazyFactory.
+ *
+ */
+public final class LazyFactory {
 
   /**
    * Create a lazy primitive class given the type name.
@@ -53,33 +57,24 @@ public class LazyFactory {
       PrimitiveObjectInspector oi) {
     PrimitiveCategory p = oi.getPrimitiveCategory();
     switch (p) {
-    case BOOLEAN: {
+    case BOOLEAN:
       return new LazyBoolean((LazyBooleanObjectInspector) oi);
-    }
-    case BYTE: {
+    case BYTE:
       return new LazyByte((LazyByteObjectInspector) oi);
-    }
-    case SHORT: {
+    case SHORT:
       return new LazyShort((LazyShortObjectInspector) oi);
-    }
-    case INT: {
+    case INT:
       return new LazyInteger((LazyIntObjectInspector) oi);
-    }
-    case LONG: {
+    case LONG:
       return new LazyLong((LazyLongObjectInspector) oi);
-    }
-    case FLOAT: {
+    case FLOAT:
       return new LazyFloat((LazyFloatObjectInspector) oi);
-    }
-    case DOUBLE: {
+    case DOUBLE:
       return new LazyDouble((LazyDoubleObjectInspector) oi);
-    }
-    case STRING: {
+    case STRING:
       return new LazyString((LazyStringObjectInspector) oi);
-    }
-    default: {
+    default:
       throw new RuntimeException("Internal error: no LazyObject for " + p);
-    }
     }
   }
 
@@ -130,17 +125,17 @@ public class LazyFactory {
     case MAP:
       return LazyObjectInspectorFactory.getLazySimpleMapObjectInspector(
           createLazyObjectInspector(((MapTypeInfo) typeInfo)
-              .getMapKeyTypeInfo(), separator, separatorIndex + 2,
-              nullSequence, escaped, escapeChar), createLazyObjectInspector(
-              ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separator,
-              separatorIndex + 2, nullSequence, escaped, escapeChar),
+          .getMapKeyTypeInfo(), separator, separatorIndex + 2,
+          nullSequence, escaped, escapeChar), createLazyObjectInspector(
+          ((MapTypeInfo) typeInfo).getMapValueTypeInfo(), separator,
+          separatorIndex + 2, nullSequence, escaped, escapeChar),
           separator[separatorIndex], separator[separatorIndex + 1],
           nullSequence, escaped, escapeChar);
     case LIST:
       return LazyObjectInspectorFactory.getLazySimpleListObjectInspector(
           createLazyObjectInspector(((ListTypeInfo) typeInfo)
-              .getListElementTypeInfo(), separator, separatorIndex + 1,
-              nullSequence, escaped, escapeChar), separator[separatorIndex],
+          .getListElementTypeInfo(), separator, separatorIndex + 1,
+          nullSequence, escaped, escapeChar), separator[separatorIndex],
           nullSequence, escaped, escapeChar);
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -202,10 +197,13 @@ public class LazyFactory {
     for (int i = 0; i < columnTypes.size(); i++) {
       columnObjectInspectors
           .add(LazyFactory.createLazyObjectInspector(columnTypes.get(i),
-              separators, 1, nullSequence, escaped, escapeChar));
+          separators, 1, nullSequence, escaped, escapeChar));
     }
     return ObjectInspectorFactory.getColumnarStructObjectInspector(columnNames,
         columnObjectInspectors, nullSequence);
   }
 
+  private LazyFactory() {
+    // prevent instantiation
+  }
 }

@@ -43,7 +43,7 @@ public class DefaultGraphWalker implements GraphWalker {
   private final Dispatcher dispatcher;
 
   /**
-   * Constructor
+   * Constructor.
    * 
    * @param disp
    *          dispatcher to call for each op encountered
@@ -68,7 +68,7 @@ public class DefaultGraphWalker implements GraphWalker {
   }
 
   /**
-   * Dispatch the current operator
+   * Dispatch the current operator.
    * 
    * @param nd
    *          node being walked
@@ -91,7 +91,7 @@ public class DefaultGraphWalker implements GraphWalker {
   }
 
   /**
-   * starting point for walking
+   * starting point for walking.
    * 
    * @throws SemanticException
    */
@@ -108,7 +108,7 @@ public class DefaultGraphWalker implements GraphWalker {
   }
 
   /**
-   * walk the current operator and its descendants
+   * walk the current operator and its descendants.
    * 
    * @param nd
    *          current operator in the graph

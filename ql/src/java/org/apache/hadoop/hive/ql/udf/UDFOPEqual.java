@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -37,10 +35,7 @@ import org.apache.hadoop.io.Text;
  */
 @Description(name = "=,==", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
 public class UDFOPEqual extends UDFBaseCompare {
-
-  private static Log LOG = LogFactory.getLog(UDFOPEqual.class.getName());
-
-  BooleanWritable resultCache;
+  private BooleanWritable resultCache;
 
   public UDFOPEqual() {
     resultCache = new BooleanWritable();

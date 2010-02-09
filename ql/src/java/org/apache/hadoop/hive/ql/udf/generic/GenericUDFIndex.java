@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -29,8 +29,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.IntWritable;
 
+/**
+ * GenericUDFIndex.
+ *
+ */
 @Description(name = "index", value = "_FUNC_(a, n) - Returns the n-th element of a ")
 public class GenericUDFIndex extends GenericUDF {
   private MapObjectInspector mapOI;
@@ -38,11 +41,9 @@ public class GenericUDFIndex extends GenericUDF {
   private ListObjectInspector listOI;
   private PrimitiveObjectInspector indexOI;
   private ObjectInspector returnOI;
-  private final IntWritable result = new IntWritable(-1);
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 2) {
       throw new UDFArgumentLengthException(
           "The function INDEX accepts exactly 2 arguments.");

@@ -22,8 +22,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -45,9 +43,6 @@ import org.apache.hadoop.util.ReflectionUtils;
  * 
  */
 public class GenericUDFBridge extends GenericUDF implements Serializable {
-
-  private static Log LOG = LogFactory.getLog(GenericUDFBridge.class.getName());
-
   /**
    * The name of the UDF.
    */
@@ -121,13 +116,12 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
    */
   transient UDF udf;
   /**
-   * The non-deferred real arguments for method invocation
+   * The non-deferred real arguments for method invocation.
    */
   transient Object[] realArguments;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     udf = (UDF) ReflectionUtils.newInstance(udfClass, null);
 
@@ -149,7 +143,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     // Get the return ObjectInspector.
     ObjectInspector returnOI = ObjectInspectorFactory
         .getReflectionObjectInspector(udfMethod.getGenericReturnType(),
-            ObjectInspectorOptions.JAVA);
+        ObjectInspectorOptions.JAVA);
 
     return returnOI;
   }

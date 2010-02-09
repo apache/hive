@@ -27,6 +27,11 @@ import org.apache.hadoop.hive.contrib.mr.Reducer;
  * Example Reducer (WordCount).
  */
 public final class WordCountReduce {
+
+  private WordCountReduce() {
+    // prevent instantiation
+  }
+
   public static void main(final String[] args) throws Exception {
     new GenericMR().reduce(System.in, System.out, new Reducer() {
       public void reduce(String key, Iterator<String[]> records, Output output)
@@ -38,7 +43,7 @@ public final class WordCountReduce {
           count += Integer.parseInt(records.next()[1]);
         }
 
-        output.collect(new String[] { key, String.valueOf(count) });
+        output.collect(new String[] {key, String.valueOf(count)});
       }
     });
   }

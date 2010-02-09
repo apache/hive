@@ -62,7 +62,7 @@ public class LazyBinaryArray extends
   int[] elementLength;
 
   /**
-   * Whether an element is initialized or not
+   * Whether an element is initialized or not.
    */
   boolean[] elementInited;
 

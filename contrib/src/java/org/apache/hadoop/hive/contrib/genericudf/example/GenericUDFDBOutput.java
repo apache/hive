@@ -24,8 +24,8 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -51,11 +51,15 @@ import org.apache.hadoop.io.IntWritable;
  * Use hive's ADD JAR feature to add your JDBC Driver to the distributed cache,
  * otherwise GenericUDFDBoutput will fail.
  */
-@Description(name = "dboutput", value = "_FUNC_(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver", extended = "argument 0 is the JDBC connection string\n"
+@Description(name = "dboutput",
+    value = "_FUNC_(jdbcstring,username,password,preparedstatement,[arguments])"
+    + " - sends data to a jdbc driver",
+    extended = "argument 0 is the JDBC connection string\n"
     + "argument 1 is the user name\n"
     + "argument 2 is the password\n"
     + "argument 3 is an SQL query to be used in the PreparedStatement\n"
-    + "argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object\n")
+    + "argument (4-n) The remaining arguments must be primitive and are "
+    + "passed to the PreparedStatement object\n")
 @UDFType(deterministic = false)
 public class GenericUDFDBOutput extends GenericUDF {
   private static Log LOG = LogFactory
@@ -90,8 +94,8 @@ public class GenericUDFDBOutput extends GenericUDF {
         if (!(poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.STRING)) {
           throw new UDFArgumentTypeException(i,
               "The argument of function  should be \""
-                  + Constants.STRING_TYPE_NAME + "\", but \""
-                  + arguments[i].getTypeName() + "\" is found");
+              + Constants.STRING_TYPE_NAME + "\", but \""
+              + arguments[i].getTypeName() + "\" is found");
         }
       }
     }
@@ -99,7 +103,7 @@ public class GenericUDFDBOutput extends GenericUDF {
       if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
         throw new UDFArgumentTypeException(i,
             "The argument of function should be primative" + ", but \""
-                + arguments[i].getTypeName() + "\" is found");
+            + arguments[i].getTypeName() + "\" is found");
       }
     }
 
@@ -131,7 +135,7 @@ public class GenericUDFDBOutput extends GenericUDF {
 
         PreparedStatement ps = connection
             .prepareStatement(((StringObjectInspector) argumentOI[3])
-                .getPrimitiveJavaObject(arguments[3].get()));
+            .getPrimitiveJavaObject(arguments[3].get()));
         for (int i = 4; i < arguments.length; ++i) {
           PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) argumentOI[i]);
           ps.setObject(i - 3, poi.getPrimitiveJavaObject(arguments[i].get()));

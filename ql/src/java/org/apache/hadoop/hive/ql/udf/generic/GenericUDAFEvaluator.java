@@ -37,25 +37,29 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 @UDFType(deterministic = true)
 public abstract class GenericUDAFEvaluator {
 
-  static public enum Mode {
+  /**
+   * Mode.
+   *
+   */
+  public static enum Mode {
     /**
      * PARTIAL1: from original data to partial aggregation data: iterate() and
-     * terminatePartial() will be called
+     * terminatePartial() will be called.
      */
     PARTIAL1,
-    /**
+        /**
      * PARTIAL2: from partial aggregation data to partial aggregation data:
-     * merge() and terminatePartial() will be called
+     * merge() and terminatePartial() will be called.
      */
     PARTIAL2,
-    /**
+        /**
      * FINAL: from partial aggregation to full aggregation: merge() and
-     * terminate() will be called
+     * terminate() will be called.
      */
     FINAL,
-    /**
+        /**
      * COMPLETE: from original data directly to full aggregation: iterate() and
-     * terminate() will be called
+     * terminate() will be called.
      */
     COMPLETE
   };
@@ -63,7 +67,7 @@ public abstract class GenericUDAFEvaluator {
   Mode mode;
 
   /**
-   * The constructor
+   * The constructor.
    */
   public GenericUDAFEvaluator() {
   }
@@ -89,8 +93,7 @@ public abstract class GenericUDAFEvaluator {
    *         execution time. 2. We call GenericUDAFResolver.getEvaluator at
    *         compilation time,
    */
-  public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-      throws HiveException {
+  public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
     // This function should be overriden in every sub class
     // And the sub class should call super.init(m, parameters) to get mode set.
     mode = m;
@@ -114,8 +117,7 @@ public abstract class GenericUDAFEvaluator {
   /**
    * Get a new aggregation object.
    */
-  public abstract AggregationBuffer getNewAggregationBuffer()
-      throws HiveException;
+  public abstract AggregationBuffer getNewAggregationBuffer() throws HiveException;
 
   /**
    * Reset the aggregation. This is useful if we want to reuse the same
@@ -132,8 +134,7 @@ public abstract class GenericUDAFEvaluator {
    * @param parameters
    *          The row, can be inspected by the OIs passed in init().
    */
-  public void aggregate(AggregationBuffer agg, Object[] parameters)
-      throws HiveException {
+  public void aggregate(AggregationBuffer agg, Object[] parameters) throws HiveException {
     if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
       iterate(agg, parameters);
     } else {
@@ -163,16 +164,14 @@ public abstract class GenericUDAFEvaluator {
    * @param parameters
    *          The objects of parameters.
    */
-  public abstract void iterate(AggregationBuffer agg, Object[] parameters)
-      throws HiveException;
+  public abstract void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException;
 
   /**
    * Get partial aggregation result.
    * 
    * @return partial aggregation result.
    */
-  public abstract Object terminatePartial(AggregationBuffer agg)
-      throws HiveException;
+  public abstract Object terminatePartial(AggregationBuffer agg) throws HiveException;
 
   /**
    * Merge with partial aggregation result. NOTE: null might be passed in case
@@ -181,8 +180,7 @@ public abstract class GenericUDAFEvaluator {
    * @param partial
    *          The partial aggregation result.
    */
-  public abstract void merge(AggregationBuffer agg, Object partial)
-      throws HiveException;
+  public abstract void merge(AggregationBuffer agg, Object partial) throws HiveException;
 
   /**
    * Get final aggregation result.

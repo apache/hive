@@ -25,6 +25,10 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+/**
+ * ExprNodeFieldDesc.
+ *
+ */
 public class ExprNodeFieldDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   ExprNodeDesc desc;

@@ -36,9 +36,10 @@ import org.apache.hadoop.io.Text;
  * internal state - so ObjectInspectors with the same construction parameters
  * should result in exactly the same ObjectInspector.
  */
-public class LazyObjectInspectorFactory {
+public final class LazyObjectInspectorFactory {
 
-  static HashMap<ArrayList<Object>, LazySimpleStructObjectInspector> cachedLazySimpleStructObjectInspector = new HashMap<ArrayList<Object>, LazySimpleStructObjectInspector>();
+  static HashMap<ArrayList<Object>, LazySimpleStructObjectInspector> cachedLazySimpleStructObjectInspector =
+      new HashMap<ArrayList<Object>, LazySimpleStructObjectInspector>();
 
   public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(
       List<String> structFieldNames,
@@ -111,4 +112,7 @@ public class LazyObjectInspectorFactory {
     return result;
   }
 
+  private LazyObjectInspectorFactory() {
+    // prevent instantiation
+  }
 }

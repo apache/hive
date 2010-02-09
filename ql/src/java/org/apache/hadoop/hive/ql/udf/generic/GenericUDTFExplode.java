@@ -21,27 +21,30 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-@Description(name = "explode", value = "_FUNC_(a) - separates the elements of array a into multiple rows ")
+/**
+ * GenericUDTFExplode.
+ *
+ */
+@Description(name = "explode",
+    value = "_FUNC_(a) - separates the elements of array a into multiple rows ")
 public class GenericUDTFExplode extends GenericUDTF {
 
-  ListObjectInspector listOI = null;
+  private ListObjectInspector listOI = null;
 
   @Override
   public void close() throws HiveException {
   }
 
   @Override
-  public StructObjectInspector initialize(ObjectInspector[] args)
-      throws UDFArgumentException {
-
+  public StructObjectInspector initialize(ObjectInspector[] args) throws UDFArgumentException {
     if (args.length != 1) {
       throw new UDFArgumentException("explode() takes only one argument");
     }
@@ -59,7 +62,7 @@ public class GenericUDTFExplode extends GenericUDTF {
         fieldOIs);
   }
 
-  Object forwardObj[] = new Object[1];
+  private Object[] forwardObj = new Object[1];
 
   @Override
   public void process(Object[] o) throws HiveException {

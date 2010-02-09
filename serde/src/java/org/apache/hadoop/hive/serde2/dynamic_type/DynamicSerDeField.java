@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-
+/**
+ * DynamicSerDeField.
+ *
+ */
 public class DynamicSerDeField extends DynamicSerDeSimpleNode {
 
   // production is:

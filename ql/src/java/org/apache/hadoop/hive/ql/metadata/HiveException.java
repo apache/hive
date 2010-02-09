@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 /**
- * Generic exception class for Hive
+ * Generic exception class for Hive.
  */
 
 public class HiveException extends Exception {

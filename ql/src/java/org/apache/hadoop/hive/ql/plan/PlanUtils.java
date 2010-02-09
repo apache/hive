@@ -48,11 +48,18 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
-public class PlanUtils {
+/**
+ * PlanUtils.
+ *
+ */
+public final class PlanUtils {
 
-  protected final static Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.plan.PlanUtils");
+  protected static final Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.PlanUtils");
 
+  /**
+   * ExpressionTypes.
+   *
+   */
   public static enum ExpressionTypes {
     FIELD, JEXL
   };
@@ -234,9 +241,9 @@ public class PlanUtils {
   public static TableDesc getDefaultTableDesc(String separatorCode) {
     return new TableDesc(MetadataTypedColumnsetSerDe.class,
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
-            .makeProperties(
-                org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
-                separatorCode));
+        .makeProperties(
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
+        separatorCode));
   }
 
   /**
@@ -247,10 +254,10 @@ public class PlanUtils {
     return new TableDesc(BinarySortableSerDe.class,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
         Utilities.makeProperties(Constants.LIST_COLUMNS, MetaStoreUtils
-            .getColumnNamesFromFieldSchema(fieldSchemas),
-            Constants.LIST_COLUMN_TYPES, MetaStoreUtils
-                .getColumnTypesFromFieldSchema(fieldSchemas),
-            Constants.SERIALIZATION_SORT_ORDER, order));
+        .getColumnNamesFromFieldSchema(fieldSchemas),
+        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        .getColumnTypesFromFieldSchema(fieldSchemas),
+        Constants.SERIALIZATION_SORT_ORDER, order));
   }
 
   /**
@@ -259,10 +266,10 @@ public class PlanUtils {
   public static TableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
-            MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-            "columns.types", MetaStoreUtils
-                .getColumnTypesFromFieldSchema(fieldSchemas),
-            Constants.ESCAPE_CHAR, "\\"));
+        MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+        "columns.types", MetaStoreUtils
+        .getColumnTypesFromFieldSchema(fieldSchemas),
+        Constants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -272,10 +279,10 @@ public class PlanUtils {
       List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
-            MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-            "columns.types", MetaStoreUtils
-                .getColumnTypesFromFieldSchema(fieldSchemas),
-            Constants.ESCAPE_CHAR, "\\"));
+        MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+        "columns.types", MetaStoreUtils
+        .getColumnTypesFromFieldSchema(fieldSchemas),
+        Constants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -285,11 +292,11 @@ public class PlanUtils {
       List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
-            Constants.LIST_COLUMNS, MetaStoreUtils
-                .getColumnNamesFromFieldSchema(fieldSchemas),
-            Constants.LIST_COLUMN_TYPES, MetaStoreUtils
-                .getColumnTypesFromFieldSchema(fieldSchemas),
-            Constants.ESCAPE_CHAR, "\\"));
+        Constants.LIST_COLUMNS, MetaStoreUtils
+        .getColumnNamesFromFieldSchema(fieldSchemas),
+        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        .getColumnTypesFromFieldSchema(fieldSchemas),
+        Constants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -298,11 +305,11 @@ public class PlanUtils {
   public static TableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
     return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
-            Constants.LIST_COLUMNS, MetaStoreUtils
-                .getColumnNamesFromFieldSchema(fieldSchemas),
-            Constants.LIST_COLUMN_TYPES, MetaStoreUtils
-                .getColumnTypesFromFieldSchema(fieldSchemas),
-            Constants.ESCAPE_CHAR, "\\"));
+        Constants.LIST_COLUMNS, MetaStoreUtils
+        .getColumnNamesFromFieldSchema(fieldSchemas),
+        Constants.LIST_COLUMN_TYPES, MetaStoreUtils
+        .getColumnTypesFromFieldSchema(fieldSchemas),
+        Constants.ESCAPE_CHAR, "\\"));
   }
 
   /**
@@ -420,7 +427,7 @@ public class PlanUtils {
     }
     return new ReduceSinkDesc(keyCols, valueCols, outputKeyCols, outputValCols,
         tag, partitionCols, numReducers, keyTable,
-        // Revert to DynamicSerDe:
+            // Revert to DynamicSerDe:
         // getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols,
         // "reducesinkvalue")));
         valueTable);
@@ -471,6 +478,10 @@ public class PlanUtils {
     }
     return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey,
         tag, partitionCols, order.toString(), numReducers);
+  }
+
+  private PlanUtils() {
+    // prevent instantiation
   }
 
 }

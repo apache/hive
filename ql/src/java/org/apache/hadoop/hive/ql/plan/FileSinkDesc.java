@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * FileSinkDesc.
+ *
+ */
 @Explain(displayName = "File Output Operator")
 public class FileSinkDesc implements Serializable {
   private static final long serialVersionUID = 1L;

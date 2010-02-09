@@ -21,6 +21,11 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
+/**
+ * LazyBinaryNonPrimitive.
+ *
+ * @param <OI>
+ */
 public abstract class LazyBinaryNonPrimitive<OI extends ObjectInspector>
     extends LazyBinaryObject<OI> {
 

@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * RowSchema Implementation
+ * RowSchema Implementation.
  */
 public class RowSchema implements Serializable {
 

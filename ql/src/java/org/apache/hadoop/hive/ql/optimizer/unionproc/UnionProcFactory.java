@@ -30,9 +30,13 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParse
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Operator factory for union processing
+ * Operator factory for union processing.
  */
-public class UnionProcFactory {
+public final class UnionProcFactory {
+
+  private UnionProcFactory() {
+    // prevent instantiation
+  }
 
   public static int getPositionParent(UnionOperator union, Stack<Node> stack) {
     int pos = 0;
@@ -48,7 +52,7 @@ public class UnionProcFactory {
   }
 
   /**
-   * MapRed subquery followed by Union
+   * MapRed subquery followed by Union.
    */
   public static class MapRedUnion implements NodeProcessor {
 
@@ -74,7 +78,7 @@ public class UnionProcFactory {
   }
 
   /**
-   * Map-only subquery followed by Union
+   * Map-only subquery followed by Union.
    */
   public static class MapUnion implements NodeProcessor {
 
@@ -99,7 +103,7 @@ public class UnionProcFactory {
   }
 
   /**
-   * Map-join subquery followed by Union
+   * Map-join subquery followed by Union.
    */
   public static class MapJoinUnion implements NodeProcessor {
 
@@ -123,7 +127,7 @@ public class UnionProcFactory {
   }
 
   /**
-   * Union subquery followed by Union
+   * Union subquery followed by Union.
    */
   public static class UnknownUnion implements NodeProcessor {
 
@@ -148,7 +152,7 @@ public class UnionProcFactory {
   }
 
   /**
-   * Default processor
+   * Default processor.
    */
   public static class NoUnion implements NodeProcessor {
 

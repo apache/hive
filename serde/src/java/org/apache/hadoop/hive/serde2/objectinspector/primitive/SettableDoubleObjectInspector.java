@@ -28,10 +28,10 @@ public interface SettableDoubleObjectInspector extends DoubleObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, double value);
+  Object set(Object o, double value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(double value);
+  Object create(double value);
 }

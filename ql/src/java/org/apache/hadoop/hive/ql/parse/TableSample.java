@@ -32,12 +32,12 @@ import java.util.ArrayList;
 public class TableSample {
 
   /**
-   * The numerator of the TABLESAMPLE clause
+   * The numerator of the TABLESAMPLE clause.
    */
   private int numerator;
 
   /**
-   * The denominator of the TABLESAMPLE clause
+   * The denominator of the TABLESAMPLE clause.
    */
   private int denominator;
 
@@ -52,13 +52,13 @@ public class TableSample {
   private ArrayList<ASTNode> exprs;
 
   /**
-   * Flag to indicate that input files can be pruned
+   * Flag to indicate that input files can be pruned.
    */
   private boolean inputPruning;
 
   /**
    * Constructs the TableSample given the numerator, denominator and the list of
-   * ON clause expressions
+   * ON clause expressions.
    * 
    * @param num
    *          The numerator
@@ -80,7 +80,7 @@ public class TableSample {
   }
 
   /**
-   * Gets the numerator
+   * Gets the numerator.
    * 
    * @return int
    */
@@ -89,7 +89,7 @@ public class TableSample {
   }
 
   /**
-   * Sets the numerator
+   * Sets the numerator.
    * 
    * @param num
    *          The numerator
@@ -99,7 +99,7 @@ public class TableSample {
   }
 
   /**
-   * Gets the denominator
+   * Gets the denominator.
    * 
    * @return int
    */
@@ -108,7 +108,7 @@ public class TableSample {
   }
 
   /**
-   * Sets the denominator
+   * Sets the denominator.
    * 
    * @param den
    *          The denominator
@@ -118,7 +118,7 @@ public class TableSample {
   }
 
   /**
-   * Gets the ON part's expression list
+   * Gets the ON part's expression list.
    * 
    * @return ArrayList<ASTNode>
    */
@@ -127,7 +127,7 @@ public class TableSample {
   }
 
   /**
-   * Sets the expression list
+   * Sets the expression list.
    * 
    * @param exprs
    *          The expression list
@@ -137,7 +137,7 @@ public class TableSample {
   }
 
   /**
-   * Gets the flag that indicates whether input pruning is possible
+   * Gets the flag that indicates whether input pruning is possible.
    * 
    * @return boolean
    */
@@ -146,7 +146,7 @@ public class TableSample {
   }
 
   /**
-   * Sets the flag that indicates whether input pruning is possible or not
+   * Sets the flag that indicates whether input pruning is possible or not.
    * 
    * @param inputPruning
    *          true if input pruning is possible

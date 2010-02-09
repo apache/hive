@@ -24,10 +24,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
+/**
+ * DeleteResourceProcessor.
+ *
+ */
 public class DeleteResourceProcessor implements CommandProcessor {
 
-  public static final Log LOG = LogFactory.getLog(DeleteResourceProcessor.class
-      .getName());
+  public static final Log LOG = LogFactory.getLog(DeleteResourceProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
 
   public void init() {

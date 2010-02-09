@@ -34,6 +34,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * TestLazySimpleSerDe.
+ *
+ */
 public class TestLazySimpleSerDe extends TestCase {
 
   /**
@@ -50,10 +54,10 @@ public class TestLazySimpleSerDe extends TestCase {
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL");
       String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\tNULL";
-      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+      Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3),
-          new Text("hive and hadoop"), null, null };
+          new Text("hive and hadoop"), null, null};
 
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
@@ -115,10 +119,10 @@ public class TestLazySimpleSerDe extends TestCase {
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
       String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta\tb\t";
-      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+      Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3),
-          new Text("hive and hadoop"), null, new Text("a\tb\t") };
+          new Text("hive and hadoop"), null, new Text("a\tb\t")};
 
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
@@ -143,10 +147,10 @@ public class TestLazySimpleSerDe extends TestCase {
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\ta\tb\t");
       String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\ta";
-      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+      Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3),
-          new Text("hive and hadoop"), null, new Text("a") };
+          new Text("hive and hadoop"), null, new Text("a")};
 
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
@@ -171,10 +175,10 @@ public class TestLazySimpleSerDe extends TestCase {
       // Data
       Text t = new Text("123\t456\t789\t1000\t5.3\t");
       String s = "123\t456\t789\t1000\t5.3\t\tNULL\tNULL";
-      Object[] expectedFieldsData = { new ByteWritable((byte) 123),
+      Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3), new Text(""), null,
-          null };
+          null};
 
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);

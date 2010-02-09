@@ -41,14 +41,13 @@ public interface Serializer {
    *          table properties
    * @throws SerDeException
    */
-  public void initialize(Configuration conf, Properties tbl)
-      throws SerDeException;
+  void initialize(Configuration conf, Properties tbl) throws SerDeException;
 
   /**
    * Returns the Writable class that would be returned by the serialize method.
    * This is used to initialize SequenceFile header.
    */
-  public Class<? extends Writable> getSerializedClass();
+  Class<? extends Writable> getSerializedClass();
 
   /**
    * Serialize an object by navigating inside the Object with the
@@ -57,7 +56,5 @@ public interface Serializer {
    * wants to keep a copy of the Writable, the client needs to clone the
    * returned value.
    */
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException;
-
+  Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException;
 }

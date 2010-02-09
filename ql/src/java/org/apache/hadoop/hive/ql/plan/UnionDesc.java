@@ -28,7 +28,7 @@ import java.io.Serializable;
 public class UnionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  transient private int numInputs;
+  private transient int numInputs;
 
   @SuppressWarnings("nls")
   public UnionDesc() {

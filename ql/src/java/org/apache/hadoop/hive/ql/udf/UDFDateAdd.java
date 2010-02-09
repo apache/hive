@@ -24,29 +24,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "date_add", value = "_FUNC_(start_date, num_days) - Returns the date that is num_days"
-    + " after start_date.", extended = "start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or"
+/**
+ * UDFDateAdd.
+ *
+ */
+@Description(name = "date_add",
+    value = "_FUNC_(start_date, num_days) - Returns the date that is num_days after start_date.",
+    extended = "start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or"
     + " 'yyyy-MM-dd'. num_days is a number. The time part of start_date is "
     + "ignored.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n"
     + "  '2009-31-07'")
 public class UDFDateAdd extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFDateAdd.class.getName());
-
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance(TimeZone
-      .getTimeZone("UTC"));
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-  Text result = new Text();
+  private Text result = new Text();
 
   public UDFDateAdd() {
   }

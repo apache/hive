@@ -29,12 +29,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public interface Transform {
   /**
-   * All transformation steps implement this interface
+   * All transformation steps implement this interface.
    * 
    * @param pctx
    *          input parse context
    * @return ParseContext
    * @throws SemanticException
    */
-  public ParseContext transform(ParseContext pctx) throws SemanticException;
+  ParseContext transform(ParseContext pctx) throws SemanticException;
 }

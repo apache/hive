@@ -42,7 +42,7 @@ public class UDF {
   private UDFMethodResolver rslv;
 
   /**
-   * The constructor
+   * The constructor.
    */
   public UDF() {
     rslv = new DefaultUDFMethodResolver(this.getClass());
@@ -56,7 +56,7 @@ public class UDF {
   }
 
   /**
-   * Sets the resolver
+   * Sets the resolver.
    * 
    * @param rslv
    *          The method resolver to use for method resolution.

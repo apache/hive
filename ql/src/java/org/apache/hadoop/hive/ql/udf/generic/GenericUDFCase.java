@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -34,16 +32,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * and f should have the same TypeInfo, or an exception will be thrown.
  */
 public class GenericUDFCase extends GenericUDF {
-
-  private static Log LOG = LogFactory.getLog(GenericUDFCase.class.getName());
-
-  ObjectInspector[] argumentOIs;
-  GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
+  private ObjectInspector[] argumentOIs;
+  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentTypeException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
     caseOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
@@ -55,15 +49,15 @@ public class GenericUDFCase extends GenericUDF {
       if (!caseOIResolver.update(arguments[i])) {
         throw new UDFArgumentTypeException(i,
             "The expressions after WHEN should have the same type with that after CASE: \""
-                + caseOIResolver.get().getTypeName() + "\" is expected but \""
-                + arguments[i].getTypeName() + "\" is found");
+            + caseOIResolver.get().getTypeName() + "\" is expected but \""
+            + arguments[i].getTypeName() + "\" is found");
       }
       if (!returnOIResolver.update(arguments[i + 1])) {
         throw new UDFArgumentTypeException(i + 1,
             "The expressions after THEN should have the same type: \""
-                + returnOIResolver.get().getTypeName()
-                + "\" is expected but \"" + arguments[i + 1].getTypeName()
-                + "\" is found");
+            + returnOIResolver.get().getTypeName()
+            + "\" is expected but \"" + arguments[i + 1].getTypeName()
+            + "\" is found");
       }
     }
     if (arguments.length % 2 == 0) {
@@ -71,9 +65,9 @@ public class GenericUDFCase extends GenericUDF {
       if (!returnOIResolver.update(arguments[i + 1])) {
         throw new UDFArgumentTypeException(i + 1,
             "The expression after ELSE should have the same type as those after THEN: \""
-                + returnOIResolver.get().getTypeName()
-                + "\" is expected but \"" + arguments[i + 1].getTypeName()
-                + "\" is found");
+            + returnOIResolver.get().getTypeName()
+            + "\" is expected but \"" + arguments[i + 1].getTypeName()
+            + "\" is found");
       }
     }
 

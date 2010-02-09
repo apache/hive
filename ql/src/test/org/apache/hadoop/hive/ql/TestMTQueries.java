@@ -23,7 +23,7 @@ import java.io.File;
 import junit.framework.TestCase;
 
 /**
- * Suite for testing running of queries in multi-threaded mode
+ * Suite for testing running of queries in multi-threaded mode.
  */
 public class TestMTQueries extends TestCase {
 
@@ -35,8 +35,8 @@ public class TestMTQueries extends TestCase {
       + "/clientpositive";
 
   public void testMTQueries1() throws Exception {
-    String[] testNames = new String[] { "join1.q", "join2.q", "groupby1.q",
-        "groupby2.q", "join3.q", "input1.q", "input19.q" };
+    String[] testNames = new String[] {"join1.q", "join2.q", "groupby1.q",
+        "groupby2.q", "join3.q", "input1.q", "input19.q"};
     String[] logDirs = new String[testNames.length];
     String[] resDirs = new String[testNames.length];
     File[] qfiles = new File[testNames.length];

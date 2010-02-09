@@ -31,10 +31,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public interface InputFormatChecker {
 
   /**
-   * This method is used to validate the input files
+   * This method is used to validate the input files.
    * 
    */
-  public boolean validateInput(FileSystem fs, HiveConf conf,
+  boolean validateInput(FileSystem fs, HiveConf conf,
       ArrayList<FileStatus> files) throws IOException;
 
 }

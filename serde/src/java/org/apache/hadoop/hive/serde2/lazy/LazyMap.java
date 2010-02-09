@@ -72,7 +72,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
    */
   LazyObject[] valueObjects;
   /**
-   * Whether init() is called on valueObjects[i]
+   * Whether init() is called on valueObjects[i].
    */
   boolean[] valueInited;
 
@@ -239,8 +239,8 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     int valueILength = keyStart[index + 1] - 1 - valueIBegin;
     if (valueILength < 0
         || ((valueILength == nullSequence.getLength()) && 0 == LazyUtils
-            .compare(bytes.getData(), valueIBegin, valueILength, nullSequence
-                .getBytes(), 0, nullSequence.getLength()))) {
+        .compare(bytes.getData(), valueIBegin, valueILength, nullSequence
+        .getBytes(), 0, nullSequence.getLength()))) {
       return null;
     }
     if (!valueInited[index]) {
@@ -248,7 +248,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
       if (valueObjects[index] == null) {
         valueObjects[index] = LazyFactory
             .createLazyObject(((MapObjectInspector) oi)
-                .getMapValueObjectInspector());
+            .getMapValueObjectInspector());
       }
       valueObjects[index].init(bytes, valueIBegin, valueILength);
     }
@@ -267,8 +267,8 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     int keyILength = keyEnd[index] - keyStart[index];
     if (keyILength < 0
         || ((keyILength == nullSequence.getLength()) && 0 == LazyUtils.compare(
-            bytes.getData(), keyIBegin, keyILength, nullSequence.getBytes(), 0,
-            nullSequence.getLength()))) {
+        bytes.getData(), keyIBegin, keyILength, nullSequence.getBytes(), 0,
+        nullSequence.getLength()))) {
       return null;
     }
     if (!keyInited[index]) {
@@ -277,7 +277,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
         // Keys are always primitive
         keyObjects[index] = LazyFactory
             .createLazyPrimitiveClass((PrimitiveObjectInspector) ((MapObjectInspector) oi)
-                .getMapKeyObjectInspector());
+            .getMapKeyObjectInspector());
       }
       keyObjects[index].init(bytes, keyIBegin, keyILength);
     }

@@ -32,9 +32,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * TypeInfoFactory has internal cache to make sure we don't create 2 TypeInfo
  * objects that represents the same type.
  */
-public class TypeInfoFactory {
+public final class TypeInfoFactory {
 
   static HashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new HashMap<String, TypeInfo>();
+
+  private TypeInfoFactory() {
+    // prevent instantiation
+  }
 
   public static TypeInfo getPrimitiveTypeInfo(String typeName) {
     if (null == PrimitiveObjectInspectorUtils
@@ -77,7 +81,8 @@ public class TypeInfoFactory {
         .getTypeNameFromPrimitiveJava(clazz));
   }
 
-  static HashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo = new HashMap<ArrayList<List<?>>, TypeInfo>();
+  static HashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo =
+    new HashMap<ArrayList<List<?>>, TypeInfo>();
 
   public static TypeInfo getStructTypeInfo(List<String> names,
       List<TypeInfo> typeInfos) {
@@ -103,7 +108,8 @@ public class TypeInfoFactory {
     return result;
   }
 
-  static HashMap<ArrayList<TypeInfo>, TypeInfo> cachedMapTypeInfo = new HashMap<ArrayList<TypeInfo>, TypeInfo>();
+  static HashMap<ArrayList<TypeInfo>, TypeInfo> cachedMapTypeInfo =
+    new HashMap<ArrayList<TypeInfo>, TypeInfo>();
 
   public static TypeInfo getMapTypeInfo(TypeInfo keyTypeInfo,
       TypeInfo valueTypeInfo) {

@@ -34,13 +34,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.io.Writable;
 
 /**
- * Map Join Object used for both key and value
+ * Map Join Object used for both key and value.
  */
 public class MapJoinObjectValue implements Externalizable {
 
-  transient protected int metadataTag;
-  transient protected RowContainer obj;
-  transient protected Configuration conf;
+  protected transient int metadataTag;
+  protected transient RowContainer obj;
+  protected transient Configuration conf;
 
   public MapJoinObjectValue() {
   }
@@ -97,8 +97,8 @@ public class MapJoinObjectValue implements Externalizable {
 
         ArrayList<Object> memObj = (ArrayList<Object>) ObjectInspectorUtils
             .copyToStandardObject(ctx.getSerDe().deserialize(val), ctx
-                .getSerDe().getObjectInspector(),
-                ObjectInspectorCopyOption.WRITABLE);
+            .getSerDe().getObjectInspector(),
+            ObjectInspectorCopyOption.WRITABLE);
 
         res.add(memObj);
       }

@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * LoadFileDesc.
+ *
+ */
 public class LoadFileDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String targetDir;

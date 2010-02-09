@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -28,11 +26,12 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
+/**
+ * UDFOPMinus.
+ *
+ */
 @Description(name = "-", value = "a _FUNC_ b - Returns the difference a-b")
 public class UDFOPMinus extends UDFBaseNumericOp {
-
-  private static Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.udf.UDFOPMinus");
 
   public UDFOPMinus() {
   }

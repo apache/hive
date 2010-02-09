@@ -24,9 +24,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 
 /**
  * Read from a binary stream and treat each 1000 bytes (configurable via 
@@ -39,8 +37,7 @@ public class BinaryRecordReader implements RecordReader {
   private BytesWritable bytes;
   private int maxRecordLength;
 
-  public void initialize(InputStream in, Configuration conf, Properties tbl)
-      throws IOException {
+  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     this.in = in;
     maxRecordLength = conf.getInt("hive.binary.record.max.length", 1000);
   }

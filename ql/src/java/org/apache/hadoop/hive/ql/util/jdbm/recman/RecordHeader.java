@@ -75,7 +75,7 @@ class RecordHeader {
   // offsets
   private static final short O_CURRENTSIZE = 0; // int currentSize
   private static final short O_AVAILABLESIZE = Magic.SZ_INT; // int
-                                                             // availableSize
+  // availableSize
   static final int SIZE = O_AVAILABLESIZE + Magic.SZ_INT;
 
   // my block and the position within the block

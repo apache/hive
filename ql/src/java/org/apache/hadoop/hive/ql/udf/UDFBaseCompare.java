@@ -23,6 +23,10 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BooleanWritable;
 
+/**
+ * UDFBaseCompare.
+ *
+ */
 public abstract class UDFBaseCompare extends UDF {
 
   /**

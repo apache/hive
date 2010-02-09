@@ -27,16 +27,20 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+/**
+ * TestReflectionObjectInspectors.
+ *
+ */
 public class TestReflectionObjectInspectors extends TestCase {
 
   public void testReflectionObjectInspectors() throws Throwable {
     try {
       ObjectInspector oi1 = ObjectInspectorFactory
           .getReflectionObjectInspector(MyStruct.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
       ObjectInspector oi2 = ObjectInspectorFactory
           .getReflectionObjectInspector(MyStruct.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
       assertEquals(oi1, oi2);
 
       // metadata
@@ -58,7 +62,7 @@ public class TestReflectionObjectInspectors extends TestCase {
       a.myInteger = 2;
       a.myString = "test";
       a.myStruct = a;
-      a.myListString = Arrays.asList(new String[] { "a", "b", "c" });
+      a.myListString = Arrays.asList(new String[] {"a", "b", "c"});
       a.myMapStringString = new HashMap<String, String>();
       a.myMapStringString.put("key", "value");
 

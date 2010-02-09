@@ -38,6 +38,10 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * MetadataTypedColumnsetSerDe.
+ *
+ */
 public class MetadataTypedColumnsetSerDe implements SerDe {
 
   public static final Log LOG = LogFactory
@@ -51,16 +55,16 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
       // class.
       SerDeUtils.registerSerDe(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe", Class
-              .forName(className));
+          .forName(className));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  final public static String DefaultSeparator = "\001";
+  public static final String DefaultSeparator = "\001";
   private String separator;
 
-  final public static String defaultNullString = "\\N";
+  public static final String defaultNullString = "\\N";
   private String nullString;
 
   private List<String> columnNames;
@@ -81,7 +85,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
   private String getByteValue(String altValue, String defaultVal) {
     if (altValue != null && altValue.length() > 0) {
       try {
-        byte b[] = new byte[1];
+        byte[] b = new byte[1];
         b[0] = Byte.valueOf(altValue).byteValue();
         return new String(b);
       } catch (NumberFormatException e) {
@@ -91,13 +95,12 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     return defaultVal;
   }
 
-  public void initialize(Configuration job, Properties tbl)
-      throws SerDeException {
-    String alt_sep = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
-    separator = getByteValue(alt_sep, DefaultSeparator);
+  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+    String altSep = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
+    separator = getByteValue(altSep, DefaultSeparator);
 
-    String alt_null = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT);
-    nullString = getByteValue(alt_null, defaultNullString);
+    String altNull = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT);
+    nullString = getByteValue(altNull, defaultNullString);
 
     String columnProperty = tbl.getProperty("columns");
     String serdeName = tbl.getProperty(Constants.SERIALIZATION_LIB);
@@ -105,8 +108,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     // so this hack applies to all such tables
     boolean columnsetSerDe = false;
     if ((serdeName != null)
-        && serdeName
-            .equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
+        && serdeName.equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
       columnsetSerDe = true;
     }
     if (columnProperty == null || columnProperty.length() == 0
@@ -115,7 +117,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
       // Treat it as a table with a single column called "col"
       cachedObjectInspector = ObjectInspectorFactory
           .getReflectionObjectInspector(ColumnSet.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     } else {
       columnNames = Arrays.asList(columnProperty.split(","));
       cachedObjectInspector = MetadataListStructObjectInspector
@@ -201,8 +203,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
 
   Text serializeCache = new Text();
 
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {
       throw new SerDeException(getClass().toString()

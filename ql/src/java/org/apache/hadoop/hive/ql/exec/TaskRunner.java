@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
- * TaskRunner implementation
+ * TaskRunner implementation.
  **/
 
 public class TaskRunner extends Thread {
@@ -48,7 +48,7 @@ public class TaskRunner extends Thread {
   }
 
   /**
-   * Launches a task, and sets its exit value in the result variable
+   * Launches a task, and sets its exit value in the result variable.
    */
 
   public void runSequential() {

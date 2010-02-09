@@ -53,16 +53,20 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Counter.
+   *
+   */
   public static enum Counter {
     DESERIALIZE_ERRORS
   }
 
-  transient private final LongWritable deserialize_error_count = new LongWritable();
-  transient private Deserializer deserializer;
+  private final transient LongWritable deserialize_error_count = new LongWritable();
+  private transient Deserializer deserializer;
 
-  transient private Object[] rowWithPart;
-  transient private StructObjectInspector rowObjectInspector;
-  transient private boolean isPartitioned;
+  private transient Object[] rowWithPart;
+  private transient StructObjectInspector rowObjectInspector;
+  private transient boolean isPartitioned;
   private Map<MapInputPath, MapOpCtx> opCtxMap;
 
   private Map<Operator<? extends Serializable>, java.util.ArrayList<String>> operatorToPaths;
@@ -189,7 +193,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       if ((className == "") || (className == null)) {
         throw new HiveException(
             "SerDe class or the SerDe class name is not set for table: "
-                + td.getProperties().getProperty("name"));
+            + td.getProperties().getProperty("name"));
       }
       sdclass = hconf.getClassByName(className);
     }
@@ -235,8 +239,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       rowWithPart[1] = partValues;
       rowObjectInspector = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-              .asList(new StructObjectInspector[] { rowObjectInspector,
-                  partObjectInspector }));
+          .asList(new StructObjectInspector[] {rowObjectInspector, partObjectInspector}));
       // LOG.info("dump " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
       opCtx = new MapOpCtx(true, rowObjectInspector, rowWithPart, deserializer);
@@ -350,8 +353,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
         }
       }
       if (shouldInit) {
-        op.initialize(hconf, new ObjectInspector[] { entry.getValue()
-            .getRowObjectInspector() });
+        op.initialize(hconf, new ObjectInspector[] {entry.getValue().getRowObjectInspector()});
       }
     }
   }

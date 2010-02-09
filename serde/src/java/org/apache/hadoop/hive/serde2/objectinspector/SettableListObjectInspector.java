@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+/**
+ * SettableListObjectInspector.
+ *
+ */
 public interface SettableListObjectInspector extends ListObjectInspector {
 
   /**

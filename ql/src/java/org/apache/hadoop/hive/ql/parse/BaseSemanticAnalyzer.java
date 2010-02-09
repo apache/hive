@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +53,18 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
+/**
+ * BaseSemanticAnalyzer.
+ *
+ */
+/**
+ * BaseSemanticAnalyzer.
+ *
+ */
+/**
+ * BaseSemanticAnalyzer.
+ *
+ */
 public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
@@ -391,6 +402,10 @@ public abstract class BaseSemanticAnalyzer {
     return typeStr;
   }
 
+  /**
+   * tableSpec.
+   *
+   */
   public static class tableSpec {
     public String tableName;
     public Table tableHandle;
@@ -436,7 +451,7 @@ public abstract class BaseSemanticAnalyzer {
           // In case the partition already exists, we need to get the partition
           // data from the metastore
           partHandle = db.getPartition(tableHandle, partSpec, false);
-          if(partHandle == null) {
+          if (partHandle == null) {
             // this doesn't create partition. partition is created in MoveTask
             partHandle = new Partition(tableHandle, partSpec, null);
           }

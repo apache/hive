@@ -684,12 +684,12 @@ public class Driver implements CommandProcessor {
       }
 
       bos.reset();
-      Utilities.streamStatus ss;
+      Utilities.StreamStatus ss;
       try {
         ss = Utilities.readColumn(resStream, bos);
         if (bos.getCount() > 0) {
           row = new String(bos.getData(), 0, bos.getCount(), "UTF-8");
-        } else if (ss == Utilities.streamStatus.TERMINATED) {
+        } else if (ss == Utilities.StreamStatus.TERMINATED) {
           row = new String();
         }
 
@@ -704,7 +704,7 @@ public class Driver implements CommandProcessor {
         return false;
       }
 
-      if (ss == Utilities.streamStatus.EOF) {
+      if (ss == Utilities.StreamStatus.EOF) {
         resStream = ctx.getStream();
       }
     }
@@ -717,10 +717,10 @@ public class Driver implements CommandProcessor {
     } catch (Exception e) {
       console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (13);
+      return 13;
     }
 
-    return (0);
+    return 0;
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan()

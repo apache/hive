@@ -22,21 +22,29 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
+/**
+ * AlterTableDesc.
+ *
+ */
 @Explain(displayName = "Alter Table")
 public class AlterTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static enum alterTableTypes {
-    RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN
+  /**
+   * alterTableTypes.
+   *
+   */
+  public static enum AlterTableTypes {
+    RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
+    ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN
   };
 
-  alterTableTypes op;
+  AlterTableTypes op;
   String oldName;
   String newName;
   ArrayList<FieldSchema> newCols;
@@ -57,7 +65,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
 
   public AlterTableDesc() {
   }
-  
+
   /**
    * @param tblName
    *          table name
@@ -78,7 +86,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     newColComment = newComment;
     this.first = first;
     this.afterCol = afterCol;
-    op = alterTableTypes.RENAMECOLUMN;
+    op = AlterTableTypes.RENAMECOLUMN;
   }
 
   /**
@@ -88,7 +96,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new name of the table
    */
   public AlterTableDesc(String oldName, String newName) {
-    op = alterTableTypes.RENAME;
+    op = AlterTableTypes.RENAME;
     this.oldName = oldName;
     this.newName = newName;
   }
@@ -100,7 +108,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new columns to be added
    */
   public AlterTableDesc(String name, List<FieldSchema> newCols,
-      alterTableTypes alterType) {
+      AlterTableTypes alterType) {
     op = alterType;
     oldName = name;
     this.newCols = new ArrayList<FieldSchema>(newCols);
@@ -110,7 +118,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param alterType
    *          type of alter op
    */
-  public AlterTableDesc(alterTableTypes alterType) {
+  public AlterTableDesc(AlterTableTypes alterType) {
     op = alterType;
   }
 
@@ -126,7 +134,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public AlterTableDesc(String name, String inputFormat, String outputFormat,
       String serdeName) {
     super();
-    op = alterTableTypes.ADDFILEFORMAT;
+    op = AlterTableTypes.ADDFILEFORMAT;
     oldName = name;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
@@ -136,7 +144,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public AlterTableDesc(String tableName, int numBuckets,
       List<String> bucketCols, List<Order> sortCols) {
     oldName = tableName;
-    op = alterTableTypes.ADDCLUSTERSORTCOLUMN;
+    op = AlterTableTypes.ADDCLUSTERSORTCOLUMN;
     numberBuckets = numBuckets;
     bucketColumns = new ArrayList<String>(bucketCols);
     sortColumns = new ArrayList<Order>(sortCols);
@@ -146,7 +154,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public List<String> getNewColsString() {
     return Utilities.getFieldSchemaString(getNewCols());
   }
-  
+
   @Explain(displayName = "type")
   public String getAlterTableTypeString() {
     switch (op) {
@@ -160,7 +168,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
 
     return "unknown";
   }
-  
+
   /**
    * @return the old name of the table
    */
@@ -196,16 +204,15 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the op
    */
-  public alterTableTypes getOp() {
+  public AlterTableTypes getOp() {
     return op;
   }
-
 
   /**
    * @param op
    *          the op to set
    */
-  public void setOp(alterTableTypes op) {
+  public void setOp(AlterTableTypes op) {
     this.op = op;
   }
 

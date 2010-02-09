@@ -26,31 +26,29 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.mapred.JobConf;
 
-/*
+/**
  * Intelligence to make clients wait if the cluster is in a bad state.
  */
-public class Throttle {
+public final class Throttle {
 
   // The percentage of maximum allocated memory that triggers GC
   // on job tracker. This could be overridden thru the jobconf.
   // The default is such that there is no throttling.
-  static private int DEFAULT_MEMORY_GC_PERCENT = 100;
+  private static final int DEFAULT_MEMORY_GC_PERCENT = 100;
 
   // sleep this many seconds between each retry.
   // This could be overridden thru the jobconf.
-  static private int DEFAULT_RETRY_PERIOD = 60;
+  private static final int DEFAULT_RETRY_PERIOD = 60;
 
   /**
-   * fetch http://tracker.om:/gc.jsp?threshold=period
+   * Fetch http://tracker.om:/gc.jsp?threshold=period.
    */
   static void checkJobTracker(JobConf conf, Log LOG) {
 
     try {
-      byte buffer[] = new byte[1024];
-      int threshold = conf.getInt("mapred.throttle.threshold.percent",
-          DEFAULT_MEMORY_GC_PERCENT);
-      int retry = conf.getInt("mapred.throttle.retry.period",
-          DEFAULT_RETRY_PERIOD);
+      byte[] buffer = new byte[1024];
+      int threshold = conf.getInt("mapred.throttle.threshold.percent", DEFAULT_MEMORY_GC_PERCENT);
+      int retry = conf.getInt("mapred.throttle.retry.period", DEFAULT_RETRY_PERIOD);
 
       // If the threshold is 100 percent, then there is no throttling
       if (threshold == 100) {
@@ -58,8 +56,7 @@ public class Throttle {
       }
 
       // This is the Job Tracker URL
-      String tracker = JobTrackerURLResolver.getURL(conf)
-          + "/gc.jsp?threshold=" + threshold;
+      String tracker = JobTrackerURLResolver.getURL(conf) + "/gc.jsp?threshold=" + threshold;
 
       while (true) {
         // read in the first 1K characters from the URL
@@ -101,5 +98,9 @@ public class Throttle {
     } catch (Exception e) {
       LOG.warn("Job is not being throttled. " + e);
     }
+  }
+
+  private Throttle() {
+    // prevent instantiation
   }
 }

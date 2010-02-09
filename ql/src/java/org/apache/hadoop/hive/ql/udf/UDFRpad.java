@@ -18,20 +18,24 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "rpad", value = "_FUNC_(str, len, pad) - Returns str, right-padded with pad to a "
-    + "length of len", extended = "If str is longer than len, the return value is shortened to "
+/**
+ * UDFRpad.
+ *
+ */
+@Description(name = "rpad",
+    value = "_FUNC_(str, len, pad) - Returns str, right-padded with pad to a length of len",
+    extended = "If str is longer than len, the return value is shortened to "
     + "len characters.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('hi', 5, '??') FROM src LIMIT 1;\n"
     + "  'hi???'"
     + "  > SELECT _FUNC_('hi', 1, '??') FROM src LIMIT 1;\n" + "  'h'")
 public class UDFRpad extends UDF {
-
   private final Text result = new Text();
 
   public Text evaluate(Text s, IntWritable n, Text pad) {

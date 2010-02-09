@@ -39,10 +39,14 @@ import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 
+/**
+ * LoadSemanticAnalyzer.
+ *
+ */
 public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
-  boolean isLocal;
-  boolean isOverWrite;
+  private boolean isLocal;
+  private boolean isOverWrite;
 
   public LoadSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
@@ -119,7 +123,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       FileStatus[] srcs = matchFilesOrDir(FileSystem.get(fromURI, conf),
           new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI
-              .getPath()));
+          .getPath()));
 
       if (srcs == null || srcs.length == 0) {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
@@ -142,7 +146,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // reject different scheme/authority in other cases.
     if (!isLocal
         && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) || !StringUtils
-            .equals(fromURI.getAuthority(), toURI.getAuthority()))) {
+        .equals(fromURI.getAuthority(), toURI.getAuthority()))) {
       String reason = "Move from: " + fromURI.toString() + " to: "
           + toURI.toString() + " is not valid. "
           + "Please check that values for params \"default.fs.name\" and "
@@ -153,12 +157,14 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    isLocal = isOverWrite = false;
-    Tree from_t = ast.getChild(0);
-    Tree table_t = ast.getChild(1);
+    isLocal = false;
+    isOverWrite = false;
+    Tree fromTree = ast.getChild(0);
+    Tree tableTree = ast.getChild(1);
 
     if (ast.getChildCount() == 4) {
-      isOverWrite = isLocal = true;
+      isLocal = true;
+      isOverWrite = true;
     }
 
     if (ast.getChildCount() == 3) {
@@ -172,18 +178,18 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize load path
     URI fromURI;
     try {
-      String fromPath = stripQuotes(from_t.getText());
+      String fromPath = stripQuotes(fromTree.getText());
       fromURI = initializeFromURI(fromPath);
     } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(from_t, e
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
           .getMessage()), e);
     } catch (URISyntaxException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(from_t, e
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
           .getMessage()), e);
     }
 
     // initialize destination table/partition
-    tableSpec ts = new tableSpec(db, conf, (ASTNode) table_t);
+    tableSpec ts = new tableSpec(db, conf, (ASTNode) tableTree);
 
     if (ts.tableHandle.isView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
@@ -198,7 +204,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // make sure the arguments make sense
-    applyConstraints(fromURI, toURI, from_t, isLocal);
+    applyConstraints(fromURI, toURI, fromTree, isLocal);
 
     Task<? extends Serializable> rTask = null;
 

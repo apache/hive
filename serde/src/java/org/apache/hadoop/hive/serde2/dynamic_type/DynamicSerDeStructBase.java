@@ -27,7 +27,11 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TStruct;
 
-abstract public class DynamicSerDeStructBase extends DynamicSerDeTypeBase
+/**
+ * DynamicSerDeStructBase.
+ *
+ */
+public abstract class DynamicSerDeStructBase extends DynamicSerDeTypeBase
     implements Serializable {
 
   DynamicSerDeFieldList fieldList;
@@ -40,7 +44,7 @@ abstract public class DynamicSerDeStructBase extends DynamicSerDeTypeBase
     super(p, i);
   }
 
-  abstract public DynamicSerDeFieldList getFieldList();
+  public abstract DynamicSerDeFieldList getFieldList();
 
   @Override
   public void initialize() {
@@ -87,8 +91,7 @@ abstract public class DynamicSerDeStructBase extends DynamicSerDeTypeBase
    */
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     if (thrift_mode) {
       oprot.writeStructBegin(new TStruct(name));
     }

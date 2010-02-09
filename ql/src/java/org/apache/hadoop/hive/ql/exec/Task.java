@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,25 +37,25 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * Task implementation
+ * Task implementation.
  **/
 
 public abstract class Task<T extends Serializable> implements Serializable,
     Node {
 
   private static final long serialVersionUID = 1L;
-  transient protected boolean started;
-  transient protected boolean initialized;
-  transient protected boolean isdone;
-  transient protected boolean queued;
-  transient protected HiveConf conf;
-  transient protected Hive db;
-  transient protected Log LOG;
-  transient protected LogHelper console;
-  transient protected QueryPlan queryPlan;
-  transient protected TaskHandle taskHandle;
-  transient protected HashMap<String, Long> taskCounters;
-  transient protected DriverContext driverContext;
+  protected transient boolean started;
+  protected transient boolean initialized;
+  protected transient boolean isdone;
+  protected transient boolean queued;
+  protected transient HiveConf conf;
+  protected transient Hive db;
+  protected transient Log LOG;
+  protected transient LogHelper console;
+  protected transient QueryPlan queryPlan;
+  protected transient TaskHandle taskHandle;
+  protected transient HashMap<String, Long> taskCounters;
+  protected transient DriverContext driverContext;
   // Bean methods
 
   protected List<Task<? extends Serializable>> childTasks;
@@ -126,7 +125,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
 
   /**
    * Update the progress of the task within taskHandle and also dump the
-   * progress information to the history file
+   * progress information to the history file.
    * 
    * @param taskHandle
    *          task handle returned by execute
@@ -187,7 +186,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * remove the dependent task
+   * Remove the dependent task.
    * 
    * @param dependent
    *          the task to remove
@@ -284,7 +283,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
 
   /**
    * Should be overridden to return the type of the specific task among the
-   * types in TaskType
+   * types in TaskType.
    * 
    * @return TaskTypeType.* or -1 if not overridden
    */

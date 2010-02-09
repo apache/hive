@@ -21,6 +21,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFExampleArraySum.
+ *
+ */
 public class UDFExampleArraySum extends UDF {
 
   public Double evaluate(List<Double> a) {

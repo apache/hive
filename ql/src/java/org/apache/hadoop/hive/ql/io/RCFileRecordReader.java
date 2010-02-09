@@ -30,6 +30,12 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
 
+/**
+ * RCFileRecordReader.
+ *
+ * @param <K>
+ * @param <V>
+ */
 public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayWritable>
     implements RecordReader<LongWritable, BytesRefArrayWritable> {
 
@@ -75,9 +81,9 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
   @Override
   public boolean next(LongWritable key, BytesRefArrayWritable value)
       throws IOException {
-    
+
     more = next(key);
-    
+
     if (more) {
       in.getCurrentRow(value);
     }
@@ -88,14 +94,14 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     if (!more) {
       return false;
     }
-    
+
     more = in.next(key);
     if (!more) {
       return false;
     }
-    
+
     long lastSeenSyncPos = in.lastSeenSyncPos();
-    if(lastSeenSyncPos >= end) {
+    if (lastSeenSyncPos >= end) {
       more = false;
       return more;
     }
@@ -103,7 +109,7 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
   }
 
   /**
-   * Return the progress within the input split
+   * Return the progress within the input split.
    * 
    * @return 0.0 to 1.0 of the input byte range
    */

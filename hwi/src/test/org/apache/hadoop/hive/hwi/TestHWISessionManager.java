@@ -29,6 +29,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
 
+/**
+ * TestHWISessionManager.
+ *
+ */
 public class TestHWISessionManager extends TestCase {
 
   private static String tableName = "test_hwi_table";
@@ -63,7 +67,7 @@ public class TestHWISessionManager extends TestCase {
     // create a user
     HWIAuth user1 = new HWIAuth();
     user1.setUser("hadoop");
-    user1.setGroups(new String[] { "hadoop" });
+    user1.setGroups(new String[] {"hadoop"});
 
     // create two sessions for user
     HWISessionItem user1_item1 = hsm.createSession(user1, "session1");
@@ -72,7 +76,7 @@ public class TestHWISessionManager extends TestCase {
     // create second user
     HWIAuth user2 = new HWIAuth();
     user2.setUser("user2");
-    user2.setGroups(new String[] { "user2" });
+    user2.setGroups(new String[] {"user2"});
 
     // create one session for this user
     HWISessionItem user2_item1 = hsm.createSession(user2, "session1");

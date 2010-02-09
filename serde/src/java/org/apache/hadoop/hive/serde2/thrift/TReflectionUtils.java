@@ -20,15 +20,19 @@ package org.apache.hadoop.hive.serde2.thrift;
 
 import org.apache.thrift.protocol.TProtocolFactory;
 
-public class TReflectionUtils {
+/**
+ * TReflectionUtils.
+ *
+ */
+public final class TReflectionUtils {
   public static final String thriftReaderFname = "read";
   public static final String thriftWriterFname = "write";
 
   public static final Class<?>[] thriftRWParams;
   static {
     try {
-      thriftRWParams = new Class[] { Class
-          .forName("org.apache.thrift.protocol.TProtocol") };
+      thriftRWParams = new Class[] {Class
+          .forName("org.apache.thrift.protocol.TProtocol")};
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -38,5 +42,9 @@ public class TReflectionUtils {
       throws Exception {
     Class<?> protoClass = Class.forName(protocolName + "$Factory");
     return ((TProtocolFactory) protoClass.newInstance());
+  }
+
+  private TReflectionUtils() {
+    // prevent instantiation
   }
 }

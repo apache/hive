@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * DDLDesc.
+ *
+ */
 public abstract class DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 }

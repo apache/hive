@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+/**
+ * GroupByDesc.
+ *
+ */
 @Explain(displayName = "Group By Operator")
 public class GroupByDesc implements java.io.Serializable {
   /**
@@ -28,10 +32,14 @@ public class GroupByDesc implements java.io.Serializable {
    * PARTIAL1 FINAL: partial aggregation - final phase: merge, terminate HASH:
    * For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
    * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
-   * aggregations
+   * aggregations.
    */
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Mode.
+   *
+   */
   public static enum Mode {
     COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL
   };

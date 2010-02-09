@@ -23,6 +23,10 @@ import java.util.HashMap;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * DescTableDesc.
+ *
+ */
 @Explain(displayName = "Describe Table")
 public class DescTableDesc extends DDLDesc implements Serializable {
   public void setPartSpec(HashMap<String, String> partSpec) {
@@ -36,17 +40,17 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   Path resFile;
   boolean isExt;
   /**
-   * table name for the result of describe table
+   * table name for the result of describe table.
    */
   private static final String table = "describe";
   /**
-   * thrift ddl for the result of describe table
+   * thrift ddl for the result of describe table.
    */
   private static final String schema = "col_name,data_type,comment#string:string:string";
 
   public DescTableDesc() {
   }
-  
+
   /**
    * @param isExt
    * @param partSpec

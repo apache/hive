@@ -38,14 +38,14 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  */
 public class ExprWalkerInfo implements NodeProcessorCtx {
 
-  /** Information maintained for an expr while walking an expr tree */
+  /** Information maintained for an expr while walking an expr tree. */
   private static class ExprInfo {
     /**
-     * true if expr rooted at this node doesn't contain more than one table
+     * true if expr rooted at this node doesn't contain more than one table.
      * alias
      */
     public boolean isCandidate = false;
-    /** alias that this expression refers to */
+    /** alias that this expression refers to. */
     public String alias = null;
     /** new expr for this expression. */
     public ExprNodeDesc convertedExpr = null;
@@ -68,7 +68,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * this map contains a expr infos. Each key is a node in the expression tree
    * and the information for each node is the value which is used while walking
-   * the tree by its parent
+   * the tree by its parent.
    */
   private final Map<String, List<ExprNodeDesc>> pushdownPreds;
   /**
@@ -94,14 +94,14 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * @return the op of this expression
+   * @return the op of this expression.
    */
   public Operator<? extends Serializable> getOp() {
     return op;
   }
 
   /**
-   * @return the row resolver of the operator of this expression
+   * @return the row resolver of the operator of this expression.
    */
   public RowResolver getToRR() {
     return toRR;
@@ -120,7 +120,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * adds a replacement node for this expression
+   * adds a replacement node for this expression.
    * 
    * @param oldNode
    *          original node
@@ -138,7 +138,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * Returns true if the specified expression is pushdown candidate else false
+   * Returns true if the specified expression is pushdown candidate else false.
    * 
    * @param expr
    * @return true or false
@@ -152,7 +152,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * Marks the specified expr to the specified value
+   * Marks the specified expr to the specified value.
    * 
    * @param expr
    * @param b
@@ -168,7 +168,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * Returns the alias of the specified expr
+   * Returns the alias of the specified expr.
    * 
    * @param expr
    * @return The alias of the expression
@@ -182,7 +182,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * Adds the specified alias to the specified expr
+   * Adds the specified alias to the specified expr.
    * 
    * @param expr
    * @param alias
@@ -201,7 +201,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
 
   /**
    * Adds the specified expr as the top-most pushdown expr (ie all its children
-   * can be pushed)
+   * can be pushed).
    * 
    * @param expr
    */
@@ -216,7 +216,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * Returns the list of pushdown expressions for each alias that appear in the
    * current operator's RowResolver. The exprs in each list can be combined
-   * using conjunction (AND)
+   * using conjunction (AND).
    * 
    * @return the map of alias to a list of pushdown predicates
    */
@@ -225,7 +225,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * Merges the specified pushdown predicates with the current class
+   * Merges the specified pushdown predicates with the current class.
    * 
    * @param ewi
    *          ExpressionWalkerInfo
@@ -246,7 +246,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * sets the deterministic flag for this expression
+   * sets the deterministic flag for this expression.
    * 
    * @param b
    *          deterministic or not
@@ -256,7 +256,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
-   * @return whether this expression is deterministic or not
+   * @return whether this expression is deterministic or not.
    */
   public boolean isDeterministic() {
     return isDeterministic;

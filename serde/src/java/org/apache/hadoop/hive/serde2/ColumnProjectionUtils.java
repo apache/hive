@@ -23,9 +23,13 @@ import java.util.ArrayList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
 
-public class ColumnProjectionUtils {
+/**
+ * ColumnProjectionUtils.
+ *
+ */
+public final class ColumnProjectionUtils {
 
-  public static String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
+  public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
 
   /**
    * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
@@ -105,6 +109,10 @@ public class ColumnProjectionUtils {
    */
   public static void setFullyReadColumns(Configuration conf) {
     conf.set(READ_COLUMN_IDS_CONF_STR, "");
+  }
+
+  private ColumnProjectionUtils() {
+    // prevent instantiation
   }
 
 }

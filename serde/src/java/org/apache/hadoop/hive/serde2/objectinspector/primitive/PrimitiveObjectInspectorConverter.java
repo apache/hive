@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.io.Text;
 
+/**
+ * PrimitiveObjectInspectorConverter.
+ *
+ */
 public class PrimitiveObjectInspectorConverter {
 
   /**
@@ -234,12 +238,12 @@ public class PrimitiveObjectInspectorConverter {
    * A helper class to convert any primitive to Text.
    */
   public static class TextConverter implements Converter {
-    PrimitiveObjectInspector inputOI;
-    Text t = new Text();
-    ByteStream.Output out = new ByteStream.Output();
+    private PrimitiveObjectInspector inputOI;
+    private Text t = new Text();
+    private ByteStream.Output out = new ByteStream.Output();
 
-    static byte[] trueBytes = { 'T', 'R', 'U', 'E' };
-    static byte[] falseBytes = { 'F', 'A', 'L', 'S', 'E' };
+    private static byte[] trueBytes = {'T', 'R', 'U', 'E'};
+    private static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
 
     public TextConverter(PrimitiveObjectInspector inputOI) {
       // The output ObjectInspector is writableStringObjectInspector.
@@ -252,58 +256,43 @@ public class PrimitiveObjectInspectorConverter {
       }
 
       switch (inputOI.getPrimitiveCategory()) {
-      case VOID: {
+      case VOID:
         return null;
-      }
-      case BOOLEAN: {
+      case BOOLEAN:
         t.set(((BooleanObjectInspector) inputOI).get(input) ? trueBytes
             : falseBytes);
         return t;
-      }
-      case BYTE: {
+      case BYTE:
         out.reset();
-        LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector) inputOI)
-            .get(input));
+        LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector) inputOI).get(input));
         t.set(out.getData(), 0, out.getCount());
         return t;
-      }
-      case SHORT: {
+      case SHORT:
         out.reset();
-        LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector) inputOI)
-            .get(input));
+        LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector) inputOI).get(input));
         t.set(out.getData(), 0, out.getCount());
         return t;
-      }
-      case INT: {
+      case INT:
         out.reset();
-        LazyInteger.writeUTF8NoException(out, ((IntObjectInspector) inputOI)
-            .get(input));
+        LazyInteger.writeUTF8NoException(out, ((IntObjectInspector) inputOI).get(input));
         t.set(out.getData(), 0, out.getCount());
         return t;
-      }
-      case LONG: {
+      case LONG:
         out.reset();
-        LazyLong.writeUTF8NoException(out, ((LongObjectInspector) inputOI)
-            .get(input));
+        LazyLong.writeUTF8NoException(out, ((LongObjectInspector) inputOI).get(input));
         t.set(out.getData(), 0, out.getCount());
         return t;
-      }
-      case FLOAT: {
+      case FLOAT:
         t.set(String.valueOf(((FloatObjectInspector) inputOI).get(input)));
         return t;
-      }
-      case DOUBLE: {
+      case DOUBLE:
         t.set(String.valueOf(((DoubleObjectInspector) inputOI).get(input)));
         return t;
-      }
-      case STRING: {
+      case STRING:
         t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
         return t;
-      }
-      default: {
-        throw new RuntimeException("Hive 2 Internal error: type = "
-            + inputOI.getTypeName());
-      }
+      default:
+        throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());
       }
     }
   }

@@ -72,7 +72,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class SkewJoinHandler {
 
-  static final protected Log LOG = LogFactory.getLog(SkewJoinHandler.class
+  protected static final Log LOG = LogFactory.getLog(SkewJoinHandler.class
       .getName());
 
   public int currBigKeyTag = -1;
@@ -86,7 +86,7 @@ public class SkewJoinHandler {
   private Map<Byte, TableDesc> tblDesc = null;
 
   private Map<Byte, Boolean> bigKeysExistingMap = null;
-  
+
   private LongWritable skewjoinFollowupJobs;
 
   Configuration hconf = null;
@@ -150,12 +150,11 @@ public class SkewJoinHandler {
       }
       StructObjectInspector structTblValInpector = ObjectInspectorFactory
           .getStandardStructObjectInspector(valColNames,
-              joinOp.joinValuesStandardObjectInspectors.get((byte) i));
+          joinOp.joinValuesStandardObjectInspectors.get((byte) i));
 
       StructObjectInspector structTblInpector = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-              .asList(new StructObjectInspector[] { structTblValInpector,
-                  structTblKeyInpector }));
+          .asList(new StructObjectInspector[] {structTblValInpector, structTblKeyInpector}));
       skewKeysTableObjectInspector.put((byte) i, structTblInpector);
     }
 
@@ -305,7 +304,7 @@ public class SkewJoinHandler {
         }
         specPath = conf.getSmallKeysDirMap()
             .get(Byte.valueOf((byte) bigKeyTbl)).get(
-                Byte.valueOf((byte) smallKeyTbl));
+            Byte.valueOf((byte) smallKeyTbl));
         // the file may not exist, and we just ignore this
         commitOutputPathToFinalPath(specPath, true);
       }
@@ -348,9 +347,9 @@ public class SkewJoinHandler {
   public void setSkewJoinJobCounter(LongWritable skewjoinFollowupJobs) {
     this.skewjoinFollowupJobs = skewjoinFollowupJobs;
   }
-  
+
   public void updateSkewJoinJobCounter(int tag) {
-    this.skewjoinFollowupJobs.set(this.skewjoinFollowupJobs.get()+1);
+    this.skewjoinFollowupJobs.set(this.skewjoinFollowupJobs.get() + 1);
   }
 
 }

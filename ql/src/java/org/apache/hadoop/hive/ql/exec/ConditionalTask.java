@@ -29,9 +29,8 @@ import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 /**
- * Conditional Task implementation
- **/
-
+ * Conditional Task implementation.
+ */
 public class ConditionalTask extends Task<ConditionalWork> implements
     Serializable {
 

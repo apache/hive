@@ -49,7 +49,11 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
  * expression is then used to figure out whether a particular partition should
  * be scanned or not.
  */
-public class ExprProcFactory {
+public final class ExprProcFactory {
+
+  private ExprProcFactory() {
+    // prevent instantiation
+  }
 
   /**
    * Processor for column expressions.
@@ -79,7 +83,7 @@ public class ExprProcFactory {
   /**
    * If all children are candidates and refer only to one table alias then this
    * expr is a candidate else it is not a candidate but its children could be
-   * final candidates
+   * final candidates.
    */
   public static class GenericFuncExprProcessor implements NodeProcessor {
 
@@ -132,6 +136,10 @@ public class ExprProcFactory {
 
   }
 
+  /**
+   * FieldExprProcessor.
+   *
+   */
   public static class FieldExprProcessor implements NodeProcessor {
 
     @Override
@@ -202,7 +210,7 @@ public class ExprProcFactory {
   }
 
   /**
-   * Generates the partition pruner for the expression tree
+   * Generates the partition pruner for the expression tree.
    * 
    * @param tabAlias
    *          The table alias of the partition table that is being considered

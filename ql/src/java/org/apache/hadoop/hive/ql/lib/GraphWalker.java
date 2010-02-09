@@ -38,7 +38,7 @@ public interface GraphWalker {
    *          the map from node to objects returned by the processors.
    * @throws SemanticException
    */
-  public void startWalking(Collection<Node> startNodes,
+  void startWalking(Collection<Node> startNodes,
       HashMap<Node, Object> nodeOutput) throws SemanticException;
 
 }

@@ -31,6 +31,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
 
+/**
+ * PartitionDesc.
+ *
+ */
 @Explain(displayName = "Partition")
 public class PartitionDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 2L;
@@ -123,7 +127,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   /**
-   * Return a deserializer object corresponding to the tableDesc
+   * Return a deserializer object corresponding to the tableDesc.
    */
   public Deserializer getDeserializer() throws Exception {
     Deserializer de = deserializerClass.newInstance();

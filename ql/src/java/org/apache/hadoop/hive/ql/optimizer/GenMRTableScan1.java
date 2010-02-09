@@ -34,14 +34,14 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Processor for the rule - table scan
+ * Processor for the rule - table scan.
  */
 public class GenMRTableScan1 implements NodeProcessor {
   public GenMRTableScan1() {
   }
 
   /**
-   * Table Sink encountered
+   * Table Sink encountered.
    * 
    * @param nd
    *          the table sink operator encountered

@@ -24,15 +24,12 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
-import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.Progressable;
 
@@ -68,7 +65,7 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
 
     FileSystem fs = outPath.getFileSystem(jc);
     final OutputStream outStream = fs.create(outPath);
-    
+
     return new RecordWriter() {
       public void write(Writable r) throws IOException {
         if (r instanceof Text) {

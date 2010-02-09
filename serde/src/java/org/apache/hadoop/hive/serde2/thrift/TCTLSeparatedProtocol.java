@@ -54,13 +54,13 @@ import org.apache.thrift.transport.TTransportException;
 public class TCTLSeparatedProtocol extends TProtocol implements
     ConfigurableTProtocol, WriteNullsProtocol, SkippableTProtocol {
 
-  final static Log LOG = LogFactory.getLog(TCTLSeparatedProtocol.class
+  static final Log LOG = LogFactory.getLog(TCTLSeparatedProtocol.class
       .getName());
 
   static byte ORDERED_TYPE = (byte) -1;
 
   /**
-   * Factory for JSON protocol objects
+   * Factory for JSON protocol objects.
    */
   public static class Factory implements TProtocolFactory {
 
@@ -71,15 +71,15 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   /**
-   * These are defaults, but for now leaving them like this
+   * These are defaults, but for now leaving them like this.
    */
-  final static protected String defaultPrimarySeparator = "\001";
-  final static protected String defaultSecondarySeparator = "\002";
-  final static protected String defaultRowSeparator = "\n";
-  final static protected String defaultMapSeparator = "\003";
+  protected static final String defaultPrimarySeparator = "\001";
+  protected static final String defaultSecondarySeparator = "\002";
+  protected static final String defaultRowSeparator = "\n";
+  protected static final String defaultMapSeparator = "\003";
 
   /**
-   * The separators for this instance
+   * The separators for this instance.
    */
   protected String primarySeparator;
   protected String secondarySeparator;
@@ -116,38 +116,38 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   /**
-   * The transport stream is tokenized on the row separator
+   * The transport stream is tokenized on the row separator.
    */
   protected SimpleTransportTokenizer transportTokenizer;
 
   /**
-   * For a single row, the split on the primary separator
+   * For a single row, the split on the primary separator.
    */
-  protected String columns[];
+  protected String[] columns;
 
   /**
-   * An index into what column we're on
+   * An index into what column we're on.
    */
 
   protected int index;
 
   /**
-   * For a single column, a split on the secondary separator
+   * For a single column, a split on the secondary separator.
    */
-  protected String fields[];
+  protected String[] fields;
 
   /**
-   * An index into what field within a column we're on
+   * An index into what field within a column we're on.
    */
   protected int innerIndex;
 
   /**
-   * Is this the first field we're writing
+   * Is this the first field we're writing.
    */
   protected boolean firstField;
 
   /**
-   * Is this the first list/map/set field we're writing for the current element
+   * Is this the first list/map/set field we're writing for the current element.
    */
   protected boolean firstInnerField;
 
@@ -158,12 +158,12 @@ public class TCTLSeparatedProtocol extends TProtocol implements
 
   /**
    * For writes, on what element are we on so we know when to use normal list
-   * separator or for a map know when to use the k/v separator
+   * separator or for a map know when to use the k/v separator.
    */
   protected long elemIndex;
 
   /**
-   * Are we currently on the top-level columns or parsing a column itself
+   * Are we currently on the top-level columns or parsing a column itself.
    */
   protected boolean inner;
 
@@ -178,14 +178,14 @@ public class TCTLSeparatedProtocol extends TProtocol implements
    * The transport being wrapped.
    * 
    */
-  final protected TTransport innerTransport;
+  protected final TTransport innerTransport;
 
   /**
    * Strings used to lookup the various configurable paramaters of this
    * protocol.
    */
-  public final static String ReturnNullsKey = "separators.return_nulls";
-  public final static String BufferSizeKey = "separators.buffer_size";
+  public static final String ReturnNullsKey = "separators.return_nulls";
+  public static final String BufferSizeKey = "separators.buffer_size";
 
   /**
    * The size of the internal buffer to use.
@@ -193,17 +193,17 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   protected int bufferSize;
 
   /**
-   * The string representing nulls in the serialized data. e.g., \N as in mysql
+   * The string representing nulls in the serialized data. e.g., \N as in mysql.
    */
   protected String nullString;
 
   /**
-   * The nullString in UTF-8 bytes
+   * The nullString in UTF-8 bytes.
    */
   protected Text nullText;
 
   /**
-   * A convenience class for tokenizing a TTransport
+   * A convenience class for tokenizing a TTransport.
    */
 
   class SimpleTransportTokenizer {
@@ -211,7 +211,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     TTransport trans;
     StringTokenizer tokenizer;
     final String separator;
-    byte buf[];
+    byte[] buf;
 
     public SimpleTransportTokenizer(TTransport trans, String separator,
         int buffer_length) {
@@ -345,7 +345,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     // need escaping but for now ...
     final String primaryPatternString = quote == null ? primarySeparator
         : "(?:^|" + primarySeparator + ")(" + quote + "(?:[^" + quote + "]+|"
-            + quote + quote + ")*" + quote + "|[^" + primarySeparator + "]*)";
+        + quote + quote + ")*" + quote + "|[^" + primarySeparator + "]*)";
 
     if (quote != null) {
       stripSeparatorPrefix = Pattern.compile("^" + primarySeparator);
@@ -371,7 +371,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
 
   /**
    * 
-   * Split the line based on a complex regex pattern
+   * Split the line based on a complex regex pattern.
    * 
    * @param line
    *          the current row
@@ -410,7 +410,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   protected String getByteValue(String altValue, String defaultVal) {
     if (altValue != null && altValue.length() > 0) {
       try {
-        byte b[] = new byte[1];
+        byte[] b = new byte[1];
         b[0] = Byte.valueOf(altValue).byteValue();
         return new String(b);
       } catch (NumberFormatException e) {
@@ -421,7 +421,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   /**
-   * Initialize the TProtocol
+   * Initialize the TProtocol.
    * 
    * @param conf
    *          System properties
@@ -547,7 +547,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   // for writing out single byte
-  private final byte buf[] = new byte[1];
+  private final byte[] buf = new byte[1];
 
   @Override
   public void writeByte(byte b) throws TException {

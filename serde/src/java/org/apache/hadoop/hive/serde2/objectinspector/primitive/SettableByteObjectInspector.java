@@ -28,10 +28,10 @@ public interface SettableByteObjectInspector extends ByteObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, byte value);
+  Object set(Object o, byte value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(byte value);
+  Object create(byte value);
 }

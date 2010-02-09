@@ -30,6 +30,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * TestObjectInspectorConverters.
+ *
+ */
 public class TestObjectInspectorConverters extends TestCase {
 
   public void testObjectInspectorConverters() throws Throwable {

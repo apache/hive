@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
+/**
+ * ExprNodeGenericFuncEvaluator.
+ *
+ */
 public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
 
   private static final Log LOG = LogFactory
@@ -66,8 +70,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector)
-      throws HiveException {
+  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
     // Initialize all children first
     ObjectInspector[] childrenOIs = new ObjectInspector[children.length];
     for (int i = 0; i < children.length; i++) {

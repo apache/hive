@@ -72,8 +72,7 @@ public class LazyLong extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as a long quantity.
    */
-  public static long parseLong(byte[] bytes, int start, int length)
-      throws NumberFormatException {
+  public static long parseLong(byte[] bytes, int start, int length) {
     return parseLong(bytes, start, length, 10);
   }
 
@@ -93,8 +92,7 @@ public class LazyLong extends
    * @exception NumberFormatException
    *              if the argument could not be parsed as an long quantity.
    */
-  public static long parseLong(byte[] bytes, int start, int length, int radix)
-      throws NumberFormatException {
+  public static long parseLong(byte[] bytes, int start, int length, int radix) {
     if (bytes == null) {
       throw new NumberFormatException("String is null");
     }

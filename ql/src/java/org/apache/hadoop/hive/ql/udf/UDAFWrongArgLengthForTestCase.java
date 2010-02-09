@@ -23,9 +23,17 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDAFWrongArgLengthForTestCase.
+ *
+ */
 public class UDAFWrongArgLengthForTestCase extends UDAF {
 
-  static public class UDAFWrongArgLengthForTestCaseEvaluator implements
+  /**
+   * UDAFWrongArgLengthForTestCaseEvaluator.
+   *
+   */
+  public static class UDAFWrongArgLengthForTestCaseEvaluator implements
       UDAFEvaluator {
 
     private long mCount;

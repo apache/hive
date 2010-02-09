@@ -23,19 +23,23 @@ import java.util.Properties;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+/**
+ * CliSessionState.
+ * 
+ */
 public class CliSessionState extends SessionState {
   /**
-   * -e option if any that the session has been invoked with
+   * -e option if any that the session has been invoked with.
    */
   public String execString;
 
   /**
-   * -f option if any that the session has been invoked with
+   * -f option if any that the session has been invoked with.
    */
   public String fileName;
 
   /**
-   * properties set from -hiveconf via cmdline
+   * properties set from -hiveconf via cmdline.
    */
   public Properties cmdProperties = new Properties();
 

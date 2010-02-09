@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
 
 /**
- * LazyBinaryObject for byte which takes one byte
+ * LazyBinaryObject for byte which takes one byte.
  */
 public class LazyBinaryByte extends
     LazyBinaryPrimitive<WritableByteObjectInspector, ByteWritable> {

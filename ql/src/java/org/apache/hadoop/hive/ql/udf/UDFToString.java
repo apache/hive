@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -34,12 +32,13 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFToString.
+ *
+ */
 public class UDFToString extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFToString.class.getName());
-
-  Text t = new Text();
-  ByteStream.Output out = new ByteStream.Output();
+  private Text t = new Text();
+  private ByteStream.Output out = new ByteStream.Output();
 
   public UDFToString() {
   }
@@ -48,8 +47,8 @@ public class UDFToString extends UDF {
     return null;
   }
 
-  byte[] trueBytes = { 'T', 'R', 'U', 'E' };
-  byte[] falseBytes = { 'F', 'A', 'L', 'S', 'E' };
+  private byte[] trueBytes = {'T', 'R', 'U', 'E'};
+  private byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
 
   public Text evaluate(BooleanWritable i) {
     if (i == null) {

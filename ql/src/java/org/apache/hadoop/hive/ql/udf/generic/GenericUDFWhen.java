@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
@@ -34,16 +32,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
  * thrown.
  */
 public class GenericUDFWhen extends GenericUDF {
-
-  private static Log LOG = LogFactory.getLog(GenericUDFWhen.class.getName());
-
-  ObjectInspector[] argumentOIs;
-  GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
+  private ObjectInspector[] argumentOIs;
+  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentTypeException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
@@ -57,9 +50,9 @@ public class GenericUDFWhen extends GenericUDF {
       if (!returnOIResolver.update(arguments[i + 1])) {
         throw new UDFArgumentTypeException(i + 1,
             "The expressions after THEN should have the same type: \""
-                + returnOIResolver.get().getTypeName()
-                + "\" is expected but \"" + arguments[i + 1].getTypeName()
-                + "\" is found");
+            + returnOIResolver.get().getTypeName()
+            + "\" is expected but \"" + arguments[i + 1].getTypeName()
+            + "\" is found");
       }
     }
     if (arguments.length % 2 == 1) {
@@ -67,9 +60,9 @@ public class GenericUDFWhen extends GenericUDF {
       if (!returnOIResolver.update(arguments[i + 1])) {
         throw new UDFArgumentTypeException(i + 1,
             "The expression after ELSE should have the same type as those after THEN: \""
-                + returnOIResolver.get().getTypeName()
-                + "\" is expected but \"" + arguments[i + 1].getTypeName()
-                + "\" is found");
+            + returnOIResolver.get().getTypeName()
+            + "\" is expected but \"" + arguments[i + 1].getTypeName()
+            + "\" is found");
       }
     }
 

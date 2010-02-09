@@ -25,16 +25,20 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Description(name = "get_json_object", value = "_FUNC_(json_txt, path) - Extract a json object from path ", extended = "Extract json object from a json string based on json path "
+/**
+ * UDFJson.
+ *
+ */
+@Description(name = "get_json_object",
+    value = "_FUNC_(json_txt, path) - Extract a json object from path ",
+    extended = "Extract json object from a json string based on json path "
     + "specified, and return json string of the extracted json object. It "
     + "will return null if the input json string is invalid.\n"
     + "A limited version of JSONPath supported:\n"
@@ -51,7 +55,6 @@ import org.json.JSONObject;
     + "  [,] : Union operator\n"
     + "  [start:end:step] : array slice operator\n")
 public class UDFJson extends UDF {
-  private static Log LOG = LogFactory.getLog(UDFJson.class.getName());
   private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
   private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 

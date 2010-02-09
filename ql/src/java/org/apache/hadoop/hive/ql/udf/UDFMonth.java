@@ -23,23 +23,24 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "month", value = "_FUNC_(date) - Returns the month of date", extended = "Example:\n"
+/**
+ * UDFMonth.
+ *
+ */
+@Description(name = "month",
+    value = "_FUNC_(date) - Returns the month of date",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('2009-30-07') FROM src LIMIT 1;\n" + "  7")
 public class UDFMonth extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFMonth.class.getName());
-
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   public UDFMonth() {
   }

@@ -18,7 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
+/**
+ * DynamicSerDeFieldRequiredness.
+ *
+ */
 public class DynamicSerDeFieldRequiredness extends SimpleNode {
+  /**
+   * RequirednessTypes.
+   *
+   */
   public enum RequirednessTypes {
     Required, Skippable, Optional,
   };

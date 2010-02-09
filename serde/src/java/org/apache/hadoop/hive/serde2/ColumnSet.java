@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
 
+/**
+ * ColumnSet.
+ *
+ */
 public class ColumnSet {
   public ArrayList<String> col;
 

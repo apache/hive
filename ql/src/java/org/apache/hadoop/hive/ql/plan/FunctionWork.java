@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * FunctionWork.
+ *
+ */
 public class FunctionWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private CreateFunctionDesc createFunctionDesc;

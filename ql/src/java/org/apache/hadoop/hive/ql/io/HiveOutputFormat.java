@@ -58,7 +58,7 @@ public interface HiveOutputFormat<K extends WritableComparable, V extends Writab
    *          progress used for status report
    * @return the RecordWriter for the output file
    */
-  public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       final Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException;
 

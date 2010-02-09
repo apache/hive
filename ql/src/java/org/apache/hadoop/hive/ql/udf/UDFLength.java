@@ -17,13 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "length", value = "_FUNC_(str) - Returns the length of str ", extended = "Example:\n"
+/**
+ * UDFLength.
+ *
+ */
+@Description(name = "length",
+    value = "_FUNC_(str) - Returns the length of str ",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  8")
 public class UDFLength extends UDF {
   private final IntWritable result = new IntWritable();

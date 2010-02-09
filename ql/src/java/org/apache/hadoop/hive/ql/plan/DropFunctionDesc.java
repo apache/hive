@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * DropFunctionDesc.
+ *
+ */
 @Explain(displayName = "Drop Function")
 public class DropFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;

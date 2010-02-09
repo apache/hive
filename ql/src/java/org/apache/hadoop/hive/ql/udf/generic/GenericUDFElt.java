@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -36,15 +36,15 @@ import org.apache.hadoop.io.IntWritable;
  * 
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
-@Description(name = "elt", value = "_FUNC_(n, str1, str2, ...) - returns the n-th string", extended = "Example:\n"
+@Description(name = "elt",
+    value = "_FUNC_(n, str1, str2, ...) - returns the n-th string",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_(1, 'face', 'book') FROM src LIMIT 1;\n" + "  'face'")
 public class GenericUDFElt extends GenericUDF {
-
-  ObjectInspectorConverters.Converter[] converters;
+  private ObjectInspectorConverters.Converter[] converters;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
           "The function ELT(N,str1,str2,str3,...) needs at least two arguments.");

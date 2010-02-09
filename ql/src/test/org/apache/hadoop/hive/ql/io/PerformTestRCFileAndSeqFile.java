@@ -18,6 +18,10 @@ import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 
+/**
+ * PerformTestRCFileAndSeqFile.
+ *
+ */
 public class PerformTestRCFileAndSeqFile extends TestCase {
 
   private final Configuration conf = new Configuration();
@@ -257,8 +261,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     return fs.getUri().toString().startsWith("file://");
   }
 
-  public void performSequenceFileRead(FileSystem fs, int count, Path file)
-      throws IOException {
+  public void performSequenceFileRead(FileSystem fs, int count, Path file) throws IOException {
     SequenceFile.Reader reader = new SequenceFile.Reader(fs, file, conf);
     ByteWritable key = new ByteWritable();
     BytesRefArrayWritable val = new BytesRefArrayWritable();
@@ -329,7 +332,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
         ok = ok && (checkRow.get(0).equals(cols.get(0)));
         ok = ok
             && checkRow.get(allColumnsNumber - 1).equals(
-                cols.get(allColumnsNumber - 1));
+            cols.get(allColumnsNumber - 1));
       }
       if (!ok) {
         throw new IllegalStateException("Compare read and write error.");

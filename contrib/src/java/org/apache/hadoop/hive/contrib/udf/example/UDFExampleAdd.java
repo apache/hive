@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.contrib.udf.example;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFExampleAdd.
+ *
+ */
 public class UDFExampleAdd extends UDF {
 
   public Integer evaluate(Integer... a) {

@@ -53,6 +53,10 @@ import org.apache.hadoop.mapred.TextInputFormat;
 public class Base64TextInputFormat implements
     InputFormat<LongWritable, BytesWritable>, JobConfigurable {
 
+  /**
+   * Base64LineRecordReader.
+   *
+   */
   public static class Base64LineRecordReader implements
       RecordReader<LongWritable, BytesWritable>, JobConfigurable {
 
@@ -90,8 +94,7 @@ public class Base64TextInputFormat implements
     }
 
     @Override
-    public boolean next(LongWritable key, BytesWritable value)
-        throws IOException {
+    public boolean next(LongWritable key, BytesWritable value) throws IOException {
       while (reader.next(key, text)) {
         // text -> byte[] -> value
         byte[] textBytes = text.getBytes();
@@ -153,8 +156,7 @@ public class Base64TextInputFormat implements
   }
 
   public RecordReader<LongWritable, BytesWritable> getRecordReader(
-      InputSplit genericSplit, JobConf job, Reporter reporter)
-      throws IOException {
+      InputSplit genericSplit, JobConf job, Reporter reporter) throws IOException {
     reporter.setStatus(genericSplit.toString());
     Base64LineRecordReader reader = new Base64LineRecordReader(
         new LineRecordReader(job, (FileSplit) genericSplit));

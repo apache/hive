@@ -147,7 +147,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = TypeInfoUtils
           .getStandardWritableObjectInspectorFromTypeInfo(children.get(i)
-              .getTypeInfo());
+          .getTypeInfo());
     }
 
     ObjectInspector oi = genericUDF.initialize(childrenOIs);

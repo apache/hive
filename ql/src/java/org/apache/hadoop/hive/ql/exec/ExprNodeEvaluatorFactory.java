@@ -25,9 +25,13 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 
-public class ExprNodeEvaluatorFactory {
+/**
+ * ExprNodeEvaluatorFactory.
+ *
+ */
+public final class ExprNodeEvaluatorFactory {
 
-  public ExprNodeEvaluatorFactory() {
+  private ExprNodeEvaluatorFactory() {
   }
 
   public static ExprNodeEvaluator get(ExprNodeDesc desc) {

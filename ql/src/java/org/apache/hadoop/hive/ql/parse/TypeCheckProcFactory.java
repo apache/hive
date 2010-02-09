@@ -59,10 +59,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * expression Node Descriptor trees. They also introduce the correct conversion
  * functions to do proper implicit conversion.
  */
-public class TypeCheckProcFactory {
+public final class TypeCheckProcFactory {
 
   protected static final Log LOG = LogFactory.getLog(TypeCheckProcFactory.class
       .getName());
+
+  private TypeCheckProcFactory() {
+    // prevent instantiation
+  }
 
   /**
    * Function to do groupby subexpression elimination. This is called by all the
@@ -286,7 +290,7 @@ public class TypeCheckProcFactory {
   }
 
   /**
-   * Processor for table columns
+   * Processor for table columns.
    */
   public static class ColumnExprProcessor implements NodeProcessor {
 
@@ -450,7 +454,7 @@ public class TypeCheckProcFactory {
     }
 
     /**
-     * Get the exprNodeDesc
+     * Get the exprNodeDesc.
      * 
      * @param name
      * @param children
@@ -545,7 +549,7 @@ public class TypeCheckProcFactory {
           // Only allow constant integer index for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)
               || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
-                  .equals(TypeInfoFactory.intTypeInfo))) {
+              .equals(TypeInfoFactory.intTypeInfo))) {
             throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT
                 .getMsg(expr));
           }

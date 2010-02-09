@@ -28,9 +28,17 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDAFTestMax.
+ *
+ */
 public class UDAFTestMax extends UDAF {
 
-  static public class MaxShortEvaluator implements UDAFEvaluator {
+  /**
+   * MaxShortEvaluator.
+   *
+   */
+  public static class MaxShortEvaluator implements UDAFEvaluator {
     private short mMax;
     private boolean mEmpty;
 
@@ -69,7 +77,11 @@ public class UDAFTestMax extends UDAF {
     }
   }
 
-  static public class MaxIntEvaluator implements UDAFEvaluator {
+  /**
+   * MaxIntEvaluator.
+   *
+   */
+  public static class MaxIntEvaluator implements UDAFEvaluator {
     private int mMax;
     private boolean mEmpty;
 
@@ -108,7 +120,11 @@ public class UDAFTestMax extends UDAF {
     }
   }
 
-  static public class MaxLongEvaluator implements UDAFEvaluator {
+  /**
+   * MaxLongEvaluator.
+   *
+   */
+  public static class MaxLongEvaluator implements UDAFEvaluator {
     private long mMax;
     private boolean mEmpty;
 
@@ -147,7 +163,11 @@ public class UDAFTestMax extends UDAF {
     }
   }
 
-  static public class MaxFloatEvaluator implements UDAFEvaluator {
+  /**
+   * MaxFloatEvaluator.
+   *
+   */
+  public static class MaxFloatEvaluator implements UDAFEvaluator {
     private float mMax;
     private boolean mEmpty;
 
@@ -186,7 +206,11 @@ public class UDAFTestMax extends UDAF {
     }
   }
 
-  static public class MaxDoubleEvaluator implements UDAFEvaluator {
+  /**
+   * MaxDoubleEvaluator.
+   *
+   */
+  public static class MaxDoubleEvaluator implements UDAFEvaluator {
     private double mMax;
     private boolean mEmpty;
 
@@ -225,7 +249,11 @@ public class UDAFTestMax extends UDAF {
     }
   }
 
-  static public class MaxStringEvaluator implements UDAFEvaluator {
+  /**
+   * MaxStringEvaluator.
+   *
+   */
+  public static class MaxStringEvaluator implements UDAFEvaluator {
     private Text mMax;
     private boolean mEmpty;
 

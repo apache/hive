@@ -25,7 +25,11 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.net.NetUtils;
 
-public class JobTrackerURLResolver {
+/**
+ * JobTrackerURLResolver.
+ *
+ */
+public final class JobTrackerURLResolver {
   public static String getURL(JobConf conf) throws IOException {
     String infoAddr = conf.get("mapred.job.tracker.http.address");
     if (infoAddr == null) {
@@ -38,5 +42,9 @@ public class JobTrackerURLResolver {
         + ":" + infoPort;
 
     return tracker;
+  }
+
+  private JobTrackerURLResolver() {
+    // prevent instantiation
   }
 }

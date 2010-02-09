@@ -47,17 +47,25 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 
+/**
+ * ScriptOperator.
+ *
+ */
 public class ScriptOperator extends Operator<ScriptDesc> implements
     Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Counter.
+   *
+   */
   public static enum Counter {
     DESERIALIZE_ERRORS, SERIALIZE_ERRORS
   }
 
-  transient private final LongWritable deserialize_error_count = new LongWritable();
-  transient private final LongWritable serialize_error_count = new LongWritable();
+  private final transient LongWritable deserialize_error_count = new LongWritable();
+  private final transient LongWritable serialize_error_count = new LongWritable();
 
   transient Thread outThread = null;
   transient Thread errThread = null;
@@ -135,14 +143,14 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     }
 
     /**
-     * Appends the specified component to the path list
+     * Appends the specified component to the path list.
      */
     public void prependPathComponent(String str) {
       pathenv = str + pathSep + pathenv;
     }
 
     /**
-     * Returns the full path name of this file if it is listed in the path
+     * Returns the full path name of this file if it is listed in the path.
      */
     public File getAbsolutePath(String filename) {
       if (pathenv == null || pathSep == null || fileSep == null) {
@@ -287,7 +295,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
         outThread = new StreamThread(scriptOutputReader,
             new OutputStreamProcessor(scriptOutputDeserializer
-                .getObjectInspector()), "OutputProcessor");
+            .getObjectInspector()), "OutputProcessor");
 
         RecordReader scriptErrReader = conf.getOutRecordReaderClass()
             .newInstance();
@@ -373,7 +381,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           LOG.error("Script failed with code " + exitVal);
           new_abort = true;
         }
-        ;
       } catch (IOException e) {
         LOG.error("Got ioexception: " + e.getMessage());
         e.printStackTrace();
@@ -446,9 +453,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   interface StreamProcessor {
-    public void processLine(Writable line) throws HiveException;
+    void processLine(Writable line) throws HiveException;
 
-    public void close() throws HiveException;
+    void close() throws HiveException;
   }
 
   class OutputStreamProcessor implements StreamProcessor {
@@ -558,7 +565,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
       } catch (Throwable th) {
         scriptError = th;
-        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() + 
+        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() +
             "\nCause: " + th.getCause());
         LOG.warn(StringUtils.stringifyException(th));
       } finally {
@@ -576,8 +583,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   /**
-   * Wrap the script in a wrapper that allows admins to control
-   **/
+   * Wrap the script in a wrapper that allows admins to control.
+   */
   protected String[] addWrapper(String[] inArgs) {
     String wrapper = HiveConf.getVar(hconf, HiveConf.ConfVars.SCRIPTWRAPPER);
     if (wrapper == null) {

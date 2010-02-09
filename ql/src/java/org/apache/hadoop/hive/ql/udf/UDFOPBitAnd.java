@@ -18,19 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
+/**
+ * UDFOPBitAnd.
+ *
+ */
 @Description(name = "&", value = "a _FUNC_ b - Bitwise and", extended = "Example:\n"
     + "  > SELECT 3 _FUNC_ 5 FROM src LIMIT 1;\n" + "  1")
 public class UDFOPBitAnd extends UDFBaseBitOP {
-
-  private static Log LOG = LogFactory.getLog(UDFOPBitAnd.class.getName());
 
   public UDFOPBitAnd() {
   }

@@ -18,16 +18,22 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "bin", value = "_FUNC_(n) - returns n in binary", extended = "n is a BIGINT. Returns NULL if n is NULL.\n"
+/**
+ * UDFBin.
+ *
+ */
+@Description(name = "bin",
+    value = "_FUNC_(n) - returns n in binary",
+    extended = "n is a BIGINT. Returns NULL if n is NULL.\n"
     + "Example:\n" + "  > SELECT _FUNC_(13) FROM src LIMIT 1\n" + "  '1101'")
 public class UDFBin extends UDF {
   private final Text result = new Text();
-  byte[] value = new byte[64];
+  private byte[] value = new byte[64];
 
   public Text evaluate(LongWritable n) {
     if (n == null) {

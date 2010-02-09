@@ -25,5 +25,5 @@ import org.apache.thrift.TException;
  * deserializing.
  */
 public interface SkippableTProtocol {
-  public void skip(byte type) throws TException;
+  void skip(byte type) throws TException;
 }

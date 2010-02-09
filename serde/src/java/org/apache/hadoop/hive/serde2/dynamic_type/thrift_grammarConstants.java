@@ -116,7 +116,7 @@ public interface thrift_grammarConstants {
   int DEFAULT = 0;
 
   /** Literal token values. */
-  String[] tokenImage = { "<EOF>", "\" \"", "\"\\t\"", "\"\\n\"", "\"\\r\"",
+  String[] tokenImage = {"<EOF>", "\" \"", "\"\\t\"", "\"\\n\"", "\"\\r\"",
       "<token of kind 5>", "<token of kind 6>", "<token of kind 7>",
       "\"const\"", "\"namespace\"", "\"cpp_namespace\"", "\"cpp_include\"",
       "\"cpp_type\"", "\"java_package\"", "\"cocoa_prefix\"",
@@ -132,6 +132,6 @@ public interface thrift_grammarConstants {
       "<tok_double_constant>", "<IDENTIFIER>", "<LETTER>", "<DIGIT>",
       "<tok_literal>", "<tok_st_identifier>", "\",\"", "\";\"", "\"{\"",
       "\"}\"", "\"=\"", "\"[\"", "\"]\"", "\":\"", "\"(\"", "\")\"", "\"<\"",
-      "\">\"", };
+      "\">\"",};
 
 }

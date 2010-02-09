@@ -18,11 +18,15 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
+/**
+ * TestHiveServer.
+ *
+ */
 public class TestHiveServer extends TestCase {
 
   private HiveInterface client;
-  private final static String host = "localhost";
-  private final static int port = 10000;
+  private static final String host = "localhost";
+  private static final int port = 10000;
   private final Path dataFilePath;
 
   private static String tableName = "testhivedrivertable";
@@ -165,7 +169,7 @@ public class TestHiveServer extends TestCase {
   }
 
   /**
-   * Test metastore call
+   * Test metastore call.
    */
   public void testMetastore() throws Exception {
     try {
@@ -180,7 +184,7 @@ public class TestHiveServer extends TestCase {
   }
 
   /**
-   * Test cluster status retrieval
+   * Test cluster status retrieval.
    */
   public void testGetClusterStatus() throws Exception {
     HiveClusterStatus clusterStatus = client.getClusterStatus();

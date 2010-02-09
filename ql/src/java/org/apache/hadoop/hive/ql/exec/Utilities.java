@@ -72,10 +72,10 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.serde.Constants;
@@ -90,22 +90,34 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
+/**
+ * Utilities.
+ *
+ */
 @SuppressWarnings("nls")
-public class Utilities {
+public final class Utilities {
 
   /**
-   * The object in the reducer are composed of these top level fields
+   * The object in the reducer are composed of these top level fields.
    */
 
   public static String HADOOP_LOCAL_FS = "file:///";
 
+  /**
+   * ReduceField.
+   *
+   */
   public static enum ReduceField {
     KEY, VALUE, ALIAS
   };
 
+  private Utilities() {
+    // prevent instantiation
+  }
+
   private static Map<String, MapredWork> gWorkMap = Collections
       .synchronizedMap(new HashMap<String, MapredWork>());
-  static final private Log LOG = LogFactory.getLog(Utilities.class.getName());
+  private static final Log LOG = LogFactory.getLog(Utilities.class.getName());
 
   public static void clearMapRedWork(Configuration job) {
     try {
@@ -176,7 +188,7 @@ public class Utilities {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
       return new Expression(Enum.class, "valueOf", new Object[] {
-          oldInstance.getClass(), ((Enum<?>) oldInstance).name() });
+          oldInstance.getClass(), ((Enum<?>) oldInstance).name()});
     }
 
     @Override
@@ -239,7 +251,7 @@ public class Utilities {
     e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
     e
         .setPersistenceDelegate(Operator.ProgressCounter.class,
-            new EnumDelegate());
+        new EnumDelegate());
 
     e.writeObject(t);
     e.close();
@@ -267,6 +279,12 @@ public class Utilities {
     return (ret);
   }
 
+  /**
+   * Tuple.
+   *
+   * @param <T>
+   * @param <V>
+   */
   public static class Tuple<T, V> {
     private final T one;
     private final V two;
@@ -295,11 +313,11 @@ public class Utilities {
     defaultTd = PlanUtils.getDefaultTableDesc("" + Utilities.ctrlaCode);
   }
 
-  public final static int newLineCode = 10;
-  public final static int tabCode = 9;
-  public final static int ctrlaCode = 1;
+  public static final int newLineCode = 10;
+  public static final int tabCode = 9;
+  public static final int ctrlaCode = 1;
 
-  public final static String INDENT = "  ";
+  public static final String INDENT = "  ";
 
   // Note: When DDL supports specifying what string to represent null,
   // we should specify "NULL" to represent null in the temp table, and then
@@ -346,6 +364,10 @@ public class Utilities {
     return (ret);
   }
 
+  /**
+   * StreamPrinter.
+   *
+   */
   public static class StreamPrinter extends Thread {
     InputStream is;
     String type;
@@ -387,10 +409,10 @@ public class Utilities {
   public static TableDesc getTableDesc(String cols, String colTypes) {
     return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
-                + Utilities.ctrlaCode,
-            org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
-            org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
+        + Utilities.ctrlaCode,
+        org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
+        org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part)
@@ -492,13 +514,17 @@ public class Utilities {
     return prefix + suffix;
   }
 
-  public final static String NSTR = "";
+  public static final String NSTR = "";
 
-  public static enum streamStatus {
+  /**
+   * StreamStatus.
+   *
+   */
+  public static enum StreamStatus {
     EOF, TERMINATED
   }
 
-  public static streamStatus readColumn(DataInput in, OutputStream out)
+  public static StreamStatus readColumn(DataInput in, OutputStream out)
       throws IOException {
 
     while (true) {
@@ -506,11 +532,11 @@ public class Utilities {
       try {
         b = in.readByte();
       } catch (EOFException e) {
-        return streamStatus.EOF;
+        return StreamStatus.EOF;
       }
 
       if (b == Utilities.newLineCode) {
-        return streamStatus.TERMINATED;
+        return StreamStatus.TERMINATED;
       }
 
       out.write(b);
@@ -583,7 +609,7 @@ public class Utilities {
   }
 
   /**
-   * Create a sequencefile output stream based on job configuration
+   * Create a sequencefile output stream based on job configuration.
    * 
    * @param jc
    *          Job configuration
@@ -607,7 +633,7 @@ public class Utilities {
   /**
    * Create a sequencefile output stream based on job configuration Uses user
    * supplied compression flag (rather than obtaining it from the Job
-   * Configuration)
+   * Configuration).
    * 
    * @param jc
    *          Job configuration
@@ -640,7 +666,7 @@ public class Utilities {
 
   /**
    * Create a RCFile output stream based on job configuration Uses user supplied
-   * compression flag (rather than obtaining it from the Job Configuration)
+   * compression flag (rather than obtaining it from the Job Configuration).
    * 
    * @param jc
    *          Job configuration
@@ -663,7 +689,7 @@ public class Utilities {
   }
 
   /**
-   * Shamelessly cloned from GenericOptionsParser
+   * Shamelessly cloned from GenericOptionsParser.
    */
   public static String realFile(String newFile, Configuration conf)
       throws IOException {
@@ -685,8 +711,6 @@ public class Utilities {
       fs.close();
     } catch (IOException e) {
     }
-    ;
-
     String file = path.makeQualified(fs).toString();
     // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c
     if (StringUtils.startsWith(file, "file:/")
@@ -725,14 +749,14 @@ public class Utilities {
   }
 
   /**
-   * Given a path, convert to a temporary path
+   * Given a path, convert to a temporary path.
    */
   public static Path toTempPath(String orig) {
     return toTempPath(new Path(orig));
   }
 
   /**
-   * Detect if the supplied file is a temporary path
+   * Detect if the supplied file is a temporary path.
    */
   public static boolean isTempPath(FileStatus file) {
     String name = file.getPath().getName();
@@ -754,7 +778,7 @@ public class Utilities {
    *          the target directory
    * @throws IOException
    */
-  static public void rename(FileSystem fs, Path src, Path dst)
+  public static void rename(FileSystem fs, Path src, Path dst)
       throws IOException, HiveException {
     if (!fs.rename(src, dst)) {
       throw new HiveException("Unable to move: " + src + " to: " + dst);
@@ -774,7 +798,7 @@ public class Utilities {
    *          the target directory
    * @throws IOException
    */
-  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
+  public static void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
       throws IOException, HiveException {
     if (!fs.exists(dst)) {
       if (!fs.rename(src, dst)) {
@@ -806,8 +830,7 @@ public class Utilities {
    * extension. The file name looks like: "24931_r_000000_0" or
    * "24931_r_000000_0.gz"
    */
-  static Pattern fileNameTaskIdRegex = Pattern
-      .compile("^.*_([0-9]*)_[0-9](\\..*)?$");
+  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*_([0-9]*)_[0-9](\\..*)?$");
 
   /**
    * Get the task id from the filename. E.g., get "000000" out of
@@ -836,7 +859,7 @@ public class Utilities {
       return;
     }
 
-    FileStatus items[] = fs.listStatus(path);
+    FileStatus[] items = fs.listStatus(path);
     if (items == null) {
       return;
     }
@@ -870,7 +893,7 @@ public class Utilities {
   }
 
   /**
-   * Add new elements to the classpath
+   * Add new elements to the classpath.
    * 
    * @param newPaths
    *          Array of classpath elements
@@ -903,7 +926,7 @@ public class Utilities {
   }
 
   /**
-   * remove elements from the classpath
+   * remove elements from the classpath.
    * 
    * @param pathsToRemove
    *          Array of classpath elements
@@ -1007,7 +1030,7 @@ public class Utilities {
    * tracker. Useful for operators that may not output data for a while.
    * 
    * @param hconf
-   * @return the interval in miliseconds
+   * @return the interval in milliseconds
    */
   public static int getDefaultNotificationInterval(Configuration hconf) {
     int notificationInterval;

@@ -23,23 +23,27 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "rlike,regexp", value = "str _FUNC_ regexp - Returns true if str matches regexp and "
+/**
+ * UDFRegExp.
+ *
+ */
+@Description(name = "rlike,regexp",
+    value = "str _FUNC_ regexp - Returns true if str matches regexp and "
     + "false otherwise", extended = "Example:\n"
     + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
 public class UDFRegExp extends UDF {
-
   static final Log LOG = LogFactory.getLog(UDFRegExp.class.getName());
 
   private final Text lastRegex = new Text();
   private Pattern p = null;
-  boolean warned = false;
+  private boolean warned = false;
 
-  BooleanWritable result = new BooleanWritable();
+  private BooleanWritable result = new BooleanWritable();
 
   public UDFRegExp() {
   }

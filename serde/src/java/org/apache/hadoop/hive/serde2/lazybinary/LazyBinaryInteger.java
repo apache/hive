@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObject
 import org.apache.hadoop.io.IntWritable;
 
 /**
- * LazyBinaryObject for integer which is serialized as VInt
+ * LazyBinaryObject for integer which is serialized as VInt.
  * 
  * @see LazyBinaryUtils#readVInt(byte[], int, VInt)
  */
@@ -41,7 +41,7 @@ public class LazyBinaryInteger extends
   }
 
   /**
-   * The reusable vInt for decoding the integer
+   * The reusable vInt for decoding the integer.
    */
   VInt vInt = new LazyBinaryUtils.VInt();
 

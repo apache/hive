@@ -4,6 +4,10 @@ import java.io.IOException;
 
 import org.apache.hadoop.mapred.Counters;
 
+/**
+ * TaskHandle.
+ *
+ */
 public class TaskHandle {
   // The eventual goal is to monitor the progress of all the tasks, not only the
   // map reduce task.

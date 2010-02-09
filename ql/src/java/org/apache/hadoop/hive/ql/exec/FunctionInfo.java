@@ -24,6 +24,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
+/**
+ * FunctionInfo.
+ *
+ */
 public class FunctionInfo {
 
   private final boolean isNative;
@@ -87,7 +91,7 @@ public class FunctionInfo {
   }
 
   /**
-   * Get the Class of the UDF
+   * Get the Class of the UDF.
    */
   public Class<?> getFunctionClass() {
     if (isGenericUDF()) {

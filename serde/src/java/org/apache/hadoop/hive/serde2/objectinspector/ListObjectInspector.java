@@ -19,21 +19,25 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.List;
 
+/**
+ * ListObjectInspector.
+ *
+ */
 public interface ListObjectInspector extends ObjectInspector {
 
   // ** Methods that does not need a data object **
-  public ObjectInspector getListElementObjectInspector();
+  ObjectInspector getListElementObjectInspector();
 
   // ** Methods that need a data object **
   /**
    * returns null for null list, out-of-the-range index.
    */
-  public Object getListElement(Object data, int index);
+  Object getListElement(Object data, int index);
 
   /**
    * returns -1 for data = null.
    */
-  public int getListLength(Object data);
+  int getListLength(Object data);
 
   /**
    * returns null for data = null.
@@ -44,6 +48,6 @@ public interface ListObjectInspector extends ObjectInspector {
    * 
    * However it's OK if the List object is part of the Object data.
    */
-  public List<?> getList(Object data);
+  List<?> getList(Object data);
 
 }

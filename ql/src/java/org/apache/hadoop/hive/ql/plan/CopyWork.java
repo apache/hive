@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * CopyWork.
+ *
+ */
 @Explain(displayName = "Copy")
 public class CopyWork implements Serializable {
   private static final long serialVersionUID = 1L;

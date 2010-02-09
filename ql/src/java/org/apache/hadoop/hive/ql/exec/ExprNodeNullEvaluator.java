@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 // This function will not be used currently, since the function expressions
 // change the void to the first matching argument
+/**
+ * ExprNodeNullEvaluator.
+ *
+ */
 public class ExprNodeNullEvaluator extends ExprNodeEvaluator {
 
   protected ExprNodeNullDesc expr;
@@ -34,8 +38,7 @@ public class ExprNodeNullEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector)
-      throws HiveException {
+  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
     return PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
   }
 

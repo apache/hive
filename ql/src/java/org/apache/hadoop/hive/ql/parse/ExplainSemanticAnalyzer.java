@@ -28,6 +28,10 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 
+/**
+ * ExplainSemanticAnalyzer.
+ *
+ */
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ExplainSemanticAnalyzer(HiveConf conf) throws SemanticException {

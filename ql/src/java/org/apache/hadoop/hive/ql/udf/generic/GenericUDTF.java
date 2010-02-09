@@ -73,7 +73,7 @@ public abstract class GenericUDTF {
   }
 
   /**
-   * Passes an output row to the collector
+   * Passes an output row to the collector.
    * 
    * @param o
    * @throws HiveException

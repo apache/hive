@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Explain.
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Explain {
   String displayName() default "";

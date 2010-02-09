@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -47,10 +45,7 @@ import org.apache.hadoop.io.Text;
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  */
-public class ObjectInspectorUtils {
-
-  private static Log LOG = LogFactory.getLog(ObjectInspectorUtils.class
-      .getName());
+public final class ObjectInspectorUtils {
 
   /**
    * This enum controls how we copy primitive objects.
@@ -107,15 +102,15 @@ public class ObjectInspectorUtils {
       ListObjectInspector loi = (ListObjectInspector) oi;
       result = ObjectInspectorFactory
           .getStandardListObjectInspector(getStandardObjectInspector(loi
-              .getListElementObjectInspector(), objectInspectorOption));
+          .getListElementObjectInspector(), objectInspectorOption));
       break;
     }
     case MAP: {
       MapObjectInspector moi = (MapObjectInspector) oi;
       result = ObjectInspectorFactory.getStandardMapObjectInspector(
           getStandardObjectInspector(moi.getMapKeyObjectInspector(),
-              objectInspectorOption), getStandardObjectInspector(moi
-              .getMapValueObjectInspector(), objectInspectorOption));
+          objectInspectorOption), getStandardObjectInspector(moi
+          .getMapValueObjectInspector(), objectInspectorOption));
       break;
     }
     case STRUCT: {
@@ -198,7 +193,7 @@ public class ObjectInspectorUtils {
         map.put(copyToStandardObject(entry.getKey(), moi
             .getMapKeyObjectInspector(), objectInspectorOption),
             copyToStandardObject(entry.getValue(), moi
-                .getMapValueObjectInspector(), objectInspectorOption));
+            .getMapValueObjectInspector(), objectInspectorOption));
       }
       result = map;
       break;
@@ -260,7 +255,7 @@ public class ObjectInspectorUtils {
   }
 
   /**
-   * Get all the declared non-static fields of Class c
+   * Get all the declared non-static fields of Class c.
    */
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
@@ -573,4 +568,7 @@ public class ObjectInspectorUtils {
     return sb.toString();
   }
 
+  private ObjectInspectorUtils() {
+    // prevent instantiation
+  }
 }

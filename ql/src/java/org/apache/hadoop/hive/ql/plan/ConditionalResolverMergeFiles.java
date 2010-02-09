@@ -40,6 +40,10 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
   public ConditionalResolverMergeFiles() {
   }
 
+  /**
+   * ConditionalResolverMergeFilesCtx.
+   *
+   */
   public static class ConditionalResolverMergeFilesCtx implements Serializable {
     private static final long serialVersionUID = 1L;
     List<Task<? extends Serializable>> listTasks;

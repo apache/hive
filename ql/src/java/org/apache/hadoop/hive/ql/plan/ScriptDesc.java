@@ -23,6 +23,10 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 
+/**
+ * ScriptDesc.
+ *
+ */
 @Explain(displayName = "Transform Operator")
 public class ScriptDesc implements Serializable {
   private static final long serialVersionUID = 1L;

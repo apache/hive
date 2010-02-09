@@ -258,7 +258,7 @@ public class HiveMetaStoreChecker {
   }
 
   /**
-   * Find partitions on the fs that are unknown to the metastore
+   * Find partitions on the fs that are unknown to the metastore.
    * 
    * @param table
    *          Table where the partitions would be located

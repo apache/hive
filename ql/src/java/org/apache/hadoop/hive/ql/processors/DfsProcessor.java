@@ -27,6 +27,10 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
+/**
+ * DfsProcessor.
+ *
+ */
 public class DfsProcessor implements CommandProcessor {
 
   public static final Log LOG = LogFactory.getLog(DfsProcessor.class.getName());

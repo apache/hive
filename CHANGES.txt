@@ -64,6 +64,8 @@ Trunk -  Unreleased
     HIVE-862. CommandProcessor should return DriverResponse.
     (Bill Graham via zshao)
 
+    HIVE-1123. Checkstyle fixes. (Carl Steinbach via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

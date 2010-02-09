@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFReverse.
+ *
+ */
 @Description(name = "reverse", value = "_FUNC_(str) - reverse str", extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'koobecaF'")
 public class UDFReverse extends UDF {

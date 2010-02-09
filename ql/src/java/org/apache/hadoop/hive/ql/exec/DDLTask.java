@@ -65,15 +65,15 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
+import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
@@ -90,16 +90,16 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
- * DDLTask implementation
+ * DDLTask implementation.
  * 
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  static final private Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
+  private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
 
   transient HiveConf conf;
-  static final private int separator = Utilities.tabCode;
-  static final private int terminator = Utilities.newLineCode;
+  private static final int separator = Utilities.tabCode;
+  private static final int terminator = Utilities.newLineCode;
 
   public DDLTask() {
     super();
@@ -211,8 +211,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    */
-  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc)
-      throws HiveException {
+  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) throws HiveException {
 
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc
         .getTableName());
@@ -220,11 +219,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (tbl.isView()) {
       throw new HiveException("Cannot use ALTER TABLE on a view");
     }
-    
+
     // If the add partition was created with IF NOT EXISTS, then we should
     // not throw an error if the specified part does exist.
     Partition checkPart = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
-    if(checkPart != null && addPartitionDesc.getIfNotExists()) {
+    if (checkPart != null && addPartitionDesc.getIfNotExists()) {
       return 0;
     }
 
@@ -368,8 +367,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int showPartitions(Hive db, ShowPartitionsDesc showParts)
-      throws HiveException {
+  private int showPartitions(Hive db, ShowPartitionsDesc showParts) throws HiveException {
     // get the partitions for the table and populate the output
     String tabName = showParts.getTabName();
     Table tbl = null;
@@ -572,8 +570,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *          tables we are interested in
    * @return Return 0 when execution succeeds and above 0 if it fails.
    */
-  private int showTableStatus(Hive db, ShowTableStatusDesc showTblStatus)
-      throws HiveException {
+  private int showTableStatus(Hive db, ShowTableStatusDesc showTblStatus) throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<Table> tbls = new ArrayList<Table>();
     Map<String, String> part = showTblStatus.getPartSpec();
@@ -696,8 +693,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int describeTable(Hive db, DescTableDesc descTbl)
-      throws HiveException {
+  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException {
     String colPath = descTbl.getTableName();
     String tableName = colPath.substring(0,
         colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
@@ -961,9 +957,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     Table oldTbl = tbl.copy();
 
-    if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.RENAME) {
+    if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.getTTable().setTableName(alterTbl.getNewName());
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDCOLS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
       if (tbl.getSerializationLib().equals(
@@ -990,7 +986,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.getTTable().getSd().setCols(oldCols);
       }
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.RENAMECOLUMN) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAMECOLUMN) {
       List<FieldSchema> oldCols = tbl.getCols();
       List<FieldSchema> newCols = new ArrayList<FieldSchema>();
       Iterator<FieldSchema> iterOldCols = oldCols.iterator();
@@ -1056,7 +1052,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.getTTable().getSd().setCols(newCols);
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.REPLACECOLS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.REPLACECOLS) {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       if (tbl.getSerializationLib().equals(
           "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
@@ -1068,17 +1064,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           && !tbl.getSerializationLib().equals(LazySimpleSerDe.class.getName())
           && !tbl.getSerializationLib().equals(ColumnarSerDe.class.getName())
           && !tbl.getSerializationLib().equals(DynamicSerDe.class.getName())) {
-        console
-            .printError("Replace columns is not supported for this table. SerDe may be incompatible.");
+        console.printError("Replace columns is not supported for this table. "
+            + "SerDe may be incompatible.");
         return 1;
       }
       tbl.getTTable().getSd().setCols(alterTbl.getNewCols());
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDPROPS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDSERDEPROPS) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
       tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
           alterTbl.getProps());
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDSERDE) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
       tbl.setSerializationLib(alterTbl.getSerdeName());
       if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
         tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
@@ -1089,13 +1085,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.reinitSerDe();
       tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getName(), tbl
           .getDeserializer()));
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDFILEFORMAT) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
       tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
       if (alterTbl.getSerdeName() != null) {
         tbl.setSerializationLib(alterTbl.getSerdeName());
       }
-    } else if (alterTbl.getOp() == AlterTableDesc.alterTableTypes.ADDCLUSTERSORTCOLUMN) {
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
           .getCols());
@@ -1190,7 +1186,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop the table
       db
           .dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl
-              .getTableName());
+          .getTableName());
       if (tbl != null) {
         work.getOutputs().add(new WriteEntity(tbl));
       }
@@ -1243,7 +1239,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Check if the given serde is valid
+   * Check if the given serde is valid.
    */
   private void validateSerDe(String serdeName) throws HiveException {
     try {
@@ -1307,7 +1303,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (crtTbl.getCollItemDelim() != null) {
         tbl
             .setSerdeParam(Constants.COLLECTION_DELIM, crtTbl
-                .getCollItemDelim());
+            .getCollItemDelim());
       }
       if (crtTbl.getMapKeyDelim() != null) {
         tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
@@ -1327,7 +1323,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
       tbl
           .setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
-              .getName());
+          .getName());
     } else {
       // let's validate that the serde exists
       validateSerDe(crtTbl.getSerName());
@@ -1407,8 +1403,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl)
-      throws HiveException {
+  private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws HiveException {
     // Get the existing table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, crtTbl
         .getLikeTableName());

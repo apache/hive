@@ -22,17 +22,21 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * ShowPartitionsDesc.
+ *
+ */
 @Explain(displayName = "Show Partitions")
 public class ShowPartitionsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tabName;
   Path resFile;
   /**
-   * table name for the result of show tables
+   * table name for the result of show tables.
    */
   private static final String table = "showpartitions";
   /**
-   * thrift ddl for the result of show tables
+   * thrift ddl for the result of show tables.
    */
   private static final String schema = "partition#string";
 
@@ -46,10 +50,10 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
 
   public ShowPartitionsDesc() {
   }
-  
+
   /**
    * @param tabName
-   *          Name of the table whose partitions need to be listed
+   *          Name of the table whose partitions need to be listed.
    * @param resFile
    *          File to store the results in
    */
@@ -59,7 +63,7 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @return the name of the table
+   * @return the name of the table.
    */
   @Explain(displayName = "table")
   public String getTabName() {

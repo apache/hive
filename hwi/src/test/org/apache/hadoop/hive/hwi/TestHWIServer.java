@@ -10,6 +10,10 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.shims.JettyShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
+/**
+ * TestHWIServer.
+ *
+ */
 public class TestHWIServer extends TestCase {
 
   public TestHWIServer(String name) {

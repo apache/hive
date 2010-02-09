@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * LateralViewJoinDesc.
+ *
+ */
 @Explain(displayName = "Lateral View Join Operator")
 public class LateralViewJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;

@@ -27,6 +27,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.thrift.protocol.TProtocolFactory;
 
+/**
+ * ThriftDeserializer.
+ *
+ */
 public class ThriftDeserializer implements Deserializer {
 
   private ThriftByteStreamTypedSerDe tsd;

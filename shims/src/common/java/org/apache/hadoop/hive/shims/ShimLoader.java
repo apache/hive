@@ -17,10 +17,15 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import org.apache.hadoop.util.VersionInfo;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.hadoop.util.VersionInfo;
+
+/**
+ * ShimLoader.
+ *
+ */
 public abstract class ShimLoader {
   private static HadoopShims hadoopShims;
   private static JettyShims jettyShims;
@@ -28,8 +33,8 @@ public abstract class ShimLoader {
   /**
    * The names of the classes for shimming Hadoop for each major version.
    */
-  private static HashMap<String, String> HADOOP_SHIM_CLASSES =
-    new HashMap<String, String>();
+  private static final HashMap<String, String> HADOOP_SHIM_CLASSES =
+      new HashMap<String, String>();
 
   static {
     HADOOP_SHIM_CLASSES.put("0.17", "org.apache.hadoop.hive.shims.Hadoop17Shims");
@@ -42,8 +47,8 @@ public abstract class ShimLoader {
    * The names of the classes for shimming Jetty for each major version of
    * Hadoop.
    */
-  private static HashMap<String, String> JETTY_SHIM_CLASSES =
-    new HashMap<String, String>();
+  private static final HashMap<String, String> JETTY_SHIM_CLASSES =
+      new HashMap<String, String>();
 
   static {
     JETTY_SHIM_CLASSES.put("0.17", "org.apache.hadoop.hive.shims.Jetty17Shims");
@@ -52,12 +57,11 @@ public abstract class ShimLoader {
     JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
   }
 
-
   /**
    * Factory method to get an instance of HadoopShims based on the
    * version of Hadoop on the classpath.
    */
-  public synchronized static HadoopShims getHadoopShims() {
+  public static synchronized HadoopShims getHadoopShims() {
     if (hadoopShims == null) {
       hadoopShims = loadShims(HADOOP_SHIM_CLASSES, HadoopShims.class);
     }
@@ -68,7 +72,7 @@ public abstract class ShimLoader {
    * Factory method to get an instance of JettyShims based on the version
    * of Hadoop on the classpath.
    */
-  public synchronized static JettyShims getJettyShims() {
+  public static synchronized JettyShims getJettyShims() {
     if (jettyShims == null) {
       jettyShims = loadShims(JETTY_SHIM_CLASSES, JettyShims.class);
     }
@@ -84,7 +88,7 @@ public abstract class ShimLoader {
       return xface.cast(clazz.newInstance());
     } catch (Exception e) {
       throw new RuntimeException("Could not load shims in class " +
-                                 className, e);
+          className, e);
     }
   }
 
@@ -96,11 +100,15 @@ public abstract class ShimLoader {
   private static String getMajorVersion() {
     String vers = VersionInfo.getVersion();
 
-    String parts[] = vers.split("\\.");
+    String[] parts = vers.split("\\.");
     if (parts.length < 2) {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
-                                 " (expected A.B.* format)");
+          " (expected A.B.* format)");
     }
     return parts[0] + "." + parts[1];
+  }
+
+  private ShimLoader() {
+    // prevent instantiation
   }
 }

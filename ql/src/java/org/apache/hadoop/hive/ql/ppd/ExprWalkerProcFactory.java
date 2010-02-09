@@ -47,12 +47,16 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * determines whether the expression is a possible candidate for predicate
  * pushdown optimization for the given operator
  */
-public class ExprWalkerProcFactory {
+public final class ExprWalkerProcFactory {
 
+  /**
+   * ColumnExprProcessor.
+   *
+   */
   public static class ColumnExprProcessor implements NodeProcessor {
 
     /**
-     * Converts the reference from child row resolver to current row resolver
+     * Converts the reference from child row resolver to current row resolver.
      */
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -88,6 +92,10 @@ public class ExprWalkerProcFactory {
 
   }
 
+  /**
+   * FieldExprProcessor.
+   *
+   */
   public static class FieldExprProcessor implements NodeProcessor {
 
     @Override
@@ -129,7 +137,7 @@ public class ExprWalkerProcFactory {
   /**
    * If all children are candidates and refer only to one table alias then this
    * expr is a candidate else it is not a candidate but its children could be
-   * final candidates
+   * final candidates.
    */
   public static class GenericFuncExprProcessor implements NodeProcessor {
 
@@ -181,7 +189,7 @@ public class ExprWalkerProcFactory {
   }
 
   /**
-   * For constants and null expressions
+   * For constants and null expressions.
    */
   public static class DefaultExprProcessor implements NodeProcessor {
 
@@ -219,7 +227,7 @@ public class ExprWalkerProcFactory {
   }
 
   /**
-   * Extracts pushdown predicates from the given list of predicate expression
+   * Extracts pushdown predicates from the given list of predicate expression.
    * 
    * @param opContext
    *          operator context used for resolving column references
@@ -273,7 +281,7 @@ public class ExprWalkerProcFactory {
 
   /**
    * Walks through the top AND nodes and determine which of them are final
-   * candidates
+   * candidates.
    */
   private static void extractFinalCandidates(ExprNodeDesc expr,
       ExprWalkerInfo ctx) {
@@ -289,6 +297,9 @@ public class ExprWalkerProcFactory {
         extractFinalCandidates((ExprNodeDesc) ch, ctx);
       }
     }
+  }
 
+  private ExprWalkerProcFactory() {
+    // prevent instantiation
   }
 }

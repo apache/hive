@@ -49,6 +49,10 @@ import org.apache.hadoop.util.Progressable;
 public class Base64TextOutputFormat<K extends WritableComparable, V extends Writable>
     extends HiveIgnoreKeyTextOutputFormat<K, V> {
 
+  /**
+   * Base64RecordWriter.
+   *
+   */
   public static class Base64RecordWriter implements RecordWriter,
       JobConfigurable {
 
@@ -121,7 +125,7 @@ public class Base64TextOutputFormat<K extends WritableComparable, V extends Writ
 
     Base64RecordWriter writer = new Base64RecordWriter(super
         .getHiveRecordWriter(jc, finalOutPath, BytesWritable.class,
-            isCompressed, tableProperties, progress));
+        isCompressed, tableProperties, progress));
     writer.configure(jc);
     return writer;
   }

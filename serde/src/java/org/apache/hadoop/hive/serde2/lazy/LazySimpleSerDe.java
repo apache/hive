@@ -64,7 +64,7 @@ public class LazySimpleSerDe implements SerDe {
   public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class
       .getName());
 
-  final public static byte[] DefaultSeparators = { (byte) 1, (byte) 2, (byte) 3 };
+  public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
 
   private ObjectInspector cachedObjectInspector;
   private boolean useJSONSerialize; // use json to serialize
@@ -78,7 +78,7 @@ public class LazySimpleSerDe implements SerDe {
         + ((StructTypeInfo) serdeParams.rowTypeInfo).getAllStructFieldNames()
         + ":"
         + ((StructTypeInfo) serdeParams.rowTypeInfo)
-            .getAllStructFieldTypeInfos() + "]";
+        .getAllStructFieldTypeInfos() + "]";
   }
 
   public LazySimpleSerDe() throws SerDeException {
@@ -104,6 +104,10 @@ public class LazySimpleSerDe implements SerDe {
     return defaultVal;
   }
 
+  /**
+   * SerDeParameters.
+   *
+   */
   public static class SerDeParameters {
     byte[] separators = DefaultSeparators;
     String nullString;
@@ -411,8 +415,8 @@ public class LazySimpleSerDe implements SerDe {
         // delimited way.
         if (!foi.getCategory().equals(Category.PRIMITIVE)
             && (declaredFields == null
-                || declaredFields.get(i).getFieldObjectInspector()
-                    .getCategory().equals(Category.PRIMITIVE) || useJSONSerialize)) {
+            || declaredFields.get(i).getFieldObjectInspector()
+            .getCategory().equals(Category.PRIMITIVE) || useJSONSerialize)) {
           serialize(serializeStream, SerDeUtils.getJSONString(f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
               serdeParams.separators, 1, serdeParams.nullSequence,
@@ -469,17 +473,18 @@ public class LazySimpleSerDe implements SerDe {
       return;
     }
 
+    char separator;
+    List<?> list;
     switch (objInspector.getCategory()) {
-    case PRIMITIVE: {
+    case PRIMITIVE:
       LazyUtils.writePrimitiveUTF8(out, obj,
           (PrimitiveObjectInspector) objInspector, escaped, escapeChar,
           needsEscape);
       return;
-    }
-    case LIST: {
-      char separator = (char) separators[level];
+    case LIST:
+      separator = (char) separators[level];
       ListObjectInspector loi = (ListObjectInspector) objInspector;
-      List<?> list = loi.getList(obj);
+      list = loi.getList(obj);
       ObjectInspector eoi = loi.getListElementObjectInspector();
       if (list == null) {
         out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
@@ -493,14 +498,12 @@ public class LazySimpleSerDe implements SerDe {
         }
       }
       return;
-    }
-    case MAP: {
-      char separator = (char) separators[level];
+    case MAP:
+      separator = (char) separators[level];
       char keyValueSeparator = (char) separators[level + 1];
       MapObjectInspector moi = (MapObjectInspector) objInspector;
       ObjectInspector koi = moi.getMapKeyObjectInspector();
       ObjectInspector voi = moi.getMapValueObjectInspector();
-
       Map<?, ?> map = moi.getMap(obj);
       if (map == null) {
         out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
@@ -520,12 +523,11 @@ public class LazySimpleSerDe implements SerDe {
         }
       }
       return;
-    }
-    case STRUCT: {
-      char separator = (char) separators[level];
+    case STRUCT:
+      separator = (char) separators[level];
       StructObjectInspector soi = (StructObjectInspector) objInspector;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
-      List<Object> list = soi.getStructFieldsDataAsList(obj);
+      list = soi.getStructFieldsDataAsList(obj);
       if (list == null) {
         out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
       } else {
@@ -539,7 +541,8 @@ public class LazySimpleSerDe implements SerDe {
         }
       }
       return;
-    }
+    default:
+      break;
     }
 
     throw new RuntimeException("Unknown category type: "

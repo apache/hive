@@ -50,12 +50,12 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -63,7 +63,11 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 /**
  * Factory for generating the different node processors used by ColumnPruner.
  */
-public class ColumnPrunerProcFactory {
+public final class ColumnPrunerProcFactory {
+
+  private ColumnPrunerProcFactory() {
+    // prevent instantiation
+  }
 
   /**
    * Node Processor for Column Pruning on Filter Operators.
@@ -344,8 +348,7 @@ public class ColumnPrunerProcFactory {
      * @throws SemanticException
      */
     private void handleChildren(SelectOperator op,
-        List<String> retainedSelOutputCols, ColumnPrunerProcCtx cppCtx)
-        throws SemanticException {
+        List<String> retainedSelOutputCols, ColumnPrunerProcCtx cppCtx) throws SemanticException {
       for (Operator<? extends Serializable> child : op.getChildOperators()) {
         if (child instanceof ReduceSinkOperator) {
           boolean[] flags = getPruneReduceSinkOpRetainFlags(
@@ -391,8 +394,7 @@ public class ColumnPrunerProcFactory {
   }
 
   private static void pruneReduceSinkOperator(boolean[] retainFlags,
-      ReduceSinkOperator reduce, ColumnPrunerProcCtx cppCtx)
-      throws SemanticException {
+      ReduceSinkOperator reduce, ColumnPrunerProcCtx cppCtx) throws SemanticException {
     ReduceSinkDesc reduceConf = reduce.getConf();
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
     Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
@@ -445,7 +447,7 @@ public class ColumnPrunerProcFactory {
     reduceConf.setValueCols(newValueEval);
     TableDesc newValueTable = PlanUtils.getReduceValueTableDesc(PlanUtils
         .getFieldSchemasFromColumnList(reduceConf.getValueCols(),
-            newOutputColNames, 0, ""));
+        newOutputColNames, 0, ""));
     reduceConf.setValueSerializeInfo(newValueTable);
   }
 
@@ -496,8 +498,7 @@ public class ColumnPrunerProcFactory {
   private static void pruneJoinOperator(NodeProcessorCtx ctx,
       CommonJoinOperator op, JoinDesc conf,
       Map<String, ExprNodeDesc> columnExprMap,
-      Map<Byte, List<Integer>> retainMap, boolean mapJoin)
-      throws SemanticException {
+      Map<Byte, List<Integer>> retainMap, boolean mapJoin) throws SemanticException {
     ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
     Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
     List<Operator<? extends Serializable>> childOperators = op

@@ -22,17 +22,21 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * ShowFunctionsDesc.
+ *
+ */
 @Explain(displayName = "Show Functions")
 public class ShowFunctionsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
   Path resFile;
   /**
-   * table name for the result of show tables
+   * table name for the result of show tables.
    */
   private static final String table = "show";
   /**
-   * thrift ddl for the result of show tables
+   * thrift ddl for the result of show tables.
    */
   private static final String schema = "tab_name#string";
 
@@ -43,10 +47,10 @@ public class ShowFunctionsDesc extends DDLDesc implements Serializable {
   public String getSchema() {
     return schema;
   }
-  
+
   public ShowFunctionsDesc() {
   }
-  
+
   /**
    * @param resFile
    */

@@ -23,7 +23,11 @@ import java.util.HashMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-public class SemanticAnalyzerFactory {
+/**
+ * SemanticAnalyzerFactory.
+ *
+ */
+public final class SemanticAnalyzerFactory {
 
   static HashMap<Integer, String> commandType = new HashMap<Integer, String>();
 
@@ -36,20 +40,14 @@ public class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_DESCFUNCTION, "DESCFUNCTION");
     commandType.put(HiveParser.TOK_MSCK, "MSCK");
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDCOLS, "ALTERTABLE_ADDCOLS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS,
-        "ALTERTABLE_REPLACECOLS");
-    commandType
-        .put(HiveParser.TOK_ALTERTABLE_RENAMECOL, "ALTERTABLE_RENAMECOL");
+    commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS, "ALTERTABLE_REPLACECOLS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_RENAMECOL, "ALTERTABLE_RENAMECOL");
     commandType.put(HiveParser.TOK_ALTERTABLE_RENAME, "ALTERTABLE_RENAME");
-    commandType
-        .put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, "ALTERTABLE_ADDPARTS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES,
-        "ALTERTABLE_PROPERTIES");
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER,
-        "ALTERTABLE_SERIALIZER");
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES,
-        "ALTERTABLE_SERDEPROPERTIES");
+    commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, "ALTERTABLE_PROPERTIES");
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, "ALTERTABLE_SERIALIZER");
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, "ALTERTABLE_SERDEPROPERTIES");
     commandType.put(HiveParser.TOK_SHOWTABLES, "SHOWTABLES");
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, "SHOWFUNCTIONS");
@@ -104,5 +102,9 @@ public class SemanticAnalyzerFactory {
         return new SemanticAnalyzer(conf);
       }
     }
+  }
+
+  private SemanticAnalyzerFactory() {
+    // prevent instantiation
   }
 }

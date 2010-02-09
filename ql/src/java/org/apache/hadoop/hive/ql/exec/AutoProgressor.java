@@ -64,7 +64,7 @@ public class AutoProgressor {
       if (rp != null) {
         LOG
             .info("ReporterTask calling reporter.progress() for "
-                + logClassName);
+            + logClassName);
         rp.progress();
       }
     }

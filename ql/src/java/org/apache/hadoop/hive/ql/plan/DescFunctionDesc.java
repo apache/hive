@@ -22,6 +22,10 @@ import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * DescFunctionDesc.
+ *
+ */
 @Explain(displayName = "Describe Function")
 public class DescFunctionDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -38,11 +42,11 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * table name for the result of show tables
+   * table name for the result of show tables.
    */
   private static final String table = "show";
   /**
-   * thrift ddl for the result of show tables
+   * thrift ddl for the result of show tables.
    */
   private static final String schema = "tab_name#string";
 
@@ -56,7 +60,7 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
 
   public DescFunctionDesc() {
   }
-  
+
   /**
    * @param resFile
    */

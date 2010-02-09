@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.contrib.udf.example;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFExampleFormat.
+ *
+ */
 public class UDFExampleFormat extends UDF {
 
   public String evaluate(String format, Object... args) {

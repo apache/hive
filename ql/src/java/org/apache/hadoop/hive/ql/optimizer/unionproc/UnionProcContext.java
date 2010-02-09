@@ -24,15 +24,23 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
+/**
+ * UnionProcContext.
+ *
+ */
 public class UnionProcContext implements NodeProcessorCtx {
 
+  /**
+   * UnionParseContext.
+   *
+   */
   public static class UnionParseContext {
-    transient private final boolean[] mapOnlySubq;
-    transient private final boolean[] rootTask;
-    transient private final boolean[] mapJoinSubq;
+    private final transient boolean[] mapOnlySubq;
+    private final transient boolean[] rootTask;
+    private final transient boolean[] mapJoinSubq;
 
-    transient private int numInputs;
-    transient private boolean mapJoinQuery;
+    private transient int numInputs;
+    private transient boolean mapJoinQuery;
 
     public UnionParseContext(int numInputs) {
       this.numInputs = numInputs;

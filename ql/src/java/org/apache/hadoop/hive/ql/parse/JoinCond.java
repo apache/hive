@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-
 /**
  * Join conditions Descriptor implementation.
  * 
@@ -39,7 +38,7 @@ public class JoinCond {
   }
 
   /**
-   * Constructor for a UNIQUEJOIN cond
+   * Constructor for a UNIQUEJOIN cond.
    * 
    * @param p
    *          true if table is preserved, false otherwise

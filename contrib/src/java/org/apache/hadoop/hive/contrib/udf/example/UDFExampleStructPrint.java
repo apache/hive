@@ -21,6 +21,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * UDFExampleStructPrint.
+ *
+ */
 public class UDFExampleStructPrint extends UDF {
 
   public String evaluate(Object a) {

@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -33,14 +33,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
+/**
+ * GenericUDAFSum.
+ *
+ */
 @Description(name = "sum", value = "_FUNC_(x) - Returns the sum of a set of numbers")
 public class GenericUDAFSum implements GenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFSum.class.getName());
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");
@@ -49,7 +52,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
@@ -65,18 +68,20 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
   }
 
+  /**
+   * GenericUDAFSumDouble.
+   *
+   */
   public static class GenericUDAFSumDouble extends GenericUDAFEvaluator {
-
-    PrimitiveObjectInspector inputOI;
-    DoubleWritable result;
+    private PrimitiveObjectInspector inputOI;
+    private DoubleWritable result;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-        throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
       result = new DoubleWritable(0);
@@ -84,7 +89,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
     }
 
-    /** class for storing double sum value */
+    /** class for storing double sum value. */
     static class SumDoubleAgg implements AggregationBuffer {
       boolean empty;
       double sum;
@@ -107,8 +112,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     boolean warned = false;
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters)
-        throws HiveException {
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
         merge(agg, parameters[0]);
@@ -119,7 +123,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
               + StringUtils.stringifyException(e));
           LOG
               .warn(getClass().getSimpleName()
-                  + " ignoring similar exceptions.");
+              + " ignoring similar exceptions.");
         }
       }
     }
@@ -130,8 +134,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial)
-        throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumDoubleAgg myagg = (SumDoubleAgg) agg;
         myagg.empty = false;
@@ -151,14 +154,16 @@ public class GenericUDAFSum implements GenericUDAFResolver {
 
   }
 
+  /**
+   * GenericUDAFSumLong.
+   *
+   */
   public static class GenericUDAFSumLong extends GenericUDAFEvaluator {
-
-    PrimitiveObjectInspector inputOI;
-    LongWritable result;
+    private PrimitiveObjectInspector inputOI;
+    private LongWritable result;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-        throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
       result = new LongWritable(0);
@@ -166,7 +171,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
     }
 
-    /** class for storing double sum value */
+    /** class for storing double sum value. */
     static class SumLongAgg implements AggregationBuffer {
       boolean empty;
       long sum;
@@ -186,11 +191,10 @@ public class GenericUDAFSum implements GenericUDAFResolver {
       myagg.sum = 0;
     }
 
-    boolean warned = false;
+    private boolean warned = false;
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters)
-        throws HiveException {
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
         merge(agg, parameters[0]);
@@ -209,8 +213,7 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial)
-        throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumLongAgg myagg = (SumLongAgg) agg;
         myagg.sum += PrimitiveObjectInspectorUtils.getLong(partial, inputOI);

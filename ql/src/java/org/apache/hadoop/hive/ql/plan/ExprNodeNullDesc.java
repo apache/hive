@@ -23,6 +23,10 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 
+/**
+ * ExprNodeNullDesc.
+ *
+ */
 public class ExprNodeNullDesc extends ExprNodeDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;

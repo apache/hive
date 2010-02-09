@@ -180,8 +180,8 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
     int elementLength = startPosition[index + 1] - startPosition[index] - 1;
     if (elementLength == nullSequence.getLength()
         && 0 == LazyUtils
-            .compare(bytes.getData(), startPosition[index], elementLength,
-                nullSequence.getBytes(), 0, nullSequence.getLength())) {
+        .compare(bytes.getData(), startPosition[index], elementLength,
+        nullSequence.getBytes(), 0, nullSequence.getLength())) {
       return null;
     } else {
       if (!elementInited[index]) {
@@ -189,7 +189,7 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
         if (arrayElements[index] == null) {
           arrayElements[index] = LazyFactory
               .createLazyObject(((ListObjectInspector) oi)
-                  .getListElementObjectInspector());
+              .getListElementObjectInspector());
         }
         arrayElements[index].init(bytes, startPosition[index], elementLength);
       }

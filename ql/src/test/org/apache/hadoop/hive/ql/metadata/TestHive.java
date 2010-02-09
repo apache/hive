@@ -41,6 +41,10 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+/**
+ * TestHive.
+ *
+ */
 public class TestHive extends TestCase {
   private Hive hm;
   private HiveConf hiveConf;
@@ -57,7 +61,7 @@ public class TestHive extends TestCase {
       System.err.println(StringUtils.stringifyException(e));
       System.err
           .println("Unable to initialize Hive Metastore using configruation: \n "
-              + hiveConf);
+          + hiveConf);
       throw e;
     }
   }
@@ -71,7 +75,7 @@ public class TestHive extends TestCase {
       System.err.println(StringUtils.stringifyException(e));
       System.err
           .println("Unable to close Hive Metastore using configruation: \n "
-              + hiveConf);
+          + hiveConf);
       throw e;
     }
   }
@@ -115,9 +119,9 @@ public class TestHive extends TestCase {
       List<FieldSchema> partCols = new ArrayList<FieldSchema>();
       partCols
           .add(new FieldSchema(
-              "ds",
-              Constants.STRING_TYPE_NAME,
-              "partition column, date but in string format as date type is not yet supported in QL"));
+          "ds",
+          Constants.STRING_TYPE_NAME,
+          "partition column, date but in string format as date type is not yet supported in QL"));
       tbl.setPartCols(partCols);
 
       tbl.setNumBuckets((short) 512);
@@ -156,7 +160,7 @@ public class TestHive extends TestCase {
             tbl.getRetention(), ft.getRetention());
         assertEquals("Data location is not set correctly", wh
             .getDefaultTablePath(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-                tableName).toString(), ft.getDataLocation().toString());
+            tableName).toString(), ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then
         // compare the two tables
         tbl.setDataLocation(ft.getDataLocation());
@@ -188,7 +192,7 @@ public class TestHive extends TestCase {
   }
 
   /**
-   * Tests create and fetch of a thrift based table
+   * Tests create and fetch of a thrift based table.
    * 
    * @throws Throwable
    */
@@ -229,7 +233,7 @@ public class TestHive extends TestCase {
             tbl.getRetention(), ft.getRetention());
         assertEquals("Data location is not set correctly", wh
             .getDefaultTablePath(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-                tableName).toString(), ft.getDataLocation().toString());
+            tableName).toString(), ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then
         // compare the two tables
         tbl.setDataLocation(ft.getDataLocation());
@@ -251,8 +255,7 @@ public class TestHive extends TestCase {
     }
   }
 
-  private static Table createTestTable(String dbName, String tableName)
-      throws HiveException {
+  private static Table createTestTable(String dbName, String tableName) throws HiveException {
     Table tbl = new Table(tableName);
     tbl.getTTable().setDbName(dbName);
     tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());

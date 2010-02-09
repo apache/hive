@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
+/**
+ * ExprNodeConstantEvaluator.
+ *
+ */
 public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
   protected ExprNodeConstantDesc expr;
@@ -40,12 +44,11 @@ public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
     // Convert from Java to Writable
     writableValue = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
-            expr.getValue());
+        expr.getValue());
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector)
-      throws HiveException {
+  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
     return writableObjectInspector;
   }
 

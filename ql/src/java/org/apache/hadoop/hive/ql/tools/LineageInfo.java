@@ -49,11 +49,11 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class LineageInfo implements NodeProcessor {
 
   /**
-   * Stores input tables in sql
+   * Stores input tables in sql.
    */
   TreeSet<String> inputTableList = new TreeSet<String>();
   /**
-   * Stores output tables in sql
+   * Stores output tables in sql.
    */
   TreeSet<String> OutputTableList = new TreeSet<String>();
 

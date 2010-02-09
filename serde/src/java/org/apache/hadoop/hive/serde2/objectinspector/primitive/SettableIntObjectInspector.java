@@ -28,10 +28,10 @@ public interface SettableIntObjectInspector extends IntObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, int value);
+  Object set(Object o, int value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(int value);
+  Object create(int value);
 }

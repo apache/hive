@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -31,19 +29,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * NOTES: 1. a, b and c should have the same TypeInfo, or an exception will be
  * thrown.
  */
-@Description(name = "coalesce", value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument", extended = "Example:\n"
+@Description(name = "coalesce",
+    value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_(NULL, 1, NULL) FROM src LIMIT 1;\n" + "  1")
 public class GenericUDFCoalesce extends GenericUDF {
-
-  private static Log LOG = LogFactory
-      .getLog(GenericUDFCoalesce.class.getName());
-
-  ObjectInspector[] argumentOIs;
-  GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private ObjectInspector[] argumentOIs;
+  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentTypeException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
 
@@ -52,9 +47,9 @@ public class GenericUDFCoalesce extends GenericUDF {
       if (!returnOIResolver.update(arguments[i])) {
         throw new UDFArgumentTypeException(i,
             "The expressions after COALESCE should all have the same type: \""
-                + returnOIResolver.get().getTypeName()
-                + "\" is expected but \"" + arguments[i].getTypeName()
-                + "\" is found");
+            + returnOIResolver.get().getTypeName()
+            + "\" is expected but \"" + arguments[i].getTypeName()
+            + "\" is found");
       }
     }
     return returnOIResolver.get();

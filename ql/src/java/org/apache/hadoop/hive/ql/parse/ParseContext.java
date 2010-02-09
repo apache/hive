@@ -67,8 +67,8 @@ public class ParseContext {
   private int destTableId;
   private UnionProcContext uCtx;
   private List<MapJoinOperator> listMapJoinOpsNoReducer; // list of map join
-                                                         // operators with no
-                                                         // reducer
+  // operators with no
+  // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
 
@@ -379,7 +379,7 @@ public class ParseContext {
   }
 
   /**
-   * Sets the hasNonPartCols flag
+   * Sets the hasNonPartCols flag.
    * 
    * @param val
    */
@@ -388,7 +388,7 @@ public class ParseContext {
   }
 
   /**
-   * Gets the value of the hasNonPartCols flag
+   * Gets the value of the hasNonPartCols flag.
    */
   public boolean getHasNonPartCols() {
     return hasNonPartCols;

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-
 /**
  * An MRU (Most Recently Used) cache implementation. This implementation
  * maintains a doubly circular linked list and it can be used with an auxiliary
@@ -79,7 +78,7 @@ public class MRU<T extends DCLLItem> {
   }
 
   /**
-   * Insert a new item as the head
+   * Insert a new item as the head.
    * 
    * @param v
    *          the new linked list item to be added to the head.

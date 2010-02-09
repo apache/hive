@@ -25,6 +25,10 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypeBool.
+ *
+ */
 public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
 
   // production is: bool
@@ -49,7 +53,7 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
     if (val == false
         && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
         && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
-            .lastPrimitiveWasNull()) {
+        .lastPrimitiveWasNull()) {
       return null;
     }
     return Boolean.valueOf(val);
@@ -57,8 +61,7 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     BooleanObjectInspector poi = (BooleanObjectInspector) oi;
     oprot.writeBool(poi.get(o));
   }

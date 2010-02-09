@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.Serializable;
 
 /**
- * Simple test object
+ * Simple test object.
  */
 public class JavaTestObjFlatFileInputFormat implements Serializable {
   public String s;

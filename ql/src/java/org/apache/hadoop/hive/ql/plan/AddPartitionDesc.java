@@ -118,7 +118,7 @@ public class AddPartitionDesc {
   public boolean getIfNotExists() {
     return this.ifNotExists;
   }
-  
+
   /**
    * @param ifNotExists 
    *          if the part should be added only if it doesn't exist

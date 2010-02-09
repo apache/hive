@@ -35,6 +35,10 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolUtil;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeFieldList.
+ *
+ */
 public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements
     Serializable {
 
@@ -48,7 +52,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements
   // mapping of the fieldid to the field
   private Map<Integer, DynamicSerDeTypeBase> types_by_id = null;
   private Map<String, DynamicSerDeTypeBase> types_by_column_name = null;
-  private DynamicSerDeTypeBase ordered_types[] = null;
+  private DynamicSerDeTypeBase[] ordered_types = null;
 
   private Map<String, Integer> ordered_column_id_by_name = null;
 
@@ -64,9 +68,9 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements
     return (DynamicSerDeField) jjtGetChild(i);
   }
 
-  final public DynamicSerDeField[] getChildren() {
+  public final DynamicSerDeField[] getChildren() {
     int size = jjtGetNumChildren();
-    DynamicSerDeField result[] = new DynamicSerDeField[size];
+    DynamicSerDeField[] result = new DynamicSerDeField[size];
     for (int i = 0; i < size; i++) {
       result[i] = (DynamicSerDeField) jjtGetChild(i);
     }
@@ -228,8 +232,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements
   TField field = new TField();
 
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     // Assuming the ObjectInspector represents exactly the same type as this
     // struct.
     // This assumption should be checked during query compile time.

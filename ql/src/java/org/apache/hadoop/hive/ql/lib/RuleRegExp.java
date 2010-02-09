@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Rule interface for Nodes Used in Node dispatching to dispatch process/visitor
- * functions for Nodes
+ * functions for Nodes.
  */
 public class RuleRegExp implements Rule {
 

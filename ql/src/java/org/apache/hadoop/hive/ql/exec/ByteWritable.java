@@ -25,6 +25,10 @@ import java.io.IOException;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 
+/**
+ * ByteWritable.
+ *
+ */
 public class ByteWritable implements WritableComparable {
   private int value;
 

@@ -31,6 +31,10 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TIOStreamTransport;
 
+/**
+ * ThriftByteStreamTypedSerDe.
+ *
+ */
 public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
 
   protected TIOStreamTransport outTransport, inTransport;

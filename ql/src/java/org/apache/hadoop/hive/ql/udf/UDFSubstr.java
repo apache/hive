@@ -18,13 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "substr,substring", value = "_FUNC_(str, pos[, len]) - returns the substring of str that"
-    + " starts at pos and is of length len", extended = "pos is a 1-based index. If pos<0 the starting position is"
+/**
+ * UDFSubstr.
+ *
+ */
+@Description(name = "substr,substring",
+    value = "_FUNC_(str, pos[, len]) - returns the substring of str that"
+    + " starts at pos and is of length len",
+    extended = "pos is a 1-based index. If pos<0 the starting position is"
     + " determined by counting backwards from the end of str.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('Facebook', 5) FROM src LIMIT 1;\n"
@@ -34,8 +40,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('Facebook', 5, 1) FROM src LIMIT 1;\n"
     + "  'b'")
 public class UDFSubstr extends UDF {
-
-  Text r;
+  private Text r;
 
   public UDFSubstr() {
     r = new Text();
@@ -77,7 +82,7 @@ public class UDFSubstr extends UDF {
     return r;
   }
 
-  IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
+  private IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
 
   public Text evaluate(Text s, IntWritable pos) {
     return evaluate(s, pos, maxValue);

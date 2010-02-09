@@ -45,6 +45,10 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TIOStreamTransport;
 
+/**
+ * DynamicSerDe.
+ *
+ */
 public class DynamicSerDe implements SerDe, Serializable {
 
   public static final Log LOG = LogFactory.getLog(DynamicSerDe.class.getName());
@@ -54,22 +58,21 @@ public class DynamicSerDe implements SerDe, Serializable {
 
   public static final String META_TABLE_NAME = "name";
 
-  transient private thrift_grammar parse_tree;
-  transient protected ByteStream.Input bis_;
-  transient protected ByteStream.Output bos_;
+  private transient thrift_grammar parse_tree;
+  protected transient ByteStream.Input bis_;
+  protected transient ByteStream.Output bos_;
 
   /**
    * protocols are protected in case any of their properties need to be queried
    * from another class in this package. For TCTLSeparatedProtocol for example,
    * may want to query the separators.
    */
-  transient protected TProtocol oprot_;
-  transient protected TProtocol iprot_;
+  protected transient TProtocol oprot_;
+  protected transient TProtocol iprot_;
 
   TIOStreamTransport tios;
 
-  public void initialize(Configuration job, Properties tbl)
-      throws SerDeException {
+  public void initialize(Configuration job, Properties tbl) throws SerDeException {
     try {
 
       String ddl = tbl.getProperty(Constants.SERIALIZATION_DDL);
@@ -162,7 +165,7 @@ public class DynamicSerDe implements SerDe, Serializable {
     } else if (bt.isPrimitive()) {
       return PrimitiveObjectInspectorFactory
           .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-              .getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
+          .getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
     } else {
       // Must be a struct
       DynamicSerDeStructBase btStruct = (DynamicSerDeStructBase) bt;
@@ -191,8 +194,7 @@ public class DynamicSerDe implements SerDe, Serializable {
 
   BytesWritable ret = new BytesWritable();
 
-  public Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     try {
       bos_.reset();
       bt.serialize(obj, objInspector, oprot_);

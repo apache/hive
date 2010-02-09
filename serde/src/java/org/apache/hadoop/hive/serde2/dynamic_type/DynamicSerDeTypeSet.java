@@ -30,11 +30,15 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TSet;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypeSet.
+ *
+ */
 public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
 
   // production is: set<FieldType()>
 
-  static final private int FD_TYPE = 0;
+  private static final int FD_TYPE = 0;
 
   public DynamicSerDeTypeSet(int i) {
     super(i);
@@ -107,8 +111,7 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
 
     ListObjectInspector loi = (ListObjectInspector) oi;
 

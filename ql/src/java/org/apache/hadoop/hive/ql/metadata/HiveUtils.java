@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 /**
- * General collection of helper functions
+ * General collection of helper functions.
  * 
  */
-public class HiveUtils {
+public final class HiveUtils {
 
   public static final char QUOTE = '"';
   public static final char COLON = ':';
@@ -118,5 +118,9 @@ public class HiveUtils {
     // identifiers, then we'll need to escape any backticks
     // in identifier by doubling them up.
     return "`" + identifier + "`";
+  }
+
+  private HiveUtils() {
+    // prevent instantiation
   }
 }

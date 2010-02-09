@@ -32,20 +32,22 @@ import org.apache.hadoop.io.compress.Decompressor;
  * A global compressor/decompressor pool used to save and reuse (possibly
  * native) compression/decompression codecs.
  */
-public class CodecPool {
+public final class CodecPool {
   private static final Log LOG = LogFactory.getLog(CodecPool.class);
 
   /**
    * A global compressor pool used to save the expensive
    * construction/destruction of (possibly native) decompression codecs.
    */
-  private static final Map<Class<Compressor>, List<Compressor>> compressorPool = new HashMap<Class<Compressor>, List<Compressor>>();
+  private static final Map<Class<Compressor>, List<Compressor>> COMPRESSOR_POOL =
+      new HashMap<Class<Compressor>, List<Compressor>>();
 
   /**
    * A global decompressor pool used to save the expensive
    * construction/destruction of (possibly native) decompression codecs.
    */
-  private static final Map<Class<Decompressor>, List<Decompressor>> decompressorPool = new HashMap<Class<Decompressor>, List<Decompressor>>();
+  private static final Map<Class<Decompressor>, List<Decompressor>> DECOMPRESSOR_POOL =
+      new HashMap<Class<Decompressor>, List<Decompressor>>();
 
   private static <T> T borrow(Map<Class<T>, List<T>> pool,
       Class<? extends T> codecClass) {
@@ -96,7 +98,7 @@ public class CodecPool {
    *         from the pool or a new one
    */
   public static Compressor getCompressor(CompressionCodec codec) {
-    Compressor compressor = borrow(compressorPool, codec.getCompressorType());
+    Compressor compressor = borrow(COMPRESSOR_POOL, codec.getCompressorType());
     if (compressor == null) {
       compressor = codec.createCompressor();
       LOG.info("Got brand-new compressor");
@@ -117,7 +119,7 @@ public class CodecPool {
    *         <code>CompressionCodec</code> the pool or a new one
    */
   public static Decompressor getDecompressor(CompressionCodec codec) {
-    Decompressor decompressor = borrow(decompressorPool, codec
+    Decompressor decompressor = borrow(DECOMPRESSOR_POOL, codec
         .getDecompressorType());
     if (decompressor == null) {
       decompressor = codec.createDecompressor();
@@ -139,7 +141,7 @@ public class CodecPool {
       return;
     }
     compressor.reset();
-    payback(compressorPool, compressor);
+    payback(COMPRESSOR_POOL, compressor);
   }
 
   /**
@@ -153,6 +155,10 @@ public class CodecPool {
       return;
     }
     decompressor.reset();
-    payback(decompressorPool, decompressor);
+    payback(DECOMPRESSOR_POOL, decompressor);
+  }
+
+  private CodecPool() {
+    // prevent instantiation
   }
 }

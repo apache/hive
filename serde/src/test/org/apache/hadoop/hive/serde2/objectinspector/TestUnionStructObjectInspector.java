@@ -26,6 +26,10 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+/**
+ * TestUnionStructObjectInspector.
+ *
+ */
 public class TestUnionStructObjectInspector extends TestCase {
 
   public void testUnionStructObjectInspector() throws Throwable {
@@ -57,10 +61,10 @@ public class TestUnionStructObjectInspector extends TestCase {
 
       UnionStructObjectInspector usoi1 = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-              .asList(new StructObjectInspector[] { soi1, soi2 }));
+          .asList(new StructObjectInspector[] {soi1, soi2}));
       UnionStructObjectInspector usoi2 = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-              .asList(new StructObjectInspector[] { soi1, soi2 }));
+          .asList(new StructObjectInspector[] {soi1, soi2}));
 
       assertEquals(usoi1, usoi2);
 

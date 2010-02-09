@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -38,16 +38,15 @@ import org.apache.hadoop.io.Text;
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
 @Description(name = "concat_ws", value = "_FUNC_(separator, str1, str2, ...) - "
-    + "returns the concatenation of the strings separated by the separator.", extended = "Example:\n"
+    + "returns the concatenation of the strings separated by the separator.",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('ce', 'fa', 'book') FROM src LIMIT 1;\n"
     + "  'facebook'")
 public class GenericUDFConcatWS extends GenericUDF {
-
-  ObjectInspector[] argumentOIs;
+  private ObjectInspector[] argumentOIs;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
           "The function CONCAT_WS(separator,str1,str2,str3,...) needs at least two arguments.");

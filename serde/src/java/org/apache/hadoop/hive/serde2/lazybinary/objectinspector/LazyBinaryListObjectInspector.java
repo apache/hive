@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
 
 /**
- * ObjectInspector for LazyBinaryList
+ * ObjectInspector for LazyBinaryList.
  */
 public class LazyBinaryListObjectInspector extends StandardListObjectInspector {
 

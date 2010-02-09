@@ -25,6 +25,10 @@ import java.util.List;
 
 import org.apache.hadoop.hive.serde.Constants;
 
+/**
+ * HiveResultSetMetaData.
+ *
+ */
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   List<String> columnNames;
   List<String> columnTypes;

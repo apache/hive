@@ -18,25 +18,34 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-public class CommandProcessorFactory {
+/**
+ * CommandProcessorFactory.
+ *
+ */
+public final class CommandProcessorFactory {
+
+  private CommandProcessorFactory() {
+    // prevent instantiation
+  }
 
   public static CommandProcessor get(String cmd) {
     String cmdl = cmd.toLowerCase();
 
-    if (cmdl.equals("set")) {
+    if ("set".equals(cmdl)) {
       return new SetProcessor();
-    } else if (cmdl.equals("dfs")) {
+    } else if ("dfs".equals(cmdl)) {
       SessionState ss = SessionState.get();
       return new DfsProcessor(ss.getConf());
-    } else if (cmdl.equals("add")) {
+    } else if ("add".equals(cmdl)) {
       return new AddResourceProcessor();
-    } else if (cmdl.equals("delete")) {
+    } else if ("delete".equals(cmdl)) {
       return new DeleteResourceProcessor();
-    } else if (!StringUtils.isBlank(cmd)) {
+    } else if (!isBlank(cmd)) {
       return new Driver();
     }
     return null;

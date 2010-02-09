@@ -17,13 +17,16 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.IOException;
 
 import org.mortbay.jetty.bio.SocketConnector;
 import org.mortbay.jetty.handler.RequestLogHandler;
 import org.mortbay.jetty.webapp.WebAppContext;
 
-import java.io.IOException;
-
+/**
+ * Jetty20Shims.
+ *
+ */
 public class Jetty20Shims implements JettyShims {
   public Server startServer(String listen, int port) throws IOException {
     Server s = new Server();
@@ -39,12 +42,12 @@ public class Jetty20Shims implements JettyShims {
       RequestLogHandler rlh = new RequestLogHandler();
       rlh.setHandler(wac);
       this.addHandler(rlh);
-   }
+    }
 
     public void setupListenerHostPort(String listen, int port)
-      throws IOException {
+        throws IOException {
 
-      SocketConnector connector  = new SocketConnector();
+      SocketConnector connector = new SocketConnector();
       connector.setPort(port);
       connector.setHost(listen);
       this.addConnector(connector);

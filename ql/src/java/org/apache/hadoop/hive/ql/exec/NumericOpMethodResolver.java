@@ -60,8 +60,7 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
    * .List)
    */
   @Override
-  public Method getEvalMethod(List<TypeInfo> argTypeInfos)
-      throws AmbiguousMethodException, UDFArgumentException {
+  public Method getEvalMethod(List<TypeInfo> argTypeInfos) throws UDFArgumentException {
     assert (argTypeInfos.size() == 2);
 
     List<TypeInfo> pTypeInfos = null;

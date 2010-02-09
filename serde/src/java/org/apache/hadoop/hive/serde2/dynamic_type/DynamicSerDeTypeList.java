@@ -25,11 +25,16 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TList;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypeList.
+ *
+ */
 public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
 
   @Override
@@ -44,7 +49,7 @@ public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
 
   // production is: list<FieldType()>
 
-  static final private int FD_TYPE = 0;
+  private static final int FD_TYPE = 0;
 
   @Override
   public Class getRealType() {
@@ -103,15 +108,14 @@ public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     ListObjectInspector loi = (ListObjectInspector) oi;
     ObjectInspector elementObjectInspector = loi
         .getListElementObjectInspector();
     DynamicSerDeTypeBase mt = getElementType();
 
-    org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol nullProtocol = (oprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) ? (org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) oprot
-        : null;
+    WriteNullsProtocol nullProtocol =
+        (oprot instanceof WriteNullsProtocol) ? (WriteNullsProtocol) oprot : null;
 
     if (o instanceof List) {
       List<?> list = (List<?>) o;

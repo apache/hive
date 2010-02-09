@@ -42,12 +42,17 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   private static final long serialVersionUID = 1L;
 
   private transient SkewJoinHandler skewJoinKeyContext = null;
-  
+
+  /**
+   * SkewkeyTableCounter.
+   *
+   */
   public static enum SkewkeyTableCounter {
     SKEWJOINFOLLOWUPJOBS
   }
-  transient private final LongWritable skewjoin_followup_jobs = new LongWritable(0);
-  
+
+  private final transient LongWritable skewjoin_followup_jobs = new LongWritable(0);
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -124,7 +129,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   /**
-   * All done
+   * All done.
    * 
    */
   @Override
@@ -136,8 +141,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success)
-      throws HiveException {
+  public void jobClose(Configuration hconf, boolean success) throws HiveException {
     int numAliases = conf.getExprs().size();
     if (conf.getHandleSkewJoin()) {
       try {

@@ -26,12 +26,12 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
- * Walks the operator tree in pre order fashion
+ * Walks the operator tree in pre order fashion.
  */
 public class GenMapRedWalker extends DefaultGraphWalker {
 
   /**
-   * constructor of the walker - the dispatcher is passed
+   * constructor of the walker - the dispatcher is passed.
    * 
    * @param disp
    *          the dispatcher to be called for each node visited
@@ -41,7 +41,7 @@ public class GenMapRedWalker extends DefaultGraphWalker {
   }
 
   /**
-   * Walk the given operator
+   * Walk the given operator.
    * 
    * @param nd
    *          operator being walked
@@ -57,7 +57,7 @@ public class GenMapRedWalker extends DefaultGraphWalker {
     // kids of reduce sink operator need not be traversed again
     if ((children == null)
         || ((nd instanceof ReduceSinkOperator) && (getDispatchedList()
-            .containsAll(children)))) {
+        .containsAll(children)))) {
       opStack.pop();
       return;
     }

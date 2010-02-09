@@ -39,51 +39,52 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 
-public class OperatorFactory {
+/**
+ * OperatorFactory.
+ *
+ */
+public final class OperatorFactory {
 
-  public final static class opTuple<T extends Serializable> {
+  /**
+   * OpTuple.
+   *
+   * @param <T>
+   */
+  public static final class OpTuple<T extends Serializable> {
     public Class<T> descClass;
     public Class<? extends Operator<T>> opClass;
 
-    public opTuple(Class<T> descClass, Class<? extends Operator<T>> opClass) {
+    public OpTuple(Class<T> descClass, Class<? extends Operator<T>> opClass) {
       this.descClass = descClass;
       this.opClass = opClass;
     }
   }
 
-  public static ArrayList<opTuple> opvec;
+  public static ArrayList<OpTuple> opvec;
   static {
-    opvec = new ArrayList<opTuple>();
-    opvec.add(new opTuple<FilterDesc>(FilterDesc.class, FilterOperator.class));
-    opvec.add(new opTuple<SelectDesc>(SelectDesc.class, SelectOperator.class));
-    opvec
-        .add(new opTuple<ForwardDesc>(ForwardDesc.class, ForwardOperator.class));
-    opvec.add(new opTuple<FileSinkDesc>(FileSinkDesc.class,
-        FileSinkOperator.class));
-    opvec
-        .add(new opTuple<CollectDesc>(CollectDesc.class, CollectOperator.class));
-    opvec.add(new opTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
-    opvec.add(new opTuple<ReduceSinkDesc>(ReduceSinkDesc.class,
-        ReduceSinkOperator.class));
-    opvec
-        .add(new opTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
-    opvec
-        .add(new opTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
-    opvec.add(new opTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
-    opvec
-        .add(new opTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
-    opvec.add(new opTuple<LimitDesc>(LimitDesc.class, LimitOperator.class));
-    opvec.add(new opTuple<TableScanDesc>(TableScanDesc.class,
-        TableScanOperator.class));
-    opvec.add(new opTuple<UnionDesc>(UnionDesc.class, UnionOperator.class));
-    opvec.add(new opTuple<UDTFDesc>(UDTFDesc.class, UDTFOperator.class));
-    opvec.add(new opTuple<LateralViewJoinDesc>(LateralViewJoinDesc.class,
+    opvec = new ArrayList<OpTuple>();
+    opvec.add(new OpTuple<FilterDesc>(FilterDesc.class, FilterOperator.class));
+    opvec.add(new OpTuple<SelectDesc>(SelectDesc.class, SelectOperator.class));
+    opvec.add(new OpTuple<ForwardDesc>(ForwardDesc.class, ForwardOperator.class));
+    opvec.add(new OpTuple<FileSinkDesc>(FileSinkDesc.class, FileSinkOperator.class));
+    opvec.add(new OpTuple<CollectDesc>(CollectDesc.class, CollectOperator.class));
+    opvec.add(new OpTuple<ScriptDesc>(ScriptDesc.class, ScriptOperator.class));
+    opvec.add(new OpTuple<ReduceSinkDesc>(ReduceSinkDesc.class, ReduceSinkOperator.class));
+    opvec.add(new OpTuple<ExtractDesc>(ExtractDesc.class, ExtractOperator.class));
+    opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
+    opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
+    opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
+    opvec.add(new OpTuple<LimitDesc>(LimitDesc.class, LimitOperator.class));
+    opvec.add(new OpTuple<TableScanDesc>(TableScanDesc.class, TableScanOperator.class));
+    opvec.add(new OpTuple<UnionDesc>(UnionDesc.class, UnionOperator.class));
+    opvec.add(new OpTuple<UDTFDesc>(UDTFDesc.class, UDTFOperator.class));
+    opvec.add(new OpTuple<LateralViewJoinDesc>(LateralViewJoinDesc.class,
         LateralViewJoinOperator.class));
   }
 
   public static <T extends Serializable> Operator<T> get(Class<T> opClass) {
 
-    for (opTuple o : opvec) {
+    for (OpTuple o : opvec) {
       if (o.descClass == opClass) {
         try {
           Operator<T> op = (Operator<T>) o.opClass.newInstance();
@@ -188,4 +189,7 @@ public class OperatorFactory {
     return (ret);
   }
 
+  private OperatorFactory() {
+    // prevent instantiation
+  }
 }

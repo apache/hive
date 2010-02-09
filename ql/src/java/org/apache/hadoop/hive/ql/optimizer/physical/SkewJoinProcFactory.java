@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Node processor factory for skew join resolver.
  */
-public class SkewJoinProcFactory {
+public final class SkewJoinProcFactory {
 
   public static NodeProcessor getDefaultProc() {
     return new SkewJoinDefaultProcessor();
@@ -43,6 +43,10 @@ public class SkewJoinProcFactory {
     return new SkewJoinJoinProcessor();
   }
 
+  /**
+   * SkewJoinJoinProcessor.
+   *
+   */
   public static class SkewJoinJoinProcessor implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
@@ -55,10 +59,18 @@ public class SkewJoinProcFactory {
     }
   }
 
+  /**
+   * SkewJoinDefaultProcessor.
+   *
+   */
   public static class SkewJoinDefaultProcessor implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       return null;
     }
+  }
+
+  private SkewJoinProcFactory() {
+    // prevent instantiation
   }
 }

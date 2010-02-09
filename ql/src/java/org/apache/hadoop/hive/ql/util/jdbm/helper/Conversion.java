@@ -91,7 +91,7 @@ public class Conversion {
    */
   public static byte[] convertToByteArray(byte n) {
     n = (byte) (n ^ ((byte) 0x80)); // flip MSB because "byte" is signed
-    return new byte[] { n };
+    return new byte[] {n};
   }
 
   /**

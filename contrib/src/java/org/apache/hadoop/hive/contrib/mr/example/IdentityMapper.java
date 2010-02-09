@@ -25,13 +25,17 @@ import org.apache.hadoop.hive.contrib.mr.Output;
  * Example Mapper (Identity).
  */
 public final class IdentityMapper {
+
   public static void main(final String[] args) throws Exception {
     new GenericMR().map(System.in, System.out, new Mapper() {
       @Override
-      public void map(final String[] record, final Output output)
-          throws Exception {
+      public void map(final String[] record, final Output output) throws Exception {
         output.collect(record);
       }
     });
+  }
+
+  private IdentityMapper() {
+    // prevent instantiation
   }
 }

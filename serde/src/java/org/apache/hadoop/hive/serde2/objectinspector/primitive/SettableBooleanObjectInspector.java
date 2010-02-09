@@ -28,10 +28,10 @@ public interface SettableBooleanObjectInspector extends BooleanObjectInspector {
    * In most cases the returned value should be the same as o, but in case o is
    * unmodifiable, this will return a new object with new value.
    */
-  public Object set(Object o, boolean value);
+  Object set(Object o, boolean value);
 
   /**
    * Create an object with the value.
    */
-  public Object create(boolean value);
+  Object create(boolean value);
 }

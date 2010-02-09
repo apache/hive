@@ -52,7 +52,7 @@ public class JoinDesc implements Serializable {
   protected java.util.ArrayList<java.lang.String> outputColumnNames;
 
   // key:column output name, value:tag
-  transient private Map<String, Byte> reversedExprs;
+  private transient Map<String, Byte> reversedExprs;
 
   // No outer join involved
   protected boolean noOuterJoin;
@@ -97,8 +97,8 @@ public class JoinDesc implements Serializable {
     return reversedExprs;
   }
 
-  public void setReversedExprs(Map<String, Byte> reversed_Exprs) {
-    reversedExprs = reversed_Exprs;
+  public void setReversedExprs(Map<String, Byte> reversedExprs) {
+    this.reversedExprs = reversedExprs;
   }
 
   @Explain(displayName = "condition expressions")
@@ -175,7 +175,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * The order in which tables should be processed when joining
+   * The order in which tables should be processed when joining.
    * 
    * @return Array of tags
    */
@@ -184,7 +184,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * The order in which tables should be processed when joining
+   * The order in which tables should be processed when joining.
    * 
    * @param tagOrder
    *          Array of tags
@@ -199,7 +199,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * set to handle skew join in this join op
+   * set to handle skew join in this join op.
    * 
    * @param handleSkewJoin
    */
@@ -208,14 +208,14 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * @return mapping from tbl to dir for big keys
+   * @return mapping from tbl to dir for big keys.
    */
   public Map<Byte, String> getBigKeysDirMap() {
     return bigKeysDirMap;
   }
 
   /**
-   * set the mapping from tbl to dir for big keys
+   * set the mapping from tbl to dir for big keys.
    * 
    * @param bigKeysDirMap
    */
@@ -231,7 +231,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * set the mapping from tbl to dir for small keys
+   * set the mapping from tbl to dir for small keys.
    * 
    * @param bigKeysDirMap
    */
@@ -248,7 +248,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * set skew key definition
+   * set skew key definition.
    * 
    * @param skewKeyDefinition
    */

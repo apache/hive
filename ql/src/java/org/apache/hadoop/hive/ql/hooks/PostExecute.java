@@ -41,7 +41,7 @@ public interface PostExecute {
    * @param ugi
    *          The user group security information.
    */
-  public void run(SessionState sess, Set<ReadEntity> inputs,
+  void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception;
 
 }

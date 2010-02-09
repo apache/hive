@@ -21,11 +21,15 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * FilterDesc.
+ *
+ */
 @Explain(displayName = "Filter Operator")
 public class FilterDesc implements Serializable {
 
   /**
-   * sampleDesc is used to keep track of the sampling descriptor
+   * sampleDesc is used to keep track of the sampling descriptor.
    */
   public static class sampleDesc {
     // The numerator of the TABLESAMPLE clause

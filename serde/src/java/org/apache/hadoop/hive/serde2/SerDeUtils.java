@@ -39,7 +39,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 
-public class SerDeUtils {
+/**
+ * SerDeUtils.
+ *
+ */
+public final class SerDeUtils {
 
   public static final char QUOTE = '"';
   public static final char COLON = ':';
@@ -58,8 +62,7 @@ public class SerDeUtils {
     serdes.put(name, serde);
   }
 
-  public static Deserializer lookupDeserializer(String name)
-      throws SerDeException {
+  public static Deserializer lookupDeserializer(String name) throws SerDeException {
     Class<?> c;
     if (serdes.containsKey(name)) {
       c = serdes.get(name);
@@ -81,10 +84,10 @@ public class SerDeUtils {
   static {
     nativeSerDeNames
         .add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class
-            .getName());
+        .getName());
     nativeSerDeNames
         .add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-            .getName());
+        .getName());
     // For backward compatibility
     nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
     nativeSerDeNames
@@ -104,12 +107,12 @@ public class SerDeUtils {
       // loading these classes will automatically register the short names
       Class
           .forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
-              .getName());
+          .getName());
       Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
           .getName());
       Class
           .forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class
-              .getName());
+          .getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
           "IMPOSSIBLE Exception: Unable to initialize core serdes", e);
@@ -326,7 +329,9 @@ public class SerDeUtils {
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");
     }
-    ;
+  }
 
+  private SerDeUtils() {
+    // prevent instantiation
   }
 }

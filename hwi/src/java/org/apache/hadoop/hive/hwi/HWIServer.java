@@ -115,7 +115,7 @@ public class HWIServer {
   }
 
   /**
-   * Shut down the running HWI Server
+   * Shut down the running HWI Server.
    * 
    * @throws Exception
    *           Running Thread.stop() can and probably will throw this

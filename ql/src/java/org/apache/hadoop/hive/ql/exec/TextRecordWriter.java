@@ -25,6 +25,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * TextRecordWriter.
+ *
+ */
 public class TextRecordWriter implements RecordWriter {
 
   private OutputStream out;

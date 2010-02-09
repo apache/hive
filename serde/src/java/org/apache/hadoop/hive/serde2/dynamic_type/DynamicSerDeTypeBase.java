@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 
+/**
+ * DynamicSerDeTypeBase.
+ *
+ */
 public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode
     implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -55,8 +59,7 @@ public abstract class DynamicSerDeTypeBase extends DynamicSerDeSimpleNode
       throws SerDeException, TException, IllegalAccessException;
 
   public abstract void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException;
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException;
 
   @Override
   public String toString() {

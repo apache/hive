@@ -29,5 +29,5 @@ public interface UDAFEvaluator {
   /**
    * Initializer. Initializes the state for the evaluator.
    */
-  public void init();
+  void init();
 }

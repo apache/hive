@@ -66,6 +66,10 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+/**
+ * QTestUtil.
+ *
+ */
 public class QTestUtil {
 
   private String testWarehouse;
@@ -163,8 +167,7 @@ public class QTestUtil {
     this(outDir, logDir, false);
   }
 
-  public QTestUtil(String outDir, String logDir, boolean miniMr)
-      throws Exception {
+  public QTestUtil(String outDir, String logDir, boolean miniMr) throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
@@ -236,13 +239,13 @@ public class QTestUtil {
   public void cleanUp() throws Exception {
     String warehousePath = ((new URI(testWarehouse)).getPath());
     // Drop any tables that remain due to unsuccessful runs
-    for (String s : new String[] { "src", "src1", "src_json", "src_thrift",
+    for (String s : new String[] {"src", "src1", "src_json", "src_thrift",
         "src_sequencefile", "srcpart", "srcbucket", "srcbucket2", "dest1",
         "dest2", "dest3", "dest4", "dest4_sequencefile", "dest_j1", "dest_j2",
-        "dest_g1", "dest_g2", "fetchtask_ioexception" }) {
+        "dest_g1", "dest_g2", "fetchtask_ioexception"}) {
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
     }
-    for (String s : new String[] { "dest4.out", "union.out" }) {
+    for (String s : new String[] {"dest4.out", "union.out"}) {
       deleteDirectory(new File(warehousePath, s));
     }
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
@@ -287,8 +290,8 @@ public class QTestUtil {
     Path fpath;
     Path newfpath;
     HashMap<String, String> part_spec = new HashMap<String, String>();
-    for (String ds : new String[] { "2008-04-08", "2008-04-09" }) {
-      for (String hr : new String[] { "11", "12" }) {
+    for (String ds : new String[] {"2008-04-08", "2008-04-09"}) {
+      for (String hr : new String[] {"11", "12"}) {
         part_spec.clear();
         part_spec.put("ds", ds);
         part_spec.put("hr", hr);
@@ -310,7 +313,7 @@ public class QTestUtil {
     // db.createTable("srcbucket", cols, null, TextInputFormat.class,
     // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
     srcTables.add("srcbucket");
-    for (String fname : new String[] { "srcbucket0.txt", "srcbucket1.txt" }) {
+    for (String fname : new String[] {"srcbucket0.txt", "srcbucket1.txt"}) {
       fpath = new Path(testFiles, fname);
       newfpath = new Path(tmppath, fname);
       fs.copyFromLocalFile(false, true, fpath, newfpath);
@@ -318,12 +321,13 @@ public class QTestUtil {
           + "' INTO TABLE srcbucket");
     }
 
-    runCreateTableCmd("CREATE TABLE srcbucket2(key int, value string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE");
+    runCreateTableCmd("CREATE TABLE srcbucket2(key int, value string) "
+        + "CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE");
     // db.createTable("srcbucket", cols, null, TextInputFormat.class,
     // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
     srcTables.add("srcbucket2");
-    for (String fname : new String[] { "srcbucket20.txt", "srcbucket21.txt",
-        "srcbucket22.txt", "srcbucket23.txt" }) {
+    for (String fname : new String[] {"srcbucket20.txt", "srcbucket21.txt",
+        "srcbucket22.txt", "srcbucket23.txt"}) {
       fpath = new Path(testFiles, fname);
       newfpath = new Path(tmppath, fname);
       fs.copyFromLocalFile(false, true, fpath, newfpath);
@@ -331,7 +335,7 @@ public class QTestUtil {
           + "' INTO TABLE srcbucket2");
     }
 
-    for (String tname : new String[] { "src", "src1" }) {
+    for (String tname : new String[] {"src", "src1"}) {
       db.createTable(tname, cols, null, TextInputFormat.class,
           IgnoreKeyTextOutputFormat.class);
       srcTables.add(tname);
@@ -599,8 +603,7 @@ public class QTestUtil {
     }
   }
 
-  public int checkPlan(String tname, List<Task<? extends Serializable>> tasks)
-      throws Exception {
+  public int checkPlan(String tname, List<Task<? extends Serializable>> tasks) throws Exception {
 
     if (tasks != null) {
       File planDir = new File(outDir, "plan");
@@ -735,11 +738,17 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
 
-    cmdArray = new String[] { "diff", "-a", "-I", "file:", "-I", "/tmp/", "-I",
-        "invalidscheme:", "-I", "lastUpdateTime", "-I", "lastAccessTime", "-I",
-        "owner", "-I", "transient_lastDdlTime",
+    cmdArray = new String[] {
+        "diff", "-a",
+        "-I", "file:",
+        "-I", "/tmp/",
+        "-I", "invalidscheme:",
+        "-I", "lastUpdateTime",
+        "-I", "lastAccessTime",
+        "-I", "owner",
+        "-I", "transient_lastDdlTime",
         (new File(logDir, tname + ".out")).getPath(),
-        (new File(outDir, tname + ".out")).getPath() };
+        (new File(outDir, tname + ".out")).getPath()};
 
     System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
 
@@ -773,8 +782,7 @@ public class QTestUtil {
     return pd.parse(qMap.get(tname));
   }
 
-  public List<Task<? extends Serializable>> analyzeAST(ASTNode ast)
-      throws Exception {
+  public List<Task<? extends Serializable>> analyzeAST(ASTNode ast) throws Exception {
 
     // Do semantic analysis and plan generation
     Context ctx = new Context(conf);
@@ -792,7 +800,7 @@ public class QTestUtil {
   }
 
   /**
-   * QTRunner: Runnable class for running a a single query file
+   * QTRunner: Runnable class for running a a single query file.
    * 
    **/
   public static class QTRunner implements Runnable {

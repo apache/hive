@@ -25,11 +25,16 @@ import java.util.Map;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TMap;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypeMap.
+ *
+ */
 public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
 
   @Override
@@ -117,13 +122,12 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     DynamicSerDeTypeBase keyType = getKeyType();
     DynamicSerDeTypeBase valueType = getValueType();
 
-    org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol nullProtocol = (oprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) ? (org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) oprot
-        : null;
+    WriteNullsProtocol nullProtocol =
+        (oprot instanceof WriteNullsProtocol) ? (WriteNullsProtocol) oprot : null;
 
     assert (oi.getCategory() == ObjectInspector.Category.MAP);
     MapObjectInspector moi = (MapObjectInspector) oi;

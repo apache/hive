@@ -42,7 +42,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
- * Base operator implementation
+ * Base operator implementation.
  **/
 public abstract class Operator<T extends Serializable> implements Serializable,
     Node {
@@ -55,28 +55,29 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   protected List<Operator<? extends Serializable>> parentOperators;
   protected String operatorId;
   /**
-   * List of counter names associated with the operator It contains the
+   * List of counter names associated with the operator. It contains the
    * following default counters NUM_INPUT_ROWS NUM_OUTPUT_ROWS TIME_TAKEN
-   * Individual operators can add to this list via addToCounterNames methods
+   * Individual operators can add to this list via addToCounterNames methods.
    */
   protected ArrayList<String> counterNames;
 
   /**
    * Each operator has its own map of its counter names to disjoint
    * ProgressCounter - it is populated at compile time and is read in at
-   * run-time while extracting the operator specific counts
+   * run-time while extracting the operator specific counts.
    */
   protected HashMap<String, ProgressCounter> counterNameToEnum;
 
   private static int seqId;
 
-  // It can be optimized later so that an operator operator (init/close) is
-  // performed
-  // only after that operation has been performed on all the parents. This will
-  // require
-  // initializing the whole tree in all the mappers (which might be required for
-  // mappers
+  // It can be optimized later so that an operator operator (init/close) is performed
+  // only after that operation has been performed on all the parents. This will require
+  // initializing the whole tree in all the mappers (which might be required for mappers
   // spanning multiple files anyway, in future)
+  /**
+   * State.
+   *
+   */
   public static enum State {
     UNINIT, // initialize() has not been called
     INIT, // initialize() has been called and close() has not been called,
@@ -88,10 +89,10 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     // one of its parent is not in state CLOSE..
   };
 
-  transient protected State state = State.UNINIT;
+  protected transient State state = State.UNINIT;
 
-  transient static boolean fatalError = false; // fatalError is shared acorss
-                                               // all operators
+  static transient boolean fatalError = false; // fatalError is shared acorss
+  // all operators
 
   static {
     seqId = 0;
@@ -172,7 +173,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   // non-bean fields needed during compilation
-  transient private RowSchema rowSchema;
+  private transient RowSchema rowSchema;
 
   public void setSchema(RowSchema rowSchema) {
     this.rowSchema = rowSchema;
@@ -184,16 +185,16 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   // non-bean ..
 
-  transient protected HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
-  transient protected OutputCollector out;
-  transient protected Log LOG = LogFactory.getLog(this.getClass().getName());
-  transient protected String alias;
-  transient protected Reporter reporter;
-  transient protected String id;
+  protected transient HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
+  protected transient OutputCollector out;
+  protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected transient String alias;
+  protected transient Reporter reporter;
+  protected transient String id;
   // object inspectors for input rows
-  transient protected ObjectInspector[] inputObjInspectors = new ObjectInspector[Short.MAX_VALUE];
+  protected transient ObjectInspector[] inputObjInspectors = new ObjectInspector[Short.MAX_VALUE];
   // for output rows of this operator
-  transient protected ObjectInspector outputObjInspector;
+  protected transient ObjectInspector outputObjInspector;
 
   /**
    * A map of output column name to input expression map. This is used by
@@ -243,7 +244,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * Store the alias this operator is working on behalf of
+   * Store the alias this operator is working on behalf of.
    */
   public void setAlias(String alias) {
     this.alias = alias;
@@ -266,7 +267,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * checks whether all parent operators are initialized or not
+   * checks whether all parent operators are initialized or not.
    * 
    * @return true if there are no parents or all parents are initialized. false
    *         otherwise
@@ -352,7 +353,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Calls initialize on each of the children with outputObjetInspector as the
-   * output row format
+   * output row format.
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
@@ -372,7 +373,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Collects all the parent's output object inspectors and calls actual
-   * initialization method
+   * initialization method.
    * 
    * @param hconf
    * @param inputOI
@@ -527,7 +528,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Unlike other operator interfaces which are called from map or reduce task,
-   * jobClose is called from the jobclient side once the job has completed
+   * jobClose is called from the jobclient side once the job has completed.
    * 
    * @param conf
    *          Configuration with with which job was submitted
@@ -549,12 +550,12 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * Cache childOperators in an array for faster access. childOperatorsArray is
    * accessed per row, so it's important to make the access efficient.
    */
-  transient protected Operator<? extends Serializable>[] childOperatorsArray = null;
-  transient protected int[] childOperatorsTag;
+  protected transient Operator<? extends Serializable>[] childOperatorsArray = null;
+  protected transient int[] childOperatorsTag;
 
   // counters for debugging
-  transient private long cntr = 0;
-  transient private long nextCntr = 1;
+  private transient long cntr = 0;
+  private transient long nextCntr = 1;
 
   /**
    * Replace one child with another at the same position. The parent of the
@@ -672,8 +673,12 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
   }
 
+  /**
+   * OperatorFunc.
+   *
+   */
   public static interface OperatorFunc {
-    public void func(Operator<? extends Serializable> op);
+    void func(Operator<? extends Serializable> op);
   }
 
   public void preorderMap(OperatorFunc opFunc) {
@@ -702,7 +707,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Returns a map of output column name to input expression map Note that
-   * currently it returns only key columns for ReduceSink and GroupBy operators
+   * currently it returns only key columns for ReduceSink and GroupBy operators.
    * 
    * @return null if the operator doesn't change columns
    */
@@ -799,34 +804,73 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    */
 
   /**
-   * TODO This is a hack for hadoop 0.17 which only supports enum counters
+   * TODO This is a hack for hadoop 0.17 which only supports enum counters.
    */
   public static enum ProgressCounter {
-    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64, C65, C66, C67, C68, C69, C70, C71, C72, C73, C74, C75, C76, C77, C78, C79, C80, C81, C82, C83, C84, C85, C86, C87, C88, C89, C90, C91, C92, C93, C94, C95, C96, C97, C98, C99, C100, C101, C102, C103, C104, C105, C106, C107, C108, C109, C110, C111, C112, C113, C114, C115, C116, C117, C118, C119, C120, C121, C122, C123, C124, C125, C126, C127, C128, C129, C130, C131, C132, C133, C134, C135, C136, C137, C138, C139, C140, C141, C142, C143, C144, C145, C146, C147, C148, C149, C150, C151, C152, C153, C154, C155, C156, C157, C158, C159, C160, C161, C162, C163, C164, C165, C166, C167, C168, C169, C170, C171, C172, C173, C174, C175, C176, C177, C178, C179, C180, C181, C182, C183, C184, C185, C186, C187, C188, C189, C190, C191, C192, C193, C194, C195, C196, C197, C198, C199, C200, C201, C202, C203, C204, C205, C206, C207, C208, C209, C210, C211, C212, C213, C214, C215, C216, C217, C218, C219, C220, C221, C222, C223, C224, C225, C226, C227, C228, C229, C230, C231, C232, C233, C234, C235, C236, C237, C238, C239, C240, C241, C242, C243, C244, C245, C246, C247, C248, C249, C250, C251, C252, C253, C254, C255, C256, C257, C258, C259, C260, C261, C262, C263, C264, C265, C266, C267, C268, C269, C270, C271, C272, C273, C274, C275, C276, C277, C278, C279, C280, C281, C282, C283, C284, C285, C286, C287, C288, C289, C290, C291, C292, C293, C294, C295, C296, C297, C298, C299, C300, C301, C302, C303, C304, C305, C306, C307, C308, C309, C310, C311, C312, C313, C314, C315, C316, C317, C318, C319, C320, C321, C322, C323, C324, C325, C326, C327, C328, C329, C330, C331, C332, C333, C334, C335, C336, C337, C338, C339, C340, C341, C342, C343, C344, C345, C346, C347, C348, C349, C350, C351, C352, C353, C354, C355, C356, C357, C358, C359, C360, C361, C362, C363, C364, C365, C366, C367, C368, C369, C370, C371, C372, C373, C374, C375, C376, C377, C378, C379, C380, C381, C382, C383, C384, C385, C386, C387, C388, C389, C390, C391, C392, C393, C394, C395, C396, C397, C398, C399, C400
+    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10,
+    C11, C12, C13, C14, C15, C16, C17, C18, C19, C20,
+    C21, C22, C23, C24, C25, C26, C27, C28, C29, C30,
+    C31, C32, C33, C34, C35, C36, C37, C38, C39, C40,
+    C41, C42, C43, C44, C45, C46, C47, C48, C49, C50,
+    C51, C52, C53, C54, C55, C56, C57, C58, C59, C60,
+    C61, C62, C63, C64, C65, C66, C67, C68, C69, C70,
+    C71, C72, C73, C74, C75, C76, C77, C78, C79, C80,
+    C81, C82, C83, C84, C85, C86, C87, C88, C89, C90,
+    C91, C92, C93, C94, C95, C96, C97, C98, C99, C100,
+    C101, C102, C103, C104, C105, C106, C107, C108, C109, C110,
+    C111, C112, C113, C114, C115, C116, C117, C118, C119, C120,
+    C121, C122, C123, C124, C125, C126, C127, C128, C129, C130,
+    C131, C132, C133, C134, C135, C136, C137, C138, C139, C140,
+    C141, C142, C143, C144, C145, C146, C147, C148, C149, C150,
+    C151, C152, C153, C154, C155, C156, C157, C158, C159, C160,
+    C161, C162, C163, C164, C165, C166, C167, C168, C169, C170,
+    C171, C172, C173, C174, C175, C176, C177, C178, C179, C180,
+    C181, C182, C183, C184, C185, C186, C187, C188, C189, C190,
+    C191, C192, C193, C194, C195, C196, C197, C198, C199, C200,
+    C201, C202, C203, C204, C205, C206, C207, C208, C209, C210,
+    C211, C212, C213, C214, C215, C216, C217, C218, C219, C220,
+    C221, C222, C223, C224, C225, C226, C227, C228, C229, C230,
+    C231, C232, C233, C234, C235, C236, C237, C238, C239, C240,
+    C241, C242, C243, C244, C245, C246, C247, C248, C249, C250,
+    C251, C252, C253, C254, C255, C256, C257, C258, C259, C260,
+    C261, C262, C263, C264, C265, C266, C267, C268, C269, C270,
+    C271, C272, C273, C274, C275, C276, C277, C278, C279, C280,
+    C281, C282, C283, C284, C285, C286, C287, C288, C289, C290,
+    C291, C292, C293, C294, C295, C296, C297, C298, C299, C300,
+    C301, C302, C303, C304, C305, C306, C307, C308, C309, C310,
+    C311, C312, C313, C314, C315, C316, C317, C318, C319, C320,
+    C321, C322, C323, C324, C325, C326, C327, C328, C329, C330,
+    C331, C332, C333, C334, C335, C336, C337, C338, C339, C340,
+    C341, C342, C343, C344, C345, C346, C347, C348, C349, C350,
+    C351, C352, C353, C354, C355, C356, C357, C358, C359, C360,
+    C361, C362, C363, C364, C365, C366, C367, C368, C369, C370,
+    C371, C372, C373, C374, C375, C376, C377, C378, C379, C380,
+    C381, C382, C383, C384, C385, C386, C387, C388, C389, C390,
+    C391, C392, C393, C394, C395, C396, C397, C398, C399, C400
   };
 
   private static int totalNumCntrs = 400;
 
   /**
-   * populated at runtime from hadoop counters at run time in the client
+   * populated at runtime from hadoop counters at run time in the client.
    */
-  transient protected HashMap<String, Long> counters;
+  protected transient HashMap<String, Long> counters;
 
   /**
    * keeps track of unique ProgressCounter enums used this value is used at
-   * compile time while assigning ProgressCounter enums to counter names
+   * compile time while assigning ProgressCounter enums to counter names.
    */
   private static int lastEnumUsed;
 
-  transient protected long inputRows = 0;
-  transient protected long outputRows = 0;
-  transient protected long beginTime = 0;
-  transient protected long totalTime = 0;
+  protected transient long inputRows = 0;
+  protected transient long outputRows = 0;
+  protected transient long beginTime = 0;
+  protected transient long totalTime = 0;
 
-  transient protected Object groupKeyObject;
+  protected transient Object groupKeyObject;
 
   /**
-   * this is called before operator process to buffer some counters
+   * this is called before operator process to buffer some counters.
    */
   private void preProcessCounter() {
     inputRows++;
@@ -843,7 +887,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * this is called after operator process to buffer some counters
+   * this is called after operator process to buffer some counters.
    */
   private void postProcessCounter() {
     if (counterNameToEnum != null) {
@@ -852,7 +896,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * this is called in operators in map or reduce tasks
+   * this is called in operators in map or reduce tasks.
    * 
    * @param name
    * @param amount
@@ -866,7 +910,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     if (pc == null) {
       LOG
           .warn("Using too many counters. Increase the total number of counters for "
-              + counterName);
+          + counterName);
     } else if (reporter != null) {
       reporter.incrCounter(pc, amount);
     }
@@ -897,7 +941,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * called in ExecDriver.progress periodically
+   * called in ExecDriver.progress periodically.
    * 
    * @param ctrs
    *          counters from the running job
@@ -947,7 +991,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     if (pc == null) {
       LOG
           .warn("Using too many counters. Increase the total number of counters for "
-              + counterName);
+          + counterName);
     } else {
       long value = ctrs.getCounter(pc);
       fatalErrorMessage(errMsg, value);
@@ -985,7 +1029,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Called only in SemanticAnalyzer after all operators have added their own
-   * set of counter names
+   * set of counter names.
    */
   public void assignCounterNameToEnum() {
     if (counterNameToEnum != null) {
@@ -1048,7 +1092,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Should be overridden to return the type of the specific operator among the
-   * types in OperatorType
+   * types in OperatorType.
    * 
    * @return OperatorType.* or -1 if not overridden
    */

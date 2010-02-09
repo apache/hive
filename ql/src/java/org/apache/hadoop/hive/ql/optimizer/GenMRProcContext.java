@@ -92,6 +92,10 @@ public class GenMRProcContext implements NodeProcessorCtx {
     }
   }
 
+  /**
+   * GenMRUnionCtx.
+   *
+   */
   public static class GenMRUnionCtx {
     Task<? extends Serializable> uTask;
     List<String> taskTmpDir;
@@ -128,6 +132,10 @@ public class GenMRProcContext implements NodeProcessorCtx {
     }
   }
 
+  /**
+   * GenMRMapJoinCtx.
+   *
+   */
   public static class GenMRMapJoinCtx {
     String taskTmpDir;
     TableDesc tt_desc;

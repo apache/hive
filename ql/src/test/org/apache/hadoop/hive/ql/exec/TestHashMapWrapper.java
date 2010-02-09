@@ -26,6 +26,10 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
+/**
+ * TestHashMapWrapper.
+ *
+ */
 public class TestHashMapWrapper extends TestCase {
 
   public void testHashMapWrapper() throws Exception {
@@ -38,8 +42,7 @@ public class TestHashMapWrapper extends TestCase {
 
     try {
       // NO cache
-      HashMapWrapper<String, String> wrapper = new HashMapWrapper<String, String>(
-          0);
+      HashMapWrapper<String, String> wrapper = new HashMapWrapper<String, String>(0);
       insertAll(wrapper, mem_map);
       checkAll(wrapper, mem_map);
       wrapper.close(); // clean up temporary files
@@ -192,10 +195,10 @@ public class TestHashMapWrapper extends TestCase {
       String val = map.get(k);
       assertTrue(
           "some HashMapWrapper value is not in main memory HashMap: map_val = "
-              + map_val + "; val = " + val, map_val != null && val != null);
+          + map_val + "; val = " + val, map_val != null && val != null);
       assertTrue(
           "value in HashMapWrapper is not the same as MM HashMap: map_val = "
-              + map_val + "; val = " + val, val.equals(map_val));
+          + map_val + "; val = " + val, val.equals(map_val));
     }
 
     // check all inserted elements are in HashMapWrapper

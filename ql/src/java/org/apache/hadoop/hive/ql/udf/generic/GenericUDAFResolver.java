@@ -47,6 +47,5 @@ public interface GenericUDAFResolver {
    *          The types of the parameters. We need the type information to know
    *          which evaluator class to use.
    */
-  GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException;
+  GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException;
 }

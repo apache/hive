@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+/**
+ * MyTestInnerStruct.
+ *
+ */
 public class MyTestInnerStruct {
 
   Integer int1;

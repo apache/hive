@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * UDTFCollector collects data from a GenericUDTF and passes the data to a
- * UDTFOperator
+ * UDTFOperator.
  */
 public class UDTFCollector implements Collector {
 

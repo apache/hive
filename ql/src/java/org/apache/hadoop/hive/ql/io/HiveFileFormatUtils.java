@@ -52,10 +52,11 @@ import org.apache.hadoop.mapred.TextInputFormat;
  * HiveOutputFormat for the older ones.
  * 
  */
-public class HiveFileFormatUtils {
+public final class HiveFileFormatUtils {
 
   static {
-    outputFormatSubstituteMap = new HashMap<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>();
+    outputFormatSubstituteMap =
+        new HashMap<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>();
     HiveFileFormatUtils.registerOutputFormatSubstitute(
         IgnoreKeyTextOutputFormat.class, HiveIgnoreKeyTextOutputFormat.class);
     HiveFileFormatUtils.registerOutputFormatSubstitute(
@@ -63,27 +64,28 @@ public class HiveFileFormatUtils {
   }
 
   @SuppressWarnings("unchecked")
-  private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>> outputFormatSubstituteMap;
+  private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>
+  outputFormatSubstituteMap;
 
   /**
-   * register a substitute
+   * register a substitute.
    * 
    * @param origin
    *          the class that need to be substituted
    * @param substitute
    */
   @SuppressWarnings("unchecked")
-  public synchronized static void registerOutputFormatSubstitute(
+  public static synchronized void registerOutputFormatSubstitute(
       Class<? extends OutputFormat> origin,
       Class<? extends HiveOutputFormat> substitute) {
     outputFormatSubstituteMap.put(origin, substitute);
   }
 
   /**
-   * get a OutputFormat's substitute HiveOutputFormat
+   * get a OutputFormat's substitute HiveOutputFormat.
    */
   @SuppressWarnings("unchecked")
-  public synchronized static Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
+  public static synchronized Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
       Class<?> origin) {
     if (HiveOutputFormat.class.isAssignableFrom(origin)) {
       return (Class<? extends HiveOutputFormat>) origin;
@@ -112,12 +114,14 @@ public class HiveFileFormatUtils {
   }
 
   static {
-    inputFormatCheckerMap = new HashMap<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>();
+    inputFormatCheckerMap =
+        new HashMap<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>();
     HiveFileFormatUtils.registerInputFormatChecker(
         SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class);
     HiveFileFormatUtils.registerInputFormatChecker(RCFileInputFormat.class,
         RCFileInputFormat.class);
-    inputFormatCheckerInstanceCache = new HashMap<Class<? extends InputFormatChecker>, InputFormatChecker>();
+    inputFormatCheckerInstanceCache =
+        new HashMap<Class<? extends InputFormatChecker>, InputFormatChecker>();
   }
 
   @SuppressWarnings("unchecked")
@@ -126,14 +130,14 @@ public class HiveFileFormatUtils {
   private static Map<Class<? extends InputFormatChecker>, InputFormatChecker> inputFormatCheckerInstanceCache;
 
   /**
-   * register an InputFormatChecker for a given InputFormat
+   * register an InputFormatChecker for a given InputFormat.
    * 
    * @param format
    *          the class that need to be substituted
    * @param checker
    */
   @SuppressWarnings("unchecked")
-  public synchronized static void registerInputFormatChecker(
+  public static synchronized void registerInputFormatChecker(
       Class<? extends InputFormat> format,
       Class<? extends InputFormatChecker> checker) {
     inputFormatCheckerMap.put(format, checker);
@@ -142,7 +146,7 @@ public class HiveFileFormatUtils {
   /**
    * get an InputFormatChecker for a file format.
    */
-  public synchronized static Class<? extends InputFormatChecker> getInputFormatChecker(
+  public static synchronized Class<? extends InputFormatChecker> getInputFormatChecker(
       Class<?> inputFormat) {
     Class<? extends InputFormatChecker> result = inputFormatCheckerMap
         .get(inputFormat);
@@ -150,7 +154,7 @@ public class HiveFileFormatUtils {
   }
 
   /**
-   * checks if files are in same format as the given input format
+   * checks if files are in same format as the given input format.
    */
   @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
@@ -239,4 +243,7 @@ public class HiveFileFormatUtils {
     return null;
   }
 
+  private HiveFileFormatUtils() {
+    // prevent instantiation
+  }
 }

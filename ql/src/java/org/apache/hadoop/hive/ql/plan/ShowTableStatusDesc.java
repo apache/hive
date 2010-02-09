@@ -23,6 +23,10 @@ import java.util.HashMap;
 
 import org.apache.hadoop.fs.Path;
 
+/**
+ * ShowTableStatusDesc.
+ *
+ */
 @Explain(displayName = "Show Table Status")
 public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -32,11 +36,11 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   HashMap<String, String> partSpec;
 
   /**
-   * table name for the result of show tables
+   * table name for the result of show tables.
    */
   private static final String table = "show_tablestatus";
   /**
-   * thrift ddl for the result of show tables
+   * thrift ddl for the result of show tables.
    */
   private static final String schema = "tab_name#string";
 

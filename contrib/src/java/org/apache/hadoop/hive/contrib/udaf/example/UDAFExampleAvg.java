@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
  * more efficient.
  * 
  */
-public class UDAFExampleAvg extends UDAF {
+public final class UDAFExampleAvg extends UDAF {
 
   /**
    * The internal state of an aggregation for average.
@@ -117,6 +117,10 @@ public class UDAFExampleAvg extends UDAF {
       return state.mCount == 0 ? null : Double.valueOf(state.mSum
           / state.mCount);
     }
+  }
+
+  private UDAFExampleAvg() {
+    // prevent instantiation
   }
 
 }

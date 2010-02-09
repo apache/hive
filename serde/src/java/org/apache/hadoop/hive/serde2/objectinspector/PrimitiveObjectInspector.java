@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+/**
+ * PrimitiveObjectInspector.
+ *
+ */
 public interface PrimitiveObjectInspector extends ObjectInspector {
 
   /**
@@ -29,30 +33,30 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
   /**
    * Get the primitive category of the PrimitiveObjectInspector.
    */
-  public PrimitiveCategory getPrimitiveCategory();
+  PrimitiveCategory getPrimitiveCategory();
 
   /**
    * Get the Primitive Writable class which is the return type of
-   * getPrimitiveWritableObject() and copyToPrimitiveWritableObject()
+   * getPrimitiveWritableObject() and copyToPrimitiveWritableObject().
    */
-  public Class<?> getPrimitiveWritableClass();
+  Class<?> getPrimitiveWritableClass();
 
   /**
    * Return the data in an instance of primitive writable Object. If the Object
    * is already a primitive writable Object, just return o.
    */
-  public Object getPrimitiveWritableObject(Object o);
+  Object getPrimitiveWritableObject(Object o);
 
   /**
    * Get the Java Primitive class which is the return type of
    * getJavaPrimitiveObject().
    */
-  public Class<?> getJavaPrimitiveClass();
+  Class<?> getJavaPrimitiveClass();
 
   /**
    * Get the Java Primitive object.
    */
-  public Object getPrimitiveJavaObject(Object o);
+  Object getPrimitiveJavaObject(Object o);
 
   /**
    * Get a copy of the Object in the same class, so the return value can be
@@ -61,12 +65,12 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * If the Object is a Primitive Java Object, we just return the parameter
    * since Primitive Java Object is immutable.
    */
-  public Object copyObject(Object o);
+  Object copyObject(Object o);
 
   /**
    * Whether the ObjectInspector prefers to return a Primitive Writable Object
    * instead of a Primitive Java Object. This can be useful for determining the
    * most efficient way to getting data out of the Object.
    */
-  public boolean preferWritable();
+  boolean preferWritable();
 }

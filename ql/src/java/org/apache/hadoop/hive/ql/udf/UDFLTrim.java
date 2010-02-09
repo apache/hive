@@ -19,15 +19,20 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "ltrim", value = "_FUNC_(str) - Removes the leading space characters from str ", extended = "Example:\n"
+/**
+ * UDFLTrim.
+ *
+ */
+@Description(name = "ltrim",
+    value = "_FUNC_(str) - Removes the leading space characters from str ",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'")
 public class UDFLTrim extends UDF {
-
-  Text result = new Text();
+  private Text result = new Text();
 
   public UDFLTrim() {
   }

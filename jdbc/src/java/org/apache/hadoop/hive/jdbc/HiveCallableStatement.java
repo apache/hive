@@ -41,6 +41,10 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
 
+/**
+ * HiveCallableStatement.
+ *
+ */
 public class HiveCallableStatement implements java.sql.CallableStatement {
 
   /**
@@ -100,8 +104,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * @see java.sql.CallableStatement#getBigDecimal(int, int)
    */
 
-  public BigDecimal getBigDecimal(int parameterIndex, int scale)
-      throws SQLException {
+  public BigDecimal getBigDecimal(int parameterIndex, int scale) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -476,8 +479,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * @see java.sql.CallableStatement#getObject(java.lang.String, java.util.Map)
    */
 
-  public Object getObject(String parameterName, Map<String, Class<?>> map)
-      throws SQLException {
+  public Object getObject(String parameterName, Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -665,8 +667,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * @see java.sql.CallableStatement#getTimestamp(int, java.util.Calendar)
    */
 
-  public Timestamp getTimestamp(int parameterIndex, Calendar cal)
-      throws SQLException {
+  public Timestamp getTimestamp(int parameterIndex, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -678,8 +679,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * java.util.Calendar)
    */
 
-  public Timestamp getTimestamp(String parameterName, Calendar cal)
-      throws SQLException {
+  public Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -712,8 +712,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * @see java.sql.CallableStatement#registerOutParameter(int, int)
    */
 
-  public void registerOutParameter(int parameterIndex, int sqlType)
-      throws SQLException {
+  public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -724,8 +723,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    * @see java.sql.CallableStatement#registerOutParameter(java.lang.String, int)
    */
 
-  public void registerOutParameter(String parameterName, int sqlType)
-      throws SQLException {
+  public void registerOutParameter(String parameterName, int sqlType) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }

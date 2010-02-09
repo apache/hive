@@ -35,7 +35,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
   private final NodeProcessor defaultProc;
 
   /**
-   * constructor
+   * Constructor.
    * 
    * @param defaultProc
    *          default processor to be fired if no rule matches
@@ -52,7 +52,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
   }
 
   /**
-   * dispatcher function
+   * Dispatcher function.
    * 
    * @param nd
    *          operator to process

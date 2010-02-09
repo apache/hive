@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
- * Processor for the rule - union followed by reduce sink
+ * Processor for the rule - union followed by reduce sink.
  */
 public class GenMRRedSink3 implements NodeProcessor {
 
@@ -44,7 +44,7 @@ public class GenMRRedSink3 implements NodeProcessor {
   }
 
   /**
-   * Reduce Scan encountered
+   * Reduce Scan encountered.
    * 
    * @param nd
    *          the reduce sink operator encountered
@@ -87,11 +87,10 @@ public class GenMRRedSink3 implements NodeProcessor {
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
       }
-    }
-    // The union is already initialized. However, the union is walked from
-    // another input
-    // initUnionPlan is idempotent
-    else if (plan.getReducer() == reducer) {
+    } else if (plan.getReducer() == reducer) {
+      // The union is already initialized. However, the union is walked from
+      // another input
+      // initUnionPlan is idempotent
       GenMapRedUtils.initUnionPlan(op, ctx);
     } else {
       GenMapRedUtils.initUnionPlan(ctx, currTask, false);

@@ -69,8 +69,7 @@ public class LazyByte extends
    * @throws NumberFormatException
    *           if the argument could not be parsed as a byte quantity.
    */
-  public static byte parseByte(byte[] bytes, int start, int length)
-      throws NumberFormatException {
+  public static byte parseByte(byte[] bytes, int start, int length) {
     return parseByte(bytes, start, length, 10);
   }
 
@@ -90,8 +89,7 @@ public class LazyByte extends
    * @throws NumberFormatException
    *           if the argument could not be parsed as a byte quantity.
    */
-  public static byte parseByte(byte[] bytes, int start, int length, int radix)
-      throws NumberFormatException {
+  public static byte parseByte(byte[] bytes, int start, int length, int radix) {
     int intValue = LazyInteger.parseInt(bytes, start, length, radix);
     byte result = (byte) intValue;
     if (result == intValue) {

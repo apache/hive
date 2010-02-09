@@ -23,12 +23,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.history.HiveHistory.Listener;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.RecordTypes;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
 
-public class HiveHistoryViewer implements
-    org.apache.hadoop.hive.ql.history.HiveHistory.Listener {
+/**
+ * HiveHistoryViewer.
+ *
+ */
+public class HiveHistoryViewer implements Listener {
 
   String historyFile;
 
@@ -58,7 +62,7 @@ public class HiveHistoryViewer implements
   }
 
   /**
-   * parse history files
+   * Parse history files.
    */
   void init() {
 
@@ -72,7 +76,7 @@ public class HiveHistoryViewer implements
   }
 
   /**
-   * Implementation Listner interface function
+   * Implementation Listner interface function.
    * 
    * @see org.apache.hadoop.hive.ql.history.HiveHistory.Listener#handle(org.apache.hadoop.hive.ql.history.HiveHistory.RecordTypes,
    *      java.util.Map)

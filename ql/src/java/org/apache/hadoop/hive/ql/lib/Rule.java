@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Rule interface for Operators Used in operator dispatching to dispatch
- * process/visitor functions for operators
+ * process/visitor functions for operators.
  */
 public interface Rule {
 
@@ -33,10 +33,10 @@ public interface Rule {
    *         matches
    * @throws SemanticException
    */
-  public int cost(Stack<Node> stack) throws SemanticException;
+  int cost(Stack<Node> stack) throws SemanticException;
 
   /**
    * @return the name of the rule - may be useful for debugging
    */
-  public String getName();
+  String getName();
 }

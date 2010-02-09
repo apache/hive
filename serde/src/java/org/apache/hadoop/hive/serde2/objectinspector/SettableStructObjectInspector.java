@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+/**
+ * SettableStructObjectInspector.
+ *
+ */
 public abstract class SettableStructObjectInspector extends
     StructObjectInspector {
 

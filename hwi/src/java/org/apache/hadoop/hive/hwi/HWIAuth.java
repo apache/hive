@@ -29,7 +29,7 @@ public class HWIAuth implements Comparable {
   }
 
   /**
-   * HWIAuth is used in SortedSets(s) the compartTo method is required
+   * HWIAuth is used in SortedSets(s) the compartTo method is required.
    * 
    * @return chained call to String.compareTo based on user property
    */
@@ -45,7 +45,7 @@ public class HWIAuth implements Comparable {
   }
 
   /**
-   * HWIAuth is used in Map(s) the hashCode method is required
+   * HWIAuth is used in Map(s) the hashCode method is required.
    * 
    * @see java.lang.Object#hashCode()
    */
@@ -58,7 +58,7 @@ public class HWIAuth implements Comparable {
   }
 
   /**
-   * HWIAuth is used in Map(s) the equals method is required
+   * HWIAuth is used in Map(s) the equals method is required.
    * 
    * @see java.lang.Object#equals(java.lang.Object)
    */

@@ -40,7 +40,7 @@ public class HiveSequenceFileOutputFormat extends SequenceFileOutputFormat
   BytesWritable EMPTY_KEY = new BytesWritable();
 
   /**
-   * create the final out file, and output an empty key as the key
+   * create the final out file, and output an empty key as the key.
    * 
    * @param jc
    *          the job configuration file

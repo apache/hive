@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFSpace.
+ *
+ */
 @Description(name = "space", value = "_FUNC_(n) - returns n spaces", extended = "Example:\n "
     + "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" + "  '  '")
 public class UDFSpace extends UDF {

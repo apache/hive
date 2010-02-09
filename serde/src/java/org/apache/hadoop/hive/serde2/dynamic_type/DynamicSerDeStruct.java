@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeStruct.
+ *
+ */
 public class DynamicSerDeStruct extends DynamicSerDeStructBase {
 
   // production is: struct this.name { FieldList() }
 
-  final private static int FD_FIELD_LIST = 0;
+  private static final int FD_FIELD_LIST = 0;
 
   public DynamicSerDeStruct(int i) {
     super(i);

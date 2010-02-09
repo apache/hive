@@ -71,7 +71,7 @@ public class UDAF {
   }
 
   /**
-   * Sets the resolver
+   * Sets the resolver.
    * 
    * @param rslv
    *          The method resolver to use for method resolution.

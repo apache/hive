@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -41,16 +41,16 @@ import org.apache.hadoop.io.Text;
  * </pre>
  * <p>
  */
-@Description(name = "instr", value = "_FUNC_(str, substr) - Returns the index of the first occurance "
-    + "of substr in str", extended = "Example:\n"
+@Description(name = "instr",
+    value = "_FUNC_(str, substr) - Returns the index of the first occurance of substr in str",
+    extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook', 'boo') FROM src LIMIT 1;\n" + "  5")
 public class GenericUDFInstr extends GenericUDF {
 
   ObjectInspectorConverters.Converter[] converters;
 
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments)
-      throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length != 2) {
       throw new UDFArgumentLengthException(
           "The function INSTR accepts exactly 2 arguments.");

@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.contrib.udtf.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -30,8 +30,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-@Description(name = "explode2", value = "_FUNC_(a) - like explode, but outputs two identical columns (for "
-    + "testing purposes)")
+/**
+ * GenericUDTFExplode2.
+ *
+ */
+@Description(name = "explode2",
+    value = "_FUNC_(a) - like explode, but outputs two identical columns (for testing purposes)")
 public class GenericUDTFExplode2 extends GenericUDTF {
 
   ListObjectInspector listOI = null;

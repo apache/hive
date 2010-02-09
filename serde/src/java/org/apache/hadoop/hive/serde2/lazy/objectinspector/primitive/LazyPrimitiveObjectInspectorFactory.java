@@ -35,18 +35,27 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
  * same construction parameters should result in exactly the same
  * ObjectInspector.
  */
-public class LazyPrimitiveObjectInspectorFactory {
+public final class LazyPrimitiveObjectInspectorFactory {
 
-  public final static LazyBooleanObjectInspector lazyBooleanObjectInspector = new LazyBooleanObjectInspector();
-  public final static LazyByteObjectInspector lazyByteObjectInspector = new LazyByteObjectInspector();
-  public final static LazyShortObjectInspector lazyShortObjectInspector = new LazyShortObjectInspector();
-  public final static LazyIntObjectInspector lazyIntObjectInspector = new LazyIntObjectInspector();
-  public final static LazyLongObjectInspector lazyLongObjectInspector = new LazyLongObjectInspector();
-  public final static LazyFloatObjectInspector lazyFloatObjectInspector = new LazyFloatObjectInspector();
-  public final static LazyDoubleObjectInspector lazyDoubleObjectInspector = new LazyDoubleObjectInspector();
-  public final static LazyVoidObjectInspector lazyVoidObjectInspector = new LazyVoidObjectInspector();
+  public static final LazyBooleanObjectInspector LAZY_BOOLEAN_OBJECT_INSPECTOR =
+      new LazyBooleanObjectInspector();
+  public static final LazyByteObjectInspector LAZY_BYTE_OBJECT_INSPECTOR =
+      new LazyByteObjectInspector();
+  public static final LazyShortObjectInspector LAZY_SHORT_OBJECT_INSPECTOR =
+      new LazyShortObjectInspector();
+  public static final LazyIntObjectInspector LAZY_INT_OBJECT_INSPECTOR =
+      new LazyIntObjectInspector();
+  public static final LazyLongObjectInspector LAZY_LONG_OBJECT_INSPECTOR =
+      new LazyLongObjectInspector();
+  public static final LazyFloatObjectInspector LAZY_FLOAT_OBJECT_INSPECTOR =
+      new LazyFloatObjectInspector();
+  public static final LazyDoubleObjectInspector LAZY_DOUBLE_OBJECT_INSPECTOR =
+      new LazyDoubleObjectInspector();
+  public static final LazyVoidObjectInspector LAZY_VOID_OBJECT_INSPECTOR =
+      new LazyVoidObjectInspector();
 
-  static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector = new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
+  static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
+      new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
 
   public static LazyStringObjectInspector getLazyStringObjectInspector(
       boolean escaped, byte escapeChar) {
@@ -67,19 +76,19 @@ public class LazyPrimitiveObjectInspectorFactory {
 
     switch (primitiveCategory) {
     case BOOLEAN:
-      return lazyBooleanObjectInspector;
+      return LAZY_BOOLEAN_OBJECT_INSPECTOR;
     case BYTE:
-      return lazyByteObjectInspector;
+      return LAZY_BYTE_OBJECT_INSPECTOR;
     case SHORT:
-      return lazyShortObjectInspector;
+      return LAZY_SHORT_OBJECT_INSPECTOR;
     case INT:
-      return lazyIntObjectInspector;
+      return LAZY_INT_OBJECT_INSPECTOR;
     case LONG:
-      return lazyLongObjectInspector;
+      return LAZY_LONG_OBJECT_INSPECTOR;
     case FLOAT:
-      return lazyFloatObjectInspector;
+      return LAZY_FLOAT_OBJECT_INSPECTOR;
     case DOUBLE:
-      return lazyDoubleObjectInspector;
+      return LAZY_DOUBLE_OBJECT_INSPECTOR;
     case STRING:
       return getLazyStringObjectInspector(escaped, escapeChar);
     case VOID:
@@ -87,6 +96,10 @@ public class LazyPrimitiveObjectInspectorFactory {
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
     }
+  }
+
+  private LazyPrimitiveObjectInspectorFactory() {
+    // prevent instantiation
   }
 
 }

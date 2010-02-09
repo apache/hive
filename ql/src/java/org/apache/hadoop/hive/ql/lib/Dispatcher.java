@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Dispatcher interface for Operators Used in operator graph walking to dispatch
- * process/visitor functions for operators
+ * process/visitor functions for operators.
  */
 public interface Dispatcher {
 
@@ -41,6 +41,6 @@ public interface Dispatcher {
    * @return Object The return object from the processing call.
    * @throws SemanticException
    */
-  public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException;
 }

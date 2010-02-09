@@ -55,9 +55,13 @@ import org.apache.hadoop.util.ReflectionUtils;
 public abstract class CommonJoinOperator<T extends JoinDesc> extends
     Operator<T> implements Serializable {
   private static final long serialVersionUID = 1L;
-  static final protected Log LOG = LogFactory.getLog(CommonJoinOperator.class
+  protected static final Log LOG = LogFactory.getLog(CommonJoinOperator.class
       .getName());
 
+  /**
+   * IntermediateObject.
+   *
+   */
   public static class IntermediateObject {
     ArrayList<Object>[] objs;
     int curSize;
@@ -88,47 +92,47 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     }
   }
 
-  transient protected int numAliases; // number of aliases
+  protected transient int numAliases; // number of aliases
   /**
    * The expressions for join outputs.
    */
-  transient protected Map<Byte, List<ExprNodeEvaluator>> joinValues;
+  protected transient Map<Byte, List<ExprNodeEvaluator>> joinValues;
   /**
    * The ObjectInspectors for the join inputs.
    */
-  transient protected Map<Byte, List<ObjectInspector>> joinValuesObjectInspectors;
+  protected transient Map<Byte, List<ObjectInspector>> joinValuesObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs.
    */
-  transient protected Map<Byte, List<ObjectInspector>> joinValuesStandardObjectInspectors;
+  protected transient Map<Byte, List<ObjectInspector>> joinValuesStandardObjectInspectors;
 
-  transient static protected Byte[] order; // order in which the results should
-                                           // be output
-  transient protected JoinCondDesc[] condn;
-  transient protected boolean noOuterJoin;
-  transient private Object[] dummyObj; // for outer joins, contains the
+  protected static transient Byte[] order; // order in which the results should
+  // be output
+  protected transient JoinCondDesc[] condn;
+  protected transient boolean noOuterJoin;
+  private transient Object[] dummyObj; // for outer joins, contains the
   // potential nulls for the concerned
   // aliases
-  transient protected RowContainer<ArrayList<Object>>[] dummyObjVectors; // empty
-                                                                         // rows
-                                                                         // for
-                                                                         // each
-                                                                         // table
-  transient protected int totalSz; // total size of the composite object
+  protected transient RowContainer<ArrayList<Object>>[] dummyObjVectors; // empty
+  // rows
+  // for
+  // each
+  // table
+  protected transient int totalSz; // total size of the composite object
 
   // keys are the column names. basically this maps the position of the column
   // in
   // the output of the CommonJoinOperator to the input columnInfo.
-  transient private Map<Integer, Set<String>> posToAliasMap;
+  private transient Map<Integer, Set<String>> posToAliasMap;
 
   transient LazyBinarySerDe[] spillTableSerDe;
-  transient protected Map<Byte, TableDesc> spillTableDesc; // spill tables are
-                                                           // used if the join
-                                                           // input is too large
-                                                           // to fit in memory
+  protected transient Map<Byte, TableDesc> spillTableDesc; // spill tables are
+  // used if the join
+  // input is too large
+  // to fit in memory
 
   HashMap<Byte, RowContainer<ArrayList<Object>>> storage; // map b/w table alias
-                                                          // to RowContainer
+  // to RowContainer
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
   int nextSz = 0;
@@ -210,7 +214,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     StructObjectInspector joinOutputObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(conf.getOutputColumnNames(),
-            structFieldObjectInspectors);
+        structFieldObjectInspectors);
     return joinOutputObjectInspector;
   }
 
@@ -355,7 +359,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
       for (int k = 0; k < columnSize; k++) {
         String newColName = tag + "_VALUE_" + k; // any name, it does not
-                                                 // matter.
+        // matter.
         colNames.append(newColName);
         colNames.append(',');
         colTypes.append(valueCols.get(k).getTypeString());
@@ -367,12 +371,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       TableDesc tblDesc = new TableDesc(LazyBinarySerDe.class,
           SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
           Utilities.makeProperties(
-              org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
-                  + Utilities.ctrlaCode,
-              org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames
-                  .toString(),
-              org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
-              colTypes.toString()));
+          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
+          + Utilities.ctrlaCode,
+          org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames
+          .toString(),
+          org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
+          colTypes.toString()));
       spillTableDesc.put((byte) tag, tblDesc);
     }
   }
@@ -395,7 +399,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     return 2 * sz;
   }
 
-  transient protected Byte alias;
+  protected transient Byte alias;
 
   /**
    * Return the value as a standard object. StandardObject can be inspected by a
@@ -835,7 +839,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   /**
-   * All done
+   * All done.
    * 
    */
   @Override

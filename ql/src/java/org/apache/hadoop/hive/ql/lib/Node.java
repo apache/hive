@@ -32,12 +32,12 @@ public interface Node {
    * 
    * @return List<? extends Node>
    */
-  public List<? extends Node> getChildren();
+  List<? extends Node> getChildren();
 
   /**
    * Gets the name of the node. This is used in the rule dispatchers.
    * 
    * @return String
    */
-  public String getName();
+  String getName();
 }

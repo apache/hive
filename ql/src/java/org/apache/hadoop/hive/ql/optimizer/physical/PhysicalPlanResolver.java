@@ -32,6 +32,6 @@ public interface PhysicalPlanResolver {
    * @param pctx
    * @return
    */
-  public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException;
+  PhysicalContext resolve(PhysicalContext pctx) throws SemanticException;
 
 }

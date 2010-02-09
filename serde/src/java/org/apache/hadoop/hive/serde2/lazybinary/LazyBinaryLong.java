@@ -41,7 +41,7 @@ public class LazyBinaryLong extends
   }
 
   /**
-   * The reusable vLong for decoding the long
+   * The reusable vLong for decoding the long.
    */
   VLong vLong = new LazyBinaryUtils.VLong();
 

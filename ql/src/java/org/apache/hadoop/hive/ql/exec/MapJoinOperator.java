@@ -53,36 +53,39 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
-  static final private Log LOG = LogFactory.getLog(MapJoinOperator.class
+  private static final Log LOG = LogFactory.getLog(MapJoinOperator.class
       .getName());
 
   /**
    * The expressions for join inputs's join keys.
    */
-  transient protected Map<Byte, List<ExprNodeEvaluator>> joinKeys;
+  protected transient Map<Byte, List<ExprNodeEvaluator>> joinKeys;
   /**
    * The ObjectInspectors for the join inputs's join keys.
    */
-  transient protected Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
+  protected transient Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
   /**
    * The standard ObjectInspectors for the join inputs's join keys.
    */
-  transient protected Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
+  protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
 
-  transient private int posBigTable; // one of the tables that is not in memory
+  private transient int posBigTable; // one of the tables that is not in memory
   transient int mapJoinRowsKey; // rows for a given key
 
-  transient protected Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
+  protected transient Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
 
-  transient protected RowContainer<ArrayList<Object>> emptyList = null;
+  protected transient RowContainer<ArrayList<Object>> emptyList = null;
 
-  transient static final private String[] fatalErrMsg = {
+  private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
-      "Mapside join size exceeds hive.mapjoin.maxsize. Please increase that or remove the mapjoin hint." // counter
-                                                                                                         // value
-                                                                                                         // 1
-  };
+      "Mapside join size exceeds hive.mapjoin.maxsize. "
+          + "Please increase that or remove the mapjoin hint."
+      };
 
+  /**
+   * MapJoinObjectCtx.
+   *
+   */
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
     SerDe serde;
@@ -125,10 +128,10 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
 
   }
 
-  transient static Map<Integer, MapJoinObjectCtx> mapMetadata = new HashMap<Integer, MapJoinObjectCtx>();
-  transient static int nextVal = 0;
+  static transient Map<Integer, MapJoinObjectCtx> mapMetadata = new HashMap<Integer, MapJoinObjectCtx>();
+  static transient int nextVal = 0;
 
-  static public Map<Integer, MapJoinObjectCtx> getMapMetadata() {
+  public static Map<Integer, MapJoinObjectCtx> getMapMetadata() {
     return mapMetadata;
   }
 
@@ -207,7 +210,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
       }
       outputObjInspector = ObjectInspectorFactory
           .getStandardStructObjectInspector(conf.getOutputColumnNames(),
-              structFieldObjectInspectors);
+          structFieldObjectInspectors);
     }
     initializeChildren(hconf);
   }
@@ -215,7 +218,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
   @Override
   protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
     errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): "
-        + fatalErrMsg[(int) counterCode]);
+        + FATAL_ERR_MSG[(int) counterCode]);
   }
 
   @Override
@@ -246,11 +249,11 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
 
           mapMetadata.put(Integer.valueOf(metadataKeyTag),
               new MapJoinObjectCtx(
-                  ObjectInspectorUtils
-                      .getStandardObjectInspector(keySerializer
-                          .getObjectInspector(),
-                          ObjectInspectorCopyOption.WRITABLE), keySerializer,
-                  keyTableDesc, hconf));
+              ObjectInspectorUtils
+              .getStandardObjectInspector(keySerializer
+              .getObjectInspector(),
+              ObjectInspectorCopyOption.WRITABLE), keySerializer,
+              keyTableDesc, hconf));
 
           firstRow = false;
         }
@@ -306,9 +309,9 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
 
           mapMetadata.put(Integer.valueOf(metadataValueTag[tag]),
               new MapJoinObjectCtx(ObjectInspectorUtils
-                  .getStandardObjectInspector(valueSerDe.getObjectInspector(),
-                      ObjectInspectorCopyOption.WRITABLE), valueSerDe,
-                  valueTableDesc, hconf));
+              .getStandardObjectInspector(valueSerDe.getObjectInspector(),
+              ObjectInspectorCopyOption.WRITABLE), valueSerDe,
+              valueTableDesc, hconf));
         }
 
         // Construct externalizable objects for key and value

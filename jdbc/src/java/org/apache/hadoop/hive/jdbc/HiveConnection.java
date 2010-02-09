@@ -47,6 +47,10 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+/**
+ * HiveConnection.
+ *
+ */
 public class HiveConnection implements java.sql.Connection {
   JdbcSessionState session;
 
@@ -58,7 +62,7 @@ public class HiveConnection implements java.sql.Connection {
   private static final String URI_PREFIX = "jdbc:hive://";
 
   /**
-   * TODO: - parse uri (use java.net.URI?)
+   * TODO: - parse uri (use java.net.URI?).
    */
   public HiveConnection(String uri, Properties info) throws SQLException {
     session = new JdbcSessionState(new HiveConf(SessionState.class));

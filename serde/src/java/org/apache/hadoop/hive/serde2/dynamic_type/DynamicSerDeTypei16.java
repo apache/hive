@@ -25,6 +25,10 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TType;
 
+/**
+ * DynamicSerDeTypei16.
+ *
+ */
 public class DynamicSerDeTypei16 extends DynamicSerDeTypeBase {
 
   @Override
@@ -54,7 +58,7 @@ public class DynamicSerDeTypei16 extends DynamicSerDeTypeBase {
     if (val == 0
         && iprot instanceof org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol
         && ((org.apache.hadoop.hive.serde2.thrift.WriteNullsProtocol) iprot)
-            .lastPrimitiveWasNull()) {
+        .lastPrimitiveWasNull()) {
       return null;
     }
     return Integer.valueOf(val);
@@ -62,8 +66,7 @@ public class DynamicSerDeTypei16 extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
-      throws TException, SerDeException, NoSuchFieldException,
-      IllegalAccessException {
+      throws TException, SerDeException, NoSuchFieldException, IllegalAccessException {
     ShortObjectInspector poi = (ShortObjectInspector) oi;
     oprot.writeI16(poi.get(o));
   }

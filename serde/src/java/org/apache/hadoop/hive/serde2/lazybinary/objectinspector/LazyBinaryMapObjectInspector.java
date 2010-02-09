@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 
 /**
- * ObjectInspector for LazyBinaryMap
+ * ObjectInspector for LazyBinaryMap.
  * 
  * @see LazyBinaryMap
  */

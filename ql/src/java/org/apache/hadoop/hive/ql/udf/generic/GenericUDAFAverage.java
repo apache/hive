@@ -21,8 +21,8 @@ import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -40,6 +40,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
+/**
+ * GenericUDAFAverage.
+ *
+ */
 @Description(name = "avg", value = "_FUNC_(x) - Returns the mean of a set of numbers")
 public class GenericUDAFAverage implements GenericUDAFResolver {
 
@@ -56,7 +60,7 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
     if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
@@ -71,10 +75,14 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
-              + parameters[0].getTypeName() + " is passed.");
+          + parameters[0].getTypeName() + " is passed.");
     }
   }
 
+  /**
+   * GenericUDAFAverageEvaluator.
+   *
+   */
   public static class GenericUDAFAverageEvaluator extends GenericUDAFEvaluator {
 
     // For PARTIAL1 and COMPLETE

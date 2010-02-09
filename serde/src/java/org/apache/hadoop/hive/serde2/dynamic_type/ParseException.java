@@ -96,8 +96,8 @@ public class ParseException extends Exception {
       if (maxSize < expectedTokenSequence.length) {
         maxSize = expectedTokenSequence.length;
       }
-      for (int j = 0; j < expectedTokenSequence.length; j++) {
-        expected.append(tokenImage[expectedTokenSequence[j]]).append(" ");
+      for (int element : expectedTokenSequence) {
+        expected.append(tokenImage[element]).append(" ");
       }
       if (expectedTokenSequence[expectedTokenSequence.length - 1] != 0) {
         expected.append("...");

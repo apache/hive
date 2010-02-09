@@ -24,18 +24,22 @@ import java.util.NoSuchElementException;
 
 import junit.framework.TestCase;
 
+/**
+ * TestGenericMR.
+ *
+ */
 public final class TestGenericMR extends TestCase {
   public void testReduceTooFar() throws Exception {
     try {
       new GenericMR().reduce(new StringReader("a\tb\tc"), new StringWriter(),
           new Reducer() {
-            public void reduce(String key, Iterator<String[]> records,
-                Output output) throws Exception {
-              while (true) {
-                records.next();
-              }
-            }
-          });
+        public void reduce(String key, Iterator<String[]> records,
+            Output output) throws Exception {
+          while (true) {
+            records.next();
+          }
+        }
+      });
     } catch (final NoSuchElementException nsee) {
       // expected
       return;
@@ -70,7 +74,7 @@ public final class TestGenericMR extends TestCase {
       public void map(String[] record, Output output) throws Exception {
         for (final String kvs : record[0].split(",")) {
           final String[] kv = kvs.split("=");
-          output.collect(new String[] { kv[0], kv[1] });
+          output.collect(new String[] {kv[0], kv[1]});
         }
       }
     });
@@ -101,7 +105,7 @@ public final class TestGenericMR extends TestCase {
           count += Integer.parseInt(records.next()[1]);
         }
 
-        output.collect(new String[] { key, String.valueOf(count) });
+        output.collect(new String[] {key, String.valueOf(count)});
       }
     });
 

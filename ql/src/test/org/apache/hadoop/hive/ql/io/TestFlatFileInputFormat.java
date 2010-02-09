@@ -38,6 +38,10 @@ import org.apache.hadoop.mapred.Reporter;
 
 //import org.apache.hadoop.contrib.serialization.thrift.*;
 
+/**
+ * TestFlatFileInputFormat.
+ *
+ */
 public class TestFlatFileInputFormat extends TestCase {
 
   public void testFlatFileInputJava() throws Exception {
@@ -67,8 +71,8 @@ public class TestFlatFileInputFormat extends TestCase {
 
       job
           .setClass(
-              FlatFileInputFormat.SerializationContextFromConf.SerializationSubclassKey,
-              JavaTestObjFlatFileInputFormat.class, java.io.Serializable.class);
+          FlatFileInputFormat.SerializationContextFromConf.SerializationSubclassKey,
+          JavaTestObjFlatFileInputFormat.class, java.io.Serializable.class);
 
       //
       // Write some data out to a flat file
@@ -88,7 +92,8 @@ public class TestFlatFileInputFormat extends TestCase {
       //
       // Construct the reader
       //
-      FileInputFormat<Void, FlatFileInputFormat.RowContainer<Serializable>> format = new FlatFileInputFormat<Serializable>();
+      FileInputFormat<Void, FlatFileInputFormat.RowContainer<Serializable>> format =
+        new FlatFileInputFormat<Serializable>();
       InputSplit[] splits = format.getSplits(job, 1);
 
       // construct the record reader
@@ -148,8 +153,8 @@ public class TestFlatFileInputFormat extends TestCase {
 
       job
           .setClass(
-              FlatFileInputFormat.SerializationContextFromConf.SerializationSubclassKey,
-              RecordTestObj.class, Writable.class);
+          FlatFileInputFormat.SerializationContextFromConf.SerializationSubclassKey,
+          RecordTestObj.class, Writable.class);
 
       //
       // Write some data out to a flat file
@@ -170,7 +175,8 @@ public class TestFlatFileInputFormat extends TestCase {
       //
       // Construct the reader
       //
-      FileInputFormat<Void, FlatFileInputFormat.RowContainer<Writable>> format = new FlatFileInputFormat<Writable>();
+      FileInputFormat<Void, FlatFileInputFormat.RowContainer<Writable>> format =
+        new FlatFileInputFormat<Writable>();
       InputSplit[] splits = format.getSplits(job, 1);
 
       // construct the record reader

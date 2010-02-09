@@ -40,15 +40,19 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
 
+/**
+ * TestHiveHistory.
+ *
+ */
 public class TestHiveHistory extends TestCase {
 
   static HiveConf conf;
 
-  static private String tmpdir = "/tmp/" + System.getProperty("user.name")
+  private static String tmpdir = "/tmp/" + System.getProperty("user.name")
       + "/";
-  static private Path tmppath = new Path(tmpdir);
-  static private Hive db;
-  static private FileSystem fs;
+  private static Path tmppath = new Path(tmpdir);
+  private static Hive db;
+  private static FileSystem fs;
 
   /*
    * intialize the tables
@@ -74,7 +78,7 @@ public class TestHiveHistory extends TestCase {
       // copy the test files into hadoop if required.
       int i = 0;
       Path[] hadoopDataFile = new Path[2];
-      String[] testFiles = { "kv1.txt", "kv2.txt" };
+      String[] testFiles = {"kv1.txt", "kv2.txt"};
       String testFileDir = "file://"
           + conf.get("test.data.files").replace('\\', '/').replace("c:", "");
       for (String oneFile : testFiles) {
@@ -87,7 +91,7 @@ public class TestHiveHistory extends TestCase {
       // load the test files into tables
       i = 0;
       db = Hive.get(conf);
-      String[] srctables = { "src", "src2" };
+      String[] srctables = {"src", "src2"};
       LinkedList<String> cols = new LinkedList<String>();
       cols.add("key");
       cols.add("value");
@@ -106,7 +110,7 @@ public class TestHiveHistory extends TestCase {
   }
 
   /**
-   * check history file output for this query.als
+   * Check history file output for this query.
    */
   public void testSimpleQuery() {
     new LineageInfo();

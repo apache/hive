@@ -24,6 +24,10 @@ import java.util.Set;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
+/**
+ * DDLWork.
+ *
+ */
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -407,7 +411,7 @@ public class DDLWork implements Serializable {
   public void setDescFunctionDesc(DescFunctionDesc descFunctionDesc) {
     this.descFunctionDesc = descFunctionDesc;
   }
-  
+
   public Set<ReadEntity> getInputs() {
     return inputs;
   }

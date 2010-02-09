@@ -110,7 +110,7 @@ public class WrappedRuntimeException extends RuntimeException {
   public WrappedRuntimeException(Exception except) {
     super(
         except == null || except.getMessage() == null ? "No message available"
-            : except.getMessage());
+        : except.getMessage());
 
     if (except instanceof WrappedRuntimeException
         && ((WrappedRuntimeException) except)._except != null) {

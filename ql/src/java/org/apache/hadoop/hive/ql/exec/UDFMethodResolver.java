@@ -45,6 +45,5 @@ public interface UDFMethodResolver {
    *          The list of the argument types that need to matched with the
    *          evaluate function signature.
    */
-  public Method getEvalMethod(List<TypeInfo> argClasses)
-      throws AmbiguousMethodException, UDFArgumentException;
+  Method getEvalMethod(List<TypeInfo> argClasses) throws UDFArgumentException;
 }

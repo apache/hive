@@ -51,8 +51,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
   }
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
 
     Class<? extends UDAFEvaluator> udafEvaluatorClass = udaf.getResolver()
         .getEvaluatorClass(Arrays.asList(parameters));
@@ -60,6 +59,10 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
     return new GenericUDAFBridgeEvaluator(udafEvaluatorClass);
   }
 
+  /**
+   * GenericUDAFBridgeEvaluator.
+   *
+   */
   public static class GenericUDAFBridgeEvaluator extends GenericUDAFEvaluator
       implements Serializable {
 
@@ -95,8 +98,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
     transient ConversionHelper conversionHelper;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
-        throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
       parameterOIs = parameters;
 
@@ -143,7 +145,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
       }
     }
 
-    /** class for storing UDAFEvaluator value */
+    /** class for storing UDAFEvaluator value. */
     static class UDAFAgg implements AggregationBuffer {
       UDAFEvaluator ueObject;
 
@@ -154,8 +156,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() {
-      return new UDAFAgg((UDAFEvaluator) ReflectionUtils.newInstance(
-          udafEvaluator, null));
+      return new UDAFAgg((UDAFEvaluator)ReflectionUtils.newInstance(udafEvaluator, null));
     }
 
     @Override
@@ -164,15 +165,13 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
     }
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters)
-        throws HiveException {
+    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       FunctionRegistry.invoke(iterateMethod, ((UDAFAgg) agg).ueObject,
           conversionHelper.convertIfNecessary(parameters));
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial)
-        throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       FunctionRegistry.invoke(mergeMethod, ((UDAFAgg) agg).ueObject,
           conversionHelper.convertIfNecessary(partial));
     }

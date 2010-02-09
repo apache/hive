@@ -42,15 +42,15 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
- * Operator factory for MapJoin processing
+ * Operator factory for MapJoin processing.
  */
-public class MapJoinFactory {
+public final class MapJoinFactory {
 
   public static int getPositionParent(MapJoinOperator op, Stack<Node> stack) {
     int pos = 0;
@@ -65,7 +65,7 @@ public class MapJoinFactory {
   }
 
   /**
-   * TableScan followed by MapJoin
+   * TableScan followed by MapJoin.
    */
   public static class TableScanMapJoin implements NodeProcessor {
 
@@ -99,10 +99,9 @@ public class MapJoinFactory {
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
         GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, false, false, false, pos);
-      }
-      // The current plan can be thrown away after being merged with the
-      // original plan
-      else {
+      } else {
+        // The current plan can be thrown away after being merged with the
+        // original plan
         GenMapRedUtils.joinPlan(mapJoin, null, opMapTask, ctx, pos, false,
             false, false);
         currTask = opMapTask;
@@ -116,7 +115,7 @@ public class MapJoinFactory {
   }
 
   /**
-   * ReduceSink followed by MapJoin
+   * ReduceSink followed by MapJoin.
    */
   public static class ReduceSinkMapJoin implements NodeProcessor {
 
@@ -150,10 +149,9 @@ public class MapJoinFactory {
         assert cplan.getReducer() == null;
         opTaskMap.put(mapJoin, currTask);
         opProcCtx.setCurrMapJoinOp(null);
-      }
-      // The current plan can be thrown away after being merged with the
-      // original plan
-      else {
+      } else {
+        // The current plan can be thrown away after being merged with the
+        // original plan
         GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, opProcCtx, pos,
             false, false, false);
         currTask = opMapTask;
@@ -165,7 +163,7 @@ public class MapJoinFactory {
   }
 
   /**
-   * MapJoin followed by Select
+   * MapJoin followed by Select.
    */
   public static class MapJoin implements NodeProcessor {
 
@@ -233,7 +231,7 @@ public class MapJoinFactory {
       // Create a file sink operator for this file name
       Operator<? extends Serializable> fs_op = OperatorFactory.get(
           new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
-              HiveConf.ConfVars.COMPRESSINTERMEDIATE)), mapJoin.getSchema());
+          HiveConf.ConfVars.COMPRESSINTERMEDIATE)), mapJoin.getSchema());
 
       assert mapJoin.getChildOperators().size() == 1;
       mapJoin.getChildOperators().set(0, fs_op);
@@ -258,7 +256,7 @@ public class MapJoinFactory {
   }
 
   /**
-   * MapJoin followed by MapJoin
+   * MapJoin followed by MapJoin.
    */
   public static class MapJoinMapJoin implements NodeProcessor {
 
@@ -301,10 +299,9 @@ public class MapJoinFactory {
       if (opMapTask == null) {
         assert currPlan.getReducer() == null;
         GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, false, false, pos);
-      }
-      // The current plan can be thrown away after being merged with the
-      // original plan
-      else {
+      } else {
+        // The current plan can be thrown away after being merged with the
+        // original plan
         GenMapRedUtils.joinPlan(mapJoin, currTask, opMapTask, ctx, pos, false,
             true, false);
         currTask = opMapTask;
@@ -317,7 +314,7 @@ public class MapJoinFactory {
   }
 
   /**
-   * Union followed by MapJoin
+   * Union followed by MapJoin.
    */
   public static class UnionMapJoin implements NodeProcessor {
 
@@ -367,10 +364,9 @@ public class MapJoinFactory {
         ctx.setCurrMapJoinOp(mapJoin);
         GenMapRedUtils.initMapJoinPlan(mapJoin, ctx, true, true, false, pos);
         ctx.setCurrUnionOp(null);
-      }
-      // The current plan can be thrown away after being merged with the
-      // original plan
-      else {
+      } else {
+        // The current plan can be thrown away after being merged with the
+        // original plan
         Task<? extends Serializable> uTask = ctx.getUnionTask(
             ctx.getCurrUnionOp()).getUTask();
         if (uTask.getId().equals(opMapTask.getId())) {
@@ -408,5 +404,9 @@ public class MapJoinFactory {
 
   public static NodeProcessor getMapJoinMapJoin() {
     return new MapJoinMapJoin();
+  }
+
+  private MapJoinFactory() {
+    // prevent instantiation
   }
 }

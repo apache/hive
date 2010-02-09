@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -28,10 +26,12 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
+/**
+ * UDFOPPositive.
+ *
+ */
 @Description(name = "positive", value = "_FUNC_ a - Returns a")
 public class UDFOPPositive extends UDFBaseNumericUnaryOp {
-
-  private static Log LOG = LogFactory.getLog(UDFOPPositive.class.getName());
 
   public UDFOPPositive() {
   }

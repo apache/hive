@@ -24,6 +24,10 @@ import java.util.Set;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
+/**
+ * MoveWork.
+ *
+ */
 @Explain(displayName = "Move Operator")
 public class MoveWork implements Serializable {
   private static final long serialVersionUID = 1L;

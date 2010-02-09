@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -31,11 +29,12 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 
+/**
+ * UDFToBoolean.
+ *
+ */
 public class UDFToBoolean extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFToBoolean.class.getName());
-
-  BooleanWritable booleanWritable = new BooleanWritable();
+  private BooleanWritable booleanWritable = new BooleanWritable();
 
   public UDFToBoolean() {
   }

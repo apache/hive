@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+/**
+ * ReduceSinkDesc.
+ *
+ */
 @Explain(displayName = "Reduce Output Operator")
 public class ReduceSinkDesc implements Serializable {
   private static final long serialVersionUID = 1L;

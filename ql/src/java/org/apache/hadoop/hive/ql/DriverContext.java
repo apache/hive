@@ -24,12 +24,16 @@ import java.util.Queue;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 
+/**
+ * DriverContext.
+ *
+ */
 public class DriverContext {
 
   Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
-  
+
   // how many jobs have been started
-  int curJobNo; 
+  int curJobNo;
 
   public DriverContext(Queue<Task<? extends Serializable>> runnable) {
     this.runnable = runnable;
@@ -40,7 +44,7 @@ public class DriverContext {
   }
 
   /**
-   * Checks if a task can be launched
+   * Checks if a task can be launched.
    * 
    * @param tsk
    *          the task to be checked

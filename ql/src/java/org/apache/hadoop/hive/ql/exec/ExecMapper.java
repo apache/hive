@@ -41,6 +41,10 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
+/**
+ * ExecMapper.
+ *
+ */
 public class ExecMapper extends MapReduceBase implements Mapper {
 
   private MapOperator mo;
@@ -68,7 +72,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
           + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
       l4j.info("thread classpath = "
           + Arrays.asList(((URLClassLoader) Thread.currentThread()
-              .getContextClassLoader()).getURLs()));
+          .getContextClassLoader()).getURLs()));
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
@@ -101,8 +105,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         Operator<? extends Serializable> forwardOp = localWork.getAliasToWork()
             .get(entry.getKey());
         // All the operators need to be initialized before process
-        forwardOp.initialize(jc, new ObjectInspector[] { entry.getValue()
-            .getOutputObjectInspector() });
+        forwardOp.initialize(jc, new ObjectInspector[] {entry.getValue()
+            .getOutputObjectInspector()});
         l4j.info("fetchoperator for " + entry.getKey() + " initialized");
       }
       // defer processing of map local operators to first row if in case there
@@ -159,8 +163,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
             if (l4j.isInfoEnabled()) {
               l4j
                   .info("fetch " + fetchOpNum++ + " processed " + fetchOpRows
-                      + " used mem: "
-                      + memoryMXBean.getHeapMemoryUsage().getUsed());
+                  + " used mem: "
+                  + memoryMXBean.getHeapMemoryUsage().getUsed());
             }
           }
         } catch (Throwable e) {
@@ -257,6 +261,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     return done;
   }
 
+  /**
+   * reportStats.
+   *
+   */
   public static class reportStats implements Operator.OperatorFunc {
     Reporter rp;
 

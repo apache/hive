@@ -36,6 +36,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.BytesWritable;
 
+/**
+ * TestBinarySortableSerDe.
+ *
+ */
 public class TestBinarySortableSerDe extends TestCase {
 
   public static HashMap<String, String> makeHashMap(String... params) {
@@ -175,7 +179,7 @@ public class TestBinarySortableSerDe extends TestCase {
 
       StructObjectInspector rowOI = (StructObjectInspector) ObjectInspectorFactory
           .getReflectionObjectInspector(MyTestClass.class,
-              ObjectInspectorOptions.JAVA);
+          ObjectInspectorOptions.JAVA);
       sort(rows, rowOI);
 
       String fieldNames = ObjectInspectorUtils.getFieldNames(rowOI);

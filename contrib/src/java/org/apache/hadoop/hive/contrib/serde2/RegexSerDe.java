@@ -211,7 +211,7 @@ public class RegexSerDe implements SerDe {
     if (outputFormatString == null) {
       throw new SerDeException(
           "Cannot write data into table because \"output.format.string\""
-              + " is not specified in serde properties of the table.");
+          + " is not specified in serde properties of the table.");
     }
 
     // Get all the fields out.

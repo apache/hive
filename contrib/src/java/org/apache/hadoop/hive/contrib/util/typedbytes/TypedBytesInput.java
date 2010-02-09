@@ -430,9 +430,9 @@ public class TypedBytesInput {
   public byte[] readRawVector() throws IOException {
     Buffer buffer = new Buffer();
     int length = readVectorHeader();
-    buffer.append(new byte[] { (byte) Type.VECTOR.code,
+    buffer.append(new byte[] {(byte) Type.VECTOR.code,
         (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
-        (byte) (0xff & (length >> 8)), (byte) (0xff & length) });
+        (byte) (0xff & (length >> 8)), (byte) (0xff & length)});
     for (int i = 0; i < length; i++) {
       buffer.append(readRaw());
     }
@@ -473,13 +473,13 @@ public class TypedBytesInput {
    * @throws IOException
    */
   public byte[] readRawList() throws IOException {
-    Buffer buffer = new Buffer(new byte[] { (byte) Type.LIST.code });
+    Buffer buffer = new Buffer(new byte[] {(byte) Type.LIST.code});
     byte[] bytes = readRaw();
     while (bytes != null) {
       buffer.append(bytes);
       bytes = readRaw();
     }
-    buffer.append(new byte[] { (byte) Type.MARKER.code });
+    buffer.append(new byte[] {(byte) Type.MARKER.code});
     return buffer.get();
   }
 
@@ -510,9 +510,9 @@ public class TypedBytesInput {
   public byte[] readRawMap() throws IOException {
     Buffer buffer = new Buffer();
     int length = readMapHeader();
-    buffer.append(new byte[] { (byte) Type.MAP.code,
+    buffer.append(new byte[] {(byte) Type.MAP.code,
         (byte) (0xff & (length >> 24)), (byte) (0xff & (length >> 16)),
-        (byte) (0xff & (length >> 8)), (byte) (0xff & length) });
+        (byte) (0xff & (length >> 8)), (byte) (0xff & length)});
     for (int i = 0; i < length; i++) {
       buffer.append(readRaw());
       buffer.append(readRaw());

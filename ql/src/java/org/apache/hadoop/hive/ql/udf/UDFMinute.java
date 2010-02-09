@@ -23,29 +23,29 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-@Description(name = "minute", value = "_FUNC_(date) - Returns the minute of date", extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
+/**
+ * UDFMinute.
+ *
+ */
+@Description(name = "minute",
+    value = "_FUNC_(date) - Returns the minute of date",
+    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or "
     + "'HH:mm:ss'.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n"
     + "  58\n"
     + "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" + "  58")
 public class UDFMinute extends UDF {
-
-  private static Log LOG = LogFactory.getLog(UDFMinute.class.getName());
-
-  private final SimpleDateFormat formatter1 = new SimpleDateFormat(
-      "yyyy-MM-dd HH:mm:ss");
+  private final SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");
   private final Calendar calendar = Calendar.getInstance();
 
-  IntWritable result = new IntWritable();
+  private IntWritable result = new IntWritable();
 
   public UDFMinute() {
   }
