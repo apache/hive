@@ -570,6 +570,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         part.getSd().setLocation(partLocation.toString());
 
+        // Check to see if the directory already exists before calling mkdirs()
+        // because if the file system is read-only, mkdirs will throw an  
+        // exception even if the directory already exists.
         if (!wh.isDir(partLocation)) {
           if (!wh.mkdirs(partLocation)) {
             throw new MetaException(partLocation

@@ -66,6 +66,9 @@ Trunk -  Unreleased
 
     HIVE-1123. Checkstyle fixes. (Carl Steinbach via zshao)
 
+    HIVE-1150. Add comment to explain why we check for dir first in add_partitions().
+    (Paul Yang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
