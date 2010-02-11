@@ -217,8 +217,7 @@ public class GroupByOptimizer implements Transform {
           parts.addAll(partsList.getUnknownPartns());
           for (Partition part : parts) {
             List<String> bucketCols = part.getBucketCols();
-            List<String> sortCols = Utilities.getColumnNamesFromSortCols(part
-                .getTPartition().getSd().getSortCols());
+            List<String> sortCols = part.getSortColNames();
             bucketGroupBy = matchBucketOrSortedColumns(groupByCols, bucketCols,
                 sortCols);
             if (!bucketGroupBy) {

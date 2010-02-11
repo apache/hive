@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -91,9 +92,9 @@ public class TestHiveMetaStoreChecker extends TestCase {
     hive.createDatabase(dbName, "");
 
     Table table = new Table(tableName);
-    table.getTTable().setDbName(dbName);
+    table.setDbName(dbName);
     table.setInputFormatClass(TextInputFormat.class);
-    table.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
+    table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
 
     hive.createTable(table);
     // now we've got a table, check that it works
@@ -161,9 +162,9 @@ public class TestHiveMetaStoreChecker extends TestCase {
     hive.createDatabase(dbName, "");
 
     Table table = new Table(tableName);
-    table.getTTable().setDbName(dbName);
+    table.setDbName(dbName);
     table.setInputFormatClass(TextInputFormat.class);
-    table.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
+    table.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
     table.setPartCols(partCols);
 
     hive.createTable(table);
@@ -196,7 +197,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     assertEquals(1, result.getPartitionsNotOnFs().size());
     assertEquals(partToRemove.getName(), result.getPartitionsNotOnFs().get(0)
         .getPartitionName());
-    assertEquals(partToRemove.getTable().getName(), result
+    assertEquals(partToRemove.getTable().getTableName(), result
         .getPartitionsNotOnFs().get(0).getTableName());
     assertTrue(result.getPartitionsNotInMs().isEmpty());
 

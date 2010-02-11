@@ -78,5 +78,5 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.contrib.serde2.RegexSerDe only accepts string columns, but column[5] named status has type int)
+FAILED: Error in metadata: java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.contrib.serde2.RegexSerDe only accepts string columns, but column[5] named status has type int)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

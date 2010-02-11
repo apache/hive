@@ -625,16 +625,18 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT, Integer
             .toString(sd.getNumBuckets()));
-    if (sd.getBucketCols().size() > 0) {
+    if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
           org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME, sd
               .getBucketCols().get(0));
     }
-    schema.putAll(sd.getSerdeInfo().getParameters());
-    if (sd.getSerdeInfo().getSerializationLib() != null) {
-      schema.setProperty(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, sd
-              .getSerdeInfo().getSerializationLib());
+    if (sd.getSerdeInfo() != null) {
+      schema.putAll(sd.getSerdeInfo().getParameters());
+      if (sd.getSerdeInfo().getSerializationLib() != null) {
+        schema.setProperty(
+            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, sd
+                .getSerdeInfo().getSerializationLib());
+      }
     }
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
@@ -656,10 +658,12 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES,
         colTypes);
-    schema.setProperty(
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL,
-        getDDLFromFieldSchema(tableName, sd.getCols()));
-
+    if (sd.getCols() != null) {
+      schema.setProperty(
+          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL,
+          getDDLFromFieldSchema(tableName, sd.getCols()));
+    }
+    
     String partString = "";
     String partStringSep = "";
     for (FieldSchema partKey : partitionKeys) {

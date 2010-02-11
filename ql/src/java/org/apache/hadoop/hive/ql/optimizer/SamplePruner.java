@@ -200,7 +200,7 @@ public class SamplePruner implements Transform {
         // need to do full scan
         fullScanMsg = "Tablesample denominator " + den
             + " is not multiple/divisor of bucket count " + bucketCount
-            + " of table " + part.getTable().getName();
+            + " of table " + part.getTable().getTableName();
       }
     } else {
       // need to do full scan

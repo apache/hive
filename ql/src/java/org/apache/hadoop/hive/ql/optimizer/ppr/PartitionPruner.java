@@ -159,10 +159,10 @@ public class PartitionPruner implements Transform {
       HiveConf conf, String alias,
       Map<String, PrunedPartitionList> prunedPartitionsMap) throws HiveException {
     LOG.trace("Started pruning partiton");
-    LOG.trace("tabname = " + tab.getName());
+    LOG.trace("tabname = " + tab.getTableName());
     LOG.trace("prune Expression = " + prunerExpr);
 
-    String key = tab.getName() + ";";
+    String key = tab.getTableName() + ";";
     if (prunerExpr != null) {
       key = key + prunerExpr.getExprString();
     }
@@ -182,7 +182,7 @@ public class PartitionPruner implements Transform {
 
       if (tab.isPartitioned()) {
         for (String partName : Hive.get().getPartitionNames(tab.getDbName(),
-            tab.getName(), (short) -1)) {
+            tab.getTableName(), (short) -1)) {
           // Set all the variables here
           LinkedHashMap<String, String> partSpec = Warehouse
               .makeSpecFromName(partName);
@@ -214,7 +214,7 @@ public class PartitionPruner implements Transform {
             if (!hasColumnExpr(prunerExpr)) {
               throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE
                   .getMsg("for Alias \"" + alias + "\" Table \""
-                  + tab.getName() + "\""));
+                  + tab.getTableName() + "\""));
             }
           }
 

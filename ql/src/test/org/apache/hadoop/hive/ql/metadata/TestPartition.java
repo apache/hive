@@ -43,8 +43,7 @@ public class TestPartition extends TestCase {
     tbl.setDataLocation(new URI("tmplocation"));
     tbl.setPartCols(partCols);
 
-    Map<String, String> spec = new org.apache.hadoop.hive.ql.metadata.Partition(
-        tbl, tp).getSpec();
+    Map<String, String> spec = new org.apache.hadoop.hive.ql.metadata.Partition(tbl, tp).getSpec();
     assertFalse(spec.isEmpty());
     assertEquals(spec.get(PARTITION_COL), PARTITION_VALUE);
   }

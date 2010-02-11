@@ -81,9 +81,9 @@ public class ReadEntity {
    */
   public Map<String, String> getParameters() {
     if (p != null) {
-      return p.getTPartition().getParameters();
+      return p.getParameters();
     } else {
-      return t.getTTable().getParameters();
+      return t.getParameters();
     }
   }
 
@@ -118,10 +118,10 @@ public class ReadEntity {
   @Override
   public String toString() {
     if (p != null) {
-      return p.getTable().getDbName() + "@" + p.getTable().getName() + "@"
+      return p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@"
           + p.getName();
     } else {
-      return t.getDbName() + "@" + t.getName();
+      return t.getDbName() + "@" + t.getTableName();
     }
   }
 

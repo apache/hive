@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -52,125 +54,100 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 /**
- * A Hive Table: is a fundamental unit of data in Hive that shares a common
- * schema/DDL
+ * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
+ * 
+ * Please note that the ql code should always go through methods of this class to access the
+ * metadata, instead of directly accessing org.apache.hadoop.hive.metastore.api.Table.  This
+ * helps to isolate the metastore code and the ql code.
  */
-public class Table {
+public class Table implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Table");
 
-  private Properties schema;
-  private Deserializer deserializer;
-  private URI uri;
-  private Class<? extends InputFormat> inputFormatClass;
-  private Class<? extends HiveOutputFormat> outputFormatClass;
   private org.apache.hadoop.hive.metastore.api.Table tTable;
 
   /**
-   * Table (only used internally)
-   * 
-   * @throws HiveException
-   * 
+   * These fields are all cached fields.  The information comes from tTable.
    */
-  protected Table() throws HiveException {
+  private Deserializer deserializer;
+  private Class<? extends HiveOutputFormat> outputFormatClass;
+  private Class<? extends InputFormat> inputFormatClass;
+  private URI uri;
+  
+  public Table() {
   }
 
-  /**
-   * Table
-   * 
-   * Create a TableMetaInfo object presumably with the intent of saving it to
-   * the metastore
-   * 
-   * @param name
-   *          the name of this table in the metadb
-   * @param schema
-   *          an object that represents the schema that this SerDe must know
-   * @param deserializer
-   *          a Class to be used for deserializing the data
-   * @param dataLocation
-   *          where is the table ? (e.g.,
-   *          dfs://hadoop001.sf2p.facebook.com:9000/
-   *          user/facebook/warehouse/example) NOTE: should not be hardcoding
-   *          this, but ok for now
-   * 
-   * @exception HiveException
-   *              on internal error. Note not possible now, but in the future
-   *              reserve the right to throw an exception
-   */
-  public Table(String name, Properties schema, Deserializer deserializer,
-      Class<? extends InputFormat<?, ?>> inputFormatClass,
-      Class<?> outputFormatClass, URI dataLocation, Hive hive)
-      throws HiveException {
-    initEmpty();
-    this.schema = schema;
-    this.deserializer = deserializer; // TODO: convert to SerDeInfo format
-    getTTable().getSd().getSerdeInfo().setSerializationLib(
-        deserializer.getClass().getName());
-    getTTable().setTableName(name);
-    getSerdeInfo().setSerializationLib(deserializer.getClass().getName());
-    setInputFormatClass(inputFormatClass);
-    setOutputFormatClass(HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFormatClass));
-    setDataLocation(dataLocation);
+  public Table(org.apache.hadoop.hive.metastore.api.Table table) {
+    tTable = table;
+    if (!isView()) {
+      // This will set up field: inputFormatClass
+      getInputFormatClass();
+      // This will set up field: outputFormatClass
+      getOutputFormatClass();
+    }
   }
 
   public Table(String name) {
-    // fill in defaults
-    initEmpty();
-    getTTable().setTableName(name);
-    getTTable().setDbName(MetaStoreUtils.DEFAULT_DATABASE_NAME);
-    // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does
-    // not
-    // support a table with no columns.
-    getSerdeInfo().setSerializationLib(
-        MetadataTypedColumnsetSerDe.class.getName());
-    getSerdeInfo().getParameters().put(Constants.SERIALIZATION_FORMAT, "1");
+    this(getEmptyTable(name));
   }
 
-  void initEmpty() {
-    setTTable(new org.apache.hadoop.hive.metastore.api.Table());
-    getTTable().setSd(new StorageDescriptor());
-    getTTable().setPartitionKeys(new ArrayList<FieldSchema>());
-    getTTable().setParameters(new HashMap<String, String>());
-
-    StorageDescriptor sd = getTTable().getSd();
-    sd.setSerdeInfo(new SerDeInfo());
-    sd.setNumBuckets(-1);
-    sd.setBucketCols(new ArrayList<String>());
-    sd.setCols(new ArrayList<FieldSchema>());
-    sd.setParameters(new HashMap<String, String>());
-    sd.setSortCols(new ArrayList<Order>());
-
-    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-
-    setTableType(TableType.MANAGED_TABLE);
+  /**
+   * This function should only be used in serialization.
+   * We should never call this function to modify the fields, because
+   * the cached fields will become outdated.
+   */
+  public org.apache.hadoop.hive.metastore.api.Table getTTable() {
+    return tTable;
   }
-
-  public void reinitSerDe() throws HiveException {
-    try {
-      deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
-          getTTable());
-    } catch (MetaException e) {
-      throw new HiveException(e);
+  
+  /**
+   * This function should only be called by Java serialization.
+   */
+  public void setTTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
+    this.tTable = tTable;
+  }
+  
+  /**
+   * Initialize an emtpy table.
+   */
+  static org.apache.hadoop.hive.metastore.api.Table getEmptyTable(String name) {
+    StorageDescriptor sd = new StorageDescriptor();
+    {
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.setNumBuckets(-1);
+      sd.setBucketCols(new ArrayList<String>());
+      sd.setCols(new ArrayList<FieldSchema>());
+      sd.setParameters(new HashMap<String, String>());
+      sd.setSortCols(new ArrayList<Order>());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does
+      // not support a table with no columns.
+      sd.getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
+      sd.getSerdeInfo().getParameters().put(Constants.SERIALIZATION_FORMAT, "1");
+      sd.setInputFormat(SequenceFileInputFormat.class.getName());
+      sd.setOutputFormat(HiveSequenceFileOutputFormat.class.getName());
     }
-  }
-
-  protected void initSerDe() throws HiveException {
-    if (deserializer == null) {
-      try {
-        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
-            getTTable());
-      } catch (MetaException e) {
-        throw new HiveException(e);
-      }
+    
+    org.apache.hadoop.hive.metastore.api.Table t = new org.apache.hadoop.hive.metastore.api.Table();
+    {
+      t.setSd(sd);
+      t.setPartitionKeys(new ArrayList<FieldSchema>());
+      t.setParameters(new HashMap<String, String>());
+      t.setTableType(TableType.MANAGED_TABLE.toString());
+      t.setTableName(name);
+      t.setDbName(MetaStoreUtils.DEFAULT_DATABASE_NAME);
     }
+    return t;
   }
 
   public void checkValidity() throws HiveException {
     // check for validity
-    String name = getTTable().getTableName();
+    String name = tTable.getTableName();
     if (null == name || name.length() == 0
         || !MetaStoreUtils.validateName(name)) {
       throw new HiveException("[" + name + "]: is not a valid table name");
@@ -228,54 +205,77 @@ public class Table {
     return;
   }
 
-  /**
-   * @param inputFormatClass
-   */
   public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
     this.inputFormatClass = inputFormatClass;
     tTable.getSd().setInputFormat(inputFormatClass.getName());
   }
 
-  /**
-   * @param class1
-   */
-  public void setOutputFormatClass(Class<?> class1) {
-    outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
-    tTable.getSd().setOutputFormat(class1.getName());
+  public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
+    this.outputFormatClass = outputFormatClass;
+    tTable.getSd().setOutputFormat(outputFormatClass.getName());
   }
 
   final public Properties getSchema() {
-    return schema;
+    return MetaStoreUtils.getSchema(tTable);
   }
 
   final public Path getPath() {
-    return new Path(getTTable().getSd().getLocation());
+    return new Path(tTable.getSd().getLocation());
   }
 
-  final public String getName() {
-    return getTTable().getTableName();
+  final public String getTableName() {
+    return tTable.getTableName();
   }
 
   final public URI getDataLocation() {
+    if (uri == null) {
+      uri = getPath().toUri();
+    }
     return uri;
   }
 
   final public Deserializer getDeserializer() {
-    if (deserializer == null) {
+    if (deserializer == null) { 
       try {
-        initSerDe();
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
       } catch (HiveException e) {
-        LOG.error("Error in initializing serde.", e);
+        throw new RuntimeException(e);
       }
     }
     return deserializer;
   }
 
   final public Class<? extends InputFormat> getInputFormatClass() {
-    return inputFormatClass;
+    if (inputFormatClass == null) {
+      try {
+        inputFormatClass = (Class<? extends InputFormat>)
+            Class.forName(tTable.getSd().getInputFormat(), true, JavaUtils.getClassLoader());
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return inputFormatClass; 
   }
 
   final public Class<? extends HiveOutputFormat> getOutputFormatClass() {
+    // Replace FileOutputFormat for backward compatibility
+    
+    if (outputFormatClass == null) {
+      try {
+        Class<?> c = Class.forName(tTable.getSd().getOutputFormat(), true, 
+            JavaUtils.getClassLoader());
+        if (!HiveOutputFormat.class.isAssignableFrom(c)) {
+          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
+        } else {
+          outputFormatClass = (Class<? extends HiveOutputFormat>)c;
+        }
+            
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
     return outputFormatClass;
   }
 
@@ -283,7 +283,7 @@ public class Table {
       throws HiveException {
 
     // TODO - types need to be checked.
-    List<FieldSchema> partCols = getTTable().getPartitionKeys();
+    List<FieldSchema> partCols = tTable.getPartitionKeys();
     if (partCols == null || (partCols.size() == 0)) {
       if (spec != null) {
         throw new HiveException(
@@ -310,23 +310,19 @@ public class Table {
   }
 
   public void setProperty(String name, String value) {
-    getTTable().getParameters().put(name, value);
+    tTable.getParameters().put(name, value);
   }
 
-  /**
-   * getProperty
-   * 
-   */
   public String getProperty(String name) {
-    return getTTable().getParameters().get(name);
+    return tTable.getParameters().get(name);
   }
 
   public void setTableType(TableType tableType) {
-     getTTable().setTableType(tableType.toString());
+     tTable.setTableType(tableType.toString());
    }
 
   public TableType getTableType() {
-     return Enum.valueOf(TableType.class, getTTable().getTableType());
+     return Enum.valueOf(TableType.class, tTable.getTableType());
    }
 
   public ArrayList<StructField> getFields() {
@@ -359,32 +355,16 @@ public class Table {
     }
   }
 
-  /**
-   * @param schema
-   *          the schema to set
-   */
-  public void setSchema(Properties schema) {
-    this.schema = schema;
-  }
-
-  /**
-   * @param deserializer
-   *          the deserializer to set
-   */
-  public void setDeserializer(Deserializer deserializer) {
-    this.deserializer = deserializer;
-  }
-
-  @Override
+   @Override
   public String toString() {
-    return getTTable().getTableName();
+    return tTable.getTableName();
   }
 
   public List<FieldSchema> getPartCols() {
-    List<FieldSchema> partKeys = getTTable().getPartitionKeys();
+    List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
       partKeys = new ArrayList<FieldSchema>();
-      getTTable().setPartitionKeys(partKeys);
+      tTable.setPartitionKeys(partKeys);
     }
     return partKeys;
   }
@@ -400,7 +380,7 @@ public class Table {
 
   // TODO merge this with getBucketCols function
   public String getBucketingDimensionId() {
-    List<String> bcols = getTTable().getSd().getBucketCols();
+    List<String> bcols = tTable.getSd().getBucketCols();
     if (bcols == null || bcols.size() == 0) {
       return null;
     }
@@ -413,24 +393,14 @@ public class Table {
     return bcols.get(0);
   }
 
-  /**
-   * @return the tTable
-   */
-  public org.apache.hadoop.hive.metastore.api.Table getTTable() {
-    return tTable;
+  public void setDataLocation(URI uri) {
+    this.uri = uri;
+    tTable.getSd().setLocation(uri.toString());
   }
 
-  /**
-   * @param table
-   *          the tTable to set
-   */
-  protected void setTTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    tTable = table;
-  }
-
-  public void setDataLocation(URI uri2) {
-    uri = uri2;
-    getTTable().getSd().setLocation(uri2.toString());
+  public void unsetDataLocation() {
+    this.uri = null;
+    tTable.getSd().unsetLocation();
   }
 
   public void setBucketCols(List<String> bucketCols) throws HiveException {
@@ -441,14 +411,14 @@ public class Table {
     for (String col : bucketCols) {
       if (!isField(col)) {
         throw new HiveException("Bucket columns " + col
-            + " is not part of the table columns");
+            + " is not part of the table columns (" + getCols() );
       }
     }
-    getTTable().getSd().setBucketCols(bucketCols);
+    tTable.getSd().setBucketCols(bucketCols);
   }
 
   public void setSortCols(List<Order> sortOrder) throws HiveException {
-    getTTable().getSd().setSortCols(sortOrder);
+    tTable.getSd().setSortCols(sortOrder);
   }
 
   private boolean isField(String col) {
@@ -464,14 +434,12 @@ public class Table {
     boolean getColsFromSerDe = SerDeUtils.shouldGetColsFromSerDe(
       getSerializationLib());
     if (!getColsFromSerDe) {
-      return getTTable().getSd().getCols();
+      return tTable.getSd().getCols();
     } else {
       try {
-        return Hive.getFieldsFromDeserializer(getName(), getDeserializer());
+        return Hive.getFieldsFromDeserializer(getTableName(), getDeserializer());
       } catch (HiveException e) {
-        LOG
-            .error("Unable to get field from serde: " + getSerializationLib(),
-                e);
+        LOG.error("Unable to get field from serde: " + getSerializationLib(), e);
       }
       return new ArrayList<FieldSchema>();
     }
@@ -491,15 +459,15 @@ public class Table {
   }
 
   public void setPartCols(List<FieldSchema> partCols) {
-    getTTable().setPartitionKeys(partCols);
+    tTable.setPartitionKeys(partCols);
   }
 
   public String getDbName() {
-    return getTTable().getDbName();
+    return tTable.getDbName();
   }
 
   public int getNumBuckets() {
-    return getTTable().getSd().getNumBuckets();
+    return tTable.getSd().getNumBuckets();
   }
 
   /**
@@ -564,11 +532,11 @@ public class Table {
   }
 
   public void setFields(List<FieldSchema> fields) {
-    getTTable().getSd().setCols(fields);
+    tTable.getSd().setCols(fields);
   }
 
   public void setNumBuckets(int nb) {
-    getTTable().getSd().setNumBuckets(nb);
+    tTable.getSd().setNumBuckets(nb);
   }
 
   /**
@@ -612,7 +580,7 @@ public class Table {
   }
 
   private SerDeInfo getSerdeInfo() {
-    return getTTable().getSd().getSerdeInfo();
+    return tTable.getSd().getSerdeInfo();
   }
 
   public void setSerializationLib(String lib) {
@@ -632,18 +600,30 @@ public class Table {
   }
 
   public List<String> getBucketCols() {
-    return getTTable().getSd().getBucketCols();
+    return tTable.getSd().getBucketCols();
   }
 
   public List<Order> getSortCols() {
-    return getTTable().getSd().getSortCols();
+    return tTable.getSd().getSortCols();
   }
 
+  public void setTableName(String tableName) {
+    tTable.setTableName(tableName);
+  }
+  
+  public void setDbName(String databaseName) {
+    tTable.setDbName(databaseName);
+  }
+  
+  public List<FieldSchema> getPartitionKeys() {
+    return tTable.getPartitionKeys();
+  }
+  
   /**
    * @return the original view text, or null if this table is not a view
    */
   public String getViewOriginalText() {
-    return getTTable().getViewOriginalText();
+    return tTable.getViewOriginalText();
   }
 
   /**
@@ -651,22 +631,25 @@ public class Table {
    *          the original view text to set
    */
   public void setViewOriginalText(String viewOriginalText) {
-    getTTable().setViewOriginalText(viewOriginalText);
+    tTable.setViewOriginalText(viewOriginalText);
   }
 
   /**
    * @return the expanded view text, or null if this table is not a view
    */
   public String getViewExpandedText() {
-    return getTTable().getViewExpandedText();
+    return tTable.getViewExpandedText();
   }
 
+  public void clearSerDeInfo() {
+    tTable.getSd().getSerdeInfo().getParameters().clear();
+  }
   /**
    * @param viewExpandedText
    *          the expanded view text to set
    */
   public void setViewExpandedText(String viewExpandedText) {
-    getTTable().setViewExpandedText(viewExpandedText);
+    tTable.setViewExpandedText(viewExpandedText);
   }
 
   /**
@@ -698,15 +681,10 @@ public class Table {
   }
 
   public Table copy() throws HiveException {
-    Table newTbl = new Table();
-
-    newTbl.schema = schema;
-    newTbl.deserializer = deserializer; // TODO: convert to SerDeInfo format
-
-    newTbl.setTTable(getTTable().clone());
-    newTbl.uri = uri;
-    newTbl.inputFormatClass = inputFormatClass;
-    newTbl.outputFormatClass = outputFormatClass;
-    return newTbl;
+    return new Table(tTable.clone());
+  }
+  
+  public void setCreateTime(int createTime) {
+    tTable.setCreateTime(createTime);
   }
 };

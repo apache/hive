@@ -225,7 +225,7 @@ public class HiveMetaStoreChecker {
     Path tablePath = table.getPath();
     FileSystem fs = tablePath.getFileSystem(conf);
     if (!fs.exists(tablePath)) {
-      result.getTablesNotOnFs().add(table.getName());
+      result.getTablesNotOnFs().add(table.getTableName());
       return;
     }
 
@@ -242,7 +242,7 @@ public class HiveMetaStoreChecker {
       if (!fs.exists(partPath)) {
         PartitionResult pr = new PartitionResult();
         pr.setPartitionName(partition.getName());
-        pr.setTableName(partition.getTable().getName());
+        pr.setTableName(partition.getTable().getTableName());
         result.getPartitionsNotOnFs().add(pr);
       }
 
@@ -292,7 +292,7 @@ public class HiveMetaStoreChecker {
       if (partitionName != null) {
         PartitionResult pr = new PartitionResult();
         pr.setPartitionName(partitionName);
-        pr.setTableName(table.getName());
+        pr.setTableName(table.getTableName());
 
         result.getPartitionsNotInMs().add(pr);
       }

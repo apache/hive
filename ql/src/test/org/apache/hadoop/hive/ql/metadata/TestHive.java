@@ -153,7 +153,7 @@ public class TestHive extends TestCase {
         ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
         ft.checkValidity();
         assertEquals("Table names didn't match for table: " + tableName, tbl
-            .getName(), ft.getName());
+            .getTableName(), ft.getTableName());
         assertEquals("Table owners didn't match for table: " + tableName, tbl
             .getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName,
@@ -226,7 +226,7 @@ public class TestHive extends TestCase {
         assertNotNull("Unable to fetch table", ft);
         ft.checkValidity();
         assertEquals("Table names didn't match for table: " + tableName, tbl
-            .getName(), ft.getName());
+            .getTableName(), ft.getTableName());
         assertEquals("Table owners didn't match for table: " + tableName, tbl
             .getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName,
@@ -257,7 +257,7 @@ public class TestHive extends TestCase {
 
   private static Table createTestTable(String dbName, String tableName) throws HiveException {
     Table tbl = new Table(tableName);
-    tbl.getTTable().setDbName(dbName);
+    tbl.setDbName(dbName);
     tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
     tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     tbl.setSerializationLib(ThriftDeserializer.class.getName());
@@ -294,7 +294,7 @@ public class TestHive extends TestCase {
       // also test getting a table from a specific db
       Table table1 = hm.getTable(dbName, table1Name);
       assertNotNull(table1);
-      assertEquals(table1Name, table1.getName());
+      assertEquals(table1Name, table1.getTableName());
 
       assertTrue(fs.exists(table1.getPath()));
       // and test dropping this specific table

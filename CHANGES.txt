@@ -69,6 +69,9 @@ Trunk -  Unreleased
     HIVE-1150. Add comment to explain why we check for dir first in add_partitions().
     (Paul Yang via zshao)
 
+    HIVE-1122. Make ql/metadata/Table and Partition serializable
+    (Zheng Shao via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

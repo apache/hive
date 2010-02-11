@@ -381,7 +381,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     parts = db.getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl
-        .getName(), Short.MAX_VALUE);
+        .getTableName(), Short.MAX_VALUE);
 
     // write the results in the file
     try {
@@ -608,15 +608,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       while (iterTables.hasNext()) {
         // create a row per table name
         Table tbl = iterTables.next();
-        String tableName = tbl.getName();
+        String tableName = tbl.getTableName();
         String tblLoc = null;
         String inputFormattCls = null;
         String outputFormattCls = null;
         if (part != null) {
           if (par != null) {
             tblLoc = par.getDataLocation().toString();
-            inputFormattCls = par.getTPartition().getSd().getInputFormat();
-            outputFormattCls = par.getTPartition().getSd().getOutputFormat();
+            inputFormattCls = par.getInputFormatClass().getName();
+            outputFormattCls = par.getOutputFormatClass().getName();
           }
         } else {
           tblLoc = tbl.getDataLocation().toString();
@@ -734,13 +734,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
 
-      LOG.info("DDLTask: got data for " + tbl.getName());
+      LOG.info("DDLTask: got data for " + tbl.getTableName());
 
       List<FieldSchema> cols = null;
       if (colPath.equals(tableName)) {
         cols = tbl.getCols();
         if (part != null) {
-          cols = part.getTPartition().getSd().getCols();
+          cols = part.getCols();
         }
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
@@ -798,7 +798,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      LOG.info("DDLTask: written data for " + tbl.getName());
+      LOG.info("DDLTask: written data for " + tbl.getTableName());
       ((FSDataOutputStream) outStream).close();
 
     } catch (FileNotFoundException e) {
@@ -958,7 +958,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table oldTbl = tbl.copy();
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
-      tbl.getTTable().setTableName(alterTbl.getNewName());
+      tbl.setTableName(alterTbl.getNewName());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
@@ -1080,10 +1080,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
             alterTbl.getProps());
       }
-      // since serde is modified then do the appropriate things to reset columns
-      // etc
-      tbl.reinitSerDe();
-      tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getName(), tbl
+      tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl
           .getDeserializer()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
@@ -1266,18 +1263,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
     Table tbl = new Table(crtTbl.getTableName());
-    StorageDescriptor tblStorDesc = tbl.getTTable().getSd();
-    if (crtTbl.getBucketCols() != null) {
-      tblStorDesc.setBucketCols(crtTbl.getBucketCols());
-    }
-    if (crtTbl.getSortCols() != null) {
-      tbl.setSortCols(crtTbl.getSortCols());
-    }
     if (crtTbl.getPartCols() != null) {
       tbl.setPartCols(crtTbl.getPartCols());
     }
     if (crtTbl.getNumBuckets() != -1) {
-      tblStorDesc.setNumBuckets(crtTbl.getNumBuckets());
+      tbl.setNumBuckets(crtTbl.getNumBuckets());
     }
 
     if (crtTbl.getSerName() != null) {
@@ -1321,19 +1311,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
      */
     if (crtTbl.getSerName() == null) {
       LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
-      tbl
-          .setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class
-          .getName());
+      tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
     } else {
       // let's validate that the serde exists
       validateSerDe(crtTbl.getSerName());
     }
 
+    if (crtTbl.getCols() != null) {
+      tbl.setFields(crtTbl.getCols());
+    }
+    if (crtTbl.getBucketCols() != null) {
+      tbl.setBucketCols(crtTbl.getBucketCols());
+    }
+    if (crtTbl.getSortCols() != null) {
+      tbl.setSortCols(crtTbl.getSortCols());
+    }
     if (crtTbl.getComment() != null) {
       tbl.setProperty("comment", crtTbl.getComment());
     }
     if (crtTbl.getLocation() != null) {
-      tblStorDesc.setLocation(crtTbl.getLocation());
+      tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
     }
 
     tbl.setInputFormatClass(crtTbl.getInputFormat());
@@ -1382,10 +1379,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return rc;
     }
 
-    if (crtTbl.getCols() != null) {
-      tbl.setFields(crtTbl.getCols());
-    }
-
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl));
@@ -1407,9 +1400,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Get the existing table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, crtTbl
         .getLikeTableName());
-    StorageDescriptor tblStorDesc = tbl.getTTable().getSd();
 
-    tbl.getTTable().setTableName(crtTbl.getTableName());
+    tbl.setTableName(crtTbl.getTableName());
 
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
@@ -1418,10 +1410,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (crtTbl.getLocation() != null) {
-      tblStorDesc.setLocation(crtTbl.getLocation());
+      tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
     } else {
-      tblStorDesc.setLocation(null);
-      tblStorDesc.unsetLocation();
+      tbl.unsetDataLocation();
     }
 
     // create the table
@@ -1445,7 +1436,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = new Table(crtView.getViewName());
     tbl.setTableType(TableType.VIRTUAL_VIEW);
     tbl.setSerializationLib(null);
-    tbl.getTTable().getSd().getSerdeInfo().getParameters().clear();
+    tbl.clearSerDeInfo();
     tbl.setViewOriginalText(crtView.getViewOriginalText());
     tbl.setViewExpandedText(crtView.getViewExpandedText());
     tbl.setFields(crtView.getSchema());
@@ -1472,7 +1463,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     }
     // set create time
-    tbl.getTTable().setCreateTime((int) (System.currentTimeMillis() / 1000));
+    tbl.setCreateTime((int) (System.currentTimeMillis() / 1000));
     return 0;
   }
 

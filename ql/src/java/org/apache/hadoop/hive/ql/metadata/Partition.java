@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +37,9 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
@@ -49,9 +50,13 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
 
 /**
- * A Hive Table Partition: is a fundamental storage unit within a Table
+ * A Hive Table Partition: is a fundamental storage unit within a Table.
+ * 
+ * Please note that the ql code should always go through methods of this class to access the
+ * metadata, instead of directly accessing org.apache.hadoop.hive.metastore.api.Partition.
+ * This helps to isolate the metastore code and the ql code.
  */
-public class Partition {
+public class Partition implements Serializable {
 
   @SuppressWarnings("nls")
   static final private Log LOG = LogFactory
@@ -60,20 +65,14 @@ public class Partition {
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
 
-  private Deserializer deserializer;
-  private Properties schema;
-  private Class<? extends InputFormat> inputFormatClass;
-  private Class<? extends HiveOutputFormat> outputFormatClass;
-
   /**
-   * @return the tPartition
+   * These fields are cached. The information comes from tPartition.
    */
-  public org.apache.hadoop.hive.metastore.api.Partition getTPartition() {
-    return tPartition;
-  }
-
-  private LinkedHashMap<String, String> spec;
-
+  private Deserializer deserializer;
+  private Class<? extends HiveOutputFormat> outputFormatClass;
+  private Class<? extends InputFormat> inputFormatClass;
+  private URI uri;
+  
   /**
    * @return The values of the partition
    * @see org.apache.hadoop.hive.metastore.api.Partition#getValues()
@@ -82,8 +81,16 @@ public class Partition {
     return tPartition.getValues();
   }
 
-  private Path partPath;
-  private URI partURI;
+  /**
+   * create an empty partition.
+   * SemanticAnalyzer code requires that an empty partition when the table is not partitioned.
+   */
+  public Partition(Table tbl) throws HiveException {
+    org.apache.hadoop.hive.metastore.api.Partition tPart = 
+        new org.apache.hadoop.hive.metastore.api.Partition();
+    tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+    initialize(tbl, tPart);
+  }
 
   public Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp)
       throws HiveException {
@@ -117,7 +124,7 @@ public class Partition {
 
     org.apache.hadoop.hive.metastore.api.Partition tpart = new org.apache.hadoop.hive.metastore.api.Partition();
     tpart.setDbName(tbl.getDbName());
-    tpart.setTableName(tbl.getName());
+    tpart.setTableName(tbl.getTableName());
     tpart.setValues(pvals);
 
     StorageDescriptor sd = new StorageDescriptor();
@@ -146,103 +153,85 @@ public class Partition {
   /**
    * Initializes this object with the given variables
    * 
-   * @param tbl
+   * @param table
    *          Table the partition belongs to
-   * @param tp
+   * @param tPartition
    *          Thrift Partition object
    * @throws HiveException
    *           Thrown if we cannot initialize the partition
    */
-  private void initialize(Table tbl,
-      org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
+  private void initialize(Table table,
+      org.apache.hadoop.hive.metastore.api.Partition tPartition) throws HiveException {
 
-    table = tbl;
-    tPartition = tp;
-    partName = "";
+    this.table = table;
+    this.tPartition = tPartition;
+    String partName = "";
 
-    if (tbl.isPartitioned()) {
+    if (table.isPartitioned()) {
       try {
-        partName = Warehouse.makePartName(tbl.getPartCols(), tp.getValues());
-        if (tp.getSd().getLocation() == null) {
+        partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+        if (tPartition.getSd().getLocation() == null) {
           // set default if location is not set
-          partPath = new Path(tbl.getDataLocation().toString(), partName);
-          tp.getSd().setLocation(partPath.toString());
-        } else {
-          partPath = new Path(tp.getSd().getLocation());
+          Path partPath = new Path(table.getDataLocation().toString(), partName);
+          tPartition.getSd().setLocation(partPath.toString());
         }
       } catch (MetaException e) {
-        throw new HiveException("Invalid partition for table " + tbl.getName(),
+        throw new HiveException("Invalid partition for table " + table.getTableName(),
             e);
       }
-    } else {
-      // We are in the HACK territory.
-      // SemanticAnalyzer expects a single partition whose schema
-      // is same as the table partition.
-      partPath = table.getPath();
     }
 
-    spec = tbl.createSpec(tp);
-    partURI = partPath.toUri();
+    // This will set up field: inputFormatClass
+    getInputFormatClass();
+    // This will set up field: outputFormatClass
+    getOutputFormatClass();
+
   }
 
   public String getName() {
-    return partName;
-  }
-
-  public Table getTable() {
-    return table;
+    try {
+      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public Path[] getPath() {
-    Path[] ret = new Path[1];
-    ret[0] = partPath;
-    return (ret);
+    Path[] ret = new Path[]{getPartitionPath()};
+    return ret;
   }
 
   public Path getPartitionPath() {
-    return partPath;
+    if (table.isPartitioned()) {
+      return new Path(tPartition.getSd().getLocation());
+    } else {
+      return new Path(table.getTTable().getSd().getLocation());
+    }
   }
 
   final public URI getDataLocation() {
-    return partURI;
+    if (uri == null) {
+      uri = getPartitionPath().toUri();
+    }
+    return uri;
   }
 
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
       try {
-        initSerDe();
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
+            tPartition, table.getTTable());
       } catch (HiveException e) {
-        LOG.error("Error in initializing serde.", e);
+        throw new RuntimeException(e);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
       }
     }
     return deserializer;
   }
 
-  /**
-   * @param schema
-   *          the schema to set
-   */
-  public void setSchema(Properties schema) {
-    this.schema = schema;
-  }
-
   public Properties getSchema() {
-    if (schema == null) {
-      schema = MetaStoreUtils
-          .getSchema(getTPartition(), getTable().getTTable());
-    }
-    return schema;
-  }
-
-  protected void initSerDe() throws HiveException {
-    if (deserializer == null) {
-      try {
-        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(),
-            getTPartition(), getTable().getTTable());
-      } catch (MetaException e) {
-        throw new HiveException(e);
-      }
-    }
+    return MetaStoreUtils.getSchema(tPartition, table.getTTable());
   }
 
   /**
@@ -256,9 +245,10 @@ public class Partition {
   /**
    * @param class1
    */
-  public void setOutputFormatClass(Class<?> class1) {
-    outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
-    tPartition.getSd().setOutputFormat(class1.getName());
+  public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
+    this.outputFormatClass = outputFormatClass;
+    tPartition.getSd().setOutputFormat(HiveFileFormatUtils
+      .getOutputFormatSubstitute(outputFormatClass).toString());
   }
 
   final public Class<? extends InputFormat> getInputFormatClass()
@@ -268,13 +258,12 @@ public class Partition {
           org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
           org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName());
       try {
-        setInputFormatClass((Class<? extends InputFormat>) Class.forName(
-            clsName, true, JavaUtils.getClassLoader()));
+        inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
+            JavaUtils.getClassLoader()));
       } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
     }
-
     return inputFormatClass;
   }
 
@@ -285,8 +274,14 @@ public class Partition {
           org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
           HiveSequenceFileOutputFormat.class.getName());
       try {
-        setOutputFormatClass(Class.forName(clsName, true, JavaUtils
-            .getClassLoader()));
+        Class<?> c = (Class<? extends HiveOutputFormat>)(Class.forName(clsName, true,
+            JavaUtils.getClassLoader()));
+        // Replace FileOutputFormat for backward compatibility
+        if (!HiveOutputFormat.class.isAssignableFrom(c)) {
+          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
+        } else {
+          outputFormatClass = (Class<? extends HiveOutputFormat>)c;
+        }
       } catch (ClassNotFoundException e) {
         throw new HiveException("Class not found: " + clsName, e);
       }
@@ -320,6 +315,14 @@ public class Partition {
     return tPartition.getSd().getBucketCols();
   }
 
+  public List<Order> getSortCols() {
+    return tPartition.getSd().getSortCols();
+  }
+
+  public List<String> getSortColNames() {
+    return Utilities.getColumnNamesFromSortCols(getSortCols());
+  }
+
   /**
    * mapping from bucket number to bucket path
    */
@@ -329,7 +332,7 @@ public class Partition {
     try {
       FileSystem fs = FileSystem.get(table.getDataLocation(), Hive.get()
           .getConf());
-      String pathPattern = partPath.toString();
+      String pathPattern = getPartitionPath().toString();
       if (getBucketCount() > 0) {
         pathPattern = pathPattern + "/*";
       }
@@ -347,29 +350,6 @@ public class Partition {
       throw new RuntimeException("Cannot get bucket path for bucket "
           + bucketNum, e);
     }
-  }
-
-  /**
-   * mapping from a Path to the bucket number if any
-   */
-  private static Pattern bpattern = Pattern
-      .compile("part-([0-9][0-9][0-9][0-9][0-9])");
-
-  private String partName;
-
-  @SuppressWarnings("nls")
-  public static int getBucketNum(Path p) {
-    Matcher m = bpattern.matcher(p.getName());
-    if (m.find()) {
-      String bnum_str = m.group(1);
-      try {
-        return (Integer.parseInt(bnum_str));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException("Unexpected error parsing: " + p.getName()
-            + "," + bnum_str);
-      }
-    }
-    return 0;
   }
 
   @SuppressWarnings("nls")
@@ -398,7 +378,7 @@ public class Partition {
         if ((scount / bcount) * bcount != scount) {
           throw new HiveException("Sample Count" + scount
               + " is not a multiple of bucket count " + bcount + " for table "
-              + table.getName());
+              + table.getTableName());
         }
         // undersampling a bucket
         ret.add(getBucketPath((s.getSampleNum() - 1) % bcount));
@@ -406,7 +386,7 @@ public class Partition {
         if ((bcount / scount) * scount != bcount) {
           throw new HiveException("Sample Count" + scount
               + " is not a divisor of bucket count " + bcount + " for table "
-              + table.getName());
+              + table.getTableName());
         }
         // sampling multiple buckets
         for (int i = 0; i < bcount / scount; i++) {
@@ -418,7 +398,7 @@ public class Partition {
   }
 
   public LinkedHashMap<String, String> getSpec() {
-    return spec;
+    return table.createSpec(tPartition);
   }
 
   @SuppressWarnings("nls")
@@ -426,7 +406,7 @@ public class Partition {
   public String toString() {
     String pn = "Invalid Partition";
     try {
-      pn = Warehouse.makePartName(spec);
+      pn = Warehouse.makePartName(getSpec());
     } catch (MetaException e) {
       // ignore as we most probably in an exception path already otherwise this
       // error wouldn't occur
@@ -434,20 +414,39 @@ public class Partition {
     return table.toString() + "(" + pn + ")";
   }
 
-  public void setProperty(String name, String value) {
-    getTPartition().putToParameters(name, value);
+  public Table getTable() {
+    return table;
   }
 
   /**
-   * getProperty
-   * 
+   * Should be only used by serialization.
    */
-  public String getProperty(String name) {
-    Map<String, String> params = getTPartition().getParameters();
-    if (params == null) {
-      return null;
-    }
-    return params.get(name);
+  public void setTable(Table table) {
+    this.table = table;
   }
 
+  /**
+   * Should be only used by serialization.
+   */
+  public org.apache.hadoop.hive.metastore.api.Partition getTPartition() {
+    return tPartition;
+  }
+  
+  /**
+   * Should be only used by serialization.
+   */
+  public void setTPartition(
+      org.apache.hadoop.hive.metastore.api.Partition partition) {
+    tPartition = partition;
+  }
+
+  public Map<String, String> getParameters() {
+    return tPartition.getParameters();
+  }
+
+  public List<FieldSchema> getCols() {
+    return tPartition.getSd().getCols();
+  }
+
+  
 }

@@ -16,8 +16,8 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -27,16 +27,16 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087630000
+lastAccessTime:unknown
+lastUpdateTime:1265695450000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -46,17 +46,17 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087630000
+lastAccessTime:unknown
+lastUpdateTime:1265695450000
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1314763739/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-11_108_1574228616810949519/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1314763739/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-11_108_1574228616810949519/10000
 238
 
 311
@@ -85,11 +85,11 @@ POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/
 PREHOOK: query: select key from partition_test_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/710640588/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-14_894_1993466480222470885/10000
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/710640588/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-14_894_1993466480222470885/10000
 238
 
 311
@@ -134,8 +134,8 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -145,16 +145,16 @@ totalNumberFiles:2
 totalFileSize:586
 maxFileSize:370
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087640000
+lastAccessTime:unknown
+lastUpdateTime:1265695461000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -164,16 +164,16 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087640000
+lastAccessTime:unknown
+lastUpdateTime:1265695461000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -183,17 +183,17 @@ totalNumberFiles:1
 totalFileSize:370
 maxFileSize:370
 minFileSize:370
-lastAccessTime:0
-lastUpdateTime:1259087640000
+lastAccessTime:unknown
+lastUpdateTime:1265695461000
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/646831114/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-21_275_2001928558911118972/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/646831114/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-21_275_2001928558911118972/10000
 238
 
 311
@@ -222,11 +222,11 @@ POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/852607729/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-24_508_5231406110420378004/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/852607729/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-24_508_5231406110420378004/10000
 238
 
 311
@@ -256,12 +256,12 @@ PREHOOK: query: select key from partition_test_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/933497662/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-27_864_595783441105808452/10000
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/933497662/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-27_864_595783441105808452/10000
 238
 
 311
@@ -331,8 +331,8 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
@@ -342,16 +342,16 @@ totalNumberFiles:3
 totalFileSize:1474
 maxFileSize:888
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087654000
+lastAccessTime:unknown
+lastUpdateTime:1265695474000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -361,16 +361,16 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1259087654000
+lastAccessTime:unknown
+lastUpdateTime:1265695474000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -380,18 +380,18 @@ totalNumberFiles:1
 totalFileSize:370
 maxFileSize:370
 minFileSize:370
-lastAccessTime:0
-lastUpdateTime:1259087654000
+lastAccessTime:unknown
+lastUpdateTime:1265695474000
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:partition_test_partitioned
-owner:njain
-location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
+owner:zshao
+location:file:/data/users/zshao/hadoop_hive_trunk/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
-outputformat:org.apache.hadoop.mapred.SequenceFileOutputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
@@ -399,17 +399,17 @@ totalNumberFiles:1
 totalFileSize:888
 maxFileSize:888
 minFileSize:888
-lastAccessTime:0
-lastUpdateTime:1259087654000
+lastAccessTime:unknown
+lastUpdateTime:1265695474000
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/911681205/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-34_761_6787250997648210654/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/911681205/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-34_761_6787250997648210654/10000
 238
 
 311
@@ -438,11 +438,11 @@ POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1814559948/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-37_955_7303542209833538415/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1814559948/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-37_955_7303542209833538415/10000
 238
 
 311
@@ -471,11 +471,11 @@ POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/
 PREHOOK: query: select key from partition_test_partitioned where dt=102
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/857836436/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-41_137_8811852470249659413/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/857836436/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-41_137_8811852470249659413/10000
 238
 
 311
@@ -506,13 +506,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1800799624/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-44_320_1009489530520037925/10000
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1800799624/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-44_320_1009489530520037925/10000
 238
 
 311
@@ -593,13 +593,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1806258390/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-48_037_6984143836467375088/10000
 POSTHOOK: query: select key from partition_test_partitioned where dt >=100 and dt <= 102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1806258390/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-08_22-04-48_037_6984143836467375088/10000
 238
 
 311

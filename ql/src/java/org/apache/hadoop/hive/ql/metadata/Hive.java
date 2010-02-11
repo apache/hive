@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -310,9 +312,8 @@ public class Hive {
    */
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
     try {
-      tbl.initSerDe();
       if (tbl.getCols().size() == 0) {
-        tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getName(),
+        tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
       tbl.checkValidity();
@@ -404,7 +405,8 @@ public class Hive {
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
     }
-    Table table = new Table();
+    
+    // Get the table from metastore
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
       tTable = getMSC().getTable(dbName, tableName);
@@ -417,18 +419,27 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException("Unable to fetch table " + tableName, e);
     }
-    // just a sanity check
-    assert (tTable != null);
-    try {
-
+    
+    // For non-views, we need to do some extra fixes
+    if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
+      // Fix the non-printable chars
+      Map<String, String> parameters = tTable.getSd().getParameters();
+      String sf = parameters.get(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
+      if (sf != null) {
+        char[] b = sf.toCharArray();
+        if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t
+          parameters.put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
+              Integer.toString(b[0]));
+        }
+      }
+      
       // Use LazySimpleSerDe for MetadataTypedColumnsetSerDe.
       // NOTE: LazySimpleSerDe does not support tables with a single column of
       // col
       // of type "array<string>". This happens when the table is created using
       // an
       // earlier version of Hive.
-      if (
-          org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
+      if (org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class
           .getName().equals(
             tTable.getSd().getSerdeInfo().getSerializationLib())
           && tTable.getSd().getColsSize() > 0
@@ -436,47 +447,10 @@ public class Hive {
         tTable.getSd().getSerdeInfo().setSerializationLib(
             org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
-
-      // first get a schema (in key / vals)
-      Properties p = MetaStoreUtils.getSchema(tTable);
-      table.setSchema(p);
-      table.setTTable(tTable);
-
-      if (table.isView()) {
-        // Skip the rest, which isn't relevant for a view.
-        table.checkValidity();
-        return table;
-      }
-
-      table
-          .setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>) Class
-              .forName(
-                  table
-                      .getSchema()
-                      .getProperty(
-                          org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
-                          org.apache.hadoop.mapred.SequenceFileInputFormat.class
-                              .getName()), true, JavaUtils.getClassLoader()));
-      table.setOutputFormatClass(Class.forName(table.getSchema().getProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-          HiveSequenceFileOutputFormat.class.getName()), true, JavaUtils
-          .getClassLoader()));
-      table.setDeserializer(MetaStoreUtils.getDeserializer(getConf(), p));
-      table.setDataLocation(new URI(tTable.getSd().getLocation()));
-    } catch (Exception e) {
-      LOG.error(StringUtils.stringifyException(e));
-      throw new HiveException(e);
     }
-    String sf = table
-        .getSerdeParam(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
-    if (sf != null) {
-      char[] b = sf.toCharArray();
-      if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t
-        table.setSerdeParam(
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
-            Integer.toString(b[0]));
-      }
-    }
+    
+    Table table = new Table(tTable);
+    
     table.checkValidity();
     return table;
   }
@@ -722,11 +696,11 @@ public class Hive {
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
-      tpart = getMSC().getPartition(tbl.getDbName(), tbl.getName(), pvals);
+      tpart = getMSC().getPartition(tbl.getDbName(), tbl.getTableName(), pvals);
       if (tpart == null && forceCreate) {
-        LOG.debug("creating partition for table " + tbl.getName()
+        LOG.debug("creating partition for table " + tbl.getTableName()
             + " with partition spec : " + partSpec);
-        tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getName(), pvals);
+        tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
         ;
       }
       if (tpart == null) {
@@ -774,7 +748,7 @@ public class Hive {
     if (tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
-        tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getName(),
+        tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(),
             (short) -1);
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
@@ -786,12 +760,7 @@ public class Hive {
       }
       return parts;
     } else {
-      // create an empty partition.
-      // HACK, HACK. SemanticAnalyzer code requires that an empty partition when
-      // the table is not partitioned
-      org.apache.hadoop.hive.metastore.api.Partition tPart = new org.apache.hadoop.hive.metastore.api.Partition();
-      tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
-      Partition part = new Partition(tbl, tPart);
+      Partition part = new Partition(tbl);
       ArrayList<Partition> parts = new ArrayList<Partition>(1);
       parts.add(part);
       return parts;

@@ -769,10 +769,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
           }
 
-          if (!HiveOutputFormat.class.isAssignableFrom(ts.tableHandle
-              .getOutputFormatClass())) {
+          Class<?> outputFormatClass = ts.tableHandle.getOutputFormatClass();
+          if (!HiveOutputFormat.class.isAssignableFrom(outputFormatClass)) {
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
-                .getMsg(ast));
+                .getMsg(ast, "The class is " + outputFormatClass.toString()));
           }
 
           if (ts.partSpec == null) {
@@ -821,7 +821,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ParseDriver pd = new ParseDriver();
     ASTNode viewTree;
-    final ASTNodeOrigin viewOrigin = new ASTNodeOrigin("VIEW", tab.getName(),
+    final ASTNodeOrigin viewOrigin = new ASTNodeOrigin("VIEW", tab.getTableName(),
         tab.getViewExpandedText(), alias, qb.getParseInfo().getSrcForAlias(
         alias));
     try {
@@ -2981,7 +2981,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_tab = qbm.getDestTableForAlias(dest);
       // check for partition
-      List<FieldSchema> parts = dest_tab.getTTable().getPartitionKeys();
+      List<FieldSchema> parts = dest_tab.getPartitionKeys();
       if (parts != null && parts.size() > 0) {
         throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
       }
@@ -2989,7 +2989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 
-      idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getName());
+      idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getTableName());
       currentTableId = destTableId;
       destTableId++;
 
@@ -2999,7 +2999,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           new HashMap<String, String>()));
       if (!outputs.add(new WriteEntity(dest_tab))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(dest_tab.getName()));
+            .getMsg(dest_tab.getTableName()));
       }
       break;
     }
@@ -3011,7 +3011,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 
-      idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getName());
+      idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getTableName());
       currentTableId = destTableId;
       destTableId++;
 
@@ -3020,7 +3020,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getSpec()));
       if (!outputs.add(new WriteEntity(dest_part))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-            .getMsg(dest_tab.getName() + "@" + dest_part.getName()));
+            .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
       }
       break;
     }
@@ -4881,13 +4881,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // If there are no sample cols and no bucket cols then throw an error
       if (tabBucketCols.size() == 0 && sampleExprs.size() == 0) {
         throw new SemanticException(ErrorMsg.NON_BUCKETED_TABLE.getMsg() + " "
-            + tab.getName());
+            + tab.getTableName());
       }
 
       if (num > den) {
         throw new SemanticException(
             ErrorMsg.BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR.getMsg() + " "
-            + tab.getName());
+            + tab.getTableName());
       }
 
       // check if a predicate is needed
@@ -4944,7 +4944,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
       if (testMode) {
-        String tabName = tab.getName();
+        String tabName = tab.getTableName();
 
         // has the user explicitly asked not to sample this table
         String unSampleTblList = conf

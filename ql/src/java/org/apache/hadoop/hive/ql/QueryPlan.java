@@ -64,7 +64,14 @@ public class QueryPlan implements Serializable {
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
+  
   private HashSet<ReadEntity> inputs;
+  /**
+   * Note: outputs are not all determined at compile time.
+   * Some of the tasks can change the outputs at run time, because only at run
+   * time, we know what are the changes.  These tasks should keep a reference 
+   * to the outputs here. 
+   */
   private HashSet<WriteEntity> outputs;
 
   private HashMap<String, String> idToTableNameMap;

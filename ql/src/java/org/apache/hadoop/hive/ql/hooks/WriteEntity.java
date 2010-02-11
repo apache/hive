@@ -148,9 +148,9 @@ public class WriteEntity {
   public String toString() {
     switch (typ) {
     case TABLE:
-      return t.getDbName() + "@" + t.getName();
+      return t.getDbName() + "@" + t.getTableName();
     case PARTITION:
-      return t.getDbName() + "@" + t.getName() + "@" + p.getName();
+      return t.getDbName() + "@" + t.getTableName() + "@" + p.getName();
     default:
       return d;
     }
