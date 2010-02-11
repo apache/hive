@@ -194,12 +194,16 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition append_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name)
+                       throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2) 
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1)
   Partition get_partition_by_name(1:string db_name 2:string tbl_name, 3:string part_name)
-                       throws(1:MetaException o1, 2: UnknownTableException o2, 3:NoSuchObjectException o3)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // returns all the partitions for this table in reverse chronological order.
   // if max parts is given then it will return only that many

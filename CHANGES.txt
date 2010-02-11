@@ -15,6 +15,9 @@ Trunk -  Unreleased
 
     HIVE-894. add udaf max_n, min_n to contrib (Zheng Shao via Yongqiang He)
 
+    HIVE-1152. Add metastore API method to drop/append partition by name.
+    (Paul Yang via zshao)
+
   IMPROVEMENTS
 
     HIVE-983. Function from_unixtime takes long.

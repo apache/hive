@@ -38,7 +38,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void alter_table(string dbname, string tbl_name, Table new_tbl)'
   print '  Partition add_partition(Partition new_part)'
   print '  Partition append_partition(string db_name, string tbl_name,  part_vals)'
+  print '  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)'
+  print '  bool drop_partition_by_name(string db_name, string tbl_name, string part_name, bool deleteData)'
   print '  Partition get_partition(string db_name, string tbl_name,  part_vals)'
   print '  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '   get_partitions(string db_name, string tbl_name, i16 max_parts)'
@@ -195,11 +197,23 @@ elif cmd == 'append_partition':
     sys.exit(1)
   pp.pprint(client.append_partition(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'append_partition_by_name':
+  if len(args) != 3:
+    print 'append_partition_by_name requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.append_partition_by_name(args[0],args[1],args[2],))
+
 elif cmd == 'drop_partition':
   if len(args) != 4:
     print 'drop_partition requires 4 args'
     sys.exit(1)
   pp.pprint(client.drop_partition(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'drop_partition_by_name':
+  if len(args) != 4:
+    print 'drop_partition_by_name requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.drop_partition_by_name(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'get_partition':
   if len(args) != 3:

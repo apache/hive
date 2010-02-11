@@ -190,9 +190,19 @@ public class TestHiveMetaStore extends TestCase {
       assertTrue(fs.exists(partPath));
       client.dropPartition(dbName, tblName, part.getValues(), true);
       assertTrue(fs.exists(partPath));
-
+      
+      // Test append_partition_by_name
+      client.appendPartitionByName(dbName, tblName, partName);
+      Partition part4 = client.getPartition(dbName, tblName, part.getValues());
+      assertTrue("Append partition by name failed", part4.getValues().equals(vals));;
+      
+      // Test drop_partition_by_name
+      assertTrue("Drop partition by name failed", 
+          client.dropPartitionByName(dbName, tblName, partName, false));
+      
       ret = client.dropDatabase(dbName);
       assertTrue("Unable to create the databse " + dbName, ret);
+      
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed.");

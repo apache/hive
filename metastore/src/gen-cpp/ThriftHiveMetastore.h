@@ -32,7 +32,9 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) = 0;
+  virtual void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) = 0;
   virtual bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) = 0;
+  virtual bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) = 0;
   virtual void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) = 0;
   virtual void get_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) = 0;
   virtual void get_partitions(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) = 0;
@@ -99,7 +101,14 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void append_partition(Partition& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */) {
     return;
   }
+  void append_partition_by_name(Partition& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */) {
+    return;
+  }
   bool drop_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const bool /* deleteData */) {
+    bool _return = false;
+    return _return;
+  }
+  bool drop_partition_by_name(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */, const bool /* deleteData */) {
     bool _return = false;
     return _return;
   }
@@ -1942,6 +1951,127 @@ class ThriftHiveMetastore_append_partition_presult {
 
 };
 
+class ThriftHiveMetastore_append_partition_by_name_args {
+ public:
+
+  ThriftHiveMetastore_append_partition_by_name_args() : db_name(""), tbl_name(""), part_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_append_partition_by_name_args() throw() {}
+
+  std::string db_name;
+  std::string tbl_name;
+  std::string part_name;
+
+  struct __isset {
+    __isset() : db_name(false), tbl_name(false), part_name(false) {}
+    bool db_name;
+    bool tbl_name;
+    bool part_name;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_append_partition_by_name_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_name == rhs.part_name))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_append_partition_by_name_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_append_partition_by_name_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_append_partition_by_name_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_append_partition_by_name_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::string* part_name;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_append_partition_by_name_result {
+ public:
+
+  ThriftHiveMetastore_append_partition_by_name_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_append_partition_by_name_result() throw() {}
+
+  Partition success;
+  InvalidObjectException o1;
+  AlreadyExistsException o2;
+  MetaException o3;
+
+  struct __isset {
+    __isset() : success(false), o1(false), o2(false), o3(false) {}
+    bool success;
+    bool o1;
+    bool o2;
+    bool o3;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_append_partition_by_name_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_append_partition_by_name_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_append_partition_by_name_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_append_partition_by_name_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_append_partition_by_name_presult() throw() {}
+
+  Partition* success;
+  InvalidObjectException o1;
+  AlreadyExistsException o2;
+  MetaException o3;
+
+  struct __isset {
+    __isset() : success(false), o1(false), o2(false), o3(false) {}
+    bool success;
+    bool o1;
+    bool o2;
+    bool o3;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastore_drop_partition_args {
  public:
 
@@ -2046,6 +2176,126 @@ class ThriftHiveMetastore_drop_partition_presult {
 
 
   virtual ~ThriftHiveMetastore_drop_partition_presult() throw() {}
+
+  bool* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  struct __isset {
+    __isset() : success(false), o1(false), o2(false) {}
+    bool success;
+    bool o1;
+    bool o2;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+class ThriftHiveMetastore_drop_partition_by_name_args {
+ public:
+
+  ThriftHiveMetastore_drop_partition_by_name_args() : db_name(""), tbl_name(""), part_name(""), deleteData(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_partition_by_name_args() throw() {}
+
+  std::string db_name;
+  std::string tbl_name;
+  std::string part_name;
+  bool deleteData;
+
+  struct __isset {
+    __isset() : db_name(false), tbl_name(false), part_name(false), deleteData(false) {}
+    bool db_name;
+    bool tbl_name;
+    bool part_name;
+    bool deleteData;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_drop_partition_by_name_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_name == rhs.part_name))
+      return false;
+    if (!(deleteData == rhs.deleteData))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_partition_by_name_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_partition_by_name_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_drop_partition_by_name_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_partition_by_name_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::string* part_name;
+  const bool* deleteData;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_drop_partition_by_name_result {
+ public:
+
+  ThriftHiveMetastore_drop_partition_by_name_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_partition_by_name_result() throw() {}
+
+  bool success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  struct __isset {
+    __isset() : success(false), o1(false), o2(false) {}
+    bool success;
+    bool o1;
+    bool o2;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_drop_partition_by_name_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_partition_by_name_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_partition_by_name_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_drop_partition_by_name_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_partition_by_name_presult() throw() {}
 
   bool* success;
   NoSuchObjectException o1;
@@ -2235,15 +2485,13 @@ class ThriftHiveMetastore_get_partition_by_name_result {
 
   Partition success;
   MetaException o1;
-  UnknownTableException o2;
-  NoSuchObjectException o3;
+  NoSuchObjectException o2;
 
   struct __isset {
-    __isset() : success(false), o1(false), o2(false), o3(false) {}
+    __isset() : success(false), o1(false), o2(false) {}
     bool success;
     bool o1;
     bool o2;
-    bool o3;
   } __isset;
 
   bool operator == (const ThriftHiveMetastore_get_partition_by_name_result & rhs) const
@@ -2253,8 +2501,6 @@ class ThriftHiveMetastore_get_partition_by_name_result {
     if (!(o1 == rhs.o1))
       return false;
     if (!(o2 == rhs.o2))
-      return false;
-    if (!(o3 == rhs.o3))
       return false;
     return true;
   }
@@ -2277,15 +2523,13 @@ class ThriftHiveMetastore_get_partition_by_name_presult {
 
   Partition* success;
   MetaException o1;
-  UnknownTableException o2;
-  NoSuchObjectException o3;
+  NoSuchObjectException o2;
 
   struct __isset {
-    __isset() : success(false), o1(false), o2(false), o3(false) {}
+    __isset() : success(false), o1(false), o2(false) {}
     bool success;
     bool o1;
     bool o2;
-    bool o3;
   } __isset;
 
   uint32_t read(apache::thrift::protocol::TProtocol* iprot);
@@ -2792,9 +3036,15 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void send_append_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void recv_append_partition(Partition& _return);
+  void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name);
+  void send_append_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name);
+  void recv_append_partition_by_name(Partition& _return);
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData);
   void send_drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData);
   bool recv_drop_partition();
+  bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData);
+  void send_drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData);
+  bool recv_drop_partition_by_name();
   void get_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void send_get_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals);
   void recv_get_partition(Partition& _return);
@@ -2838,7 +3088,9 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
   void process_alter_table(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_add_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_append_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_append_partition_by_name(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_drop_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_drop_partition_by_name(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_partition_by_name(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_partitions(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
@@ -2866,7 +3118,9 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
     processMap_["alter_table"] = &ThriftHiveMetastoreProcessor::process_alter_table;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["append_partition"] = &ThriftHiveMetastoreProcessor::process_append_partition;
+    processMap_["append_partition_by_name"] = &ThriftHiveMetastoreProcessor::process_append_partition_by_name;
     processMap_["drop_partition"] = &ThriftHiveMetastoreProcessor::process_drop_partition;
+    processMap_["drop_partition_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_partition_by_name;
     processMap_["get_partition"] = &ThriftHiveMetastoreProcessor::process_get_partition;
     processMap_["get_partition_by_name"] = &ThriftHiveMetastoreProcessor::process_get_partition_by_name;
     processMap_["get_partitions"] = &ThriftHiveMetastoreProcessor::process_get_partitions;
@@ -3081,6 +3335,18 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
   }
 
+  void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->append_partition_by_name(_return, db_name, tbl_name, part_name);
+        return;
+      } else {
+        ifaces_[i]->append_partition_by_name(_return, db_name, tbl_name, part_name);
+      }
+    }
+  }
+
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
@@ -3088,6 +3354,17 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
         return ifaces_[i]->drop_partition(db_name, tbl_name, part_vals, deleteData);
       } else {
         ifaces_[i]->drop_partition(db_name, tbl_name, part_vals, deleteData);
+      }
+    }
+  }
+
+  bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        return ifaces_[i]->drop_partition_by_name(db_name, tbl_name, part_name, deleteData);
+      } else {
+        ifaces_[i]->drop_partition_by_name(db_name, tbl_name, part_name, deleteData);
       }
     }
   }

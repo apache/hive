@@ -549,4 +549,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_partition_by_name(db, tableName, partName);
   }
 
+  public Partition appendPartitionByName(String dbName, String tableName, String partName) 
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+    return client.append_partition_by_name(dbName, tableName, partName);
+  }
+  
+  public boolean dropPartitionByName(String dbName, String tableName, String partName, boolean deleteData) 
+      throws NoSuchObjectException, MetaException, TException {
+    return client.drop_partition_by_name(dbName, tableName, partName, deleteData);
+  }
 }

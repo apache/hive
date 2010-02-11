@@ -449,16 +449,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return false;
     }
 
-    public Partition append_partition(String dbName, String tableName,
+    private Partition append_partition_common(String dbName, String tableName,
         List<String> part_vals) throws InvalidObjectException,
         AlreadyExistsException, MetaException {
-      incrementCounter("append_partition");
-      logStartFunction("append_partition", dbName, tableName);
-      if (LOG.isDebugEnabled()) {
-        for (String part : part_vals) {
-          LOG.debug(part);
-        }
-      }
       Partition part = new Partition();
       boolean success = false, madeDir = false;
       Path partLocation = null;
@@ -512,6 +505,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return part;
+
+    }
+    
+    public Partition append_partition(String dbName, String tableName,
+        List<String> part_vals) throws InvalidObjectException,
+        AlreadyExistsException, MetaException {
+      incrementCounter("append_partition");
+      logStartFunction("append_partition", dbName, tableName);
+      if (LOG.isDebugEnabled()) {
+        for (String part : part_vals) {
+          LOG.debug(part);
+        }
+      }
+      return append_partition_common(dbName, tableName, part_vals);      
     }
 
     public int add_partitions(List<Partition> parts) throws MetaException,
@@ -599,12 +606,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return part;
     }
 
-    public boolean drop_partition(String db_name, String tbl_name,
-        List<String> part_vals, boolean deleteData)
-        throws NoSuchObjectException, MetaException, TException {
-      incrementCounter("drop_partition");
-      logStartFunction("drop_partition", db_name, tbl_name);
-      LOG.info("Partition values:" + part_vals);
+    private boolean drop_partition_common(String db_name, String tbl_name,
+        List<String> part_vals, boolean deleteData) throws MetaException, NoSuchObjectException {
       boolean success = false;
       Path partPath = null;
       Table tbl = null;
@@ -635,6 +638,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return true;
+    }
+    public boolean drop_partition(String db_name, String tbl_name,
+        List<String> part_vals, boolean deleteData)
+        throws NoSuchObjectException, MetaException, TException {
+      incrementCounter("drop_partition");
+      logStartFunction("drop_partition", db_name, tbl_name);
+      LOG.info("Partition values:" + part_vals);
+      
+      return drop_partition_common(db_name, tbl_name, part_vals, deleteData);
     }
 
     public Partition get_partition(String db_name, String tbl_name,
@@ -808,20 +820,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return toReturn;
     }
 
-    public Partition get_partition_by_name(String db_name, String tbl_name,
-        String part_name) throws MetaException, UnknownTableException, NoSuchObjectException, TException {
-      incrementCounter("get_partition_by_name");
-      logStartFunction("get_partition_by_name: db=" + db_name + " tbl_name="
-          + tbl_name + " part_name=" + part_name);
-     
+    private List<String> getPartValsFromName(String dbName, String tblName, 
+        String partName) throws MetaException, InvalidObjectException {
       // Unescape the partition name
-      LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(part_name);
+      LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(partName);
       
       // getPartition expects partition values in a list. use info from the
       // table to put the partition column values in order
-      Table t = getMS().getTable(db_name, tbl_name);
+      Table t = getMS().getTable(dbName, tblName);
       if (t == null) {
-        throw new UnknownTableException(db_name + "." + tbl_name
+        throw new InvalidObjectException(dbName + "." + tblName
             + " table not found");
       }
       
@@ -830,9 +838,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String key = field.getName();
         String val = hm.get(key);
         if(val == null) {
-          throw new NoSuchObjectException("incomplete partition name - missing " + key);
+          throw new InvalidObjectException("incomplete partition name - missing " + key);
         }
         partVals.add(val);
+      }
+      return partVals;
+    }
+    
+    public Partition get_partition_by_name(String db_name, String tbl_name,
+        String part_name) throws MetaException, NoSuchObjectException, TException {
+      incrementCounter("get_partition_by_name");
+      logStartFunction("get_partition_by_name: db=" + db_name + " tbl="
+          + tbl_name + " part=" + part_name);
+     
+      List<String> partVals = null;
+      try {
+        partVals = getPartValsFromName(db_name, tbl_name, part_name);
+      } catch (InvalidObjectException e) {
+        throw new NoSuchObjectException(e.getMessage());
       }
       Partition p = getMS().getPartition(db_name, tbl_name, partVals);
       
@@ -841,6 +864,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             + " partition (" + part_name + ") not found");
       }
       return p;
+    }
+
+    public Partition append_partition_by_name(String db_name, String tbl_name,
+        String part_name) throws InvalidObjectException, 
+        AlreadyExistsException, MetaException, TException {
+      incrementCounter("append_partition_by_name");
+      logStartFunction("append_partition_by_name: db=" + db_name + " tbl_name="
+          + tbl_name + " part_name=" + part_name);
+      List<String> partVals = getPartValsFromName(db_name, tbl_name, part_name);
+      
+      return append_partition_common(db_name, tbl_name, partVals);
+    }
+
+    @Override
+    public boolean drop_partition_by_name(String db_name, String tbl_name,
+        String part_name, boolean deleteData) throws NoSuchObjectException,
+        MetaException, TException {
+      incrementCounter("drop_partition_by_name");
+      logStartFunction("drop_partition_by_name: db=" + db_name + " tbl="
+          + tbl_name + " part_name=" + part_name);
+      
+      List<String> partVals = null;
+      try {
+        partVals = getPartValsFromName(db_name, tbl_name, part_name);
+      } catch (InvalidObjectException e) {
+        throw new NoSuchObjectException(e.getMessage());
+      }
+      
+      return getMS().dropPartition(db_name, tbl_name, partVals);
     }
   }
 
