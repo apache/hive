@@ -161,6 +161,9 @@ Trunk -  Unreleased
     HIVE-1140. Fix incorrect ambiguous column reference error message.
     (Paul Yang via zshao)
 
+    HIVE-1142. Fix datanucleus typos in conf/hive-default.xml.
+    (Paul Yang via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

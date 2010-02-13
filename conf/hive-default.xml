@@ -157,19 +157,19 @@
 </property>
 
 <property>
-  <name>datancucleus.transactionIsolation</name>
+  <name>datanucleus.transactionIsolation</name>
   <value>read-committed</value>
-  <description></description>
+  <description>Default transaction isolation level for identity generation. </description>
 </property>
 
 <property>
-  <name>datanuclues.cache.level2</name>
-  <value>true</value>
-  <description>use a level 2 cache. turn this off if metadata is changed independently of hive metastore server</description>
+  <name>datanucleus.cache.level2</name>
+  <value>false</value>
+  <description>Use a level 2 cache. Turn this off if metadata is changed independently of hive metastore server</description>
 </property>
 
 <property>
-  <name>datanuclues.cache.level2.type</name>
+  <name>datanucleus.cache.level2.type</name>
   <value>SOFT</value>
   <description>SOFT=soft reference based cache, WEAK=weak reference based cache.</description>
 </property>
