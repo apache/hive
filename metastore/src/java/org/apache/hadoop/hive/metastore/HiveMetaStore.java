@@ -870,8 +870,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         String part_name) throws InvalidObjectException, 
         AlreadyExistsException, MetaException, TException {
       incrementCounter("append_partition_by_name");
-      logStartFunction("append_partition_by_name: db=" + db_name + " tbl_name="
-          + tbl_name + " part_name=" + part_name);
+      logStartFunction("append_partition_by_name: db=" + db_name + " tbl="
+          + tbl_name + " part=" + part_name);
       List<String> partVals = getPartValsFromName(db_name, tbl_name, part_name);
       
       return append_partition_common(db_name, tbl_name, partVals);
@@ -883,7 +883,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaException, TException {
       incrementCounter("drop_partition_by_name");
       logStartFunction("drop_partition_by_name: db=" + db_name + " tbl="
-          + tbl_name + " part_name=" + part_name);
+          + tbl_name + " part=" + part_name);
       
       List<String> partVals = null;
       try {
@@ -892,7 +892,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new NoSuchObjectException(e.getMessage());
       }
       
-      return getMS().dropPartition(db_name, tbl_name, partVals);
+      return drop_partition_common(db_name, tbl_name, partVals, deleteData);
     }
   }
 

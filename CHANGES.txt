@@ -164,6 +164,8 @@ Trunk -  Unreleased
     HIVE-1142. Fix datanucleus typos in conf/hive-default.xml.
     (Paul Yang via zshao)
 
+    HIVE-1164. Fix drop_partition_by_name. (Paul Yang via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

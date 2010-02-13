@@ -171,6 +171,18 @@ public class TestHiveMetaStore extends TestCase {
       assertTrue(ret);
       assertFalse(fs.exists(partPath));
 
+      // Test append_partition_by_name
+      client.appendPartitionByName(dbName, tblName, partName);
+      Partition part4 = client.getPartition(dbName, tblName, part.getValues());
+      assertTrue("Append partition by name failed", part4.getValues().equals(vals));;
+      Path part4Path = new Path(part4.getSd().getLocation());
+      assertTrue(fs.exists(part4Path));
+      
+      // Test drop_partition_by_name
+      assertTrue("Drop partition by name failed", 
+          client.dropPartitionByName(dbName, tblName, partName, true));
+      assertFalse(fs.exists(part4Path));
+
       // add the partition again so that drop table with a partition can be
       // tested
       retp = client.add_partition(part);
@@ -190,15 +202,6 @@ public class TestHiveMetaStore extends TestCase {
       assertTrue(fs.exists(partPath));
       client.dropPartition(dbName, tblName, part.getValues(), true);
       assertTrue(fs.exists(partPath));
-      
-      // Test append_partition_by_name
-      client.appendPartitionByName(dbName, tblName, partName);
-      Partition part4 = client.getPartition(dbName, tblName, part.getValues());
-      assertTrue("Append partition by name failed", part4.getValues().equals(vals));;
-      
-      // Test drop_partition_by_name
-      assertTrue("Drop partition by name failed", 
-          client.dropPartitionByName(dbName, tblName, partName, false));
       
       ret = client.dropDatabase(dbName);
       assertTrue("Unable to create the databse " + dbName, ret);
