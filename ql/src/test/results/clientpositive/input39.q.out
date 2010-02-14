@@ -64,29 +64,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        t2 
-          TableScan
-            alias: t2
-            Filter Operator
-              predicate:
-                  expr: (((hash(rand(460476415)) & 2147483647) % 32) = 0)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (ds = '1')
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: ds
-                        type: string
         t1 
           TableScan
             alias: t1
@@ -107,6 +84,29 @@ STAGE PLANS:
                         expr: key
                         type: string
                   tag: 0
+                  value expressions:
+                        expr: ds
+                        type: string
+        t2 
+          TableScan
+            alias: t2
+            Filter Operator
+              predicate:
+                  expr: (((hash(rand(460476415)) & 2147483647) % 32) = 0)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '1')
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 1
                   value expressions:
                         expr: ds
                         type: string
@@ -140,7 +140,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/746143150/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-21-55_234_8836849389177124348/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -175,12 +175,12 @@ PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2@ds=1
 PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/140719442/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-21-55_400_7420820799771241077/10000
 POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2@ds=1
 POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/140719442/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-21-55_400_7420820799771241077/10000
 18
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE

@@ -100,12 +100,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1249230133/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-20_375_8739608897771687968/10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1249230133/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-20_375_8739608897771687968/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -689,21 +689,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
         src1 
           TableScan
             alias: src1
@@ -718,6 +703,21 @@ STAGE PLANS:
               tag: 0
               value expressions:
                     expr: key
+                    type: string
+        src2 
+          TableScan
+            alias: src2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -751,12 +751,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1169404066/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-28_099_8963486530334152093/10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1169404066/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-28_099_8963486530334152093/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1805,6 +1805,31 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key < 10)
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
         src2 
           TableScan
             alias: src2
@@ -1847,31 +1872,6 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1908,7 +1908,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1836147411/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_615_2133554865043548038/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1956,12 +1956,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/561269019/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_711_5635391210022763694/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/561269019/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_711_5635391210022763694/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2050,6 +2050,31 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Filter Operator
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key < 10)
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
         src2 
           TableScan
             alias: src2
@@ -2100,31 +2125,6 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
-        src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2161,7 +2161,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1889892039/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_526_7396170302427973294/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2209,12 +2209,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1597568732/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_626_1855366263501057105/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1597568732/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_626_1855366263501057105/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2420,12 +2420,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/302774741/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-58_663_5257751854137888714/10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/302774741/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-58_663_5257751854137888714/10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3010,18 +3010,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
         a 
           TableScan
             alias: a
@@ -3034,6 +3022,18 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 0
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -3059,7 +3059,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1375711979/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_552_3382271159548134599/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -3093,9 +3093,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991321663/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_618_4569452327751615405/10000
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/991321663/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_618_4569452327751615405/10000
 1028

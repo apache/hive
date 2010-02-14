@@ -57,21 +57,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        c 
-          TableScan
-            alias: c
-            Reduce Output Operator
-              key expressions:
-                    expr: (key + 1)
-                    type: double
-              sort order: +
-              Map-reduce partition columns:
-                    expr: (key + 1)
-                    type: double
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
         a 
           TableScan
             alias: a
@@ -88,6 +73,21 @@ STAGE PLANS:
                     expr: key
                     type: string
                     expr: val
+                    type: string
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: (key + 1)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: (key + 1)
+                    type: double
+              tag: 1
+              value expressions:
+                    expr: key
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -136,21 +136,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        c 
-          TableScan
-            alias: c
-            Reduce Output Operator
-              key expressions:
-                    expr: (key + 1)
-                    type: double
-              sort order: +
-              Map-reduce partition columns:
-                    expr: (key + 1)
-                    type: double
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
         a 
           TableScan
             alias: a
@@ -167,6 +152,21 @@ STAGE PLANS:
                     expr: key
                     type: string
                     expr: val
+                    type: string
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: (key + 1)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: (key + 1)
+                    type: double
+              tag: 0
+              value expressions:
+                    expr: key
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -203,13 +203,13 @@ SELECT a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1966956520/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-56_522_2427479678690495417/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1966956520/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-56_522_2427479678690495417/10000
 1	11	0
 1	11	0
 1	11	0
@@ -219,13 +219,13 @@ SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2092123428/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-01_499_4645186819885871483/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2092123428/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-01_499_4645186819885871483/10000
 1	11	0
 1	11	0
 1	11	0
@@ -252,21 +252,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
         a 
           TableScan
             alias: a
@@ -283,6 +268,21 @@ STAGE PLANS:
                     expr: key
                     type: string
                     expr: val
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -389,21 +389,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
         a 
           TableScan
             alias: a
@@ -420,6 +405,21 @@ STAGE PLANS:
                     expr: key
                     type: string
                     expr: val
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -512,7 +512,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1966669209/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-07_922_2294786151582488765/10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -521,7 +521,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1966669209/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-07_922_2294786151582488765/10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -534,7 +534,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2040128444/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-20_301_8638454003102682278/10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -543,7 +543,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2040128444/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-20_301_8638454003102682278/10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -571,6 +571,25 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
         b 
           TableScan
             alias: b
@@ -606,25 +625,6 @@ STAGE PLANS:
                     expr: val
                     type: string
               tag: 2
-              value expressions:
-                    expr: key
-                    type: string
-        a 
-          TableScan
-            alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: val
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: val
-                    type: string
-              tag: 0
               value expressions:
                     expr: key
                     type: string
@@ -683,6 +683,25 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+                    expr: val
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
         b 
           TableScan
             alias: b
@@ -718,25 +737,6 @@ STAGE PLANS:
                     expr: val
                     type: string
               tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-        a 
-          TableScan
-            alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: val
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: val
-                    type: string
-              tag: 0
               value expressions:
                     expr: key
                     type: string
@@ -781,7 +781,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/685649783/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-31_833_1632343405751503469/10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -791,7 +791,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/685649783/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-31_833_1632343405751503469/10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -812,7 +812,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1834964794/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-38_626_3188343531104185080/10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -822,7 +822,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1834964794/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-38_626_3188343531104185080/10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL

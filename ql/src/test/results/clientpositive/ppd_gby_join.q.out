@@ -30,34 +30,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2:src 
-          TableScan
-            alias: src
-            Filter Operator
-              predicate:
-                  expr: ((key > '2') and (key <> '4'))
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > '2')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 1
-                    value expressions:
-                          expr: _col0
-                          type: string
         src1:src 
           TableScan
             alias: src
@@ -94,6 +66,34 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+        src2:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: ((key > '2') and (key <> '4'))
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key > '2')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 1
+                    value expressions:
+                          expr: _col0
+                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -131,7 +131,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1369857917/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-33_117_3293352701491643084/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

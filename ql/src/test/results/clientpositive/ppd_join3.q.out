@@ -33,38 +33,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2:src 
-          TableScan
-            alias: src
-            Filter Operator
-              predicate:
-                  expr: ((key <> '12') and (key <> '4'))
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key <> '12')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
         src1:src 
           TableScan
             alias: src
@@ -101,6 +69,38 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+        src2:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: ((key <> '12') and (key <> '4'))
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key <> '12')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
         src3:src 
           TableScan
             alias: src
@@ -175,7 +175,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/543319193/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-18-31_804_5890089031375913660/10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
@@ -188,7 +188,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/543319193/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-18-31_804_5890089031375913660/10000
 100	val_100
 100	val_100
 100	val_100

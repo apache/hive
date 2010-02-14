@@ -27,23 +27,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         a 
           TableScan
             alias: a
@@ -56,6 +39,23 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
               value expressions:
                     expr: key
                     type: string
@@ -106,7 +106,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/794158250/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-18-58_300_1623871517298833290/10000
 POSTHOOK: query: FROM 
   src a
  FULL OUTER JOIN 
@@ -116,7 +116,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/794158250/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-18-58_300_1623871517298833290/10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

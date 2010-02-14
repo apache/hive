@@ -166,6 +166,10 @@ Trunk -  Unreleased
 
     HIVE-1164. Fix drop_partition_by_name. (Paul Yang via zshao)
 
+    HIVE-1167. Use TreeMap instead of Property to make explain extended
+    deterministic
+    (Zheng Shao via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

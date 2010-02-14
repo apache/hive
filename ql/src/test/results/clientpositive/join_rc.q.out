@@ -51,21 +51,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        join_rc2 
-          TableScan
-            alias: join_rc2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
         join_rc1 
           TableScan
             alias: join_rc1
@@ -80,6 +65,21 @@ STAGE PLANS:
               tag: 0
               value expressions:
                     expr: key
+                    type: string
+        join_rc2 
+          TableScan
+            alias: join_rc2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -114,13 +114,13 @@ FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_rc2
 PREHOOK: Input: default@join_rc1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1138840055/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-47_640_1441550174396831657/10000
 POSTHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_rc2
 POSTHOOK: Input: default@join_rc1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1138840055/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-47_640_1441550174396831657/10000
 0	val_0
 0	val_0
 0	val_0

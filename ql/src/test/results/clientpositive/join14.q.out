@@ -22,29 +22,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        srcpart 
-          TableScan
-            alias: srcpart
-            Filter Operator
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (ds = '2008-04-08')
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: value
-                        type: string
         src 
           TableScan
             alias: src
@@ -67,6 +44,29 @@ STAGE PLANS:
                   tag: 0
                   value expressions:
                         expr: key
+                        type: string
+        srcpart 
+          TableScan
+            alias: srcpart
+            Filter Operator
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: value
                         type: string
       Reduce Operator Tree:
         Join Operator
@@ -128,11 +128,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: select dest1.* from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1542443503/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-24-57_029_61831322772510839/10000
 POSTHOOK: query: select dest1.* from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1542443503/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-24-57_029_61831322772510839/10000
 103	val_103
 103	val_103
 103	val_103

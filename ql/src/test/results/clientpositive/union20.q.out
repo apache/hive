@@ -80,38 +80,6 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/147338598/10002 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/147338598/10003 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
         $INTNAME 
             Reduce Output Operator
               key expressions:
@@ -122,6 +90,38 @@ STAGE PLANS:
                     expr: _col0
                     type: string
               tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10002 
+          Union
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10003 
+          Union
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 1
               value expressions:
                     expr: _col0
                     type: string
@@ -213,7 +213,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/147338598/10004 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10004 
           Union
             File Output Operator
               compressed: false
@@ -221,7 +221,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/147338598/10006 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10006 
           Union
             File Output Operator
               compressed: false
@@ -286,7 +286,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/882907634/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_925_5957838146435122575/10000
 POSTHOOK: query: SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
@@ -298,7 +298,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/882907634/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_925_5957838146435122575/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

@@ -53,18 +53,6 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
         a 
           TableScan
             alias: a
@@ -82,6 +70,18 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -246,11 +246,11 @@ POSTHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/775375392/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_902_6905591894666460215/10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/775375392/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_902_6905591894666460215/10000
 0	val_0
 0	val_0
 0	val_0
@@ -402,11 +402,11 @@ POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/106849464/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_936_9202557721170644347/10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/106849464/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_936_9202557721170644347/10000
 100	val_100
 100	val_100
 100	val_100
@@ -621,11 +621,11 @@ POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1706731089/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_968_153693361750093127/10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1706731089/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_968_153693361750093127/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

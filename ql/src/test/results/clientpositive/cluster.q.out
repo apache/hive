@@ -64,11 +64,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/666819916/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-30_987_946002006407811313/10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/666819916/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-30_987_946002006407811313/10000
 10	val_10
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -136,11 +136,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/437686258/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-36_798_7722926056682905425/10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/437686258/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-36_798_7722926056682905425/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -208,11 +208,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/479850350/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-43_717_6012279607867421749/10000
 POSTHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/479850350/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-43_717_6012279607867421749/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -280,11 +280,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/261160281/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-49_882_6526844180884182893/10000
 POSTHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/261160281/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-49_882_6526844180884182893/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -352,11 +352,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/327824513/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-54_276_5516587198210822350/10000
 POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/327824513/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-54_276_5516587198210822350/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -424,11 +424,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/714056259/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-59_582_505878830166802854/10000
 POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/714056259/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-17-59_582_505878830166802854/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -496,11 +496,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/407934629/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-04_613_2939682790554351791/10000
 POSTHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/407934629/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-04_613_2939682790554351791/10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -571,11 +571,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1402413625/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-10_209_6387108226324326472/10000
 POSTHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1402413625/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-10_209_6387108226324326472/10000
 20	val_20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -595,21 +595,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        y 
-          TableScan
-            alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
         x 
           TableScan
             alias: x
@@ -631,6 +616,21 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+        y 
+          TableScan
+            alias: y
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -663,7 +663,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1916601962/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-16_334_2245182201779291081/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -697,11 +697,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/700452873/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-16_594_5072146069194835371/10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/700452873/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-16_594_5072146069194835371/10000
 20	val_20	20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -721,23 +721,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        y 
-          TableScan
-            alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         x 
           TableScan
             alias: x
@@ -759,6 +742,23 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+        y 
+          TableScan
+            alias: y
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -793,7 +793,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2139418033/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-27_948_1334626995431478594/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -829,11 +829,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1827492210/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-28_074_5978892602968822143/10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1827492210/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-28_074_5978892602968822143/10000
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -853,23 +853,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        y 
-          TableScan
-            alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         x 
           TableScan
             alias: x
@@ -891,6 +874,23 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+        y 
+          TableScan
+            alias: y
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -925,7 +925,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1673626041/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-38_372_3122728094689915036/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -961,11 +961,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1237573825/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-38_466_4207748081161799368/10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1237573825/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-38_466_4207748081161799368/10000
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -985,21 +985,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        y 
-          TableScan
-            alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
         x 
           TableScan
             alias: x
@@ -1021,6 +1006,21 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+        y 
+          TableScan
+            alias: y
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1053,7 +1053,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1226988138/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-47_950_4989736117672479003/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1087,11 +1087,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/302591922/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-48_073_5743203719731796760/10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/302591922/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-48_073_5743203719731796760/10000
 20	val_20	20
 PREHOOK: query: EXPLAIN
 SELECT unioninput.*
@@ -1225,7 +1225,7 @@ FROM (
 CLUSTER BY unioninput.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/205488295/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-57_574_7730562904986793585/10000
 POSTHOOK: query: SELECT unioninput.*
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -1235,7 +1235,7 @@ FROM (
 CLUSTER BY unioninput.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/205488295/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-18-57_574_7730562904986793585/10000
 0	val_0
 0	val_0
 0	val_0

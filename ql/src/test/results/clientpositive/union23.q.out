@@ -27,37 +27,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery2:s-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
         null-subquery1:s-subquery1:src 
           TableScan
             alias: src
@@ -94,6 +63,37 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+        null-subquery2:s-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    sort order: ++
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -117,7 +117,7 @@ from (
 order by s.key2, s.value2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1377718694/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-40_928_3838457318369252981/10000
 POSTHOOK: query: select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
@@ -127,7 +127,7 @@ from (
 order by s.key2, s.value2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1377718694/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-40_928_3838457318369252981/10000
 0	val_0
 0	val_0
 0	val_0

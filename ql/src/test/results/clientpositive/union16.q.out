@@ -73,414 +73,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery2:src-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery2:src-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src 
           TableScan
             alias: src
@@ -505,7 +97,7 @@ STAGE PLANS:
                       value expressions:
                             expr: _col0
                             type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
           TableScan
             alias: src
             Select Operator
@@ -529,7 +121,7 @@ STAGE PLANS:
                       value expressions:
                             expr: _col0
                             type: bigint
-        null-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery2:src 
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
           TableScan
             alias: src
             Select Operator
@@ -601,7 +193,103 @@ STAGE PLANS:
                       value expressions:
                             expr: _col0
                             type: bigint
-        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
           TableScan
             alias: src
             Select Operator
@@ -649,7 +337,319 @@ STAGE PLANS:
                       value expressions:
                             expr: _col0
                             type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery1-subquery2:src-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
+        null-subquery2:src-subquery2:src 
           TableScan
             alias: src
             Select Operator
@@ -729,7 +729,7 @@ PREHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src) src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2070296923/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-45-27_565_1168288157971579592/10000
 POSTHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL
@@ -762,5 +762,5 @@ POSTHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src) src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2070296923/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-45-27_565_1168288157971579592/10000
 12500

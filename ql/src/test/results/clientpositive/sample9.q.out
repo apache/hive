@@ -47,53 +47,53 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
-                      directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/276265290/10001
+                      directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_719_4292341676089982864/10001
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           properties:
                             columns _col0,_col1
-                            serialization.format 1
                             columns.types int:string
+                            serialization.format 1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s:a]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s:a]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
           Partition
             base file name: srcbucket0.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              name srcbucket
-              columns.types int:string
-              bucket_field_name key
-              serialization.ddl struct srcbucket { i32 key, string value}
-              columns key,value
-              serialization.format 1
               bucket_count 2
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              bucket_field_name key
+              columns key,value
+              columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262137551
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket
+              name srcbucket
+              serialization.ddl struct srcbucket { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042876
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name srcbucket
-                columns.types int:string
-                bucket_field_name key
-                serialization.ddl struct srcbucket { i32 key, string value}
-                columns key,value
-                serialization.format 1
                 bucket_count 2
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                bucket_field_name key
+                columns key,value
+                columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262137551
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket
+                name srcbucket
+                serialization.ddl struct srcbucket { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042876
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -107,12 +107,12 @@ PREHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1954715033/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_768_5670830109541358579/10000
 POSTHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1954715033/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_768_5670830109541358579/10000
 474	val_475
 62	val_63
 468	val_469

@@ -27,6 +27,26 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        src1:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: _col0
+                      type: string
         src2:src 
           TableScan
             alias: src
@@ -57,26 +77,6 @@ STAGE PLANS:
                     value expressions:
                           expr: _col1
                           type: string
-        src1:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              outputColumnNames: _col0
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: _col0
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: _col0
-                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

@@ -33,51 +33,51 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1281920331/10001
+                  directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-35-08_059_3516688999660848477/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
                         columns _col0,_col1
-                        serialization.format 1
                         columns.types string:string
+                        serialization.format 1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [src]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              name src
-              columns.types string:string
-              serialization.ddl struct src { string key, string value}
-              serialization.format 1
-              columns key,value
               bucket_count -1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              columns key,value
+              columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
-              transient_lastDdlTime 1262137321
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/test/data/warehouse/src
+              name src
+              serialization.ddl struct src { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042907
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name src
-                columns.types string:string
-                serialization.ddl struct src { string key, string value}
-                serialization.format 1
-                columns key,value
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value
+                columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1262137321
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/test/data/warehouse/src
+                name src
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042907
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -90,11 +90,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1343937738/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-35-08_099_7501446808782656360/10000
 POSTHOOK: query: select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1343937738/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-35-08_099_7501446808782656360/10000
 409	val_409
 429	val_429
 209	val_209

@@ -113,27 +113,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
         a 
           TableScan
             alias: a
@@ -150,6 +129,27 @@ STAGE PLANS:
                     expr: value
                     type: string
               tag: 0
+              value expressions:
+                    expr: ds
+                    type: string
+                    expr: hr
+                    type: string
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              tag: 1
               value expressions:
                     expr: ds
                     type: string
@@ -209,31 +209,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: hr
-                    type: string
-                    expr: ds
-                    type: string
-              sort order: +++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: hr
-                    type: string
-                    expr: ds
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
         a 
           TableScan
             alias: a
@@ -262,6 +237,31 @@ STAGE PLANS:
                         expr: ds
                         type: string
                   tag: 0
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+                    expr: hr
+                    type: string
+                    expr: ds
+                    type: string
+              sort order: +++
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+                    expr: hr
+                    type: string
+                    expr: ds
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: ds
+                    type: string
+                    expr: hr
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -288,7 +288,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/832608785/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-36-24_399_2804249481999873947/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -324,7 +324,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1495752848/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-36-24_582_4644469832031285008/10000
 POSTHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
@@ -333,7 +333,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1495752848/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-36-24_582_4644469832031285008/10000
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -526,14 +526,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/316243993/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-36-36_271_5109114395556786366/10000
 POSTHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/316243993/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-36-36_271_5109114395556786366/10000
 0	val_0
 0	val_0
 0	val_0

@@ -36,31 +36,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        b 
-          TableScan
-            alias: b
-            Filter Operator
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
         a 
           TableScan
             alias: a
@@ -77,6 +52,31 @@ STAGE PLANS:
                       expr: key
                       type: string
                 tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+        b 
+          TableScan
+            alias: b
+            Filter Operator
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
                 value expressions:
                       expr: key
                       type: string
@@ -128,7 +128,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/438623182/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-31-56_689_3254720341447490427/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -194,7 +194,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2137110555/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-31-56_869_4629499201500113908/10000
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -209,7 +209,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2137110555/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-31-56_869_4629499201500113908/10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

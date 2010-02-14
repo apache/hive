@@ -22,21 +22,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
         src1 
           TableScan
             alias: src1
@@ -51,6 +36,21 @@ STAGE PLANS:
               tag: 0
               value expressions:
                     expr: key
+                    type: string
+        src2 
+          TableScan
+            alias: src2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -108,11 +108,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: SELECT dest_j1.* FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/1811838516/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-17-40_804_3249986716900995170/10000
 POSTHOOK: query: SELECT dest_j1.* FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_3/build/ql/tmp/1811838516/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_3/build/ql/scratchdir/hive_2010-02-12_22-17-40_804_3249986716900995170/10000
 0	val_0
 0	val_0
 0	val_0

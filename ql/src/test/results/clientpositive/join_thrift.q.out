@@ -31,21 +31,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        s2 
-          TableScan
-            alias: s2
-            Reduce Output Operator
-              key expressions:
-                    expr: aint
-                    type: int
-              sort order: +
-              Map-reduce partition columns:
-                    expr: aint
-                    type: int
-              tag: 1
-              value expressions:
-                    expr: lintstring
-                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
         s1 
           TableScan
             alias: s1
@@ -61,6 +46,21 @@ STAGE PLANS:
               value expressions:
                     expr: aint
                     type: int
+        s2 
+          TableScan
+            alias: s2
+            Reduce Output Operator
+              key expressions:
+                    expr: aint
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: aint
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: lintstring
+                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -95,14 +95,14 @@ JOIN src_thrift s2
 ON s1.aint = s2.aint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1362622837/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-28-28_139_5468299142078849499/10000
 POSTHOOK: query: SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1362622837/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-28-28_139_5468299142078849499/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

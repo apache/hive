@@ -84,21 +84,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2 
-          TableScan
-            alias: src2
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: value
-                    type: string
         src1 
           TableScan
             alias: src1
@@ -113,6 +98,21 @@ STAGE PLANS:
               tag: 0
               value expressions:
                     expr: key
+                    type: string
+        src2 
+          TableScan
+            alias: src2
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -254,11 +254,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2065986997/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-39-57_324_3071297753179667524/10000
 POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2065986997/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-39-57_324_3071297753179667524/10000
 278697	101852390308
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
@@ -283,9 +283,9 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        d 
+        a 
           TableScan
-            alias: d
+            alias: a
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -294,7 +294,7 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
-              tag: 0
+              tag: 3
               value expressions:
                     expr: key
                     type: string
@@ -334,9 +334,9 @@ STAGE PLANS:
                     type: string
                     expr: val
                     type: string
-        a 
+        d 
           TableScan
-            alias: a
+            alias: d
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -345,7 +345,7 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
-              tag: 3
+              tag: 0
               value expressions:
                     expr: key
                     type: string
@@ -404,7 +404,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1684194842/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-18_526_8099848720278828714/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -414,7 +414,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1684194842/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-18_526_8099848720278828714/10000
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
@@ -439,9 +439,9 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        d 
+        a 
           TableScan
-            alias: d
+            alias: a
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -450,7 +450,7 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
-              tag: 0
+              tag: 3
               value expressions:
                     expr: key
                     type: string
@@ -490,9 +490,9 @@ STAGE PLANS:
                     type: string
                     expr: val
                     type: string
-        a 
+        d 
           TableScan
-            alias: a
+            alias: d
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -501,7 +501,7 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
-              tag: 3
+              tag: 0
               value expressions:
                     expr: key
                     type: string
@@ -560,7 +560,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1949681608/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-23_734_4785359328736541630/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -570,7 +570,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1949681608/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-23_734_4785359328736541630/10000
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
@@ -588,21 +588,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        c 
-          TableScan
-            alias: c
-            Reduce Output Operator
-              key expressions:
-                    expr: (key + 1)
-                    type: double
-              sort order: +
-              Map-reduce partition columns:
-                    expr: (key + 1)
-                    type: double
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
         a 
           TableScan
             alias: a
@@ -619,6 +604,21 @@ STAGE PLANS:
                     expr: key
                     type: string
                     expr: val
+                    type: string
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: (key + 1)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: (key + 1)
+                    type: double
+              tag: 0
+              value expressions:
+                    expr: key
                     type: string
       Reduce Operator Tree:
         Join Operator
@@ -656,7 +656,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1895945248/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-29_021_8708656238087823514/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -701,12 +701,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/893344305/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-29_087_1046879883912334112/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/893344305/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-29_087_1046879883912334112/10000
 198	6274	194
 PREHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
@@ -890,7 +890,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/441875243/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-37_328_8353462754003839474/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -934,7 +934,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/586096055/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-37_530_5490496591134819475/10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -943,7 +943,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/586096055/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-40-37_530_5490496591134819475/10000
 44481300	101852390308
 PREHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
@@ -1137,7 +1137,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/964239922/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-06_875_657056406676769744/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1181,7 +1181,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1241392623/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-07_486_5787001889489498724/10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -1190,7 +1190,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1241392623/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-07_486_5787001889489498724/10000
 NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT sum(hash(src1.c1)), sum(hash(src2.c4)) 
@@ -1229,28 +1229,6 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: _col0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: _col1
-                      type: string
         src1:src 
           TableScan
             alias: src
@@ -1279,6 +1257,28 @@ STAGE PLANS:
                     value expressions:
                           expr: _col0
                           type: string
+        src2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: _col1
+                      type: string
         src3:src 
           TableScan
             alias: src
@@ -1464,7 +1464,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1281773/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-43_139_341726508136962928/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1633,7 +1633,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/516996581/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-43_572_1869488555235237678/10000
 POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -1645,7 +1645,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/516996581/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-42-43_572_1869488555235237678/10000
 293143	-136853010385
 PREHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
@@ -1718,7 +1718,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/989529143/10002 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-25_195_82127211186947204/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1778,111 +1778,111 @@ STAGE PLANS:
 PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/58672900/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-25_264_8428740047419886929/10000
 POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/58672900/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-25_264_8428740047419886929/10000
 372	6320
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/192419159/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-32_938_2032638800596167830/10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/192419159/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-32_938_2032638800596167830/10000
 NULL	NULL
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1888200353/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-40_641_1825449334973878743/10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1888200353/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-40_641_1825449334973878743/10000
 429	12643
 PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1407196965/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-48_833_5293250651977115318/10000
 POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1407196965/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-43-48_833_5293250651977115318/10000
 429	12643
 PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1011357453/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-01_591_1464928610432503675/10000
 POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1011357453/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-01_591_1464928610432503675/10000
 8
 PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1527156553/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-13_585_7159832475045196069/10000
 POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1527156553/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-13_585_7159832475045196069/10000
 317	9462	50
 PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1123650104/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-22_759_9104803007678785533/10000
 POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1123650104/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-22_759_9104803007678785533/10000
 51	1570	318
 PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1562579732/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-30_661_1739397497215155845/10000
 POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/1562579732/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-30_661_1739397497215155845/10000
 317	9462	318
 PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2068857809/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-38_409_1485725015115349891/10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2068857809/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-38_409_1485725015115349891/10000
 370	11003	377
 PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/976567437/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-47_406_6458878623944968772/10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/976567437/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-44-47_406_6458878623944968772/10000
 370	11003	377
 PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2069296293/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-45-06_018_2671345290627071148/10000
 POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/build/ql/tmp/2069296293/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-45-06_018_2671345290627071148/10000
 372	6320
 PREHOOK: query: DROP TABLE dest_j1
 PREHOOK: type: DROPTABLE

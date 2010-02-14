@@ -43,12 +43,47 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery1-subquery2:union_output-subquery1-subquery2:src_thrift 
+        null-subquery1-subquery1-subquery1-subquery1:union_output-subquery1-subquery1-subquery1-subquery1:src 
           TableScan
-            alias: src_thrift
+            alias: src
             Select Operator
               expressions:
-                    expr: astring
+                    expr: '1'
+                    type: string
+              outputColumnNames: _col0
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                  outputColumnNames: _col0
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    keys:
+                          expr: _col0
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+        null-subquery1-subquery1-subquery1-subquery2:union_output-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: reverse(key)
                     type: string
               outputColumnNames: _col0
               Union
@@ -113,12 +148,12 @@ STAGE PLANS:
                       value expressions:
                             expr: _col1
                             type: bigint
-        null-subquery1-subquery1-subquery1-subquery1:union_output-subquery1-subquery1-subquery1-subquery1:src 
+        null-subquery1-subquery2:union_output-subquery1-subquery2:src_thrift 
           TableScan
-            alias: src
+            alias: src_thrift
             Select Operator
               expressions:
-                    expr: '1'
+                    expr: astring
                     type: string
               outputColumnNames: _col0
               Union
@@ -154,41 +189,6 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: lstring[0]
-                    type: string
-              outputColumnNames: _col0
-              Union
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    keys:
-                          expr: _col0
-                          type: string
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: -1
-                      value expressions:
-                            expr: _col1
-                            type: bigint
-        null-subquery1-subquery1-subquery1-subquery2:union_output-subquery1-subquery1-subquery1-subquery2:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: reverse(key)
                     type: string
               outputColumnNames: _col0
               Union
@@ -263,7 +263,7 @@ GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/507855090/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-50-40_879_1035612367995200636/10000
 POSTHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -280,7 +280,7 @@ GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/507855090/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-50-40_879_1035612367995200636/10000
 NULL	2
 0	7
 001	2

@@ -69,22 +69,22 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004
+                    directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          name dest1
-                          columns.types int:string:string:string
-                          serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
-                          serialization.format 1
-                          columns key,value,hr,ds
                           bucket_count -1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          columns key,value,hr,ds
+                          columns.types int:string:string:string
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest1
-                          transient_lastDdlTime 1263594987
+                          location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest1
+                          name dest1
+                          serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          transient_lastDdlTime 1266042178
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
             Filter Operator
@@ -117,30 +117,30 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 2
-                    directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005
+                    directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          name dest2
-                          columns.types int:string:string:string
-                          serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
-                          serialization.format 1
-                          columns key,value,hr,ds
                           bucket_count -1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          columns key,value,hr,ds
+                          columns.types int:string:string:string
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest2
-                          transient_lastDdlTime 1263594987
+                          location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest2
+                          name dest2
+                          serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          transient_lastDdlTime 1266042178
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest2
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [srcpart]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [srcpart]
       Path -> Partition:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -149,39 +149,39 @@ STAGE PLANS:
               ds 2008-04-08
               hr 12
             properties:
-              name srcpart
-              columns.types string:string
-              serialization.ddl struct srcpart { string key, string value}
-              serialization.format 1
-              columns key,value
-              partition_columns ds/hr
               bucket_count -1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              columns key,value
+              columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart
-              transient_lastDdlTime 1263594985
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart
+              name srcpart
+              partition_columns ds/hr
+              serialization.ddl struct srcpart { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042176
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name srcpart
-                columns.types string:string
-                serialization.ddl struct srcpart { string key, string value}
-                serialization.format 1
-                columns key,value
-                partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value
+                columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1263594985
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart
+                name srcpart
+                partition_columns ds/hr
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042176
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -190,35 +190,35 @@ STAGE PLANS:
               ds 2008-04-09
               hr 12
             properties:
-              name srcpart
-              columns.types string:string
-              serialization.ddl struct srcpart { string key, string value}
-              serialization.format 1
-              columns key,value
-              partition_columns ds/hr
               bucket_count -1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              columns key,value
+              columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart
-              transient_lastDdlTime 1263594985
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart
+              name srcpart
+              partition_columns ds/hr
+              serialization.ddl struct srcpart { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042176
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name srcpart
-                columns.types string:string
-                serialization.ddl struct srcpart { string key, string value}
-                serialization.format 1
-                columns key,value
-                partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value
+                columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1263594985
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcpart
+                name srcpart
+                partition_columns ds/hr
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042176
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -230,37 +230,37 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10000
+          source: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004
+          destination: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10000
+          source: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name dest1
-                columns.types int:string:string:string
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
-                serialization.format 1
-                columns key,value,hr,ds
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value,hr,ds
+                columns.types int:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest1
-                transient_lastDdlTime 1263594987
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest1
+                name dest1
+                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042178
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
-          tmp directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10001
+          tmp directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10001
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -278,41 +278,41 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004 [file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004 [file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004]
       Path -> Partition:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10004 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10004 
           Partition
             base file name: 10004
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              name dest1
-              columns.types int:string:string:string
-              serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
-              serialization.format 1
-              columns key,value,hr,ds
               bucket_count -1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              columns key,value,hr,ds
+              columns.types int:string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest1
-              transient_lastDdlTime 1263594987
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest1
+              name dest1
+              serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042178
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name dest1
-                columns.types int:string:string:string
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
-                serialization.format 1
-                columns key,value,hr,ds
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value,hr,ds
+                columns.types int:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest1
-                transient_lastDdlTime 1263594987
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest1
+                name dest1
+                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042178
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
             name: dest1
@@ -321,22 +321,22 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10000
+            directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10000
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
-                  name dest1
+                  bucket_count -1
+                  columns key,value,hr,ds
                   columns.types int:string:string:string
+                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest1
+                  name dest1
                   serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
                   serialization.format 1
-                  columns key,value,hr,ds
-                  bucket_count -1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                  location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest1
-                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  transient_lastDdlTime 1263594987
+                  transient_lastDdlTime 1266042178
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
@@ -347,37 +347,37 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10002
+          source: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005
+          destination: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10002
 
   Stage: Stage-1
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10002
+          source: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10002
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name dest2
-                columns.types int:string:string:string
-                serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
-                serialization.format 1
-                columns key,value,hr,ds
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value,hr,ds
+                columns.types int:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest2
-                transient_lastDdlTime 1263594987
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest2
+                name dest2
+                serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042178
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
-          tmp directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10003
+          tmp directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10003
 
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -395,41 +395,41 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005 [file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005]
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005 [file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005]
       Path -> Partition:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/107755536/10005 
+        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10005 
           Partition
             base file name: 10005
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              name dest2
-              columns.types int:string:string:string
-              serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
-              serialization.format 1
-              columns key,value,hr,ds
               bucket_count -1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              columns key,value,hr,ds
+              columns.types int:string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest2
-              transient_lastDdlTime 1263594987
+              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest2
+              name dest2
+              serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1266042178
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                name dest2
-                columns.types int:string:string:string
-                serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
-                serialization.format 1
-                columns key,value,hr,ds
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                columns key,value,hr,ds
+                columns.types int:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest2
-                transient_lastDdlTime 1263594987
+                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest2
+                name dest2
+                serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1266042178
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
             name: dest2
@@ -438,22 +438,22 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1001617674/10002
+            directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-22-58_160_3290303906361814910/10002
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
-                  name dest2
+                  bucket_count -1
+                  columns key,value,hr,ds
                   columns.types int:string:string:string
+                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/dest2
+                  name dest2
                   serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
                   serialization.format 1
-                  columns key,value,hr,ds
-                  bucket_count -1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                  location file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/test/data/warehouse/dest2
-                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  transient_lastDdlTime 1263594987
+                  transient_lastDdlTime 1266042178
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest2
 
@@ -477,11 +477,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: SELECT dest1.* FROM dest1 sort by key,value,ds,hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1922156340/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-23-14_844_814948034581628114/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1 sort by key,value,ds,hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1922156340/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-23-14_844_814948034581628114/10000
 0	val_0	12	2008-04-08
 0	val_0	12	2008-04-08
 0	val_0	12	2008-04-08
@@ -569,11 +569,11 @@ POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/
 PREHOOK: query: SELECT dest2.* FROM dest2 sort by key,value,ds,hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1870373570/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-23-19_982_419302536607069375/10000
 POSTHOOK: query: SELECT dest2.* FROM dest2 sort by key,value,ds,hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1870373570/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-23-19_982_419302536607069375/10000
 0	val_0	12	2008-04-09
 0	val_0	12	2008-04-09
 0	val_0	12	2008-04-09

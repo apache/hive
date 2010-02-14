@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
@@ -88,7 +89,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       boolean extended, int indent) throws Exception {
 
     boolean first_el = true;
-    for (Entry<?, ?> ent : mp.entrySet()) {
+    TreeMap<Object, Object> tree = new TreeMap<Object, Object>();
+    tree.putAll(mp);
+    for (Entry<?, ?> ent : tree.entrySet()) {
       if (first_el) {
         out.println(header);
       }
