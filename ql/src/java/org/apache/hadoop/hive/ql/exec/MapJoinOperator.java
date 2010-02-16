@@ -282,7 +282,8 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
 
         boolean needNewKey = true;
         if (o == null) {
-          res = getRowContainer(hconf, (byte) tag, order[tag], joinCacheSize);
+          int bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+          res = getRowContainer(hconf, (byte) tag, order[tag], bucketSize);
           res.add(value);
         } else {
           res = o.getObj();
@@ -319,6 +320,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
           MapJoinObjectKey keyObj = new MapJoinObjectKey(metadataKeyTag, key);
           MapJoinObjectValue valueObj = new MapJoinObjectValue(
               metadataValueTag[tag], res);
+          valueObj.setConf(hconf);
           valueObj.setConf(hconf);
           // This may potentially increase the size of the hashmap on the mapper
           if (res.size() > mapJoinRowsKey) {

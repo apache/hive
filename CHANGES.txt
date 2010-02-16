@@ -78,6 +78,9 @@ Trunk -  Unreleased
     HIVE-1122. Make ql/metadata/Table and Partition serializable
     (Zheng Shao via He Yongqiang)
 
+    HIVE-1158. Introducing a new parameter for Map-side join bucket size.
+    (Ning Zhang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

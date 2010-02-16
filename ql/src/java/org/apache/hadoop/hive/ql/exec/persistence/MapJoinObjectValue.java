@@ -25,6 +25,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -41,8 +42,10 @@ public class MapJoinObjectValue implements Externalizable {
   protected transient int metadataTag;
   protected transient RowContainer obj;
   protected transient Configuration conf;
+  protected int bucketSize; // bucket size for RowContainer
 
   public MapJoinObjectValue() {
+    bucketSize = 100; // default bucket size
   }
 
   /**
@@ -87,8 +90,7 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(
           Integer.valueOf(metadataTag));
       int sz = in.readInt();
-
-      RowContainer res = new RowContainer(ctx.getConf());
+      RowContainer res = new RowContainer(bucketSize, ctx.getConf());
       res.setSerDe(ctx.getSerDe(), ctx.getStandardOI());
       res.setTableDesc(ctx.getTblDesc());
       for (int pos = 0; pos < sz; pos++) {
@@ -165,6 +167,7 @@ public class MapJoinObjectValue implements Externalizable {
 
   public void setConf(Configuration conf) {
     this.conf = conf;
+    bucketSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
   }
 
 }

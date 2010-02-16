@@ -268,6 +268,18 @@
 </property>
 
 <property>
+  <name>hive.join.cache.size</name>
+  <value>25000</value>
+  <description>How many rows in the joining tables (except the streaming table) should be cached in memory. </description>
+</property>
+
+<property>
+  <name>hive.mapjoin.bucket.cache.size</name>
+  <value>100</value>
+  <description>How many values in each keys in the map-joined table should be cached in memory. </description>
+</property>
+
+<property>
   <name>hive.mapjoin.maxsize</name>
   <value>100000</value>
   <description>Maximum # of rows of the small table that can be handled by map-side join. If the size is reached and hive.task.progress is set, a fatal error counter is set and the job will be killed.</description>
