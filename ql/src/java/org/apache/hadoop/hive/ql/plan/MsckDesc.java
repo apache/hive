@@ -16,9 +16,15 @@ public class MsckDesc extends DDLWork implements Serializable {
 
   private String tableName;
   private ArrayList<LinkedHashMap<String, String>> partSpecs;
-  private Path resFile;
+  private String resFile;
   private boolean repairPartitions;
 
+  /**
+   * For serialization use only.
+   */
+  public MsckDesc() {
+  }
+  
   /**
    * Description of a msck command.
    * 
@@ -39,7 +45,7 @@ public class MsckDesc extends DDLWork implements Serializable {
     for (int i = 0; i < partSpecs.size(); i++) {
       this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i)));
     }
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     this.repairPartitions = repairPartitions;
   }
 
@@ -76,7 +82,7 @@ public class MsckDesc extends DDLWork implements Serializable {
   /**
    * @return file to save command output to
    */
-  public Path getResFile() {
+  public String getResFile() {
     return resFile;
   }
 
@@ -84,7 +90,7 @@ public class MsckDesc extends DDLWork implements Serializable {
    * @param resFile
    *          file to save command output to
    */
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 

@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.Path;
 public class DescFunctionDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String name;
-  Path resFile;
+  String resFile;
   boolean isExtended;
 
   public boolean isExtended() {
@@ -65,7 +65,7 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
    * @param resFile
    */
   public DescFunctionDesc(Path resFile) {
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     name = null;
   }
 
@@ -75,7 +75,7 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
    */
   public DescFunctionDesc(Path resFile, String name, boolean isExtended) {
     this.isExtended = isExtended;
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     this.name = name;
   }
 
@@ -98,20 +98,16 @@ public class DescFunctionDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  public Path getResFile() {
-    return resFile;
-  }
-
   @Explain(displayName = "result file", normalExplain = false)
-  public String getResFileString() {
-    return getResFile().getName();
+  public String getResFile() {
+    return resFile;
   }
 
   /**
    * @param resFile
    *          the resFile to set
    */
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 }

@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-05_176_4957788022637376791/10000</string> 
+           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-04_741_5017846763424135312/10000</string> 
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -83,7 +83,7 @@
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1265685544</string> 
+               <string>1266298144</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-05_176_4957788022637376791/10001</string> 
+           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-04_741_5017846763424135312/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -168,7 +168,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1265685543</string> 
+          <string>1266298143</string> 
          </void> 
         </object> 
        </void> 
@@ -755,6 +755,9 @@
       <void method="put"> 
        <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+        <void property="baseFileName"> 
+         <string>src</string> 
+        </void> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
@@ -811,7 +814,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1265685543</string> 
+           <string>1266298143</string> 
           </void> 
          </object> 
         </void> 
@@ -857,7 +860,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-05_176_4957788022637376791/10000</string> 
+                 <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-04_741_5017846763424135312/10000</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="TableDesc0"/> 

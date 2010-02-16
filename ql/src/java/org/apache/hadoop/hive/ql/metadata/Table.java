@@ -79,6 +79,9 @@ public class Table implements Serializable {
   private Class<? extends InputFormat> inputFormatClass;
   private URI uri;
   
+  /**
+   * Used only for serialization.
+   */
   public Table() {
   }
 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,20 +49,26 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
     // tables into corresponding different dirs (one dir per table).
     // this map stores mapping from "big key dir" to its corresponding mapjoin
     // task.
-    Map<String, Task<? extends Serializable>> dirToTaskMap;
+    HashMap<String, Task<? extends Serializable>> dirToTaskMap;
 
+    /**
+     * For serialization use only.
+     */
+    public ConditionalResolverSkewJoinCtx() {
+    }
+    
     public ConditionalResolverSkewJoinCtx(
-        Map<String, Task<? extends Serializable>> dirToTaskMap) {
+        HashMap<String, Task<? extends Serializable>> dirToTaskMap) {
       super();
       this.dirToTaskMap = dirToTaskMap;
     }
 
-    public Map<String, Task<? extends Serializable>> getDirToTaskMap() {
+    public HashMap<String, Task<? extends Serializable>> getDirToTaskMap() {
       return dirToTaskMap;
     }
 
     public void setDirToTaskMap(
-        Map<String, Task<? extends Serializable>> dirToTaskMap) {
+        HashMap<String, Task<? extends Serializable>> dirToTaskMap) {
       this.dirToTaskMap = dirToTaskMap;
     }
   }

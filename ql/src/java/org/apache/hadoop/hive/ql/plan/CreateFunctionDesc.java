@@ -31,6 +31,12 @@ public class CreateFunctionDesc implements Serializable {
   private String functionName;
   private String className;
 
+  /**
+   * For serialization only.
+   */
+  public CreateFunctionDesc() {
+  }
+  
   public CreateFunctionDesc(String functionName, String className) {
     this.functionName = functionName;
     this.className = className;

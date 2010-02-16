@@ -31,7 +31,7 @@ import org.apache.hadoop.fs.Path;
 public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
-  Path resFile;
+  String resFile;
   String dbName;
   HashMap<String, String> partSpec;
 
@@ -53,10 +53,16 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * For serializatino use only.
+   */
+  public ShowTableStatusDesc() {
+  }
+  
+  /**
    * @param pattern
    *          names of tables to show
    */
-  public ShowTableStatusDesc(Path resFile, String dbName, String pattern) {
+  public ShowTableStatusDesc(String resFile, String dbName, String pattern) {
     this.dbName = dbName;
     this.resFile = resFile;
     this.pattern = pattern;
@@ -71,7 +77,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
    * @param part
    *          partition specification
    */
-  public ShowTableStatusDesc(Path resFile, String dbName, String pattern,
+  public ShowTableStatusDesc(String resFile, String dbName, String pattern,
       HashMap<String, String> partSpec) {
     this.dbName = dbName;
     this.resFile = resFile;
@@ -98,20 +104,20 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  public Path getResFile() {
+  public String getResFile() {
     return resFile;
   }
 
   @Explain(displayName = "result file", normalExplain = false)
   public String getResFileString() {
-    return getResFile().getName();
+    return getResFile();
   }
 
   /**
    * @param resFile
    *          the resFile to set
    */
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 

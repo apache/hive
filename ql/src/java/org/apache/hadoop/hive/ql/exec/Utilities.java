@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
+import java.beans.ExceptionListener;
 import java.beans.Expression;
+import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedReader;
@@ -40,10 +42,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -65,6 +69,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -197,6 +202,80 @@ public final class Utilities {
     }
   }
 
+  public static class MapDelegate extends DefaultPersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      Map oldMap = (Map)oldInstance;
+      HashMap newMap = new HashMap(oldMap);
+      return new Expression(newMap, HashMap.class, "new", new Object[] {});
+    }
+    @Override
+    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
+      return false;
+    }
+    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
+      java.util.Collection oldO = (java.util.Collection)oldInstance;
+      java.util.Collection newO = (java.util.Collection)newInstance;
+
+      if (newO.size() != 0) {
+        out.writeStatement(new Statement(oldInstance, "clear", new Object[]{}));
+      }
+      for (Iterator i = oldO.iterator(); i.hasNext();) {
+        out.writeStatement(new Statement(oldInstance, "add", new Object[]{i.next()}));
+      }
+    }
+  }
+  
+  public static class SetDelegate extends DefaultPersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      Set oldSet = (Set)oldInstance;
+      HashSet newSet = new HashSet(oldSet);
+      return new Expression(newSet, HashSet.class, "new", new Object[] {});
+    }
+    @Override
+    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
+      return false;
+    }
+    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
+      java.util.Collection oldO = (java.util.Collection)oldInstance;
+      java.util.Collection newO = (java.util.Collection)newInstance;
+
+      if (newO.size() != 0) {
+        out.writeStatement(new Statement(oldInstance, "clear", new Object[]{}));
+      }
+      for (Iterator i = oldO.iterator(); i.hasNext();) {
+        out.writeStatement(new Statement(oldInstance, "add", new Object[]{i.next()}));
+      }
+    }
+    
+  }
+  
+  public static class ListDelegate extends DefaultPersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      List oldList = (List)oldInstance;
+      ArrayList newList = new ArrayList(oldList);
+      return new Expression(newList, ArrayList.class, "new", new Object[] {});
+    }
+    @Override
+    protected boolean mutatesTo(Object oldInstance, Object newInstance) {
+      return false;
+    }
+    protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
+      java.util.Collection oldO = (java.util.Collection)oldInstance;
+      java.util.Collection newO = (java.util.Collection)newInstance;
+
+      if (newO.size() != 0) {
+        out.writeStatement(new Statement(oldInstance, "clear", new Object[]{}));
+      }
+      for (Iterator i = oldO.iterator(); i.hasNext();) {
+        out.writeStatement(new Statement(oldInstance, "add", new Object[]{i.next()}));
+      }
+    }
+    
+  }
+  
   public static void setMapRedWork(Configuration job, MapredWork w) {
     try {
       // use the default file system of the job
@@ -243,24 +322,79 @@ public final class Utilities {
     return s.hashCode();
   }
 
+  /**
+   * Serialize a single Task.
+   */
   public static void serializeTasks(Task<? extends Serializable> t,
       OutputStream out) {
     XMLEncoder e = new XMLEncoder(out);
     // workaround for java 1.5
     e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
     e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e
-        .setPersistenceDelegate(Operator.ProgressCounter.class,
+    e.setPersistenceDelegate(Operator.ProgressCounter.class,
         new EnumDelegate());
 
     e.writeObject(t);
     e.close();
   }
 
+  public static   class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      return new Expression(oldInstance,
+                            oldInstance.getClass(),
+                            "new",
+                            null);
+    }
+
+    protected void initialize(Class type, Object oldInstance, Object newInstance,
+                              Encoder out) {
+      Iterator ite = ((Collection) oldInstance).iterator();
+      while (ite.hasNext()) {
+          out.writeStatement(new Statement(oldInstance, "add",
+                                           new Object[] { ite.next() }));
+        }
+    }
+  }
+  
   /**
-   * Serialize the plan object to an output stream. DO NOT use this to write to
-   * standard output since it closes the output stream DO USE mapredWork.toXML()
-   * instead
+   * Serialize the whole query plan.
+   */
+  public static void serializeQueryPlan(QueryPlan plan, OutputStream out) {
+    XMLEncoder e = new XMLEncoder(out);
+    e.setExceptionListener(new ExceptionListener() {
+      public void exceptionThrown(Exception e) {
+        LOG.warn(org.apache.hadoop.util.StringUtils.stringifyException(e));
+        throw new RuntimeException("Cannot serialize the query plan", e);
+      }
+    });
+    // workaround for java 1.5
+    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+    e.setPersistenceDelegate(Operator.ProgressCounter.class,
+        new EnumDelegate());
+    
+    e.setPersistenceDelegate(org.datanucleus.sco.backed.Map.class, new MapDelegate());
+    e.setPersistenceDelegate(org.datanucleus.sco.backed.List.class, new ListDelegate());
+    
+    e.writeObject(plan);
+    e.close();
+  }
+
+  /**
+   * Deserialize the whole query plan.
+   */
+  public static QueryPlan deserializeQueryPlan(InputStream in,
+      Configuration conf) {
+    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
+    QueryPlan ret = (QueryPlan) d.readObject();
+    d.close();
+    return (ret);
+  }
+  
+  /**
+   * Serialize the mapredWork object to an output stream. DO NOT use this to 
+   * write to standard output since it closes the output stream.
+   * DO USE mapredWork.toXML() instead.
    */
   public static void serializeMapRedWork(MapredWork w, OutputStream out) {
     XMLEncoder e = new XMLEncoder(out);

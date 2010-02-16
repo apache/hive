@@ -17,18 +17,29 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Contains the information needed to add a partition.
  */
-public class AddPartitionDesc {
+public class AddPartitionDesc extends DDLDesc implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+  
   String tableName;
   String dbName;
   String location;
   boolean ifNotExists;
-  Map<String, String> partSpec;
+  LinkedHashMap<String, String> partSpec;
+
+  /**
+   * For serialization only.
+   */
+  public AddPartitionDesc() {
+  }
 
   /**
    * @param dbName
@@ -47,7 +58,7 @@ public class AddPartitionDesc {
     super();
     this.dbName = dbName;
     this.tableName = tableName;
-    this.partSpec = partSpec;
+    this.partSpec = new LinkedHashMap<String,String>(partSpec);
     this.location = location;
     this.ifNotExists = ifNotExists;
   }
@@ -100,7 +111,7 @@ public class AddPartitionDesc {
   /**
    * @return partition specification.
    */
-  public Map<String, String> getPartSpec() {
+  public LinkedHashMap<String, String> getPartSpec() {
     return partSpec;
   }
 
@@ -108,7 +119,7 @@ public class AddPartitionDesc {
    * @param partSpec
    *          partition specification
    */
-  public void setPartSpec(Map<String, String> partSpec) {
+  public void setPartSpec(LinkedHashMap<String, String> partSpec) {
     this.partSpec = partSpec;
   }
 

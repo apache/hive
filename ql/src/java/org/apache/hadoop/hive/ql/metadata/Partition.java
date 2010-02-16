@@ -82,6 +82,12 @@ public class Partition implements Serializable {
   }
 
   /**
+   * Used only for serialization. 
+   */
+  public Partition() {
+  }
+  
+  /**
    * create an empty partition.
    * SemanticAnalyzer code requires that an empty partition when the table is not partitioned.
    */
@@ -254,9 +260,13 @@ public class Partition implements Serializable {
   final public Class<? extends InputFormat> getInputFormatClass()
       throws HiveException {
     if (inputFormatClass == null) {
-      String clsName = getSchema().getProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
-          org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName());
+      String clsName = null;
+      if (tPartition != null && tPartition.getSd() != null) {
+        clsName = tPartition.getSd().getInputFormat();
+      }
+      if (clsName == null) {
+        clsName = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName(); 
+      }
       try {
         inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
             JavaUtils.getClassLoader()));
@@ -270,9 +280,13 @@ public class Partition implements Serializable {
   final public Class<? extends HiveOutputFormat> getOutputFormatClass()
       throws HiveException {
     if (outputFormatClass == null) {
-      String clsName = getSchema().getProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-          HiveSequenceFileOutputFormat.class.getName());
+      String clsName = null;
+      if (tPartition != null && tPartition.getSd() != null) {
+        clsName = tPartition.getSd().getOutputFormat();
+      }
+      if (clsName == null) {
+        clsName = HiveSequenceFileOutputFormat.class.getName(); 
+      }
       try {
         Class<?> c = (Class<? extends HiveOutputFormat>)(Class.forName(clsName, true,
             JavaUtils.getClassLoader()));

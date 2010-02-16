@@ -21,6 +21,9 @@ Trunk -  Unreleased
     HIVE-1147. Update Eclipse project configuration to match Checkstyle
     (Carl Steinbach via zshao)
 
+    HIVE-1117. Make queryPlan serializable
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
 
     HIVE-983. Function from_unixtime takes long.

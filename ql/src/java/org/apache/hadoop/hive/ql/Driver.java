@@ -19,30 +19,27 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
@@ -53,7 +50,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.Utilities.EnumDelegate;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
@@ -65,16 +61,12 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -302,7 +294,7 @@ public class Driver implements CommandProcessor {
 
     try {
       ctx = new Context(conf);
-
+      
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
       tree = ParseUtils.findRootNonNullToken(tree);
@@ -317,12 +309,37 @@ public class Driver implements CommandProcessor {
 
       plan = new QueryPlan(command, sem);
       // initialize FetchTask right here
-      if (sem.getFetchTask() != null) {
-        sem.getFetchTask().initialize(conf, plan, null);
+      if (plan.getFetchTask() != null) {
+        plan.getFetchTask().initialize(conf, plan, null);
       }
 
       // get the output schema
       schema = getSchema(sem, conf);
+
+      // Serialize the query plan
+      //   get temp file name and remove file: 
+      String queryPlanFileName = ctx.getLocalScratchDir() + Path.SEPARATOR_CHAR
+          + "queryplan.xml";
+      LOG.info("query plan = " + queryPlanFileName);
+      queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
+      
+      //   serialize the queryPlan 
+      FileOutputStream fos = new FileOutputStream(queryPlanFileName);
+      Utilities.serializeQueryPlan(plan, fos);
+      fos.close();
+      
+      //   deserialize the queryPlan 
+      FileInputStream fis = new FileInputStream(queryPlanFileName);
+      QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
+      fis.close();
+      
+      // Use the deserialized plan
+      plan = newPlan;
+      
+      // initialize FetchTask right here
+      if (plan.getFetchTask() != null) {
+        plan.getFetchTask().initialize(conf, plan, null);
+      }
 
       return (0);
     } catch (SemanticException e) {

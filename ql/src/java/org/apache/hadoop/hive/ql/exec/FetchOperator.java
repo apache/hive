@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,45 +57,83 @@ import org.apache.hadoop.util.ReflectionUtils;
 /**
  * FetchTask implementation.
  **/
-public class FetchOperator {
+public class FetchOperator implements Serializable {
 
-  protected transient Log LOG;
-  protected transient LogHelper console;
+  static Log LOG = LogFactory.getLog(FetchOperator.class.getName());
+  static LogHelper console = new LogHelper(LOG);
 
+  public FetchOperator() {
+  }
+  
   public FetchOperator(FetchWork work, JobConf job) {
-    LOG = LogFactory.getLog(this.getClass().getName());
-    console = new LogHelper(LOG);
-
     this.work = work;
+    initialize(job);
+  }
+  
+  public void initialize(JobConf job) {
     this.job = job;
-
-    currRecReader = null;
-    currPath = null;
-    currTbl = null;
-    currPart = null;
-    iterPath = null;
-    iterPartDesc = null;
     tblDataDone = false;
     rowWithPart = new Object[2];
   }
 
-  private final FetchWork work;
+  public FetchWork getWork() {
+    return work;
+  }
+
+  public void setWork(FetchWork work) {
+    this.work = work;
+  }
+
+  public int getSplitNum() {
+    return splitNum;
+  }
+
+  public void setSplitNum(int splitNum) {
+    this.splitNum = splitNum;
+  }
+
+  public PartitionDesc getCurrPart() {
+    return currPart;
+  }
+
+  public void setCurrPart(PartitionDesc currPart) {
+    this.currPart = currPart;
+  }
+
+  public TableDesc getCurrTbl() {
+    return currTbl;
+  }
+
+  public void setCurrTbl(TableDesc currTbl) {
+    this.currTbl = currTbl;
+  }
+
+  public boolean isTblDataDone() {
+    return tblDataDone;
+  }
+
+  public void setTblDataDone(boolean tblDataDone) {
+    this.tblDataDone = tblDataDone;
+  }
+
+  private FetchWork work;
   private int splitNum;
-  private RecordReader<WritableComparable, Writable> currRecReader;
-  private InputSplit[] inputSplits;
-  private InputFormat inputFormat;
-  private final JobConf job;
-  private WritableComparable key;
-  private Writable value;
-  private Deserializer serde;
-  private Iterator<Path> iterPath;
-  private Iterator<PartitionDesc> iterPartDesc;
-  private Path currPath;
   private PartitionDesc currPart;
   private TableDesc currTbl;
   private boolean tblDataDone;
-  private StructObjectInspector rowObjectInspector;
-  private final Object[] rowWithPart;
+  
+  private transient RecordReader<WritableComparable, Writable> currRecReader;
+  private transient InputSplit[] inputSplits;
+  private transient InputFormat inputFormat;
+  private transient JobConf job;
+  private transient WritableComparable key;
+  private transient Writable value;
+  private transient Deserializer serde;
+  private transient Iterator<Path> iterPath;
+  private transient Iterator<PartitionDesc> iterPartDesc;
+  private transient Path currPath;
+  private transient StructObjectInspector rowObjectInspector;
+  private transient Object[] rowWithPart;
 
   /**
    * A cache of InputFormat instances.

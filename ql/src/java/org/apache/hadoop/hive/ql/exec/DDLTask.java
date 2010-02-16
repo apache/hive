@@ -283,9 +283,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } finally {
       BufferedWriter resultOut = null;
       try {
-        FileSystem fs = msckDesc.getResFile().getFileSystem(conf);
+        Path resFile = new Path(msckDesc.getResFile());
+        FileSystem fs = resFile.getFileSystem(conf);
         resultOut = new BufferedWriter(new OutputStreamWriter(fs
-            .create(msckDesc.getResFile())));
+            .create(resFile)));
 
         boolean firstWritten = false;
         firstWritten |= writeMsckResult(result.getTablesNotInMs(),
@@ -385,8 +386,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      FileSystem fs = showParts.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(showParts.getResFile());
+      Path resFile = new Path(showParts.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
       Iterator<String> iterParts = parts.iterator();
 
       while (iterParts.hasNext()) {
@@ -432,8 +434,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      FileSystem fs = showTbls.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(showTbls.getResFile());
+      Path resFile = new Path(showTbls.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       Iterator<String> iterTbls = sortedTbls.iterator();
 
@@ -477,8 +480,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      FileSystem fs = showFuncs.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(showFuncs.getResFile());
+      Path resFile = new Path(showFuncs.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
       SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
       Iterator<String> iterFuncs = sortedFuncs.iterator();
 
@@ -512,8 +516,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      FileSystem fs = descFunc.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(descFunc.getResFile());
+      Path resFile = new Path(descFunc.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
 
       // get the function documentation
       Description desc = null;
@@ -601,8 +606,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      FileSystem fs = showTblStatus.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(showTblStatus.getResFile());
+      Path resFile = new Path(showTblStatus.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
 
       Iterator<Table> iterTables = tbls.iterator();
       while (iterTables.hasNext()) {
@@ -677,7 +683,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.info("show table status: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     }
     return 0;
   }
@@ -703,9 +709,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         false);
     Partition part = null;
     try {
+      Path resFile = new Path(descTbl.getResFile());
       if (tbl == null) {
-        FileSystem fs = descTbl.getResFile().getFileSystem(conf);
-        DataOutput outStream = (DataOutput) fs.open(descTbl.getResFile());
+        FileSystem fs = resFile.getFileSystem(conf);
+        DataOutput outStream = (DataOutput) fs.open(resFile);
         String errMsg = "Table " + tableName + " does not exist";
         outStream.write(errMsg.getBytes("UTF-8"));
         ((FSDataOutputStream) outStream).close();
@@ -714,8 +721,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (descTbl.getPartSpec() != null) {
         part = db.getPartition(tbl, descTbl.getPartSpec(), false);
         if (part == null) {
-          FileSystem fs = descTbl.getResFile().getFileSystem(conf);
-          DataOutput outStream = (DataOutput) fs.open(descTbl.getResFile());
+          FileSystem fs = resFile.getFileSystem(conf);
+          DataOutput outStream = (DataOutput) fs.open(resFile);
           String errMsg = "Partition " + descTbl.getPartSpec() + " for table "
               + tableName + " does not exist";
           outStream.write(errMsg.getBytes("UTF-8"));
@@ -745,8 +752,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
-      FileSystem fs = descTbl.getResFile().getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(descTbl.getResFile());
+      Path resFile = new Path(descTbl.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(resFile);
       Iterator<FieldSchema> iterCols = cols.iterator();
       while (iterCols.hasNext()) {
         // create a row per column
@@ -808,7 +816,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.info("describe table: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     }
 
     return 0;

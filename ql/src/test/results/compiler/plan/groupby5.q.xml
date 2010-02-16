@@ -66,7 +66,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1265685562</string> 
+          <string>1266298162</string> 
          </void> 
         </object> 
        </void> 
@@ -653,6 +653,9 @@
       <void method="put"> 
        <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+        <void property="baseFileName"> 
+         <string>src</string> 
+        </void> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
@@ -709,7 +712,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1265685562</string> 
+           <string>1266298162</string> 
           </void> 
          </object> 
         </void> 
@@ -752,7 +755,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-22_820_5310681093346704822/10001</string> 
+                 <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-23_049_2135757383576625074/10001</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 

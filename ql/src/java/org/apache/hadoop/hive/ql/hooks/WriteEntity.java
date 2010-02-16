@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -27,7 +28,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * This class encapsulates an object that is being written to by the query. This
  * object may be a table, partition, dfs directory or a local directory.
  */
-public class WriteEntity {
+public class WriteEntity implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   /**
    * The type of the write entity.
@@ -44,18 +46,70 @@ public class WriteEntity {
   /**
    * The table. This is null if this is a directory.
    */
-  private final Table t;
+  private Table t;
 
   /**
    * The partition.This is null if this object is not a partition.
    */
-  private final Partition p;
+  private Partition p;
 
   /**
    * The directory if this is a directory.
    */
-  private final String d;
+  private String d;
 
+  /**
+   * This is derived from t and p, but we need to serialize this field to make sure
+   * WriteEntity.hashCode() does not need to recursively read into t and p. 
+   */
+  private String name;
+  
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public Type getTyp() {
+    return typ;
+  }
+
+  public void setTyp(Type typ) {
+    this.typ = typ;
+  }
+
+  public Table getT() {
+    return t;
+  }
+
+  public void setT(Table t) {
+    this.t = t;
+  }
+
+  public Partition getP() {
+    return p;
+  }
+
+  public void setP(Partition p) {
+    this.p = p;
+  }
+
+  public String getD() {
+    return d;
+  }
+
+  public void setD(String d) {
+    this.d = d;
+  }
+
+  /**
+   * Only used by serialization.
+   */
+  public WriteEntity() {
+  }
+  
   /**
    * Constructor for a table.
    * 
@@ -67,6 +121,7 @@ public class WriteEntity {
     p = null;
     this.t = t;
     typ = Type.TABLE;
+    name = computeName();
   }
 
   /**
@@ -80,6 +135,7 @@ public class WriteEntity {
     this.p = p;
     t = p.getTable();
     typ = Type.PARTITION;
+    name = computeName();
   }
 
   /**
@@ -99,6 +155,7 @@ public class WriteEntity {
     } else {
       typ = Type.DFS_DIR;
     }
+    name = computeName();
   }
 
   /**
@@ -146,6 +203,10 @@ public class WriteEntity {
    */
   @Override
   public String toString() {
+    return name;
+  }
+  
+  private String computeName() {
     switch (typ) {
     case TABLE:
       return t.getDbName() + "@" + t.getTableName();

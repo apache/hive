@@ -144,7 +144,7 @@ public final class GenMRSkewJoinProcessor {
     joinDescriptor.setSkewKeyDefinition(HiveConf.getIntVar(parseCtx.getConf(),
         HiveConf.ConfVars.HIVESKEWJOINKEY));
 
-    Map<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
+    HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
       new HashMap<String, Task<? extends Serializable>>();
     List<Serializable> listWorks = new ArrayList<Serializable>();
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();

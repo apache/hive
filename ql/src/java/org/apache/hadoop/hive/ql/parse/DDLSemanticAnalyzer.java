@@ -382,7 +382,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile(), dbName,
+    showTblStatusDesc = new ShowTableStatusDesc(ctx.getResFile().toString(), dbName,
         tableNames, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblStatusDesc), conf));

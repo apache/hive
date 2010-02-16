@@ -193,7 +193,7 @@ public class Context {
   /**
    * Create a map-reduce scratch directory on demand and return it.
    */
-  private String getMRScratchDir() {
+  public String getMRScratchDir() {
     try {
       if (MRScratchDir == null) {
         MRScratchDir = makeMRScratchDir(conf, executionId, !explain);
@@ -210,7 +210,7 @@ public class Context {
   /**
    * Create a local scratch directory on demand and return it.
    */
-  private String getLocalScratchDir() {
+  public String getLocalScratchDir() {
     try {
       if (localScratchDir == null) {
         localScratchDir = makeLocalScratchDir(conf, executionId, true);

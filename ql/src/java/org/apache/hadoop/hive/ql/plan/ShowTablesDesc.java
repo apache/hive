@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.Path;
 public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
-  Path resFile;
+  String resFile;
   /**
    * table name for the result of show tables.
    */
@@ -55,7 +55,7 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    * @param resFile
    */
   public ShowTablesDesc(Path resFile) {
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     pattern = null;
   }
 
@@ -64,7 +64,7 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    *          names of tables to show
    */
   public ShowTablesDesc(Path resFile, String pattern) {
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     this.pattern = pattern;
   }
 
@@ -87,20 +87,16 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  public Path getResFile() {
-    return resFile;
-  }
-
   @Explain(displayName = "result file", normalExplain = false)
-  public String getResFileString() {
-    return getResFile().getName();
+  public String getResFile() {
+    return resFile;
   }
 
   /**
    * @param resFile
    *          the resFile to set
    */
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 }

@@ -41,7 +41,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
                        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -286,10 +286,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -298,8 +298,11 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+                        <void property="baseFileName"> 
+                         <string>10006</string> 
+                        </void> 
                         <void property="deserializerClass"> 
                          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                         </void> 
@@ -353,7 +356,7 @@
                           </void> 
                           <void method="put"> 
                            <string>transient_lastDdlTime</string> 
-                           <string>1265685572</string> 
+                           <string>1266298173</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -392,7 +395,7 @@
                           <void property="conf"> 
                            <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                             <void property="dirName"> 
-                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10000</string> 
+                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10000</string> 
                             </void> 
                             <void property="tableInfo"> 
                              <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -449,7 +452,7 @@
                                 </void> 
                                 <void method="put"> 
                                  <string>transient_lastDdlTime</string> 
-                                 <string>1265685572</string> 
+                                 <string>1266298173</string> 
                                 </void> 
                                </object> 
                               </void> 
@@ -583,13 +586,13 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10000</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10000</string> 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc2"/> 
                   </void> 
                   <void property="tmpDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10001</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10001</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -610,10 +613,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10000</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -639,7 +642,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -700,7 +703,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
                        <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -937,10 +940,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -949,8 +952,11 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+                        <void property="baseFileName"> 
+                         <string>10007</string> 
+                        </void> 
                         <void property="deserializerClass"> 
                          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                         </void> 
@@ -1004,7 +1010,7 @@
                           </void> 
                           <void method="put"> 
                            <string>transient_lastDdlTime</string> 
-                           <string>1265685572</string> 
+                           <string>1266298173</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -1043,7 +1049,7 @@
                           <void property="conf"> 
                            <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                             <void property="dirName"> 
-                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10002</string> 
+                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10002</string> 
                             </void> 
                             <void property="tableInfo"> 
                              <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -1100,7 +1106,7 @@
                                 </void> 
                                 <void method="put"> 
                                  <string>transient_lastDdlTime</string> 
-                                 <string>1265685572</string> 
+                                 <string>1266298173</string> 
                                 </void> 
                                </object> 
                               </void> 
@@ -1234,13 +1240,13 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10002</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10002</string> 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc5"/> 
                   </void> 
                   <void property="tmpDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10003</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10003</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1261,10 +1267,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10002</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10002</string> 
               </void> 
              </object> 
             </void> 
@@ -1290,7 +1296,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -1351,7 +1357,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
                        <object id="TableScanOperator2" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -1588,10 +1594,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+                         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -1600,8 +1606,11 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+                        <void property="baseFileName"> 
+                         <string>10008</string> 
+                        </void> 
                         <void property="deserializerClass"> 
                          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                         </void> 
@@ -1655,7 +1664,7 @@
                           </void> 
                           <void method="put"> 
                            <string>transient_lastDdlTime</string> 
-                           <string>1265685572</string> 
+                           <string>1266298173</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -1694,7 +1703,7 @@
                           <void property="conf"> 
                            <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                             <void property="dirName"> 
-                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10004</string> 
+                             <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10004</string> 
                             </void> 
                             <void property="tableInfo"> 
                              <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -1755,7 +1764,7 @@
                                 </void> 
                                 <void method="put"> 
                                  <string>transient_lastDdlTime</string> 
-                                 <string>1265685572</string> 
+                                 <string>1266298173</string> 
                                 </void> 
                                </object> 
                               </void> 
@@ -1902,13 +1911,13 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10004</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10004</string> 
                   </void> 
                   <void property="table"> 
                    <object idref="TableDesc8"/> 
                   </void> 
                   <void property="tmpDir"> 
-                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10005</string> 
+                   <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10005</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1929,10 +1938,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10004</string> 
+               <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10004</string> 
               </void> 
              </object> 
             </void> 
@@ -1958,7 +1967,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+         <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -2048,7 +2057,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1265685572</string> 
+          <string>1266298172</string> 
          </void> 
         </object> 
        </void> 
@@ -2100,7 +2109,7 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10006</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10006</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc2"/> 
@@ -2384,7 +2393,7 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10007</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10007</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc5"/> 
@@ -2711,7 +2720,7 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-08_19-19-32_847_4013828837935080815/10008</string> 
+                       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-33_966_53681493675291999/10008</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="TableDesc8"/> 
@@ -3014,6 +3023,9 @@
       <void method="put"> 
        <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
+        <void property="baseFileName"> 
+         <string>src</string> 
+        </void> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
@@ -3070,7 +3082,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1265685572</string> 
+           <string>1266298172</string> 
           </void> 
          </object> 
         </void> 

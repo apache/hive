@@ -29,6 +29,12 @@ public class FunctionWork implements Serializable {
   private CreateFunctionDesc createFunctionDesc;
   private DropFunctionDesc dropFunctionDesc;
 
+  /**
+   * For serialization only.
+   */
+  public FunctionWork() {
+  }
+  
   public FunctionWork(CreateFunctionDesc createFunctionDesc) {
     this.createFunctionDesc = createFunctionDesc;
   }

@@ -37,7 +37,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
 
   String tableName;
   HashMap<String, String> partSpec;
-  Path resFile;
+  String resFile;
   boolean isExt;
   /**
    * table name for the result of describe table.
@@ -61,7 +61,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
       HashMap<String, String> partSpec, boolean isExt) {
     this.isExt = isExt;
     this.partSpec = partSpec;
-    this.resFile = resFile;
+    this.resFile = resFile.toString();
     this.tableName = tableName;
   }
 
@@ -123,20 +123,16 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the resFile
    */
-  public Path getResFile() {
-    return resFile;
-  }
-
   @Explain(displayName = "result file", normalExplain = false)
-  public String getResFileString() {
-    return getResFile().getName();
+  public String getResFile() {
+    return resFile;
   }
 
   /**
    * @param resFile
    *          the resFile to set
    */
-  public void setResFile(Path resFile) {
+  public void setResFile(String resFile) {
     this.resFile = resFile;
   }
 }

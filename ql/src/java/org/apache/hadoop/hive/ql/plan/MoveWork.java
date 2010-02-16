@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -39,21 +40,21 @@ public class MoveWork implements Serializable {
   /**
    * ReadEntitites that are passed to the hooks.
    */
-  protected Set<ReadEntity> inputs;
+  protected HashSet<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected Set<WriteEntity> outputs;
+  protected HashSet<WriteEntity> outputs;
 
   public MoveWork() {
   }
 
-  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
   }
 
-  public MoveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat) {
     this(inputs, outputs);
@@ -88,19 +89,19 @@ public class MoveWork implements Serializable {
     this.checkFileFormat = checkFileFormat;
   }
 
-  public Set<ReadEntity> getInputs() {
+  public HashSet<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public Set<WriteEntity> getOutputs() {
+  public HashSet<WriteEntity> getOutputs() {
     return outputs;
   }
 
-  public void setInputs(Set<ReadEntity> inputs) {
+  public void setInputs(HashSet<ReadEntity> inputs) {
     this.inputs = inputs;
   }
 
-  public void setOutputs(Set<WriteEntity> outputs) {
+  public void setOutputs(HashSet<WriteEntity> outputs) {
     this.outputs = outputs;
   }
 

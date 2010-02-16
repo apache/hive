@@ -30,6 +30,12 @@ public class DropFunctionDesc implements Serializable {
 
   private String functionName;
 
+  /**
+   * For serialization only.
+   */
+  public DropFunctionDesc() {
+  }
+  
   public DropFunctionDesc(String functionName) {
     this.functionName = functionName;
   }

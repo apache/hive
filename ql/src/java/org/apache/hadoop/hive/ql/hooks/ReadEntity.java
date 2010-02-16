@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 
@@ -28,18 +29,56 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * This class encapsulates the information on the partition and tables that are
  * read by the query.
  */
-public class ReadEntity {
+public class ReadEntity implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+  
+  /**
+   * The table.
+   */
+  private Table t;
 
   /**
    * The partition. This is null for a non partitioned table.
    */
-  private final Partition p;
+  private Partition p;
 
   /**
-   * The table.
+   * This is derived from t and p, but we need to serialize this field to make sure
+   * ReadEntity.hashCode() does not need to recursively read into t and p. 
    */
-  private final Table t;
+  private String name;
+  
+  public String getName() {
+    return name;
+  }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setP(Partition p) {
+    this.p = p;
+  }
+
+  public void setT(Table t) {
+    this.t = t;
+  }
+
+  public Partition getP() {
+    return p;
+  }
+
+  public Table getT() {
+    return t;
+  }
+
+  /**
+   * For serialization only.
+   */
+  public ReadEntity() {
+  }
+  
   /**
    * Constructor.
    * 
@@ -49,6 +88,7 @@ public class ReadEntity {
   public ReadEntity(Table t) {
     this.t = t;
     p = null;
+    name = computeName();
   }
 
   /**
@@ -60,8 +100,18 @@ public class ReadEntity {
   public ReadEntity(Partition p) {
     t = p.getTable();
     this.p = p;
+    name = computeName();
   }
 
+  private String computeName() {
+    if (p != null) {
+      return p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@"
+          + p.getName();
+    } else {
+      return t.getDbName() + "@" + t.getTableName();
+    }
+  }
+  
   /**
    * Enum that tells what time of a read entity this is.
    */
@@ -117,12 +167,7 @@ public class ReadEntity {
    */
   @Override
   public String toString() {
-    if (p != null) {
-      return p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@"
-          + p.getName();
-    } else {
-      return t.getDbName() + "@" + t.getTableName();
-    }
+    return name;
   }
 
   /**

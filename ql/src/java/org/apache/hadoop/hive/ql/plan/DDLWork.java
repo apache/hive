@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -48,16 +49,16 @@ public class DDLWork implements Serializable {
   /**
    * ReadEntitites that are passed to the hooks.
    */
-  protected Set<ReadEntity> inputs;
+  protected HashSet<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected Set<WriteEntity> outputs;
+  protected HashSet<WriteEntity> outputs;
 
   public DDLWork() {
   }
 
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
   }
@@ -66,7 +67,7 @@ public class DDLWork implements Serializable {
    * @param alterTblDesc
    *          alter table descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       AlterTableDesc alterTblDesc) {
     this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
@@ -76,7 +77,7 @@ public class DDLWork implements Serializable {
    * @param createTblDesc
    *          create table descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       CreateTableDesc createTblDesc) {
     this(inputs, outputs);
 
@@ -87,7 +88,7 @@ public class DDLWork implements Serializable {
    * @param createTblLikeDesc
    *          create table like descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       CreateTableLikeDesc createTblLikeDesc) {
     this(inputs, outputs);
 
@@ -98,7 +99,7 @@ public class DDLWork implements Serializable {
    * @param createVwDesc
    *          create view descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       CreateViewDesc createVwDesc) {
     this(inputs, outputs);
 
@@ -109,7 +110,7 @@ public class DDLWork implements Serializable {
    * @param dropTblDesc
    *          drop table descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DropTableDesc dropTblDesc) {
     this(inputs, outputs);
 
@@ -119,7 +120,7 @@ public class DDLWork implements Serializable {
   /**
    * @param descTblDesc
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DescTableDesc descTblDesc) {
     this(inputs, outputs);
 
@@ -129,7 +130,7 @@ public class DDLWork implements Serializable {
   /**
    * @param showTblsDesc
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       ShowTablesDesc showTblsDesc) {
     this(inputs, outputs);
 
@@ -139,7 +140,7 @@ public class DDLWork implements Serializable {
   /**
    * @param showFuncsDesc
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       ShowFunctionsDesc showFuncsDesc) {
     this(inputs, outputs);
 
@@ -149,7 +150,7 @@ public class DDLWork implements Serializable {
   /**
    * @param descFuncDesc
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DescFunctionDesc descFuncDesc) {
     this(inputs, outputs);
 
@@ -159,7 +160,7 @@ public class DDLWork implements Serializable {
   /**
    * @param showPartsDesc
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       ShowPartitionsDesc showPartsDesc) {
     this(inputs, outputs);
 
@@ -170,14 +171,14 @@ public class DDLWork implements Serializable {
    * @param addPartitionDesc
    *          information about the partitions we want to add.
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       AddPartitionDesc addPartitionDesc) {
     this(inputs, outputs);
 
     this.addPartitionDesc = addPartitionDesc;
   }
 
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       MsckDesc checkDesc) {
     this(inputs, outputs);
 
@@ -188,7 +189,7 @@ public class DDLWork implements Serializable {
    * @param showTblStatusDesc
    *          show table status descriptor
    */
-  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       ShowTableStatusDesc showTblStatusDesc) {
     this(inputs, outputs);
 
@@ -412,19 +413,19 @@ public class DDLWork implements Serializable {
     this.descFunctionDesc = descFunctionDesc;
   }
 
-  public Set<ReadEntity> getInputs() {
+  public HashSet<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public Set<WriteEntity> getOutputs() {
+  public HashSet<WriteEntity> getOutputs() {
     return outputs;
   }
 
-  public void setInputs(Set<ReadEntity> inputs) {
+  public void setInputs(HashSet<ReadEntity> inputs) {
     this.inputs = inputs;
   }
 
-  public void setOutputs(Set<WriteEntity> outputs) {
+  public void setOutputs(HashSet<WriteEntity> outputs) {
     this.outputs = outputs;
   }
 

@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
  *
  */
 @Explain(displayName = "Create View")
-public class CreateViewDesc implements Serializable {
+public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String viewName;
@@ -39,6 +39,28 @@ public class CreateViewDesc implements Serializable {
   private String comment;
   private boolean ifNotExists;
 
+  public String getOriginalText() {
+    return originalText;
+  }
+
+  public void setOriginalText(String originalText) {
+    this.originalText = originalText;
+  }
+
+  public String getExpandedText() {
+    return expandedText;
+  }
+
+  public void setExpandedText(String expandedText) {
+    this.expandedText = expandedText;
+  }
+
+  /**
+   * For serialization only.
+   */
+  public CreateViewDesc() {
+  }
+  
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
       String comment, boolean ifNotExists) {
     this.viewName = viewName;
