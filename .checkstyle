@@ -5,6 +5,6 @@
     <additional-data name="protect-config-file" value="true"/>
   </local-check-config>
   <fileset name="Hive Java Source Files" enabled="true" check-config-name="Hive Checkstyle" local="true">
-    <file-match-pattern match-pattern="^(ant|cli|common|contrib|hwi|jdbc|metastore|ql|serde|service|shims).*\.java$" include-pattern="true"/>
+    <file-match-pattern match-pattern="^(?!build).*java$" include-pattern="true"/>
   </fileset>
 </fileset-config>

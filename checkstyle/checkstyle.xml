@@ -134,7 +134,6 @@
     <module name="UnusedImports"/>
     <module name="AvoidStarImport"/>
 
-
     <!-- Checks for Size Violations.                    -->
     <!-- See http://checkstyle.sf.net/config_sizes.html -->
     <module name="LineLength">
@@ -185,6 +184,9 @@
       <property name="tokens" value="VARIABLE_DEF"/>
     </module>
     <module name="IllegalInstantiation"/>
+    <module name="IllegalType">
+      <property name="tokens" value="PARAMETER_DEF, METHOD_DEF, VARIABLE_DEF"/>
+    </module>
     <module name="InnerAssignment"/>
     <module name="MissingSwitchDefault"/>
     <module name="MissingOverride"/>

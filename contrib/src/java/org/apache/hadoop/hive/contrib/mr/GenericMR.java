@@ -169,6 +169,7 @@ public final class GenericMR {
 
     private void close() throws Exception {
       reader.close();
+      
     }
   }
 

@@ -504,26 +504,21 @@
     </taskdef>
     
     <mkdir dir="${checkstyle.build.dir}"/>
-    
+
     <checkstyle config="${checkstyle.conf.dir}/checkstyle.xml"
   		failOnViolation="false">
-      <fileset dir="${hive.root}/ant" includes="**/*.java"/>
-      <fileset dir="${hive.root}/cli" includes="**/*.java"/>
-      <fileset dir="${hive.root}/common" includes="**/*.java"/>
-      <fileset dir="${hive.root}/contrib" includes="**/*.java"/>
-      <fileset dir="${hive.root}/hwi" includes="**/*.java"/>
-      <fileset dir="${hive.root}/jdbc" includes="**/*.java"/>
-      <fileset dir="${hive.root}/metastore" includes="**/*.java"/>
-      <fileset dir="${hive.root}/ql" includes="**/*.java"/>
-      <fileset dir="${hive.root}/serde" includes="**/*.java"/>
-      <fileset dir="${hive.root}/service" includes="**/*.java"/>
-      <fileset dir="${hive.root}/shims" includes="**/*.java"/>
+      <fileset dir="${hive.root}">
+        <exclude name="build/**"/>
+        <include name="**/*.java"/>
+      </fileset>
+      <formatter type="plain" toFile="${checkstyle.build.dir}/checkstyle-errors.txt"/>
       <formatter type="xml" toFile="${checkstyle.build.dir}/checkstyle-errors.xml"/>
     </checkstyle>
-    
+
     <xslt style="${checkstyle.conf.dir}/checkstyle-noframes-sorted.xsl"
           in="${checkstyle.build.dir}/checkstyle-errors.xml"
           out="${checkstyle.build.dir}/checkstyle-errors.html"/>
+
   </target>
   
   <target name="check-for-checkstyle">
