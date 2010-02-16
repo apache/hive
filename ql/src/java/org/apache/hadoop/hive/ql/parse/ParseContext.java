@@ -58,6 +58,7 @@ public class ParseContext {
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
+  private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
   private HashMap<TableScanOperator, Table> topToTable;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -438,5 +439,13 @@ public class ParseContext {
   public void setPrunedPartitions(
       Map<String, PrunedPartitionList> prunedPartitions) {
     this.prunedPartitions = prunedPartitions;
+  }
+
+  public Map<MapJoinOperator, QBJoinTree> getMapJoinContext() {
+    return mapJoinContext;
+  }
+
+  public void setMapJoinContext(Map<MapJoinOperator, QBJoinTree> mapJoinContext) {
+    this.mapJoinContext = mapJoinContext;
   }
 }

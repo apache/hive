@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -194,6 +195,7 @@ public final class GenMapRedUtils {
         }
 
         setTaskPlan(taskTmpDir, taskTmpDir, rootOp, plan, local, tt_desc);
+        setupBucketMapJoinInfo(plan, currMapJoinOp);
       } else {
         initUnionPlan(opProcCtx, currTask, false);
       }
@@ -215,11 +217,28 @@ public final class GenMapRedUtils {
       seenOps.add(currTopOp);
       boolean local = (pos == desc.getPosBigTable()) ? false : true;
       setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
+      setupBucketMapJoinInfo(plan, (MapJoinOperator)op);
     }
 
     opProcCtx.setCurrTask(currTask);
     opProcCtx.setCurrTopOp(null);
     opProcCtx.setCurrAliasId(null);
+  }
+
+  private static void setupBucketMapJoinInfo(MapredWork plan,
+      MapJoinOperator currMapJoinOp) {
+    MapredLocalWork localPlan = plan.getMapLocalWork();
+    if (localPlan != null && currMapJoinOp != null) {
+      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping = 
+        currMapJoinOp.getConf().getAliasBucketFileNameMapping();
+      if(aliasBucketFileNameMapping!= null) {
+        BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
+        localPlan.setBucketMapjoinContext(bucketMJCxt);
+        bucketMJCxt.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
+        localPlan.setInputFileChangeSensitive(true);
+        bucketMJCxt.setMapJoinBigTableAlias(currMapJoinOp.getConf().getBigTableAlias());
+      }
+    }
   }
 
   /**
@@ -370,6 +389,7 @@ public final class GenMapRedUtils {
         boolean local = ((pos == -1) || (pos == (mjOp.getConf())
             .getPosBigTable())) ? false : true;
         setTaskPlan(taskTmpDir, taskTmpDir, rootOp, plan, local, tt_desc);
+        setupBucketMapJoinInfo(plan, oldMapJoin);
       }
       opProcCtx.setCurrMapJoinOp(null);
 
@@ -806,6 +826,7 @@ public final class GenMapRedUtils {
       opProcCtx.setMapJoinCtx(mjOp, mjCtx);
       opProcCtx.getMapCurrCtx().put(parent,
           new GenMapRedCtx(childTask, null, null));
+      setupBucketMapJoinInfo(cplan, mjOp);
     }
 
     currTopOp = null;

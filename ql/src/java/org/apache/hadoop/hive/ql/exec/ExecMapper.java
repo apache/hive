@@ -25,13 +25,18 @@ import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -40,6 +45,7 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * ExecMapper.
@@ -60,6 +66,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private MemoryMXBean memoryMXBean;
   private long numRows = 0;
   private long nextCntr = 1;
+  private String lastInputFile = null;
+  private MapredLocalWork localWork = null;
 
   @Override
   public void configure(JobConf job) {
@@ -88,7 +96,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.initialize(jc, null);
 
       // initialize map local work
-      MapredLocalWork localWork = mrwork.getMapLocalWork();
+      localWork = mrwork.getMapLocalWork();
       if (localWork == null) {
         return;
       }
@@ -131,54 +139,15 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       rp = reporter;
       mo.setOutputCollector(oc);
       mo.setReporter(rp);
-      // process map local operators
-      if (fetchOperators != null) {
-        try {
-          MapredLocalWork localWork = mo.getConf().getMapLocalWork();
-          int fetchOpNum = 0;
-          for (Map.Entry<String, FetchOperator> entry : fetchOperators
-              .entrySet()) {
-            int fetchOpRows = 0;
-            String alias = entry.getKey();
-            FetchOperator fetchOp = entry.getValue();
-            Operator<? extends Serializable> forwardOp = localWork
-                .getAliasToWork().get(alias);
-
-            while (true) {
-              InspectableObject row = fetchOp.getNextRow();
-              if (row == null) {
-                forwardOp.close(false);
-                break;
-              }
-              fetchOpRows++;
-              forwardOp.process(row.o, 0);
-              // check if any operator had a fatal error or early exit during
-              // execution
-              if (forwardOp.getDone()) {
-                done = true;
-                break;
-              }
-            }
-
-            if (l4j.isInfoEnabled()) {
-              l4j
-                  .info("fetch " + fetchOpNum++ + " processed " + fetchOpRows
-                  + " used mem: "
-                  + memoryMXBean.getHeapMemoryUsage().getUsed());
-            }
-          }
-        } catch (Throwable e) {
-          abort = true;
-          if (e instanceof OutOfMemoryError) {
-            // Don't create a new object if we are already out of memory
-            throw (OutOfMemoryError) e;
-          } else {
-            throw new RuntimeException("Map local work failed", e);
-          }
-        }
-      }
     }
-
+    
+    if (localWork != null
+        && (this.lastInputFile == null || 
+            (localWork.getInputFileChangeSensitive() && inputFileChanged()))) {
+      this.lastInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+      processMapLocalWork(localWork.getInputFileChangeSensitive());      
+    }
+    
     try {
       if (mo.getDone()) {
         done = true;
@@ -207,6 +176,96 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
     }
   }
+
+  /**
+   * For CompbineFileInputFormat, the mapper's input file will be changed on the
+   * fly. If the map local work has any mapping depending on the current
+   * mapper's input file, the work need to clear context and re-initialization
+   * after the input file changed. This is first introduced to process bucket
+   * map join.
+   * 
+   * @return
+   */
+  private boolean inputFileChanged() {
+    String currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+    if (this.lastInputFile == null
+        || !this.lastInputFile.equals(currentInputFile)) {
+      return true;
+    }
+    return false;
+  }
+
+  private void processMapLocalWork(boolean inputFileChangeSenstive) {
+    // process map local operators
+    if (fetchOperators != null) {
+      try {
+        int fetchOpNum = 0;
+        for (Map.Entry<String, FetchOperator> entry : fetchOperators
+            .entrySet()) {
+          int fetchOpRows = 0;
+          String alias = entry.getKey();
+          FetchOperator fetchOp = entry.getValue();
+          
+          if(inputFileChangeSenstive) {
+            fetchOp.clearFetchContext();
+            setUpFetchOpContext(fetchOp, alias);
+          }
+          
+          Operator<? extends Serializable> forwardOp = localWork
+              .getAliasToWork().get(alias);
+
+          while (true) {
+            InspectableObject row = fetchOp.getNextRow();
+            if (row == null) {
+              forwardOp.close(false);
+              break;
+            }
+            fetchOpRows++;
+            forwardOp.process(row.o, 0);
+            // check if any operator had a fatal error or early exit during
+            // execution
+            if (forwardOp.getDone()) {
+              done = true;
+              break;
+            }
+          }
+
+          if (l4j.isInfoEnabled()) {
+            l4j
+                .info("fetch " + fetchOpNum++ + " processed " + fetchOpRows
+                    + " used mem: "
+                    + memoryMXBean.getHeapMemoryUsage().getUsed());
+          }
+        }
+      } catch (Throwable e) {
+        abort = true;
+        if (e instanceof OutOfMemoryError) {
+          // Don't create a new object if we are already out of memory
+          throw (OutOfMemoryError) e;
+        } else {
+          throw new RuntimeException("Map local work failed", e);
+        }
+      }
+    }
+  }
+  
+  private void setUpFetchOpContext(FetchOperator fetchOp, String alias)
+      throws Exception {
+    String currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+    BucketMapJoinContext bucketMatcherCxt = this.localWork.getBucketMapjoinContext();
+    Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
+    if(bucketMatcherCls == null) {
+      bucketMatcherCls = org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class;
+    }
+    BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(bucketMatcherCls, null);
+    bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt.getAliasBucketFileNameMapping());
+    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
+        bucketMatcherCxt.getMapJoinBigTableAlias(),
+        alias);
+    Iterator<Path> iter = aliasFiles.iterator();
+    fetchOp.setupContext(iter, null);
+  }
+  
 
   private long getNextCntr(long cntr) {
     // A very simple counter to keep track of number of rows processed by the

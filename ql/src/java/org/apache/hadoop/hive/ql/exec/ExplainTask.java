@@ -104,7 +104,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (isPrintable(ent.getValue())) {
         out.print(ent.getValue());
         out.println();
-      } else if (ent.getValue() instanceof List) {
+      } else if (ent.getValue() instanceof List
+          || ent.getValue() instanceof Map) {
         out.print(ent.getValue().toString());
         out.println();
       } else if (ent.getValue() instanceof Serializable) {

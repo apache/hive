@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +43,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private int posBigTable;
 
   private Map<Byte, List<Integer>> retainList;
+  
+  private transient String bigTableAlias;
+  
+  private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
 
   public MapJoinDesc() {
   }
@@ -140,5 +145,28 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    */
   public void setValueTblDescs(List<TableDesc> valueTblDescs) {
     this.valueTblDescs = valueTblDescs;
+  }
+
+  /**
+   * @return bigTableAlias
+   */
+  public String getBigTableAlias() {
+    return bigTableAlias;
+  }
+
+  /**
+   * @param bigTableAlias
+   */
+  public void setBigTableAlias(String bigTableAlias) {
+    this.bigTableAlias = bigTableAlias;
+  }
+
+  public LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> getAliasBucketFileNameMapping() {
+    return aliasBucketFileNameMapping;
+  }
+
+  public void setAliasBucketFileNameMapping(
+      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
+    this.aliasBucketFileNameMapping = aliasBucketFileNameMapping;
   }
 }

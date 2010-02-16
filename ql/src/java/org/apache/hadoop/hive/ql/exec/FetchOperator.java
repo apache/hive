@@ -222,14 +222,18 @@ public class FetchOperator implements Serializable {
 
     while (iterPath.hasNext()) {
       Path nxt = iterPath.next();
-      PartitionDesc prt = iterPartDesc.next();
+      PartitionDesc prt = null;
+      if(iterPartDesc != null)
+        prt = iterPartDesc.next();
       FileSystem fs = nxt.getFileSystem(job);
       if (fs.exists(nxt)) {
         FileStatus[] fStats = fs.listStatus(nxt);
         for (FileStatus fStat : fStats) {
           if (fStat.getLen() > 0) {
             currPath = nxt;
-            currPart = prt;
+            if(iterPartDesc != null) {
+              currPart = prt;
+            }
             return;
           }
         }
@@ -264,7 +268,7 @@ public class FetchOperator implements Serializable {
       LOG.debug("Creating fetchTask with deserializer typeinfo: "
           + serde.getObjectInspector().getTypeName());
       LOG.debug("deserializer properties: " + tmp.getProperties());
-      if (!tblDataDone) {
+      if (currPart != null) {
         setPrtnDesc();
       }
     }
@@ -298,10 +302,10 @@ public class FetchOperator implements Serializable {
             return null;
           }
         }
-  
+
         boolean ret = currRecReader.next(key, value);
         if (ret) {
-          if (tblDataDone) {
+          if (this.currPart == null) {
             Object obj = serde.deserialize(value);
             return new InspectableObject(obj, serde.getObjectInspector());
           } else {
@@ -317,7 +321,7 @@ public class FetchOperator implements Serializable {
       throw new IOException(e);
     }
   }
-
+  
   /**
    * Clear the context, if anything needs to be done.
    * 
@@ -328,9 +332,30 @@ public class FetchOperator implements Serializable {
         currRecReader.close();
         currRecReader = null;
       }
+      this.currPath = null;
+      this.iterPath = null;
+      this.iterPartDesc = null;
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+  }
+  
+  /**
+   * used for bucket map join. there is a hack for getting partitionDesc. 
+   * bucket map join right now only allow one partition present in bucket map join. 
+   */
+  public void setupContext (Iterator<Path> iterPath, Iterator<PartitionDesc> iterPartDesc) {
+    this.iterPath = iterPath;
+    this.iterPartDesc = iterPartDesc;
+    if(iterPartDesc == null) {
+      if (work.getTblDir() != null) {
+        this.currTbl = work.getTblDesc();
+      } else {
+        //hack, get the first.
+        List<PartitionDesc> listParts = work.getPartDesc();
+        currPart = listParts.get(0);
+      }
     }
   }
 

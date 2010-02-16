@@ -24,6 +24,9 @@ Trunk -  Unreleased
     HIVE-1117. Make queryPlan serializable
     (Zheng Shao via namit)
 
+    HIVE-917. Bucketed Map Join
+    (He Yongqiang via namit)
+
   IMPROVEMENTS
 
     HIVE-983. Function from_unixtime takes long.

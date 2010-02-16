@@ -367,6 +367,11 @@ public class MapJoinProcessor implements Transform {
     // traverse all the joins and convert them if necessary
     if (pGraphContext.getJoinContext() != null) {
       Map<JoinOperator, QBJoinTree> joinMap = new HashMap<JoinOperator, QBJoinTree>();
+      Map<MapJoinOperator, QBJoinTree> mapJoinMap = pGraphContext.getMapJoinContext();
+      if(mapJoinMap == null) {
+        mapJoinMap = new HashMap<MapJoinOperator, QBJoinTree> ();
+        pGraphContext.setMapJoinContext(mapJoinMap);
+      }
 
       Set<Map.Entry<JoinOperator, QBJoinTree>> joinCtx = pGraphContext
           .getJoinContext().entrySet();
@@ -378,7 +383,9 @@ public class MapJoinProcessor implements Transform {
         QBJoinTree qbJoin = joinEntry.getValue();
         int mapJoinPos = mapSideJoin(joinOp, qbJoin);
         if (mapJoinPos >= 0) {
-          listMapJoinOps.add(convertMapJoin(pactx, joinOp, qbJoin, mapJoinPos));
+          MapJoinOperator mapJoinOp = convertMapJoin(pactx, joinOp, qbJoin, mapJoinPos);
+          listMapJoinOps.add(mapJoinOp);
+          mapJoinMap.put(mapJoinOp, qbJoin);
         } else {
           joinMap.put(joinOp, qbJoin);
         }
