@@ -557,7 +557,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       job.setNumMapTasks(work.getNumMapTasks().intValue());
     }
     if (work.getMinSplitSize() != null) {
-      job.setInt(HiveConf.ConfVars.MAPREDMINSPLITSIZE.varname,
+      HiveConf.setIntVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE,
           work.getMinSplitSize().intValue());
     }
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
@@ -570,8 +570,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     // Turn on speculative execution for reducers
     boolean useSpeculativeExecReducers =
         HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
-    job.setBoolean(
-      HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS.varname,
+    HiveConf.setBoolVar(
+      job,
+      HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
       useSpeculativeExecReducers);
 
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
@@ -635,9 +636,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs
-      String pwd = job.get(HiveConf.ConfVars.METASTOREPWD.varname);
+      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTOREPWD);
       if (pwd != null) {
-        job.set(HiveConf.ConfVars.METASTOREPWD.varname, "HIVE");
+        HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
       JobClient jc = new JobClient(job);
 
@@ -647,7 +648,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       orig_rj = rj = jc.submitJob(job);
       // replace it back
       if (pwd != null) {
-        job.set(HiveConf.ConfVars.METASTOREPWD.varname, pwd);
+        HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, pwd);
       }
 
       // add to list of running jobs so in case of abnormal shutdown can kill

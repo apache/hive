@@ -111,6 +111,12 @@ public interface HadoopShims {
   String getInputFormatClassName();
 
   /**
+   * Wrapper for Configuration.setFloat, which was not introduced
+   * until 0.20.
+   */
+  void setFloatConf(Configuration conf, String varName, float val);
+
+  /**
    * getTaskJobIDs returns an array of String with two elements. The first
    * element is a string representing the task id and the second is a string
    * representing the job id. This is necessary as TaskID and TaskAttemptID 

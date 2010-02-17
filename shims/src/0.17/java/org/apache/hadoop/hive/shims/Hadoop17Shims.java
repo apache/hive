@@ -110,4 +110,8 @@ public class Hadoop17Shims implements HadoopShims {
   public String [] getTaskJobIDs(TaskCompletionEvent t) {
     return null;
   }
+
+  public void setFloatConf(Configuration conf, String varName, float val) {
+    conf.set(varName, Float.toString(val));
+  }
 }

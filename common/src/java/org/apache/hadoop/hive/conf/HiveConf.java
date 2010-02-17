@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -264,8 +265,17 @@ public class HiveConf extends Configuration {
     return conf.getInt(var.varname, var.defaultIntVal);
   }
 
+  public static void setIntVar(Configuration conf, ConfVars var, int val) {
+    assert (var.valClass == Integer.class);
+    conf.setInt(var.varname, val);
+  }
+
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
+  }
+
+  public void setIntVar(ConfVars var, int val) {
+    setIntVar(this, var, val);
   }
 
   public static long getLongVar(Configuration conf, ConfVars var) {
@@ -273,8 +283,17 @@ public class HiveConf extends Configuration {
     return conf.getLong(var.varname, var.defaultLongVal);
   }
 
+  public static void setLongVar(Configuration conf, ConfVars var, long val) {
+    assert (var.valClass == Long.class);
+    conf.setLong(var.varname, val);
+  }
+
   public long getLongVar(ConfVars var) {
     return getLongVar(this, var);
+  }
+
+  public void setLongVar(ConfVars var, long val) {
+    setLongVar(this, var, val);
   }
 
   public static float getFloatVar(Configuration conf, ConfVars var) {
@@ -282,8 +301,17 @@ public class HiveConf extends Configuration {
     return conf.getFloat(var.varname, var.defaultFloatVal);
   }
 
+  public static void setFloatVar(Configuration conf, ConfVars var, float val) {
+    assert (var.valClass == Float.class);
+    ShimLoader.getHadoopShims().setFloatConf(conf, var.varname, val);
+  }
+
   public float getFloatVar(ConfVars var) {
     return getFloatVar(this, var);
+  }
+
+  public void setFloatVar(ConfVars var, float val) {
+    setFloatVar(this, var, val);
   }
 
   public static boolean getBoolVar(Configuration conf, ConfVars var) {
@@ -291,8 +319,17 @@ public class HiveConf extends Configuration {
     return conf.getBoolean(var.varname, var.defaultBoolVal);
   }
 
+  public static void setBoolVar(Configuration conf, ConfVars var, boolean val) {
+    assert (var.valClass == Boolean.class);
+    conf.setBoolean(var.varname, val);
+  }
+
   public boolean getBoolVar(ConfVars var) {
     return getBoolVar(this, var);
+  }
+
+  public void setBoolVar(ConfVars var, boolean val) {
+    setBoolVar(this, var, val);
   }
 
   public static String getVar(Configuration conf, ConfVars var) {

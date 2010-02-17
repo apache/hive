@@ -117,4 +117,8 @@ public class Hadoop18Shims implements HadoopShims {
   public long getAccessTime(FileStatus file) {
     return -1;
   }
+
+  public void setFloatConf(Configuration conf, String varName, float val) {
+    conf.set(varName, Float.toString(val));
+  }
 }

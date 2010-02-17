@@ -87,6 +87,9 @@ Trunk -  Unreleased
     HIVE-1158. Introducing a new parameter for Map-side join bucket size.
     (Ning Zhang via zshao)
 
+    HIVE-1136. Add type-checking setters for HiveConf class.
+    (John Sichi via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

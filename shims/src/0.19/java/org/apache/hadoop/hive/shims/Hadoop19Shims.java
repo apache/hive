@@ -470,4 +470,8 @@ public class Hadoop19Shims implements HadoopShims {
     ret[1] = tid.getJobID().toString();
     return ret;
   }
+
+  public void setFloatConf(Configuration conf, String varName, float val) {
+    conf.set(varName, Float.toString(val));
+  }
 }

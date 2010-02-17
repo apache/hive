@@ -332,4 +332,7 @@ public class Hadoop20Shims implements HadoopShims {
     return ret;
   }
 
+  public void setFloatConf(Configuration conf, String varName, float val) {
+    conf.setFloat(varName, val);
+  }
 }
