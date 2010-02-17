@@ -193,9 +193,12 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return joinOutputObjectInspector;
   }
 
+  Configuration hconf;
+
   protected void initializeOp(Configuration hconf) throws HiveException {
     LOG.info("COMMONJOIN " + ((StructObjectInspector)inputObjInspectors[0]).getTypeName());
     totalSz = 0;
+    this.hconf = hconf;
     // Map that contains the rows for each alias
     storage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
 
@@ -232,29 +235,13 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
         nr.add(null);
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
-      RowContainer<ArrayList<Object>> values = new RowContainer<ArrayList<Object>>(1);
+      RowContainer<ArrayList<Object>> values = getRowContainer(hconf, pos, alias, 1);
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
       // if serde is null, the input doesn't need to be spilled out 
       // e.g., the output columns does not contains the input table
-      SerDe serde = getSpillSerDe(pos);
-      RowContainer rc = new RowContainer(joinCacheSize);
-      if ( serde != null ) {
-        
-        // arbitrary column names used internally for serializing to spill table
-        List<String> colList = new ArrayList<String>();
-        for ( int i = 0; i < sz; ++i )
-          colList.add(alias + "_VAL_" + i);
-        
-        // object inspector for serializing input tuples
-        StructObjectInspector rcOI = 
-          ObjectInspectorFactory.getStandardStructObjectInspector(
-                            colList,
-                            joinValuesStandardObjectInspectors.get(pos));
-        
-        rc.setSerDe(serde, rcOI);
-      }
+      RowContainer rc = getRowContainer(hconf, pos, alias, joinCacheSize);
       storage.put(pos, rc);
       pos++;
     }
@@ -787,6 +774,30 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    */
   public void setPosToAliasMap(Map<Integer, Set<String>> posToAliasMap) {
     this.posToAliasMap = posToAliasMap;
+  }
+  
+  RowContainer getRowContainer(Configuration hconf, byte pos, Byte alias,
+      int containerSize) throws HiveException {
+    tableDesc tblDesc = getSpillTableDesc(alias);
+    SerDe serde = getSpillSerDe(alias);
+
+    if (serde == null) {
+      containerSize = 1;
+    }
+
+    RowContainer rc = new RowContainer(containerSize);
+    StructObjectInspector rcOI = null;
+    if (tblDesc != null) {
+      // arbitrary column names used internally for serializing to spill table
+      List<String> colNames = Utilities.getColumnNames(tblDesc.getProperties());
+      // object inspector for serializing input tuples
+      rcOI = ObjectInspectorFactory.getStandardStructObjectInspector(colNames,
+          joinValuesStandardObjectInspectors.get(pos));
+    }
+
+    rc.setSerDe(serde, rcOI);
+    rc.setTableDesc(tblDesc);
+    return rc;
   }
 
 }

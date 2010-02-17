@@ -80,14 +80,23 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
     SerDe      serde;
-
+    tableDesc tblDesc;
+    Configuration conf;
+    
     /**
      * @param standardOI
      * @param serde
      */
     public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde) {
+      this(standardOI, serde, null, null);
+    }
+    
+    public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde,
+        tableDesc tblDesc, Configuration conf) {
       this.standardOI = standardOI;
       this.serde = serde;
+      this.tblDesc = tblDesc;
+      this.conf = conf;
     }
 
     /**
@@ -104,6 +113,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       return serde;
     }
 
+    public tableDesc getTblDesc() {
+      return tblDesc;
+    }
+
+    public Configuration getConf() {
+      return conf;
+    }
+    
   }
 
   transient static Map<Integer, MapJoinObjectCtx> mapMetadata = new HashMap<Integer, MapJoinObjectCtx>();
@@ -214,7 +231,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
               new MapJoinObjectCtx(
                   ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
                       ObjectInspectorCopyOption.WRITABLE),
-                  keySerializer));
+                  keySerializer, keyTableDesc, hconf));
 
           firstRow = false;
         }
@@ -240,8 +257,9 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
         boolean needNewKey = true;
         if (o == null) {
-          res = new RowContainer();
-        	res.add(value);
+          int bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+          res = new RowContainer(bucketSize);
+          res.add(value);
         } else {
           res = o.getObj();
           res.add(value);
@@ -266,13 +284,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
                           new MapJoinObjectCtx(
                                 ObjectInspectorUtils.getStandardObjectInspector(valueSerDe.getObjectInspector(),
                                   ObjectInspectorCopyOption.WRITABLE),
-                                valueSerDe));
+                                valueSerDe, valueTableDesc, hconf));
         }
         
         // Construct externalizable objects for key and value
         if ( needNewKey ) {
           MapJoinObjectKey keyObj = new MapJoinObjectKey(metadataKeyTag, key);
-	        MapJoinObjectValue valueObj = new MapJoinObjectValue(metadataValueTag[tag], res);
+          MapJoinObjectValue valueObj = new MapJoinObjectValue(metadataValueTag[tag], res);
+          valueObj.setConf(hconf);
           
           // This may potentially increase the size of the hashmap on the mapper
   	      if (res.size() > mapJoinRowsKey) {

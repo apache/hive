@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -89,6 +90,7 @@ public class RowContainer<Row extends List> {
   private SerDe serde;       // serialization/deserialization for the row
   private ObjectInspector standardOI;  // object inspector for the row
   private ArrayList dummyRow; // representing empty row (no columns since value art is null)
+  private tableDesc tblDesc;
   
   public RowContainer() {
     this(BLOCKSIZE);
@@ -329,5 +331,9 @@ public class RowContainer<Row extends List> {
       return null;
     }
     return currBlock;
+  }
+  
+  public void setTableDesc(tableDesc tblDesc) {
+    this.tblDesc = tblDesc;
   }
 }

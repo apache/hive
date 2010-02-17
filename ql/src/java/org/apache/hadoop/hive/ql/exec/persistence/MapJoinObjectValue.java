@@ -24,13 +24,16 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * Map Join Object used for both key and value
@@ -39,8 +42,11 @@ public class MapJoinObjectValue implements Externalizable {
 
   transient protected int     metadataTag;
   transient protected RowContainer obj;
+  transient protected Configuration conf;
+  transient protected int bucketSize;
 
   public MapJoinObjectValue() {
+    this.bucketSize = 100;
   }
 
   /**
@@ -50,6 +56,7 @@ public class MapJoinObjectValue implements Externalizable {
   public MapJoinObjectValue(int metadataTag, RowContainer obj) {
     this.metadataTag = metadataTag;
     this.obj = obj;
+    this.bucketSize = 100;
   }
   
   public boolean equals(Object o) {
@@ -80,7 +87,9 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
-      RowContainer res = new RowContainer();
+      RowContainer res = new RowContainer(bucketSize);
+      res.setSerDe(ctx.getSerDe(), ctx.getStandardOI());
+      res.setTableDesc(ctx.getTblDesc());
       for (int pos = 0; pos < sz; pos++) {
         Writable val = ctx.getSerDe().getSerializedClass().newInstance();
         val.readFields(in);
@@ -152,4 +161,8 @@ public class MapJoinObjectValue implements Externalizable {
     this.obj = obj;
   }
 
+  public void setConf(Configuration conf) {
+    this.conf = conf;
+    bucketSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
+  }
 }

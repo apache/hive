@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -832,6 +833,20 @@ public class Utilities {
     List<String> names = new ArrayList<String>();
     for (FieldSchema o : partCols) {
       names.add(o.getName());
+    }
+    return names;
+  }
+
+  public static List<String> getColumnNames(Properties props) {
+    List<String> names = new ArrayList<String>();
+    String colNames = props.getProperty(Constants.LIST_COLUMNS);
+    String[] cols = colNames.trim().split(",");
+    if (cols != null) {
+      for (String col : cols) {
+        if (col != null && !col.trim().equals("")) {
+          names.add(col);
+        }
+      }
     }
     return names;
   }

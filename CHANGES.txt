@@ -107,6 +107,9 @@ Release 0.5.0 -  Unreleased
     HIVE-1106. Support ALTER TABLE t ADD IF NOT EXIST PARTITION.
     (Paul Yang via zshao)
 
+    HIVE-1158. New parameter for specifying map join size
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
