@@ -103,7 +103,7 @@
 
 <property>
   <name>hive.jar.path</name>
-  <value>${build.dir.hive}/ql/hive_exec.jar</value>
+  <value>${build.dir.hive}/ql/hive-exec-${version}.jar</value>
   <description></description>
 </property>
 

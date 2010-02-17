@@ -188,6 +188,9 @@ Trunk -  Unreleased
     HIVE-1174. Fix Job counter error if "hive.merge.mapfiles" equals true.
     (Yongqiang He via zshao)
 
+    HIVE-1163. Eclipse launchtemplate changes to enable debugging.
+    (Ning Zhang and Carl Steinbach via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -342,6 +342,7 @@
         <filter token="JETTYJAR" value="${jetty.jar}"/>
         <filter token="JETTYUTILJAR" value="${jetty.util.jar}"/>
         <filter token="SERVLETAPIJAR" value="${servlet-api.jar}"/>
+        <filter token="HIVE_VERSION" value="${version}"/>
       </filterset>
     </copy>
     <move todir="." includeemptydirs="false">
