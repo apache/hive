@@ -74,6 +74,7 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
+import org.apache.hadoop.mapred.Partitioner;
 
 /**
  * ExecDriver.
@@ -176,10 +177,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   /**
    * In Hive, when the user control-c's the command line, any running jobs
    * spawned from that command line are best-effort killed.
-   * 
+   *
    * This static constructor registers a shutdown thread to iterate over all the
    * running job kill URLs and do a get on them.
-   * 
+   *
    */
   static {
     if (new org.apache.hadoop.conf.Configuration().getBoolean(
@@ -271,7 +272,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    * regular joins rather than map-side joins. Fatal errors are indicated by
    * counters that are set at execution time. If the counter is non-zero, a
    * fatal error occurred. The value of the counter indicates the error type.
-   * 
+   *
    * @return true if fatal errors happened during job execution, false
    *         otherwise.
    */
@@ -374,7 +375,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   /**
    * Estimate the number of reducers needed for this job, based on job input,
    * and configuration parameters.
-   * 
+   *
    * @return the number of reducers.
    */
   public int estimateNumberOfReducers(HiveConf hive, JobConf job,
@@ -439,7 +440,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   /**
    * Calculate the total size of input files.
-   * 
+   *
    * @param job
    *          the hadoop job conf.
    * @return the total size in bytes.
@@ -553,6 +554,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
     job.setMapOutputKeyClass(HiveKey.class);
     job.setMapOutputValueClass(BytesWritable.class);
+
+    try {
+      job.setPartitionerClass((Class<? extends Partitioner>)
+         (Class.forName(HiveConf.getVar(job, HiveConf.ConfVars.HIVEPARTITIONER))));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e.getMessage());
+    }
+
     if (work.getNumMapTasks() != null) {
       job.setNumMapTasks(work.getNumMapTasks().intValue());
     }
@@ -735,7 +744,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   /**
    * This msg pattern is used to track when a job is started.
-   * 
+   *
    * @param jobId
    * @return
    */
@@ -745,7 +754,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
   /**
    * this msg pattern is used to track when a job is successfully done.
-   * 
+   *
    * @param jobId
    * @return
    */

@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
+          <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266298177</string> 
+          <string>1266455880</string> 
          </void> 
         </object> 
        </void> 
@@ -717,7 +717,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -729,7 +729,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -786,11 +786,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src</string> 
+           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1266298177</string> 
+           <string>1266455880</string> 
           </void> 
          </object> 
         </void> 
@@ -837,7 +837,10 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-29-38_957_527138540583907850/10001</string> 
+                     <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-01_084_2871398099488603052/10001</string> 
+                    </void> 
+                    <void property="numFiles"> 
+                     <int>1</int> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -867,6 +870,9 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="totalFiles"> 
+                     <int>1</int> 
                     </void> 
                    </object> 
                   </void> 

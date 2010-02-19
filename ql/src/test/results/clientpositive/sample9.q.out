@@ -47,7 +47,8 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
-                      directory: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_719_4292341676089982864/10001
+                      directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-27-34_917_490221468766104547/10001
+                      NumFilesPerFileSink: 1
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -55,11 +56,13 @@ STAGE PLANS:
                             columns _col0,_col1
                             columns.types int:string
                             serialization.format 1
+                      TotalFiles: 1
+                      MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s:a]
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s:a]
       Path -> Partition:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
           Partition
             base file name: srcbucket0.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -71,12 +74,12 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket
+              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket
               name srcbucket
               serialization.ddl struct srcbucket { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266042876
+              transient_lastDdlTime 1266452853
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -88,12 +91,12 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/test/data/warehouse/srcbucket
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket
                 name srcbucket
                 serialization.ddl struct srcbucket { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266042876
+                transient_lastDdlTime 1266452853
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -107,12 +110,12 @@ PREHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_768_5670830109541358579/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-27-35_233_6622042744082355796/10000
 POSTHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-34-36_768_5670830109541358579/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-27-35_233_6622042744082355796/10000
 474	val_475
 62	val_63
 468	val_469

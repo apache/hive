@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * FileSinkDesc.
@@ -33,17 +34,26 @@ public class FileSinkDesc implements Serializable {
   private int destTableId;
   private String compressCodec;
   private String compressType;
+  private boolean multiFileSpray;
+  private int     totalFiles;
+  private ArrayList<ExprNodeDesc> partitionCols;
+  private int     numFiles;
 
   public FileSinkDesc() {
   }
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
-      final boolean compressed, int destTableId) {
+      final boolean compressed, final int destTableId, final boolean multiFileSpray,
+      final int numFiles, final int totalFiles, final ArrayList<ExprNodeDesc> partitionCols) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
     this.compressed = compressed;
     this.destTableId = destTableId;
+    this.multiFileSpray = multiFileSpray;
+    this.numFiles = numFiles;
+    this.totalFiles = totalFiles;
+    this.partitionCols = partitionCols;
   }
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
@@ -53,6 +63,10 @@ public class FileSinkDesc implements Serializable {
     this.tableInfo = tableInfo;
     this.compressed = compressed;
     destTableId = 0;
+    this.multiFileSpray = false;
+    this.numFiles = 1;
+    this.totalFiles = 1;
+    this.partitionCols = null;
   }
 
   @Explain(displayName = "directory", normalExplain = false)
@@ -105,5 +119,64 @@ public class FileSinkDesc implements Serializable {
 
   public void setCompressType(String intermediateCompressType) {
     compressType = intermediateCompressType;
+  }
+
+  /**
+   * @return the multiFileSpray
+   */
+  @Explain(displayName = "MultiFileSpray", normalExplain = false)
+  public boolean isMultiFileSpray() {
+    return multiFileSpray;
+  }
+
+  /**
+   * @param multiFileSpray the multiFileSpray to set
+   */
+  public void setMultiFileSpray(boolean multiFileSpray) {
+    this.multiFileSpray = multiFileSpray;
+  }
+
+  /**
+   * @return the totalFiles
+   */
+  @Explain(displayName = "TotalFiles", normalExplain = false)
+  public int getTotalFiles() {
+    return totalFiles;
+  }
+
+  /**
+   * @param totalFiles the totalFiles to set
+   */
+  public void setTotalFiles(int totalFiles) {
+    this.totalFiles = totalFiles;
+  }
+
+  /**
+   * @return the partitionCols
+   */
+  public ArrayList<ExprNodeDesc> getPartitionCols() {
+    return partitionCols;
+  }
+
+  /**
+   * @param partitionCols the partitionCols to set
+   */
+  public void setPartitionCols(ArrayList<ExprNodeDesc> partitionCols) {
+    this.partitionCols = partitionCols;
+  }
+
+  /**
+   * @return the numFiles
+   */
+  @Explain(displayName = "NumFilesPerFileSink", normalExplain = false)
+  public int getNumFiles() {
+    return numFiles;
+  }
+
+  /**
+   * @param numFiles the numFiles to set
+   */
+  public void setNumFiles(int numFiles) {
+    this.numFiles = numFiles;
   }
 }

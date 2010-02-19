@@ -20,23 +20,33 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * File Sink operator implementation.
@@ -55,14 +65,29 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private static final long serialVersionUID = 1L;
-  protected transient RecordWriter outWriter;
   protected transient FileSystem fs;
-  protected transient Path outPath;
-  protected transient Path finalPath;
   protected transient Serializer serializer;
   protected transient BytesWritable commonKey = new BytesWritable();
   protected transient TableIdEnum tabIdEnum = null;
   private transient LongWritable row_count;
+
+  /**
+   * The evaluators for the multiFile sprayer. If the table under consideration has 1000 buckets,
+   * it is not a good idea to start so many reducers - if the maximum number of reducers is 100,
+   * each reducer can write 10 files - this way we effectively get 1000 files.
+   */
+  private transient ExprNodeEvaluator[] partitionEval;
+  private transient int      totalFiles;
+  private transient int      numFiles;
+  private transient boolean  multiFileSpray;
+  private transient Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
+
+  private transient RecordWriter[] outWriters;
+  private transient Path[] outPaths;
+  private transient Path[] finalPaths;
+  private transient ObjectInspector[] partitionObjectInspectors;
+  private transient HivePartitioner<HiveKey, Object> prtner;
+  private transient HiveKey key = new HiveKey();
 
   /**
    * TableIdEnum.
@@ -88,11 +113,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   protected transient boolean autoDelete = false;
 
-  private void commit() throws IOException {
-    if (!fs.rename(outPath, finalPath)) {
-      throw new IOException("Unable to rename output to: " + finalPath);
+  private void commit(int idx) throws IOException {
+    if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+      throw new IOException("Unable to rename output to: " + finalPaths[idx]);
     }
-    LOG.info("Committed to output file: " + finalPath);
+    LOG.info("Committed " + outPaths[idx] + " to output file: " + finalPaths[idx]);
   }
 
   @Override
@@ -110,42 +135,97 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         jc = new JobConf(hconf, ExecDriver.class);
       }
 
+      multiFileSpray = conf.isMultiFileSpray();
+      totalFiles = conf.getTotalFiles();
+      numFiles   = conf.getNumFiles();
+
+      if (multiFileSpray) {
+        partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
+        int i = 0;
+        for (ExprNodeDesc e : conf.getPartitionCols()) {
+          partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
+        }
+
+        partitionObjectInspectors = initEvaluators(partitionEval, outputObjInspector);
+        prtner = (HivePartitioner<HiveKey, Object>)ReflectionUtils.newInstance(jc.getPartitionerClass(), null);
+      }
+
+      outWriters = new RecordWriter[numFiles];
+      outPaths   = new Path[numFiles];
+      finalPaths = new Path[numFiles];
+
+      String specPath = conf.getDirName();
+      Path tmpPath = Utilities.toTempPath(specPath);
+      Set<Integer> seenBuckets = new HashSet<Integer>();
+      fs = (new Path(specPath)).getFileSystem(hconf);
+
+      HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo()
+        .getOutputFileFormatClass().newInstance();
+      boolean isCompressed = conf.getCompressed();
+      Path parent = Utilities.toTempPath(specPath);
+      final Class<? extends Writable> outputClass = serializer.getSerializedClass();
+
+      // Create all the files - this is required because empty files need to be created for empty buckets
+      int filesIdx = 0;
+      for (int idx = 0; idx < totalFiles; idx++) {
+        String taskId = Utilities.getTaskId(hconf);
+
+        if (multiFileSpray) {
+          key.setHashCode(idx);
+
+          // Does this hashcode belong to this reducer
+          int numReducers = totalFiles/numFiles;
+
+          if (numReducers > 1) {
+            int currReducer = Integer.valueOf(Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf)));
+
+            int reducerIdx = prtner.getPartition(key, null, numReducers);
+            if (currReducer != reducerIdx)
+              continue;
+          }
+
+          int bucketNum = prtner.getBucket(key, null, totalFiles);
+          if (seenBuckets.contains(bucketNum))
+            continue;
+          seenBuckets.add(bucketNum);
+
+          bucketMap.put(bucketNum, filesIdx);
+          taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
+        }
+
+        finalPaths[filesIdx] = new Path(tmpPath, taskId);
+        LOG.info("Final Path: FS " + finalPaths[filesIdx]);
+
+        outPaths[filesIdx] = new Path(tmpPath, Utilities.toTempPath(taskId));
+
+        LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
+
+        // The reason to keep these instead of using
+        // OutputFormat.getRecordWriter() is that
+        // getRecordWriter does not give us enough control over the file name that
+        // we create.
+        finalPaths[filesIdx] = HiveFileFormatUtils.getOutputFormatFinalPath(parent, taskId, jc,
+                                                                            hiveOutputFormat, isCompressed, finalPaths[filesIdx]);
+        LOG.info("New Final Path: FS " + finalPaths[filesIdx]);
+
+        outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf
+                                                                       .getTableInfo(), outputClass, conf, outPaths[filesIdx]);
+
+        filesIdx++;
+      }
+
+      assert filesIdx == numFiles;
+
+      // in recent hadoop versions, use deleteOnExit to clean tmp files.
+      autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, outPaths[0]);
+
       int id = conf.getDestTableId();
       if ((id != 0) && (id <= TableIdEnum.values().length)) {
         String enumName = "TABLE_ID_" + String.valueOf(id) + "_ROWCOUNT";
         tabIdEnum = TableIdEnum.valueOf(enumName);
         row_count = new LongWritable();
         statsMap.put(tabIdEnum, row_count);
-
       }
-      String specPath = conf.getDirName();
-      Path tmpPath = Utilities.toTempPath(specPath);
-      String taskId = Utilities.getTaskId(hconf);
-      fs = (new Path(specPath)).getFileSystem(hconf);
-      finalPath = new Path(tmpPath, taskId);
-      outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
-
-      LOG.info("Writing to temp file: FS " + outPath);
-
-      HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo()
-          .getOutputFileFormatClass().newInstance();
-      boolean isCompressed = conf.getCompressed();
-
-      // The reason to keep these instead of using
-      // OutputFormat.getRecordWriter() is that
-      // getRecordWriter does not give us enough control over the file name that
-      // we create.
-      Path parent = Utilities.toTempPath(specPath);
-      finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc,
-          hiveOutputFormat, isCompressed, finalPath);
-      final Class<? extends Writable> outputClass = serializer
-          .getSerializedClass();
-      outWriter = HiveFileFormatUtils.getHiveRecordWriter(jc, conf
-          .getTableInfo(), outputClass, conf, outPath);
-
-      // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
-          outPath);
 
       initializeChildren(hconf);
     } catch (HiveException e) {
@@ -180,7 +260,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         row_count.set(row_count.get() + 1);
       }
 
-      outWriter.write(recordValue);
+      if (!multiFileSpray) {
+        outWriters[0].write(recordValue);
+      }
+      else {
+        int keyHashCode = 0;
+        for (int i = 0; i < partitionEval.length; i++) {
+          Object o = partitionEval[i].evaluate(row);
+          keyHashCode = keyHashCode * 31
+              + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
+        }
+        key.setHashCode(keyHashCode);
+        int bucketNum = prtner.getBucket(key, null, totalFiles);
+        int idx = bucketMap.get(bucketNum);
+        outWriters[bucketMap.get(bucketNum)].write(recordValue);
+      }
     } catch (IOException e) {
       throw new HiveException(e);
     } catch (SerDeException e) {
@@ -192,12 +286,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void closeOp(boolean abort) throws HiveException {
 
     if (!abort) {
-      if (outWriter != null) {
-        try {
-          outWriter.close(abort);
-          commit();
-        } catch (IOException e) {
-          throw new HiveException(e);
+      for (int idx = 0; idx < numFiles; idx++) {
+        if (outWriters[idx] != null) {
+          try {
+            outWriters[idx].close(abort);
+            commit(idx);
+          } catch (IOException e) {
+            throw new HiveException(e);
+          }
         }
       }
     } else {
@@ -205,9 +301,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hadoop always call close() even if an Exception was thrown in map() or
       // reduce().
       try {
-        outWriter.close(abort);
-        if (!autoDelete) {
-          fs.delete(outPath, true);
+        for (int idx = 0; idx < numFiles; idx++) {
+          outWriters[idx].close(abort);
+          if (!autoDelete) {
+            fs.delete(outPaths[idx], true);
+          }
         }
       } catch (Exception e) {
         e.printStackTrace();

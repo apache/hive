@@ -308,16 +308,16 @@
 <property>
   <name>hive.skewjoin.mapjoin.map.tasks</name>
   <value>10000</value>
-  <description> Determine the number of map task used in the follow up map join job 
-	for a skew join. It should be used together with hive.skewjoin.mapjoin.min.split 
+  <description> Determine the number of map task used in the follow up map join job
+	for a skew join. It should be used together with hive.skewjoin.mapjoin.min.split
 	to perform a fine grained control.</description>
 </property>
 
 <property>
   <name>hive.skewjoin.mapjoin.min.split</name>
   <value>33554432</value>
-  <description> Determine the number of map task at most used in the follow up map join job 
-	for a skew join by specifying the minimum split size. It should be used together with 
+  <description> Determine the number of map task at most used in the follow up map join job
+	for a skew join by specifying the minimum split size. It should be used together with
 	hive.skewjoin.mapjoin.map.tasks to perform a fine grained control.</description>
 </property>
 
@@ -459,6 +459,12 @@
   <name>hive.mapred.reduce.tasks.speculative.execution</name>
   <value>true</value>
   <description>Whether speculative execution for reducers should be turned on. </description>
+</property>
+
+<property>
+  <name>hive.enforce.bucketing</name>
+  <value>false</value>
+  <description>Whether bucketing is enforced. If true, while inserting into the table, bucketing is enforced. </description>
 </property>
 
 </configuration>

@@ -300,7 +300,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * DFS-scan the expressionTree to find all aggregation subtrees and put them
    * in aggregations.
-   * 
+   *
    * @param expressionTree
    * @param aggregations
    *          the key to the HashTable is the toStringTree() representation of
@@ -353,7 +353,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Goes though the tabref tree and finds the alias for the table. Once found,
    * it records the table name-> alias association in aliasToTabs. It also makes
    * an association from the alias to the table AST in parse info.
-   * 
+   *
    * @return the alias of the table
    */
   private String processTable(QB qb, ASTNode tabref) throws SemanticException {
@@ -469,7 +469,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Given the AST with TOK_JOIN as the root, get all the aliases for the tables
    * or subqueries in the join.
-   * 
+   *
    * @param qb
    * @param join
    * @throws SemanticException
@@ -505,7 +505,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Given the AST with TOK_LATERAL_VIEW as the root, get the alias for the
    * table or subquery in the lateral view and also make a mapping from the
    * alias to all the lateral view AST's.
-   * 
+   *
    * @param qb
    * @param lateralView
    * @return the alias for the table/subquery
@@ -541,7 +541,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Phase 1: (including, but not limited to):
-   * 
+   *
    * 1. Gets all the aliases for all the tables / subqueries and makes the
    * appropriate mapping in aliasToTabs, aliasToSubq 2. Gets the location of the
    * destination and names the clase "inclause" + i 3. Creates a map from a
@@ -549,7 +549,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * 4. Creates a mapping from the clause name to the select expression AST in
    * destToSelExpr 5. Creates a mapping from a table alias to the lateral view
    * AST's in aliasToLateralViews
-   * 
+   *
    * @param ast
    * @param qb
    * @param ctx_1
@@ -996,7 +996,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * condition involves both subtrees and is not a equality. Also, we only
    * support AND i.e ORs are not supported currently as their semantics are not
    * very clear, may lead to data explosion and there is no usecase.
-   * 
+   *
    * @param joinTree
    *          jointree to be populated
    * @param joinCond
@@ -1140,7 +1140,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * create a filter plan. The condition and the inputs are specified.
-   * 
+   *
    * @param qb
    *          current query block
    * @param condn
@@ -1898,7 +1898,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Returns the GenericUDAFInfo struct for the aggregation.
-   * 
+   *
    * @param aggName
    *          The name of the UDAF.
    * @param aggParameters
@@ -1962,7 +1962,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
-   * 
+   *
    * @param mode
    *          The mode of the aggregation (PARTIAL1 or COMPLETE)
    * @param genericUDAFEvaluators
@@ -2062,7 +2062,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
-   * 
+   *
    * @param mode
    *          The mode of the aggregation (MERGEPARTIAL, PARTIAL2)
    * @param genericUDAFEvaluators
@@ -2190,7 +2190,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the map-side GroupByOperator for the Query Block
    * (qb.getParseInfo().getXXX(dest)). The new GroupByOperator will be a child
    * of the inputOperatorInfo.
-   * 
+   *
    * @param mode
    *          The mode of the aggregation (HASH)
    * @param genericUDAFEvaluators
@@ -2303,10 +2303,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the ReduceSinkOperator for the Group By Query Block
    * (qb.getPartInfo().getXXX(dest)). The new ReduceSinkOperator will be a child
    * of inputOperatorInfo.
-   * 
+   *
    * It will put all Group By keys and the distinct field (if any) in the
    * map-reduce sort key, and all other fields in the map-reduce value.
-   * 
+   *
    * @param numPartitionFields
    *          the number of fields for map-reduce partitioning. This is usually
    *          the number of fields in the Group By keys.
@@ -2425,10 +2425,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the second ReduceSinkOperator for the Group By Plan
    * (parseInfo.getXXX(dest)). The new ReduceSinkOperator will be a child of
    * groupByOperatorInfo.
-   * 
+   *
    * The second ReduceSinkOperator will put the group by keys in the map-reduce
    * sort key, and put the partial aggregation results in the map-reduce value.
-   * 
+   *
    * @param numPartitionFields
    *          the number of fields in the map-reduce partition key. This should
    *          always be the same as the number of Group By keys. We should be
@@ -2498,7 +2498,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the second GroupByOperator for the Group By Plan
    * (parseInfo.getXXX(dest)). The new GroupByOperator will do the second
    * aggregation based on the partial aggregation results.
-   * 
+   *
    * @param mode
    *          the mode of aggregation (FINAL)
    * @param genericUDAFEvaluators
@@ -2587,26 +2587,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generate a Group-By plan using a single map-reduce job (3 operators will be
    * inserted):
-   * 
+   *
    * ReduceSink ( keys = (K1_EXP, K2_EXP, DISTINCT_EXP), values = (A1_EXP,
    * A2_EXP) ) SortGroupBy (keys = (KEY.0,KEY.1), aggregations =
    * (count_distinct(KEY.2), sum(VALUE.0), count(VALUE.1))) Select (final
    * selects).
-   * 
+   *
    * @param dest
    * @param qb
    * @param input
    * @return
    * @throws SemanticException
-   * 
+   *
    *           Generate a Group-By plan using 1 map-reduce job. Spray by the
    *           group by key, and sort by the distinct key (if any), and compute
    *           aggregates * The agggregation evaluation functions are as
    *           follows: Partitioning Key: grouping key
-   * 
+   *
    *           Sorting Key: grouping key if no DISTINCT grouping + distinct key
    *           if DISTINCT
-   * 
+   *
    *           Reducer: iterate/merge (mode = COMPLETE)
    **/
   @SuppressWarnings({"unused", "nls"})
@@ -2643,30 +2643,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Generate a Multi Group-By plan using a 2 map-reduce jobs.
-   * 
+   *
    * @param dest
    * @param qb
    * @param input
    * @return
    * @throws SemanticException
-   * 
+   *
    *           Generate a Group-By plan using a 2 map-reduce jobs. Spray by the
    *           distinct key in hope of getting a uniform distribution, and
    *           compute partial aggregates by the grouping key. Evaluate partial
    *           aggregates first, and spray by the grouping key to compute actual
    *           aggregates in the second phase. The agggregation evaluation
    *           functions are as follows: Partitioning Key: distinct key
-   * 
+   *
    *           Sorting Key: distinct key
-   * 
+   *
    *           Reducer: iterate/terminatePartial (mode = PARTIAL1)
-   * 
+   *
    *           STAGE 2
-   * 
+   *
    *           Partitioning Key: grouping key
-   * 
+   *
    *           Sorting Key: grouping key
-   * 
+   *
    *           Reducer: merge/terminate (mode = FINAL)
    */
   @SuppressWarnings("nls")
@@ -2701,20 +2701,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generate a Group-By plan using a 2 map-reduce jobs (5 operators will be
    * inserted):
-   * 
+   *
    * ReduceSink ( keys = (K1_EXP, K2_EXP, DISTINCT_EXP), values = (A1_EXP,
    * A2_EXP) ) NOTE: If DISTINCT_EXP is null, partition by rand() SortGroupBy
    * (keys = (KEY.0,KEY.1), aggregations = (count_distinct(KEY.2), sum(VALUE.0),
    * count(VALUE.1))) ReduceSink ( keys = (0,1), values=(2,3,4)) SortGroupBy
    * (keys = (KEY.0,KEY.1), aggregations = (sum(VALUE.0), sum(VALUE.1),
    * sum(VALUE.2))) Select (final selects).
-   * 
+   *
    * @param dest
    * @param qb
    * @param input
    * @return
    * @throws SemanticException
-   * 
+   *
    *           Generate a Group-By plan using a 2 map-reduce jobs. Spray by the
    *           grouping key and distinct key (or a random number, if no distinct
    *           is present) in hope of getting a uniform distribution, and
@@ -2724,19 +2724,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *           phase. The agggregation evaluation functions are as follows:
    *           Partitioning Key: random() if no DISTINCT grouping + distinct key
    *           if DISTINCT
-   * 
+   *
    *           Sorting Key: grouping key if no DISTINCT grouping + distinct key
    *           if DISTINCT
-   * 
+   *
    *           Reducer: iterate/terminatePartial (mode = PARTIAL1)
-   * 
+   *
    *           STAGE 2
-   * 
+   *
    *           Partitioning Key: grouping key
-   * 
+   *
    *           Sorting Key: grouping key if no DISTINCT grouping + distinct key
    *           if DISTINCT
-   * 
+   *
    *           Reducer: merge/terminate (mode = FINAL)
    */
   @SuppressWarnings("nls")
@@ -2800,15 +2800,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * we may turn off map-side partial aggregation based on its performance. Then
    * spray by the group by key, and sort by the distinct key (if any), and
    * compute aggregates based on actual aggregates
-   * 
+   *
    * The agggregation evaluation functions are as follows: Mapper:
    * iterate/terminatePartial (mode = HASH)
-   * 
+   *
    * Partitioning Key: grouping key
-   * 
+   *
    * Sorting Key: grouping key if no DISTINCT grouping + distinct key if
    * DISTINCT
-   * 
+   *
    * Reducer: iterate/terminate if DISTINCT merge/terminate if NO DISTINCT (mode
    * = MERGEPARTIAL)
    */
@@ -2864,23 +2864,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * key). Evaluate partial aggregates first, and spray by the grouping key to
    * compute actual aggregates in the second phase. The agggregation evaluation
    * functions are as follows: Mapper: iterate/terminatePartial (mode = HASH)
-   * 
+   *
    * Partitioning Key: random() if no DISTINCT grouping + distinct key if
    * DISTINCT
-   * 
+   *
    * Sorting Key: grouping key if no DISTINCT grouping + distinct key if
    * DISTINCT
-   * 
+   *
    * Reducer: iterate/terminatePartial if DISTINCT merge/terminatePartial if NO
    * DISTINCT (mode = MERGEPARTIAL)
-   * 
+   *
    * STAGE 2
-   * 
+   *
    * Partitioining Key: grouping key
-   * 
+   *
    * Sorting Key: grouping key if no DISTINCT grouping + distinct key if
    * DISTINCT
-   * 
+   *
    * Reducer: merge/terminate (mode = FINAL)
    */
   @SuppressWarnings("nls")
@@ -2890,7 +2890,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     // ////// Generate GroupbyOperator for a map-side partial aggregation
-    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators = 
+    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators =
       new LinkedHashMap<String, GenericUDAFEvaluator>();
     GroupByOperator groupByOperatorInfo = (GroupByOperator) genGroupByPlanMapGroupByOperator(
         qb, dest, inputOperatorInfo, GroupByDesc.Mode.HASH,
@@ -2961,6 +2961,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return input;
   }
 
+  private int getReducersBucketing(int totalFiles, int maxReducers) {
+    int numFiles = totalFiles/maxReducers;
+    while (true) {
+      if (totalFiles%numFiles == 0)
+        return totalFiles/numFiles;
+      numFiles++;
+    }
+  }
+
   @SuppressWarnings("nls")
   private Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
@@ -2975,11 +2984,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     TableDesc table_desc = null;
     int currentTableId = 0;
     boolean isLocal = false;
+    boolean multiFileSpray = false;
+    int numFiles = 1;
+    int totalFiles = 1;
+    ArrayList<ExprNodeDesc> partnCols = null;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
+
+      // If the table is bucketed, and bucketing is enforced, do the following:
+      // If the number of buckets is smaller than the number of maximum reducers,
+      // create those many reducers.
+      // If not, create a multiFileSink instead of FileSink - the multiFileSink will
+      // spray the data into multiple buckets. That way, we can support a very large
+      // number of buckets without needing a very large number of reducers.
+
+      if ((dest_tab.getNumBuckets() > 0) &&
+          (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+        int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+        int numBuckets  = dest_tab.getNumBuckets();
+        if (numBuckets > maxReducers) {
+          multiFileSpray = true;
+          totalFiles = numBuckets;
+          if (totalFiles % maxReducers == 0) {
+            numFiles = totalFiles / maxReducers;
+          }
+          else {
+            // find the number of reducers such that it is a divisor of totalFiles
+            maxReducers = getReducersBucketing(totalFiles, maxReducers);
+            numFiles = totalFiles/maxReducers;
+          }
+        }
+        else {
+          maxReducers = numBuckets;
+        }
+
+        partnCols = getParitionColsFromBucketCols(dest_tab, input);
+        input = genReduceSinkPlanForBucketing(dest_tab, input, partnCols, maxReducers);
+      }
+
       // check for partition
       List<FieldSchema> parts = dest_tab.getPartitionKeys();
       if (parts != null && parts.size() > 0) {
@@ -3007,6 +3052,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Partition dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
+
+      if ((dest_tab.getNumBuckets() > 0) &&
+          (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+        int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+        int numBuckets  = dest_tab.getNumBuckets();
+        if (numBuckets > maxReducers) {
+          multiFileSpray = true;
+          totalFiles = numBuckets;
+          if (totalFiles % maxReducers == 0) {
+            numFiles = totalFiles / maxReducers;
+          }
+          else {
+            // find the number of reducers such that it is a divisor of totalFiles
+            maxReducers = getReducersBucketing(totalFiles, maxReducers);
+            numFiles = totalFiles/maxReducers;
+          }
+        }
+        else {
+          maxReducers = numBuckets;
+        }
+
+        partnCols = getParitionColsFromBucketCols(dest_tab, input);
+        input = genReduceSinkPlanForBucketing(dest_tab, input, partnCols, maxReducers);
+      }
+
       dest_path = dest_part.getPath()[0];
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
@@ -3161,7 +3231,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FileSinkDesc(queryTmpdir, table_desc, conf
-        .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId),
+        .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId,
+        multiFileSpray, numFiles, totalFiles, partnCols),
         fsRS, input), inputRR);
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
@@ -3390,6 +3461,82 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Create a reduceSink operator followed by another limit
     curr = genReduceSinkPlan(dest, qb, curr, 1);
     return genLimitPlan(dest, qb, curr, limit);
+  }
+
+  private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(Table tab, Operator input) {
+    RowResolver inputRR = opParseCtx.get(input).getRR();
+    List<String> tabBucketCols = tab.getBucketCols();
+    List<FieldSchema> tabCols  = tab.getCols();
+
+    // Partition by the bucketing column
+    ArrayList<ExprNodeDesc> partitionCols = new ArrayList<ExprNodeDesc>();
+    for (String bucketCol : tabBucketCols) {
+      int pos = 0;
+      for (FieldSchema tabCol : tabCols) {
+        if (bucketCol.equals(tabCol.getName())) {
+          ColumnInfo colInfo = inputRR.getColumnInfos().get(pos);
+          partitionCols.add(new ExprNodeColumnDesc(colInfo.getType(), colInfo
+                                                   .getInternalName(), colInfo.getTabAlias(), colInfo
+                                                   .getIsPartitionCol()));
+
+          break;
+        }
+        pos++;
+      }
+    }
+    return partitionCols;
+  }
+
+  @SuppressWarnings("nls")
+  private Operator genReduceSinkPlanForBucketing(Table tab, Operator input, ArrayList<ExprNodeDesc> partitionCols,
+      int numReducers)
+    throws SemanticException {
+    RowResolver inputRR = opParseCtx.get(input).getRR();
+
+    ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
+
+    // For the generation of the values expression just get the inputs
+    // signature and generate field expressions for those
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
+    for (ColumnInfo colInfo : inputRR.getColumnInfos()) {
+      valueCols.add(new ExprNodeColumnDesc(colInfo.getType(), colInfo
+          .getInternalName(), colInfo.getTabAlias(), colInfo
+          .getIsPartitionCol()));
+      colExprMap.put(colInfo.getInternalName(), valueCols
+          .get(valueCols.size() - 1));
+    }
+
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < valueCols.size(); i++) {
+      outputColumns.add(getColumnInternalName(i));
+    }
+    Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
+        .getReduceSinkDesc(sortCols, valueCols, outputColumns, false, -1,
+                           partitionCols, new String(), numReducers),
+        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+    interim.setColumnExprMap(colExprMap);
+
+    // Add the extract operator to get the value fields
+    RowResolver out_rwsch = new RowResolver();
+    RowResolver interim_rwsch = inputRR;
+    Integer pos = Integer.valueOf(0);
+    for (ColumnInfo colInfo : interim_rwsch.getColumnInfos()) {
+      String[] info = interim_rwsch.reverseLookup(colInfo.getInternalName());
+      out_rwsch.put(info[0], info[1], new ColumnInfo(
+          getColumnInternalName(pos), colInfo.getType(), info[0], false));
+      pos = Integer.valueOf(pos.intValue() + 1);
+    }
+
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        new ExtractDesc(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+        Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
+        out_rwsch.getColumnInfos()), interim), out_rwsch);
+
+    LOG.debug("Created ReduceSink Plan for table: " + tab.getTableName() + " row schema: "
+        + out_rwsch.toString());
+    return output;
+
   }
 
   @SuppressWarnings("nls")
@@ -3705,7 +3852,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Construct a selection operator for semijoin that filter out all fields
    * other than the group by keys.
-   * 
+   *
    * @param fields
    *          list of fields need to be output
    * @param input
@@ -4735,9 +4882,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * expressions are provided on the TABLESAMPLE clause and the table has
    * clustering columns defined in it's metadata. The predicate created has the
    * following structure:
-   * 
+   *
    * ((hash(expressions) & Integer.MAX_VALUE) % denominator) == numerator
-   * 
+   *
    * @param ts
    *          TABLESAMPLE clause information
    * @param bucketCols
@@ -5068,7 +5215,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generates the operator DAG needed to implement lateral views and attaches
    * it to the TS operator.
-   * 
+   *
    * @param aliasToOpInfo
    *          A mapping from a table alias to the TS operator. This function
    *          replaces the operator mapping as necessary
@@ -5137,11 +5284,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * A helper function that gets all the columns and respective aliases in the
    * source and puts them into dest. It renames the internal names of the
    * columns based on getColumnInternalName(position).
-   * 
+   *
    * Note that this helper method relies on RowResolver.getColumnInfos()
    * returning the columns in the same order as they will be passed in the
    * operator DAG.
-   * 
+   *
    * @param source
    * @param dest
    * @param outputColNames
@@ -5703,7 +5850,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generates an expression node descriptor for the expression passed in the
    * arguments. This function uses the row resolver and the metadata information
    * that are passed as arguments to resolve the column names to internal names.
-   * 
+   *
    * @param expr
    *          The expression
    * @param input
@@ -5810,7 +5957,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * throws and exception in case the same column name is present in multiple
    * table. The exception message indicates that the ambiguity could not be
    * resolved.
-   * 
+   *
    * @param qbm
    *          The metadata where the function looks for the table alias
    * @param colName

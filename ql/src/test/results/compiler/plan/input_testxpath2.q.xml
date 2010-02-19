@@ -66,11 +66,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+          <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266298219</string> 
+          <string>1266455915</string> 
          </void> 
         </object> 
        </void> 
@@ -123,7 +123,10 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/scratchdir/hive_2010-02-15_21-30-19_805_8149099764231607094/10001</string> 
+                           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-36_008_8515572615462850896/10001</string> 
+                          </void> 
+                          <void property="numFiles"> 
+                           <int>1</int> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -153,6 +156,9 @@
                              </object> 
                             </void> 
                            </object> 
+                          </void> 
+                          <void property="totalFiles"> 
+                           <int>1</int> 
                           </void> 
                          </object> 
                         </void> 
@@ -877,7 +883,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -889,7 +895,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src_thrift</string> 
@@ -950,11 +956,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/zshao/hadoop_hive_trunk/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1266298219</string> 
+           <string>1266455915</string> 
           </void> 
          </object> 
         </void> 

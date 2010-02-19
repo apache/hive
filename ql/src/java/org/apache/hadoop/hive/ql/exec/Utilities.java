@@ -984,6 +984,24 @@ public final class Utilities {
   }
 
   /**
+   * Replace the task id from the filename. E.g., replace "000000" out of
+   * "24931_r_000000_0" or "24931_r_000000_0.gz" by 33 to
+   * "24931_r_000033_0" or "24931_r_000033_0.gz"
+   */
+  public static String replaceTaskIdFromFilename(String filename, int bucketNum) {
+    String taskId = getTaskIdFromFilename(filename);
+    String strBucketNum = String.valueOf(bucketNum);
+    int bucketNumLen = strBucketNum.length();
+    int taskIdLen = taskId.length();
+    StringBuffer s = new StringBuffer();
+    for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
+        s.append("0");
+    }
+    String newTaskId = s.toString() + strBucketNum; 
+    return filename.replaceAll(taskId, newTaskId);
+  }
+  
+  /**
    * Remove all temporary files and duplicate (double-committed) files from a
    * given directory.
    */

@@ -190,6 +190,9 @@ public class HiveConf extends Configuration {
 
     HIVEINPUTFORMAT("hive.input.format", ""),
 
+    HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
+    HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
+
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown

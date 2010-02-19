@@ -50,7 +50,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
  * registerOutputFormatSubstitute(Class, Class) getOutputFormatSubstitute(Class)
  * are added for backward compatibility. They return the newly added
  * HiveOutputFormat for the older ones.
- * 
+ *
  */
 public final class HiveFileFormatUtils {
 
@@ -69,7 +69,7 @@ public final class HiveFileFormatUtils {
 
   /**
    * register a substitute.
-   * 
+   *
    * @param origin
    *          the class that need to be substituted
    * @param substitute
@@ -97,17 +97,17 @@ public final class HiveFileFormatUtils {
 
   /**
    * get the final output path of a given FileOutputFormat.
-   * 
+   *
    * @param parent
    *          parent dir of the expected final output path
    * @param jc
    *          job configuration
    */
-  public static Path getOutputFormatFinalPath(Path parent, JobConf jc,
+  public static Path getOutputFormatFinalPath(Path parent, String taskId, JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat, boolean isCompressed,
       Path defaultFinalPath) throws IOException {
     if (hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) {
-      return new Path(parent, Utilities.getTaskId(jc)
+      return new Path(parent, taskId
           + Utilities.getFileExtension(jc, isCompressed));
     }
     return defaultFinalPath;
@@ -131,7 +131,7 @@ public final class HiveFileFormatUtils {
 
   /**
    * register an InputFormatChecker for a given InputFormat.
-   * 
+   *
    * @param format
    *          the class that need to be substituted
    * @param checker
