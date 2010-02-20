@@ -234,6 +234,8 @@ public class QTestUtil {
       qsb.append(dis.readLine() + "\n");
     }
     qMap.put(qf.getName(), qsb.toString());
+    
+    dis.close();
   }
 
   public void cleanUp() throws Exception {
@@ -469,6 +471,10 @@ public class QTestUtil {
     ss.out = new PrintStream(fo, true, "UTF-8");
     ss.err = ss.out;
     ss.setIsSilent(true);
+    SessionState oldSs = SessionState.get();
+    if (oldSs != null) {
+      oldSs.out.close();
+    }
     SessionState.start(ss);
     cliDriver = new CliDriver();
   }
