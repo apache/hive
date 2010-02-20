@@ -179,6 +179,9 @@ Release 0.5.0 -  Unreleased
     HIVE-1105. Add service script for starting metastore server.
     (John Sichi via zshao)
 
+    HIVE-1182. Fix TestCliDriver too many open file error.
+    (Zheng Shao via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

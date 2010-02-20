@@ -23,10 +23,6 @@ public class $className extends TestCase {
   protected void setUp() {
     try {
       qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
-
-#foreach ($qf in $qfiles)
-      qt.addFile("$qf.getCanonicalPath()");
-#end
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
@@ -54,6 +50,9 @@ public class $className extends TestCase {
   public void testParseNegative_$tname() throws Exception {
     try {
       System.out.println("Begin query: " + "$fname");
+
+      qt.addFile("$qf.getCanonicalPath()");
+
       qt.init("$fname");
       ASTNode tree = qt.parseQuery("$fname");
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
