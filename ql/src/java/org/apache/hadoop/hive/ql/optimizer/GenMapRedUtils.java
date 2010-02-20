@@ -227,16 +227,23 @@ public final class GenMapRedUtils {
 
   private static void setupBucketMapJoinInfo(MapredWork plan,
       MapJoinOperator currMapJoinOp) {
-    MapredLocalWork localPlan = plan.getMapLocalWork();
-    if (localPlan != null && currMapJoinOp != null) {
+    if (currMapJoinOp != null) {
       LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping = 
         currMapJoinOp.getConf().getAliasBucketFileNameMapping();
       if(aliasBucketFileNameMapping!= null) {
+        MapredLocalWork localPlan = plan.getMapLocalWork();
+        if (localPlan == null) {
+          localPlan = new MapredLocalWork(
+              new LinkedHashMap<String, Operator<? extends Serializable>>(),
+              new LinkedHashMap<String, FetchWork>());
+          plan.setMapLocalWork(localPlan);
+        }
         BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
         localPlan.setBucketMapjoinContext(bucketMJCxt);
         bucketMJCxt.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
         localPlan.setInputFileChangeSensitive(true);
         bucketMJCxt.setMapJoinBigTableAlias(currMapJoinOp.getConf().getBigTableAlias());
+        bucketMJCxt.setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);
       }
     }
   }

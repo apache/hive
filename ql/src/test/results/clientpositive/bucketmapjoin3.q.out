@@ -53,6 +53,16 @@ PREHOOK: type: LOAD
 POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+PREHOOK: query: create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@bucketmapjoin_hash_result_1
+PREHOOK: query: create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 bigint)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@bucketmapjoin_hash_result_2
 PREHOOK: query: create table bucketmapjoin_tmp_result (key string , value1 string, value2 string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table bucketmapjoin_tmp_result (key string , value1 string, value2 string)
@@ -130,7 +140,7 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
-                        directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002
+                        directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002
                         NumFilesPerFileSink: 1
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -141,12 +151,12 @@ STAGE PLANS:
                               columns.types string:string:string
                               file.inputformat org.apache.hadoop.mapred.TextInputFormat
                               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                               name bucketmapjoin_tmp_result
                               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              transient_lastDdlTime 1266449249
+                              transient_lastDdlTime 1266609397
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: bucketmapjoin_tmp_result
                         TotalFiles: 1
@@ -204,7 +214,7 @@ STAGE PLANS:
                           File Output Operator
                             compressed: false
                             GlobalTableId: 1
-                            directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002
+                            directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002
                             NumFilesPerFileSink: 1
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -215,24 +225,26 @@ STAGE PLANS:
                                   columns.types string:string:string
                                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                                  location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                                   name bucketmapjoin_tmp_result
                                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                                   serialization.format 1
                                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  transient_lastDdlTime 1266449249
+                                  transient_lastDdlTime 1266609397
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                 name: bucketmapjoin_tmp_result
                             TotalFiles: 1
                             MultiFileSpray: false
           Bucket Mapjoin Context:
+              Alias Bucket Base File Name Mapping:
+                b {srcbucket22.txt=[srcbucket20.txt, srcbucket22.txt], srcbucket23.txt=[srcbucket21.txt, srcbucket23.txt]}
               Alias Bucket File Name Mapping:
-                b {file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket22.txt=[file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt, file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt], file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket23.txt=[file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt, file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt]}
+                b {file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket22.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt, file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt], file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket23.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt, file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt]}
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08 [a]
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08 [a]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -246,13 +258,13 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2
               name srcbucket_mapjoin_part_2
               partition_columns ds
               serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266449249
+              transient_lastDdlTime 1266609396
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -264,13 +276,13 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2
                 name srcbucket_mapjoin_part_2
                 partition_columns ds
                 serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449249
+                transient_lastDdlTime 1266609396
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket_mapjoin_part_2
             name: srcbucket_mapjoin_part_2
@@ -282,14 +294,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002
-          destination: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10000
+          source: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002
+          destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10000
+          source: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -299,20 +311,20 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449249
+                transient_lastDdlTime 1266609397
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
-          tmp directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10001
+          tmp directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10001
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -328,9 +340,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002 [file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002]
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002 [file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10002 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10002 
           Partition
             base file name: 10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -341,12 +353,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
               name bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266449249
+              transient_lastDdlTime 1266609397
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -357,12 +369,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449249
+                transient_lastDdlTime 1266609397
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
             name: bucketmapjoin_tmp_result
@@ -371,7 +383,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-29_479_5856176757023458430/10000
+            directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-37_229_8485850196062448955/10000
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -382,12 +394,12 @@ STAGE PLANS:
                   columns.types string:string:string
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                  location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                   name bucketmapjoin_tmp_result
                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  transient_lastDdlTime 1266449249
+                  transient_lastDdlTime 1266609397
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: bucketmapjoin_tmp_result
             TotalFiles: 1
@@ -413,12 +425,72 @@ POSTHOOK: Output: default@bucketmapjoin_tmp_result
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-40_366_983557285282275690/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-55_675_87981444967122492/10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-40_366_983557285282275690/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-56-55_675_87981444967122492/10000
 564
+PREHOOK: query: insert overwrite table bucketmapjoin_hash_result_1
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: default@bucketmapjoin_hash_result_1
+POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_1
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: default@bucketmapjoin_hash_result_1
+PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
+select /*+mapjoin(b)*/ a.key, a.value, b.value 
+from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
+on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result
+POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
+select /*+mapjoin(b)*/ a.key, a.value, b.value 
+from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
+on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result
+PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-17_859_7452928906719746215/10000
+POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-17_859_7452928906719746215/10000
+564
+PREHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: default@bucketmapjoin_hash_result_2
+POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: default@bucketmapjoin_hash_result_2
+PREHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
+from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
+on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_hash_result_2
+PREHOOK: Input: default@bucketmapjoin_hash_result_1
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-27_860_629807601940185495/10000
+POSTHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
+from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
+on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_hash_result_2
+POSTHOOK: Input: default@bucketmapjoin_hash_result_1
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-27_860_629807601940185495/10000
+0	0	0
 PREHOOK: query: explain extended 
 insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
@@ -491,7 +563,7 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
-                        directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002
+                        directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002
                         NumFilesPerFileSink: 1
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -502,12 +574,12 @@ STAGE PLANS:
                               columns.types string:string:string
                               file.inputformat org.apache.hadoop.mapred.TextInputFormat
                               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                               name bucketmapjoin_tmp_result
                               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              transient_lastDdlTime 1266449249
+                              transient_lastDdlTime 1266609397
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: bucketmapjoin_tmp_result
                         TotalFiles: 1
@@ -565,7 +637,7 @@ STAGE PLANS:
                           File Output Operator
                             compressed: false
                             GlobalTableId: 1
-                            directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002
+                            directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002
                             NumFilesPerFileSink: 1
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -576,21 +648,26 @@ STAGE PLANS:
                                   columns.types string:string:string
                                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                                  location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                                   name bucketmapjoin_tmp_result
                                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                                   serialization.format 1
                                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  transient_lastDdlTime 1266449249
+                                  transient_lastDdlTime 1266609397
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                 name: bucketmapjoin_tmp_result
                             TotalFiles: 1
                             MultiFileSpray: false
+          Bucket Mapjoin Context:
+              Alias Bucket Base File Name Mapping:
+                a {srcbucket20.txt=[srcbucket22.txt], srcbucket21.txt=[srcbucket23.txt], srcbucket22.txt=[srcbucket22.txt], srcbucket23.txt=[srcbucket23.txt]}
+              Alias Bucket File Name Mapping:
+                a {file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket22.txt], file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket23.txt], file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket22.txt], file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt=[file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part_2/ds=2008-04-08/srcbucket23.txt]}
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 [b]
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 [b]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -604,13 +681,13 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part
               name srcbucket_mapjoin_part
               partition_columns ds
               serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266449248
+              transient_lastDdlTime 1266609395
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -622,13 +699,13 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcbucket_mapjoin_part
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcbucket_mapjoin_part
                 name srcbucket_mapjoin_part
                 partition_columns ds
                 serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449248
+                transient_lastDdlTime 1266609395
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket_mapjoin_part
             name: srcbucket_mapjoin_part
@@ -640,14 +717,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002
-          destination: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10000
+          source: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002
+          destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10000
+          source: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -657,20 +734,20 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449249
+                transient_lastDdlTime 1266609397
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
-          tmp directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10001
+          tmp directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10001
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -686,9 +763,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002 [file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002]
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002 [file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10002 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10002 
           Partition
             base file name: 10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -699,12 +776,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
               name bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266449249
+              transient_lastDdlTime 1266609397
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -715,12 +792,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266449249
+                transient_lastDdlTime 1266609397
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
             name: bucketmapjoin_tmp_result
@@ -729,7 +806,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-43_810_7900906330280987524/10000
+            directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-33_147_375226016152069552/10000
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -740,12 +817,12 @@ STAGE PLANS:
                   columns.types string:string:string
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                  location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                   name bucketmapjoin_tmp_result
                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  transient_lastDdlTime 1266449249
+                  transient_lastDdlTime 1266609397
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: bucketmapjoin_tmp_result
             TotalFiles: 1
@@ -771,12 +848,82 @@ POSTHOOK: Output: default@bucketmapjoin_tmp_result
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-54_572_5652144002062223669/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-45_370_2329158614359725032/10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_15-27-54_572_5652144002062223669/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-57-45_370_2329158614359725032/10000
 564
+PREHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: default@bucketmapjoin_hash_result_2
+POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: default@bucketmapjoin_hash_result_2
+PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
+select /*+mapjoin(a)*/ a.key, a.value, b.value 
+from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
+on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+PREHOOK: Output: default@bucketmapjoin_tmp_result
+POSTHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
+select /*+mapjoin(a)*/ a.key, a.value, b.value 
+from srcbucket_mapjoin_part_2 a join srcbucket_mapjoin_part b 
+on a.key=b.key and b.ds="2008-04-08" and a.ds="2008-04-08"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2@ds=2008-04-08
+POSTHOOK: Output: default@bucketmapjoin_tmp_result
+PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-58-08_131_2181595303285853240/10000
+POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-58-08_131_2181595303285853240/10000
+564
+PREHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_tmp_result
+PREHOOK: Output: default@bucketmapjoin_hash_result_2
+POSTHOOK: query: insert overwrite table bucketmapjoin_hash_result_2
+select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_tmp_result
+POSTHOOK: Output: default@bucketmapjoin_hash_result_2
+PREHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
+from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
+on a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketmapjoin_hash_result_2
+PREHOOK: Input: default@bucketmapjoin_hash_result_1
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-58-27_520_4734833003819934734/10000
+POSTHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
+from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
+on a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketmapjoin_hash_result_2
+POSTHOOK: Input: default@bucketmapjoin_hash_result_1
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-02-19_11-58-27_520_4734833003819934734/10000
+0	0	0
+PREHOOK: query: drop table bucketmapjoin_hash_result_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table bucketmapjoin_hash_result_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@bucketmapjoin_hash_result_2
+PREHOOK: query: drop table bucketmapjoin_hash_result_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table bucketmapjoin_hash_result_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@bucketmapjoin_hash_result_1
 PREHOOK: query: drop table bucketmapjoin_tmp_result
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table bucketmapjoin_tmp_result

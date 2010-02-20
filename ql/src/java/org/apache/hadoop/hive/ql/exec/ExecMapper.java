@@ -254,9 +254,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     String currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
     BucketMapJoinContext bucketMatcherCxt = this.localWork.getBucketMapjoinContext();
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
-    if(bucketMatcherCls == null) {
-      bucketMatcherCls = org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class;
-    }
     BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(bucketMatcherCls, null);
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt.getAliasBucketFileNameMapping());
     List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,

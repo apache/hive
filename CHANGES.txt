@@ -30,7 +30,7 @@ Trunk -  Unreleased
     HIVE-1178. enforce bucketing for a table.
     (Namit Jain via He Yongqiang)
 
-  IMPROVEMENTS 
+  IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
 
@@ -197,6 +197,9 @@ Trunk -  Unreleased
 
     HIVE-1163. Eclipse launchtemplate changes to enable debugging.
     (Ning Zhang and Carl Steinbach via zshao)
+
+    HIVE-1134. Bucketed Map Join bug fix
+    (He Yongqiang via namit)
 
 Release 0.5.0 -  Unreleased
 

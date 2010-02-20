@@ -270,12 +270,14 @@ public class MapredWork implements Serializable {
    * Derive additional attributes to be rendered by EXPLAIN.
    */
   public void deriveExplainAttributes() {
-    if (pathToPartitionInfo == null) {
-      return;
+    if (pathToPartitionInfo != null) {
+      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
+          .entrySet()) {
+        entry.getValue().deriveBaseFileName(entry.getKey());
+      }
     }
-    for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
-        .entrySet()) {
-      entry.getValue().deriveBaseFileName(entry.getKey());
+    if (mapLocalWork != null) {
+      mapLocalWork.deriveExplainAttributes();
     }
   }
 
