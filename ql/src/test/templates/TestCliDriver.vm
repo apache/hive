@@ -38,9 +38,6 @@ public class $className extends TestCase {
 
       qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR);
 
-#foreach ($qf in $qfiles)
-      qt.addFile("$qf.getCanonicalPath()");
-#end
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
@@ -81,6 +78,9 @@ public class $className extends TestCase {
   public void testCliDriver_$tname() throws Exception {
     try {
       System.out.println("Begin query: " + "$fname");
+
+      qt.addFile("$qf.getCanonicalPath()");
+
       qt.cliInit("$fname");
       int ecode = qt.executeClient("$fname");
       if (ecode != 0) {

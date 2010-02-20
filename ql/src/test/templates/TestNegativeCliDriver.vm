@@ -27,9 +27,6 @@ public class $className extends TestCase {
     try {
       qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
 
-#foreach ($qf in $qfiles)
-      qt.addFile("$qf.getCanonicalPath()");
-#end
     }
     catch (Throwable e) {
       e.printStackTrace();
@@ -56,6 +53,9 @@ public class $className extends TestCase {
   public void testNegativeCliDriver_$tname() throws Exception {
     try {
       System.out.println("Begin query: " + "$fname");
+
+      qt.addFile("$qf.getCanonicalPath()");
+
       qt.cliInit("$fname");
       int ecode = qt.executeClient("$fname");
       if (ecode == 0) {

@@ -280,6 +280,9 @@ Release 0.4.0
     HIVE-813. Show the actual exception thrown in UDF evaluation.
     (Zheng Shao via rmurthy)
 
+    HIVE-1182. Fix TestCliDriver too many open file error.
+    (Zheng Shao via Ning Zhang)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
