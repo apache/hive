@@ -199,6 +199,12 @@
 </property>
 
 <property>
+  <name>hive.fileformat.check</name>
+  <value>true</value>
+  <description>Whether to check file format or not when loading data files</description>
+</property>
+
+<property>
   <name>hive.map.aggr</name>
   <value>true</value>
   <description>Whether to use map-side aggregation in Hive Group By queries</description>

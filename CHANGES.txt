@@ -93,6 +93,8 @@ Trunk -  Unreleased
     HIVE-1136. Add type-checking setters for HiveConf class.
     (John Sichi via zshao)
 
+    HIVE-1181. Make it optional to check file format. (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

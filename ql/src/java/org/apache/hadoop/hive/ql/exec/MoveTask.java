@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -140,13 +141,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             throw new HiveException(
                 "addFiles: filesystem error in check phase", e);
           }
-
-          // Check if the file format of the file matches that of the table.
-          boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd
-              .getTable().getInputFileFormatClass(), files);
-          if (!flag) {
-            throw new HiveException(
-                "Wrong file format. Please check the file's format.");
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
+            // Check if the file format of the file matches that of the table.
+            boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+            if (!flag) {
+              throw new HiveException(
+                  "Wrong file format. Please check the file's format.");
+            }
           }
         }
 
