@@ -970,16 +970,33 @@ public class RCFile {
         long start, long length) throws IOException {
       conf.setInt("io.file.buffer.size", bufferSize);
       this.file = file;
-      in = fs.open(file, bufferSize);
+      in = openFile(fs, file, bufferSize, length);
       this.conf = conf;
       end = start + length;
-      if (start > 0) {
-        seek(0);
-        init();
-        seek(start);
-      } else {
-        init();
+      boolean succeed = false;
+      try {
+        if (start > 0) {
+          seek(0);
+          init();
+          seek(start);
+        } else {
+          init();
+        }
+        succeed = true;
+      } finally {
+        if (!succeed) {
+          if (in != null) {
+            try {
+              in.close();
+            } catch(IOException e) {
+              if (LOG != null && LOG.isDebugEnabled()) {
+                LOG.debug("Exception in closing " + in, e);
+              }
+            }
+          }
+        }
       }
+
       columnNumber = Integer.parseInt(metadata.get(
           new Text(COLUMN_NUMBER_METADATA_STR)).toString());
 
@@ -1036,6 +1053,15 @@ public class RCFile {
 
       currentKey = createKeyBuffer();
       currentValue = new ValueBuffer(null, columnNumber, skippedColIDs, codec);
+    }
+    
+    /**
+     * Override this method to specialize the type of
+     * {@link FSDataInputStream} returned.
+     */
+    protected FSDataInputStream openFile(FileSystem fs, Path file,
+        int bufferSize, long length) throws IOException {
+      return fs.open(file, bufferSize);
     }
 
     private void init() throws IOException {
