@@ -201,6 +201,9 @@ Trunk -  Unreleased
     HIVE-1134. Bucketed Map Join bug fix
     (He Yongqiang via namit)
 
+    HIVE-1183. hive.hwi.war.file vanished from hive-default.xml
+    (Zheng Shao via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

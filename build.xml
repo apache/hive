@@ -236,7 +236,11 @@
       <fileset dir="${hive.root}/bin/ext" excludes="**/.svn"/>
     </copy>
     <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
-    <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}"/>
+    <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
     <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>
     <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
@@ -280,7 +284,7 @@
       <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
       <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
-      <fileset file="${build.dir.hive}/hive-hwi-${version}.war"/>
+      <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
