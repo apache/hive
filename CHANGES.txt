@@ -184,6 +184,9 @@ Release 0.5.0 -  Unreleased
 
     HIVE-1181. Make it optional to check file format. (Yongqiang He via zshao)
 
+    HIVE-1190. Configure build to download Hadoop tarballs from Facebook mirror.
+    (John Sichi via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
