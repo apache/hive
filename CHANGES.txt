@@ -100,6 +100,9 @@ Trunk -  Unreleased
     HIVE-1182. Fix TestCliDriver too many open file error.
     (Zheng Shao via Ning Zhang)
 
+    HIVE-1190. Configure build to download Hadoop tarballs from Facebook mirror.
+    (John Sichi via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
