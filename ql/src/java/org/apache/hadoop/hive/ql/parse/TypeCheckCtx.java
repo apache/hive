@@ -43,8 +43,13 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   private String error;
 
   /**
+   * The node that generated the potential typecheck error
+   */
+  private ASTNode errorSrcNode;
+
+  /**
    * Constructor.
-   * 
+   *
    * @param inputRR
    *          The input row resolver of the previous operator.
    */
@@ -86,9 +91,11 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   /**
    * @param error
    *          the error to set
+   *
    */
-  public void setError(String error) {
+  public void setError(String error, ASTNode errorSrcNode) {
     this.error = error;
+    this.errorSrcNode = errorSrcNode;
   }
 
   /**
@@ -96,6 +103,10 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   public String getError() {
     return error;
+  }
+
+  public ASTNode getErrorSrcNode() {
+    return errorSrcNode;
   }
 
 }

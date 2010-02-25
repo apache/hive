@@ -216,6 +216,9 @@ Trunk -  Unreleased
     HIVE-1185. Fix RCFile resource leak when opening a non-RCFile.
     (He Yongqiang via zshao)
 
+    HIVE-1184. Fix Expression Not In Group By Key error.
+    (Paul Yang via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

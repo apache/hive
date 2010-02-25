@@ -75,12 +75,12 @@ public final class TypeCheckProcFactory {
    * by operators key, so we substitute a+b in the select list with the internal
    * column name of the a+b expression that appears in the in input row
    * resolver.
-   * 
+   *
    * @param nd
    *          The node that is being inspected.
    * @param procCtx
    *          The processor context.
-   * 
+   *
    * @return exprNodeColumnDesc.
    */
   public static ExprNodeDesc processGByExpr(Node nd, Object procCtx)
@@ -137,7 +137,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get NullExprProcessor.
-   * 
+   *
    * @return NullExprProcessor.
    */
   public static NullExprProcessor getNullExprProcessor() {
@@ -186,7 +186,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get NumExprProcessor.
-   * 
+   *
    * @return NumExprProcessor.
    */
   public static NumExprProcessor getNumExprProcessor() {
@@ -236,7 +236,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get StrExprProcessor.
-   * 
+   *
    * @return StrExprProcessor.
    */
   public static StrExprProcessor getStrExprProcessor() {
@@ -282,7 +282,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get BoolExprProcessor.
-   * 
+   *
    * @return BoolExprProcessor.
    */
   public static BoolExprProcessor getBoolExprProcessor() {
@@ -312,7 +312,7 @@ public final class TypeCheckProcFactory {
       RowResolver input = ctx.getInputRR();
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr));
+        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
         return null;
       }
 
@@ -326,7 +326,7 @@ public final class TypeCheckProcFactory {
       if (isTableAlias) {
         if (colInfo != null) {
           // it's a table alias, and also a column
-          ctx.setError(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
+          ctx.setError(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr), expr);
           return null;
         } else {
           // It's a table alias.
@@ -337,11 +337,11 @@ public final class TypeCheckProcFactory {
         if (colInfo == null) {
           // It's not a column or a table alias.
           if (input.getIsExprResolver()) {
-            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
+            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr), expr);
             return null;
           } else {
             ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr
-                .getChild(0)));
+                .getChild(0)), expr);
             LOG.debug(ErrorMsg.INVALID_TABLE_OR_COLUMN.toString() + ":"
                 + input.toString());
             return null;
@@ -360,7 +360,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get ColumnExprProcessor.
-   * 
+   *
    * @return ColumnExprProcessor.
    */
   public static ColumnExprProcessor getColumnExprProcessor() {
@@ -455,7 +455,7 @@ public final class TypeCheckProcFactory {
 
     /**
      * Get the exprNodeDesc.
-     * 
+     *
      * @param name
      * @param children
      * @return The expression node descriptor
@@ -476,7 +476,7 @@ public final class TypeCheckProcFactory {
      * This function create an ExprNodeDesc for a UDF function given the
      * children (arguments). It will insert implicit type conversion functions
      * if necessary.
-     * 
+     *
      * @throws UDFArgumentException
      */
     public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
@@ -636,16 +636,54 @@ public final class TypeCheckProcFactory {
       return desc;
     }
 
+    /**
+     * Returns true if des is a descendant of ans (ancestor)
+     */
+    private boolean isDescendant(Node ans, Node des) {
+      if (ans.getChildren() == null) {
+        return false;
+      }
+      for (Node c : ans.getChildren()) {
+        if (c == des) {
+          return true;
+        }
+        if (isDescendant(c, des)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
 
-      // If this is a GroupBy expression, clear error and continue
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
-        ctx.setError(null);
+        // Here we know nd represents a group by expression.
+
+        // During the DFS traversal of the AST, a descendant of nd likely set an
+        // error because a sub-tree of nd is unlikely to also be a group by
+        // expression. For example, in a query such as
+        // SELECT *concat(key)* FROM src GROUP BY concat(key), 'key' will be
+        // processed before 'concat(key)' and since 'key' is not a group by
+        // expression, an error will be set in ctx by ColumnExprProcessor.
+
+        // We can clear the global error when we see that it was set in a
+        // descendant node of a group by expression because
+        // processGByExpr() returns a ExprNodeDesc that effectively ignores
+        // its children. Although the error can be set multiple times by
+        // descendant nodes, DFS traversal ensures that the error only needs to
+        // be cleared once. Also, for a case like
+        // SELECT concat(value, concat(value))... the logic still works as the
+        // error is only set with the first 'value'; all node pocessors quit
+        // early if the global error is set.
+
+        if (isDescendant(nd, ctx.getErrorSrcNode())) {
+          ctx.setError(null, null);
+        }
         return desc;
       }
 
@@ -670,7 +708,7 @@ public final class TypeCheckProcFactory {
             ((ExprNodeConstantDesc) nodeOutputs[1]).getValue().toString());
 
         if (colInfo == null) {
-          ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)));
+          ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)), expr);
           return null;
         }
         return new ExprNodeColumnDesc(colInfo.getType(), colInfo
@@ -722,7 +760,7 @@ public final class TypeCheckProcFactory {
 
   /**
    * Factory method to get DefaultExprProcessor.
-   * 
+   *
    * @return DefaultExprProcessor.
    */
   public static DefaultExprProcessor getDefaultExprProcessor() {
