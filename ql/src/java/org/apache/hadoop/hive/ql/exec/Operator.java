@@ -192,7 +192,8 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   protected transient Reporter reporter;
   protected transient String id;
   // object inspectors for input rows
-  protected transient ObjectInspector[] inputObjInspectors = new ObjectInspector[Short.MAX_VALUE];
+  // We will increase the size of the array on demand
+  protected transient ObjectInspector[] inputObjInspectors = new ObjectInspector[1];
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
@@ -385,6 +386,14 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   private void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
     LOG.info("Initializing child " + id + " " + getName());
+    // Double the size of the array if needed
+    if (parentId >= inputObjInspectors.length) {
+      int newLength = inputObjInspectors.length * 2;
+      while (parentId >= newLength) {
+        newLength *= 2;
+      }
+      inputObjInspectors = Arrays.copyOf(inputObjInspectors, newLength);
+    }
     inputObjInspectors[parentId] = inputOI;
     // call the actual operator initialization function
     initialize(hconf, null);

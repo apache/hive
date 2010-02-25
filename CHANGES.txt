@@ -102,6 +102,9 @@ Trunk -  Unreleased
 
     HIVE-1190. Configure build to download Hadoop tarballs from Facebook mirror.
     (John Sichi via zshao)
+ 
+    HIVE-1195. Increase ObjectInspector[] length on demand
+    (Zheng Shao via Ning Zhang)
 
   OPTIMIZATIONS
 
