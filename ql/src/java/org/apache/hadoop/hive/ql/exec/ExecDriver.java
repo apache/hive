@@ -52,6 +52,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
+import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -70,11 +72,11 @@ import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
-import org.apache.hadoop.mapred.Partitioner;
 
 /**
  * ExecDriver.
@@ -104,7 +106,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     SessionState ss = SessionState.get();
     Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
     if (files != null) {
-      ArrayList<String> realFiles = new ArrayList<String>(files.size());
+      List<String> realFiles = new ArrayList<String>(files.size());
       for (String one : files) {
         try {
           realFiles.add(Utilities.realFile(one, conf));
@@ -259,6 +261,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       rj = job;
     }
 
+    @Override
     public Counters getCounters() throws IOException {
       return rj.getCounters();
     }
@@ -294,6 +297,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
   }
 
+  @Override
   public void progress(TaskHandle taskHandle) throws IOException {
     ExecDriverTaskHandle th = (ExecDriverTaskHandle) taskHandle;
     JobClient jc = th.getJobClient();
@@ -503,6 +507,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   /**
    * Execute a query plan using Hadoop.
    */
+  @Override
   public int execute() {
 
     success = true;
@@ -762,17 +767,47 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     return "Ended Job = " + jobId;
   }
 
-  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
+  private String getTaskAttemptLogUrl(String taskTrackerHttpAddress,
+      String taskAttemptId) {
+    return taskTrackerHttpAddress + "/tasklog?taskid=" + taskAttemptId + "&all=true";
+  }
 
+  // Used for showJobFailDebugInfo
+  private static class TaskInfo {
+    String jobId;
+    HashSet<String> logUrls;
+
+    public TaskInfo(String jobId) {
+      this.jobId = jobId;
+      logUrls = new HashSet<String>();
+    }
+    public void addLogUrl(String logUrl) {
+      logUrls.add(logUrl);
+    }
+    public HashSet<String> getLogUrls() {
+      return logUrls;
+    }
+    public String getJobId() {
+      return jobId;
+    }
+  }
+
+  @SuppressWarnings("deprecation")
+  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
+    // Mapping from task ID to the number of failures
     Map<String, Integer> failures = new HashMap<String, Integer>();
+    // Successful task ID's
     Set<String> successes = new HashSet<String>();
-    Map<String, String> taskToJob = new HashMap<String, String>();
+
+    Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
 
     int startIndex = 0;
 
+    // Loop to get all task completion events because getTaskCompletionEvents
+    // only returns a subset per call
     while (true) {
-      TaskCompletionEvent[] taskCompletions = rj
-          .getTaskCompletionEvents(startIndex);
+      TaskCompletionEvent[] taskCompletions =
+        rj.getTaskCompletionEvents(startIndex);
 
       if (taskCompletions == null || taskCompletions.length == 0) {
         break;
@@ -780,21 +815,35 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
       boolean more = true;
       for (TaskCompletionEvent t : taskCompletions) {
-        // getTaskJobIDs return Strings for compatibility with Hadoop version
-        // without
-        // TaskID or TaskAttemptID
+        // getTaskJobIDs returns Strings for compatibility with Hadoop versions
+        // without TaskID or TaskAttemptID
         String[] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(t);
 
         if (taskJobIds == null) {
-          console
-              .printError("Task attempt info is unavailable in this Hadoop version");
+          console.printError("Task attempt info is unavailable in " +
+                             "this Hadoop version");
           more = false;
           break;
         }
 
+        // For each task completion event, get the associated task id, job id
+        // and the logs
         String taskId = taskJobIds[0];
         String jobId = taskJobIds[1];
-        taskToJob.put(taskId, jobId);
+
+        TaskInfo ti = taskIdToInfo.get(taskId);
+        if(ti == null) {
+          ti = new TaskInfo(jobId);
+          taskIdToInfo.put(taskId, ti);
+        }
+        // These tasks should have come from the same job.
+        assert(ti.getJobId() == jobId);
+        ti.getLogUrls().add(
+            getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
+
+        // If a task failed, then keep track of the total number of failures
+        // for that task (typically, a task gets re-run up to 4 times if it
+        // fails
 
         if (t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
           Integer failAttempts = failures.get(taskId);
@@ -830,16 +879,42 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
 
     // Display Error Message for tasks with the highest failure count
-    console.printError("\nFailed tasks with most" + "(" + maxFailures + ")"
-        + " failures " + ": ");
     String jtUrl = JobTrackerURLResolver.getURL(conf);
 
     for (String task : failures.keySet()) {
       if (failures.get(task).intValue() == maxFailures) {
-        String jobId = taskToJob.get(task);
-        String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid="
-            + task.toString();
-        console.printError("Task URL: " + taskUrl + "\n");
+        TaskInfo ti = taskIdToInfo.get(task);
+        String jobId = ti.getJobId();
+        String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" +
+        task.toString();
+
+        TaskLogProcessor tlp = new TaskLogProcessor(conf);
+        for(String logUrl : ti.getLogUrls()) {
+          tlp.addTaskAttemptLogUrl(logUrl);
+        }
+
+        List<ErrorAndSolution> errors = tlp.getErrors();
+
+        StringBuilder sb = new StringBuilder();
+        // We use a StringBuilder and then call printError only once as
+        // printError will write to both stderr and the error log file. In
+        // situations where both the stderr and the log file output is
+        // simultaneously output to a single stream, this will look cleaner.
+        sb.append("\n");
+        sb.append("Task with the most failures(" + maxFailures + "): \n");
+        sb.append("-----\n");
+        sb.append("Task ID:\n  " + task + "\n\n");
+        sb.append("URL:\n  " + taskUrl + "\n");
+
+        for(ErrorAndSolution e : errors) {
+          sb.append("\n");
+          sb.append("Possible error:\n  " + e.getError() + "\n\n");
+          sb.append("Solution:\n  " + e.getSolution() + "\n");
+        }
+        sb.append("-----\n");
+
+        console.printError(sb.toString());
+
         // Only print out one task because that's good enough for debugging.
         break;
       }
@@ -1165,6 +1240,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
   }
 
+  @Override
   public int getType() {
     return StageType.MAPRED;
   }

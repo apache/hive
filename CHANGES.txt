@@ -33,6 +33,9 @@ Trunk -  Unreleased
     HIVE-1188. NPE when TestJdbcDriver/TestHiveServer
     (Call Steinbach via Ning Zhang)
 
+    HIVE-1032. Better Error Messages for Execution Errors.
+    (Paul Yang via zshao)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
