@@ -102,9 +102,12 @@ Trunk -  Unreleased
 
     HIVE-1190. Configure build to download Hadoop tarballs from Facebook mirror.
     (John Sichi via zshao)
- 
+
     HIVE-1195. Increase ObjectInspector[] length on demand
     (Zheng Shao via Ning Zhang)
+
+    HIVE-1137. Fix build.xml for references to IVY_HOME.
+    (Carl Steinbach via zshao)
 
   OPTIMIZATIONS
 
