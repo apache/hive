@@ -479,4 +479,10 @@
   <description>Whether bucketing is enforced. If true, while inserting into the table, bucketing is enforced. </description>
 </property>
 
+<property>
+  <name>hive.enforce.sorting</name>
+  <value>false</value>
+  <description>Whether sorting is enforced. If true, while inserting into the table, sorting is enforced. </description>
+</property>
+
 </configuration>

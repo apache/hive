@@ -192,6 +192,7 @@ public class HiveConf extends Configuration {
     HIVEINPUTFORMAT("hive.input.format", ""),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
+    HIVEENFORCESORTING("hive.enforce.sorting", false),
     HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
 
     // Optimizer

@@ -2964,10 +2964,147 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private int getReducersBucketing(int totalFiles, int maxReducers) {
     int numFiles = totalFiles/maxReducers;
     while (true) {
-      if (totalFiles%numFiles == 0)
+      if (totalFiles%numFiles == 0) {
         return totalFiles/numFiles;
+      }
       numFiles++;
     }
+  }
+
+  private static class SortBucketRSCtx {
+    ArrayList<ExprNodeDesc> partnCols;
+    boolean multiFileSpray;
+    int     numFiles;
+    int     totalFiles;
+
+    public SortBucketRSCtx() {
+      partnCols = null;
+      multiFileSpray = false;
+      numFiles = 1;
+      totalFiles = 1;
+    }
+
+    /**
+     * @return the partnCols
+     */
+    public ArrayList<ExprNodeDesc> getPartnCols() {
+      return partnCols;
+    }
+
+    /**
+     * @param partnCols the partnCols to set
+     */
+    public void setPartnCols(ArrayList<ExprNodeDesc> partnCols) {
+      this.partnCols = partnCols;
+    }
+
+    /**
+     * @return the multiFileSpray
+     */
+    public boolean isMultiFileSpray() {
+      return multiFileSpray;
+    }
+
+    /**
+     * @param multiFileSpray the multiFileSpray to set
+     */
+    public void setMultiFileSpray(boolean multiFileSpray) {
+      this.multiFileSpray = multiFileSpray;
+    }
+
+    /**
+     * @return the numFiles
+     */
+    public int getNumFiles() {
+      return numFiles;
+    }
+
+    /**
+     * @param numFiles the numFiles to set
+     */
+    public void setNumFiles(int numFiles) {
+      this.numFiles = numFiles;
+    }
+
+    /**
+     * @return the totalFiles
+     */
+    public int getTotalFiles() {
+      return totalFiles;
+    }
+
+    /**
+     * @param totalFiles the totalFiles to set
+     */
+    public void setTotalFiles(int totalFiles) {
+      this.totalFiles = totalFiles;
+    }
+  }
+
+  @SuppressWarnings("nls")
+  private Operator genBucketingSortingDest(String dest, Operator input, QB qb, TableDesc table_desc,
+                                           Table dest_tab, SortBucketRSCtx ctx)
+      throws SemanticException {
+
+    // If the table is bucketed, and bucketing is enforced, do the following:
+    // If the number of buckets is smaller than the number of maximum reducers,
+    // create those many reducers.
+    // If not, create a multiFileSink instead of FileSink - the multiFileSink will
+    // spray the data into multiple buckets. That way, we can support a very large
+    // number of buckets without needing a very large number of reducers.
+    boolean enforceBucketing = false;
+    boolean enforceSorting   = false;
+    ArrayList<ExprNodeDesc> partnCols = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> partnColsNoConvert = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> sortCols  = new ArrayList<ExprNodeDesc>();
+    boolean multiFileSpray = false;
+    int     numFiles = 1;
+    int     totalFiles = 1;
+
+    if ((dest_tab.getNumBuckets() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+      enforceBucketing = true;
+      partnCols = getParitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
+      partnColsNoConvert = getParitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, false);
+    }
+
+    if ((dest_tab.getSortCols() != null) &&
+        (dest_tab.getSortCols().size() > 0) &&
+        (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCESORTING))) {
+      enforceSorting = true;
+      sortCols = getSortCols(dest, qb, dest_tab, table_desc, input, true);
+      if (!enforceBucketing) {
+        partnCols = sortCols;
+        partnColsNoConvert = getSortCols(dest, qb, dest_tab, table_desc, input, false);
+      }
+    }
+
+    if (enforceBucketing || enforceSorting) {
+      int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      int numBuckets  = dest_tab.getNumBuckets();
+      if (numBuckets > maxReducers) {
+        multiFileSpray = true;
+        totalFiles = numBuckets;
+        if (totalFiles % maxReducers == 0) {
+          numFiles = totalFiles / maxReducers;
+        }
+        else {
+          // find the number of reducers such that it is a divisor of totalFiles
+          maxReducers = getReducersBucketing(totalFiles, maxReducers);
+          numFiles = totalFiles/maxReducers;
+        }
+      }
+      else {
+        maxReducers = numBuckets;
+      }
+
+      input = genReduceSinkPlanForSortingBucketing(dest_tab, input, sortCols, partnCols, maxReducers);
+      ctx.setMultiFileSpray(multiFileSpray);
+      ctx.setNumFiles(numFiles);
+      ctx.setPartnCols(partnColsNoConvert);
+      ctx.setTotalFiles(totalFiles);
+    }
+    return input;
   }
 
   @SuppressWarnings("nls")
@@ -2984,46 +3121,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     TableDesc table_desc = null;
     int currentTableId = 0;
     boolean isLocal = false;
-    boolean multiFileSpray = false;
-    int numFiles = 1;
-    int totalFiles = 1;
-    ArrayList<ExprNodeDesc> partnCols = null;
+    SortBucketRSCtx rsCtx = new SortBucketRSCtx();
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
-
-      // If the table is bucketed, and bucketing is enforced, do the following:
-      // If the number of buckets is smaller than the number of maximum reducers,
-      // create those many reducers.
-      // If not, create a multiFileSink instead of FileSink - the multiFileSink will
-      // spray the data into multiple buckets. That way, we can support a very large
-      // number of buckets without needing a very large number of reducers.
-
-      if ((dest_tab.getNumBuckets() > 0) &&
-          (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
-        int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-        int numBuckets  = dest_tab.getNumBuckets();
-        if (numBuckets > maxReducers) {
-          multiFileSpray = true;
-          totalFiles = numBuckets;
-          if (totalFiles % maxReducers == 0) {
-            numFiles = totalFiles / maxReducers;
-          }
-          else {
-            // find the number of reducers such that it is a divisor of totalFiles
-            maxReducers = getReducersBucketing(totalFiles, maxReducers);
-            numFiles = totalFiles/maxReducers;
-          }
-        }
-        else {
-          maxReducers = numBuckets;
-        }
-
-        partnCols = getParitionColsFromBucketCols(dest_tab, input);
-        input = genReduceSinkPlanForBucketing(dest_tab, input, partnCols, maxReducers);
-      }
 
       // check for partition
       List<FieldSchema> parts = dest_tab.getPartitionKeys();
@@ -3033,6 +3136,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = dest_tab.getPath();
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
+
+      // Add sorting/bucketing if needed
+      input = genBucketingSortingDest(dest, input, qb, table_desc, dest_tab, rsCtx);
 
       idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getTableName());
       currentTableId = destTableId;
@@ -3053,33 +3159,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Partition dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
 
-      if ((dest_tab.getNumBuckets() > 0) &&
-          (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
-        int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-        int numBuckets  = dest_tab.getNumBuckets();
-        if (numBuckets > maxReducers) {
-          multiFileSpray = true;
-          totalFiles = numBuckets;
-          if (totalFiles % maxReducers == 0) {
-            numFiles = totalFiles / maxReducers;
-          }
-          else {
-            // find the number of reducers such that it is a divisor of totalFiles
-            maxReducers = getReducersBucketing(totalFiles, maxReducers);
-            numFiles = totalFiles/maxReducers;
-          }
-        }
-        else {
-          maxReducers = numBuckets;
-        }
-
-        partnCols = getParitionColsFromBucketCols(dest_tab, input);
-        input = genReduceSinkPlanForBucketing(dest_tab, input, partnCols, maxReducers);
-      }
-
       dest_path = dest_part.getPath()[0];
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
+
+      // Add sorting/bucketing if needed
+      input = genBucketingSortingDest(dest, input, qb, table_desc, dest_tab, rsCtx);
 
       idToTableNameMap.put(String.valueOf(destTableId), dest_tab.getTableName());
       currentTableId = destTableId;
@@ -3232,7 +3317,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FileSinkDesc(queryTmpdir, table_desc, conf
         .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId,
-        multiFileSpray, numFiles, totalFiles, partnCols),
+        rsCtx.isMultiFileSpray(), rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols()),
         fsRS, input), inputRR);
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
@@ -3463,37 +3548,108 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genLimitPlan(dest, qb, curr, limit);
   }
 
-  private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(Table tab, Operator input) {
+  private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(String dest, QB qb, Table tab,
+                                                                TableDesc table_desc, Operator input, boolean convert)
+    throws SemanticException {
     RowResolver inputRR = opParseCtx.get(input).getRR();
     List<String> tabBucketCols = tab.getBucketCols();
     List<FieldSchema> tabCols  = tab.getCols();
 
     // Partition by the bucketing column
-    ArrayList<ExprNodeDesc> partitionCols = new ArrayList<ExprNodeDesc>();
+    List<Integer> posns = new ArrayList<Integer>();
+
     for (String bucketCol : tabBucketCols) {
       int pos = 0;
       for (FieldSchema tabCol : tabCols) {
         if (bucketCol.equals(tabCol.getName())) {
-          ColumnInfo colInfo = inputRR.getColumnInfos().get(pos);
-          partitionCols.add(new ExprNodeColumnDesc(colInfo.getType(), colInfo
-                                                   .getInternalName(), colInfo.getTabAlias(), colInfo
-                                                   .getIsPartitionCol()));
-
+          posns.add(pos);
           break;
         }
         pos++;
       }
     }
-    return partitionCols;
+
+    return genConvertCol(dest, qb, tab, table_desc, input, posns, convert);
+  }
+
+  private ArrayList<ExprNodeDesc> genConvertCol(String dest, QB qb, Table tab, TableDesc table_desc, Operator input,
+                                                List<Integer> posns, boolean convert) throws SemanticException {
+    StructObjectInspector oi = null;
+    try {
+      Deserializer deserializer = table_desc.getDeserializerClass()
+          .newInstance();
+      deserializer.initialize(conf, table_desc.getProperties());
+      oi = (StructObjectInspector) deserializer.getObjectInspector();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+
+    List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
+    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
+        .getColumnInfos();
+
+    // Check column type
+    int columnNumber = posns.size();
+    ArrayList<ExprNodeDesc> expressions = new ArrayList<ExprNodeDesc>(columnNumber);
+    for (Integer posn: posns) {
+      ObjectInspector tableFieldOI = tableFields.get(posn).getFieldObjectInspector();
+      TypeInfo tableFieldTypeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(tableFieldOI);
+      TypeInfo rowFieldTypeInfo = rowFields.get(posn).getType();
+      ExprNodeDesc column = new ExprNodeColumnDesc(rowFieldTypeInfo, rowFields.get(posn).getInternalName(),
+                                                   rowFields.get(posn).getTabAlias(), rowFields.get(posn).getIsPartitionCol());
+
+      if (convert && !tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
+        // need to do some conversions here
+        if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+          // cannot convert to complex types
+          column = null;
+        } else {
+          column = TypeCheckProcFactory.DefaultExprProcessor
+            .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), column);
+        }
+        if (column == null) {
+          String reason = "Cannot convert column " + posn + " from "
+            + rowFieldTypeInfo + " to " + tableFieldTypeInfo + ".";
+          throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH
+                                      .getMsg(qb.getParseInfo().getDestForClause(dest), reason));
+        }
+      }
+      expressions.add(column);
+    }
+
+    return expressions;
+  }
+
+  private ArrayList<ExprNodeDesc> getSortCols(String dest, QB qb, Table tab, TableDesc table_desc, Operator input, boolean convert)
+    throws SemanticException {
+    RowResolver inputRR = opParseCtx.get(input).getRR();
+    List<Order> tabSortCols = tab.getSortCols();
+    List<FieldSchema> tabCols  = tab.getCols();
+
+    // Partition by the bucketing column
+    List<Integer> posns = new ArrayList<Integer>();
+    for (Order sortCol : tabSortCols) {
+      int pos = 0;
+      for (FieldSchema tabCol : tabCols) {
+        if (sortCol.getCol().equals(tabCol.getName())) {
+          ColumnInfo colInfo = inputRR.getColumnInfos().get(pos);
+          posns.add(pos);
+          break;
+        }
+        pos++;
+      }
+    }
+
+    return genConvertCol(dest, qb, tab, table_desc, input, posns, convert);
   }
 
   @SuppressWarnings("nls")
-  private Operator genReduceSinkPlanForBucketing(Table tab, Operator input, ArrayList<ExprNodeDesc> partitionCols,
-      int numReducers)
+  private Operator genReduceSinkPlanForSortingBucketing(Table tab, Operator input,
+                                                        ArrayList<ExprNodeDesc> sortCols,
+                                                        ArrayList<ExprNodeDesc> partitionCols,
+                                                        int numReducers)
     throws SemanticException {
     RowResolver inputRR = opParseCtx.get(input).getRR();
-
-    ArrayList<ExprNodeDesc> sortCols = new ArrayList<ExprNodeDesc>();
 
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
@@ -3511,9 +3667,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < valueCols.size(); i++) {
       outputColumns.add(getColumnInternalName(i));
     }
+
+    StringBuilder order = new StringBuilder();
+    for (int i = 0; i < sortCols.size(); i++) {
+      order.append("+");
+    }
+
     Operator interim = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
         .getReduceSinkDesc(sortCols, valueCols, outputColumns, false, -1,
-                           partitionCols, new String(), numReducers),
+                           partitionCols, order.toString(), numReducers),
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
     interim.setColumnExprMap(colExprMap);
 

@@ -39,8 +39,8 @@ STAGE PLANS:
               Reduce Output Operator
                 sort order: 
                 Map-reduce partition columns:
-                      expr: _col0
-                      type: string
+                      expr: UDFToInteger(_col0)
+                      type: int
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -67,7 +67,7 @@ STAGE PLANS:
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266536485
+              transient_lastDdlTime 1267133766
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -83,7 +83,7 @@ STAGE PLANS:
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266536485
+                transient_lastDdlTime 1267133766
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -99,7 +99,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-18_15-41-26_502_8846263313357969996/10000
+              directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-25_13-36-07_876_1324315962912856358/10000
               NumFilesPerFileSink: 2
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,7 +117,7 @@ STAGE PLANS:
                     serialization.ddl struct bucket3_1 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1266536486
+                    transient_lastDdlTime 1267133767
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: bucket3_1
               TotalFiles: 2
@@ -129,7 +129,7 @@ STAGE PLANS:
           partition:
             ds 1
           replace: true
-          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-18_15-41-26_502_8846263313357969996/10000
+          source: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-25_13-36-07_876_1324315962912856358/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -146,10 +146,10 @@ STAGE PLANS:
                 serialization.ddl struct bucket3_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266536486
+                transient_lastDdlTime 1267133767
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucket3_1
-          tmp directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-18_15-41-26_502_8846263313357969996/10001
+          tmp directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-25_13-36-07_876_1324315962912856358/10001
 
 
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
@@ -243,11 +243,11 @@ STAGE PLANS:
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket3_1@ds=1
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-18_15-41-35_350_1043920384757897875/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-25_13-36-16_445_4212015408358894345/10000
 POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket3_1@ds=1
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-18_15-41-35_350_1043920384757897875/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-25_13-36-16_445_4212015408358894345/10000
 0	val_0	1
 0	val_0	1
 0	val_0	1
