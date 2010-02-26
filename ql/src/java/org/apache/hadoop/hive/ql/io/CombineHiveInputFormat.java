@@ -88,30 +88,14 @@ public class CombineHiveInputFormat<K extends WritableComparable,
     public CombineHiveInputSplit(JobConf job, InputSplitShim inputSplitShim) throws IOException {
       this.inputSplitShim = inputSplitShim;
       if (job != null) {
-        Map<String, partitionDesc> pathToPartitionInfo = 
+        Map<String, partitionDesc> pathToPartitionInfo =
           Utilities.getMapRedWork(job).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         for (int i = 0; i < ipaths.length; i++) {
-        	partitionDesc part = null;
-          try {
-          	part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i].getParent());
-          } catch (IOException e) {
-            // The file path may be present in case of sampling - so ignore that
-          	part = null;
-          }
+          partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
 
-          if (part == null) {
-            try {
-            	part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
-            } catch (IOException e) {
-              LOG.warn("CombineHiveInputSplit unable to find table description for " +
-                       ipaths[i].getParent());
-              continue;
-            }
-          }
-          
           // create a new InputFormat instance if this is the first time to see this class
           if (i == 0)
             inputFormatClassName = part.getInputFileFormatClass().getName();
@@ -124,7 +108,7 @@ public class CombineHiveInputFormat<K extends WritableComparable,
     public InputSplitShim getInputSplitShim() {
       return inputSplitShim;
     }
-    
+
     /**
      * Returns the inputFormat class name for the i-th chunk
      */
@@ -135,55 +119,55 @@ public class CombineHiveInputFormat<K extends WritableComparable,
     public void setInputFormatClassName(String inputFormatClassName) {
       this.inputFormatClassName = inputFormatClassName;
     }
-    
+
     public JobConf getJob() {
       return inputSplitShim.getJob();
     }
-    
+
     public long getLength() {
       return inputSplitShim.getLength();
     }
-    
-    /** Returns an array containing the startoffsets of the files in the split*/ 
+
+    /** Returns an array containing the startoffsets of the files in the split*/
     public long[] getStartOffsets() {
       return inputSplitShim.getStartOffsets();
     }
-    
-    /** Returns an array containing the lengths of the files in the split*/ 
+
+    /** Returns an array containing the lengths of the files in the split*/
     public long[] getLengths() {
       return inputSplitShim.getLengths();
     }
-    
+
     /** Returns the start offset of the i<sup>th</sup> Path */
     public long getOffset(int i) {
       return inputSplitShim.getOffset(i);
     }
-    
+
     /** Returns the length of the i<sup>th</sup> Path */
     public long getLength(int i) {
       return inputSplitShim.getLength(i);
     }
-    
+
     /** Returns the number of Paths in the split */
     public int getNumPaths() {
       return inputSplitShim.getNumPaths();
     }
-    
+
     /** Returns the i<sup>th</sup> Path */
     public Path getPath(int i) {
       return inputSplitShim.getPath(i);
     }
-    
+
     /** Returns all the Paths in the split */
     public Path[] getPaths() {
       return inputSplitShim.getPaths();
     }
-    
+
     /** Returns all the Paths where this input-split resides */
     public String[] getLocations() throws IOException {
       return inputSplitShim.getLocations();
     }
-    
+
     /**
      * Prints this obejct as a string.
      */
@@ -210,20 +194,12 @@ public class CombineHiveInputFormat<K extends WritableComparable,
       inputSplitShim.write(out);
 
       if (inputFormatClassName == null) {
-        Map<String, partitionDesc> pathToPartitionInfo = 
+        Map<String, partitionDesc> pathToPartitionInfo =
           Utilities.getMapRedWork(getJob()).getPathToPartitionInfo();
-        
-        // extract all the inputFormatClass names for each chunk in the CombinedSplit.
-        partitionDesc part = null;
-        try {
-        	part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0).getParent());
-        } catch (IOException e) {
-          // The file path may be present in case of sampling - so ignore that
-        	part = null;
-        }
 
-        if (part == null)
-        	part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0));
+        // extract all the inputFormatClass names for each chunk in the CombinedSplit.
+        partitionDesc part =
+            getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0));
 
         // create a new InputFormat instance if this is the first time to see this class
         inputFormatClassName = part.getInputFileFormatClass().getName();
@@ -258,14 +234,14 @@ public class CombineHiveInputFormat<K extends WritableComparable,
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is);
       result.add(csplit);
     }
-    
+
     LOG.info("number of splits " + result.size());
 
     return result.toArray(new CombineHiveInputSplit[result.size()]);
   }
 
   /**
-   * Create a generic Hive RecordReader than can iterate over all chunks in 
+   * Create a generic Hive RecordReader than can iterate over all chunks in
    * a CombinedFileSplit
    */
   public RecordReader getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
@@ -280,12 +256,12 @@ public class CombineHiveInputFormat<K extends WritableComparable,
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    initColumnsNeeded(job, inputFormatClass, hsplit.getPath(0).toString(), 
+    initColumnsNeeded(job, inputFormatClass, hsplit.getPath(0).toString(),
                       hsplit.getPath(0).toUri().getPath());
 
-    return 
-      ShimLoader.getHadoopShims().getCombineFileInputFormat().getRecordReader(job, 
-        ((CombineHiveInputSplit)split).getInputSplitShim(), 
+    return
+      ShimLoader.getHadoopShims().getCombineFileInputFormat().getRecordReader(job,
+        ((CombineHiveInputSplit)split).getInputSplitShim(),
         reporter, CombineHiveRecordReader.class);
   }
 
@@ -293,16 +269,23 @@ public class CombineHiveInputFormat<K extends WritableComparable,
       Map<String, partitionDesc> pathToPartitionInfo, Path dir) throws IOException {
 	// The format of the keys in pathToPartitionInfo sometimes contains a port
 	// and sometimes doesn't, so we just compare paths.
+    URI dirUri = dir.toUri();
     for (Map.Entry<String, partitionDesc> entry : pathToPartitionInfo.entrySet()) {
       try {
-        if (new URI(entry.getKey()).getPath().equals(dir.toUri().getPath())) {			
+        // Take only the path part of the URI.
+        URI pathOfPartition = new URI(entry.getKey());
+        pathOfPartition = new URI(pathOfPartition.getPath());
+
+        if (!pathOfPartition.relativize(dirUri).equals(dirUri)) {
           return entry.getValue();
         }
       }
-      catch (URISyntaxException e2) {}
+      catch (URISyntaxException e2) {
+        LOG.info("getPartitionDescFromPath ", e2);
+      }
     }
     throw new IOException("cannot find dir = " + dir.toString()
-      + " in partToPartitionInfo!");
+        + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
   }
 
   static class CombineFilter implements PathFilter {

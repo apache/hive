@@ -24,6 +24,9 @@ Release 0.5.1 - Unreleased
     HIVE-1188. NPE when running TestJdbcDriver/TestHiveServer
     (Carl Steinbach via Ning Zhang)
 
+    HIVE-1200. Fix CombineHiveInputFormat
+    (Zheng Shao via namit)
+
 Release 0.5.0
 
   INCOMPATIBLE CHANGES
