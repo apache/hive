@@ -86,25 +86,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         for (int i = 0; i < ipaths.length; i++) {
-          PartitionDesc part = null;
-          try {
-            part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]
-                .getParent());
-          } catch (IOException e) {
-            // The file path may be present in case of sampling - so ignore that
-            part = null;
-          }
-
-          if (part == null) {
-            try {
-              part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
-            } catch (IOException e) {
-              LOG
-                  .warn("CombineHiveInputSplit unable to find table description for "
-                  + ipaths[i].getParent());
-              continue;
-            }
-          }
+          PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
 
           // create a new InputFormat instance if this is the first time to see
           // this class
@@ -213,19 +195,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        PartitionDesc part = null;
-        try {
-          part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim
-              .getPath(0).getParent());
-        } catch (IOException e) {
-          // The file path may be present in case of sampling - so ignore that
-          part = null;
-        }
-
-        if (part == null) {
-          part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim
-              .getPath(0));
-        }
+        PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo,
+            inputSplitShim.getPath(0));
 
         // create a new InputFormat instance if this is the first time to see
         // this class
@@ -301,17 +272,23 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir) throws IOException {
     // The format of the keys in pathToPartitionInfo sometimes contains a port
     // and sometimes doesn't, so we just compare paths.
+    URI dirUri = dir.toUri();
     for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
         .entrySet()) {
       try {
-        if (new URI(entry.getKey()).getPath().equals(dir.toUri().getPath())) {
+        // Take only the path part of the URI.
+        URI pathOfPartition = new URI(entry.getKey());
+        pathOfPartition = new URI(pathOfPartition.getPath());
+
+        if (!pathOfPartition.relativize(dirUri).equals(dirUri)) {
           return entry.getValue();
         }
       } catch (URISyntaxException e2) {
+        LOG.info("getPartitionDescFromPath ", e2);
       }
     }
     throw new IOException("cannot find dir = " + dir.toString()
-        + " in partToPartitionInfo!");
+        + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
   }
 
   static class CombineFilter implements PathFilter {
