@@ -1451,6 +1451,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     TableDesc outInfo;
+    TableDesc errInfo;
     TableDesc inInfo;
     String defaultSerdeName = conf.getVar(HiveConf.ConfVars.HIVESCRIPTSERDE);
     Class<? extends Deserializer> serde;
@@ -1487,17 +1488,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .toString(), defaultOutputCols);
     }
 
+    // Error stream always uses the default serde with a single column
+    errInfo = PlanUtils.getTableDesc(serde, Integer.toString(Utilities.tabCode), "KEY");
+
     // Output record readers
     Class<? extends RecordReader> outRecordReader = getRecordReader((ASTNode) trfm
         .getChild(outputRecordReaderNum));
     Class<? extends RecordWriter> inRecordWriter = getRecordWriter((ASTNode) trfm
         .getChild(inputRecordWriterNum));
+    Class<? extends RecordReader> errRecordReader = getDefaultRecordReader();
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new ScriptDesc(
         getFixedCmd(stripQuotes(trfm.getChild(execPos).getText())), inInfo,
-        inRecordWriter, outInfo, outRecordReader), new RowSchema(out_rwsch
-        .getColumnInfos()), input), out_rwsch);
+        inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
+        new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
 
     return output;
   }
@@ -1511,6 +1516,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       name = unescapeSQLString(node.getChild(0).getText());
     }
+
+    try {
+      return (Class<? extends RecordReader>) Class.forName(name, true,
+          JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  private Class<? extends RecordReader> getDefaultRecordReader()
+      throws SemanticException {
+    String name;
+
+    name = conf.getVar(HiveConf.ConfVars.HIVESCRIPTRECORDREADER);
 
     try {
       return (Class<? extends RecordReader>) Class.forName(name, true,

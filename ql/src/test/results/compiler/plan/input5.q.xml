@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-10_872_2056588897578274641/10000</string> 
+           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-28_08-36-14_735_3125261520058122794/10000</string> 
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -83,7 +83,7 @@
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1266455890</string> 
+               <string>1267374974</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-10_872_2056588897578274641/10001</string> 
+           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-28_08-36-14_735_3125261520058122794/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -172,7 +172,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266455890</string> 
+          <string>1267374974</string> 
          </void> 
         </object> 
        </void> 
@@ -437,6 +437,9 @@
                 </void> 
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.ScriptDesc"> 
+                  <void property="errRecordReaderClass"> 
+                   <class>org.apache.hadoop.hive.ql.exec.TextRecordReader</class> 
+                  </void> 
                   <void property="inRecordWriterClass"> 
                    <class>org.apache.hadoop.hive.ql.exec.TextRecordWriter</class> 
                   </void> 
@@ -445,6 +448,35 @@
                   </void> 
                   <void property="scriptCmd"> 
                    <string>/bin/cat</string> 
+                  </void> 
+                  <void property="scriptErrInfo"> 
+                   <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+                    <void property="deserializerClass"> 
+                     <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                    </void> 
+                    <void property="inputFileFormatClass"> 
+                     <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+                    </void> 
+                    <void property="outputFileFormatClass"> 
+                     <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+                    </void> 
+                    <void property="properties"> 
+                     <object class="java.util.Properties"> 
+                      <void method="put"> 
+                       <string>field.delim</string> 
+                       <string>9</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>columns</string> 
+                       <string>KEY</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>serialization.format</string> 
+                       <string>9</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                   </object> 
                   </void> 
                   <void property="scriptInputInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -913,7 +945,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1266455890</string> 
+           <string>1267374974</string> 
           </void> 
          </object> 
         </void> 
@@ -959,7 +991,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-10_872_2056588897578274641/10000</string> 
+                 <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-28_08-36-14_735_3125261520058122794/10000</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 

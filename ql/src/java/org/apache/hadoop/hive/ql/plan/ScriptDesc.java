@@ -39,19 +39,26 @@ public class ScriptDesc implements Serializable {
   private TableDesc scriptInputInfo;
   private Class<? extends RecordReader> outRecordReaderClass;
 
+  private TableDesc scriptErrInfo;
+  private Class<? extends RecordReader> errRecordReaderClass;
+
   public ScriptDesc() {
   }
 
   public ScriptDesc(final String scriptCmd, final TableDesc scriptInputInfo,
       final Class<? extends RecordWriter> inRecordWriterClass,
       final TableDesc scriptOutputInfo,
-      final Class<? extends RecordReader> outRecordReaderClass) {
+      final Class<? extends RecordReader> outRecordReaderClass,
+      final Class<? extends RecordReader> errRecordReaderClass,
+      final TableDesc scriptErrInfo) {
 
     this.scriptCmd = scriptCmd;
     this.scriptInputInfo = scriptInputInfo;
     this.inRecordWriterClass = inRecordWriterClass;
     this.scriptOutputInfo = scriptOutputInfo;
     this.outRecordReaderClass = outRecordReaderClass;
+    this.errRecordReaderClass = errRecordReaderClass;
+    this.scriptErrInfo = scriptErrInfo;
   }
 
   @Explain(displayName = "command")
@@ -70,6 +77,14 @@ public class ScriptDesc implements Serializable {
 
   public void setScriptOutputInfo(final TableDesc scriptOutputInfo) {
     this.scriptOutputInfo = scriptOutputInfo;
+  }
+
+  public TableDesc getScriptErrInfo() {
+    return scriptErrInfo;
+  }
+
+  public void setScriptErrInfo(final TableDesc scriptErrInfo) {
+    this.scriptErrInfo = scriptErrInfo;
   }
 
   public TableDesc getScriptInputInfo() {
@@ -94,6 +109,22 @@ public class ScriptDesc implements Serializable {
   public void setOutRecordReaderClass(
       Class<? extends RecordReader> outRecordReaderClass) {
     this.outRecordReaderClass = outRecordReaderClass;
+  }
+
+  /**
+   * @return the errRecordReaderClass
+   */
+  public Class<? extends RecordReader> getErrRecordReaderClass() {
+    return errRecordReaderClass;
+  }
+
+  /**
+   * @param errRecordReaderClass
+   *          the errRecordReaderClass to set
+   */
+  public void setErrRecordReaderClass(
+      Class<? extends RecordReader> errRecordReaderClass) {
+    this.errRecordReaderClass = errRecordReaderClass;
   }
 
   /**

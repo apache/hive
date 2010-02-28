@@ -56,7 +56,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 /**
  * Mimics the actual query compiler in generating end to end plans and testing
  * them out.
- * 
+ *
  */
 public class TestExecDriver extends TestCase {
 
@@ -204,7 +204,8 @@ public class TestExecDriver extends TestCase {
     Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("/bin/cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
-        + Utilities.tabCode, "key,value"), TextRecordReader.class), op3);
+        + Utilities.tabCode, "key,value"), TextRecordReader.class,
+        TextRecordReader.class, PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key")), op3);
 
     Operator<FilterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
         op2);
@@ -331,7 +332,8 @@ public class TestExecDriver extends TestCase {
     Operator<ScriptDesc> op0 = OperatorFactory.get(new ScriptDesc("/bin/cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         TextRecordWriter.class, PlanUtils.getDefaultTableDesc(""
-        + Utilities.tabCode, "tkey,tvalue"), TextRecordReader.class), op1);
+        + Utilities.tabCode, "tkey,tvalue"), TextRecordReader.class,
+        TextRecordReader.class, PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key")), op1);
 
     Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),
@@ -406,7 +408,8 @@ public class TestExecDriver extends TestCase {
         "\'/bin/cat\'", PlanUtils.getDefaultTableDesc("" + Utilities.tabCode,
         "tkey,tvalue"), TextRecordWriter.class, PlanUtils
         .getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
-        TextRecordReader.class), op1);
+        TextRecordReader.class,
+        TextRecordReader.class, PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key")), op1);
 
     Operator<SelectDesc> op4 = OperatorFactory.get(new SelectDesc(Utilities
         .makeList(getStringColumn("key"), getStringColumn("value")),

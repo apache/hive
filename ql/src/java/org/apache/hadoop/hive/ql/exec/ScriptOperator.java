@@ -297,9 +297,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             new OutputStreamProcessor(scriptOutputDeserializer
             .getObjectInspector()), "OutputProcessor");
 
-        RecordReader scriptErrReader = conf.getOutRecordReaderClass()
+        RecordReader scriptErrReader = conf.getErrRecordReaderClass()
             .newInstance();
-        scriptErrReader.initialize(scriptErr, hconf, conf.getScriptOutputInfo()
+        scriptErrReader.initialize(scriptErr, hconf, conf.getScriptErrInfo()
             .getProperties());
 
         errThread = new StreamThread(scriptErrReader, new ErrorStreamProcessor(
@@ -482,7 +482,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
   /**
    * The processor for stderr stream.
-   * 
+   *
    * TODO: In the future when we move to hadoop 0.18 and above, we should borrow
    * the logic from HadoopStreaming: PipeMapRed.java MRErrorThread to support
    * counters and status updates.
