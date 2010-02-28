@@ -39,6 +39,9 @@ Trunk -  Unreleased
     HIVE-1193. ensure sorting properties for a table.
     (Namit via He Yongqiang)
 
+    HIVE-259. Add PERCENTILE aggregate function.
+    (Jerome Boulon, Zheng via He Yongqiang)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

@@ -82,6 +82,7 @@ negative
 not
 or
 parse_url
+percentile
 pmod
 positive
 pow
@@ -154,6 +155,7 @@ like
 locate
 minute
 negative
+percentile
 positive
 regexp_replace
 reverse
