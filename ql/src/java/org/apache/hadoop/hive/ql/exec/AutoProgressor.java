@@ -74,6 +74,7 @@ public class AutoProgressor {
       int notificationInterval) {
     this.logClassName = logClassName;
     this.reporter = reporter;
+    this.notificationInterval = notificationInterval;
   }
 
   public void go() {

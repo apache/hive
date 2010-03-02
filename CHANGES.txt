@@ -237,6 +237,9 @@ Trunk -  Unreleased
     HIVE-1204. typedbytes: writing to stderr kills the mapper.
     (namit via He Yongqiang)
 
+    HIVE-1207. ScriptOperator AutoProgressor does not set the interval.
+    (Zheng via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
