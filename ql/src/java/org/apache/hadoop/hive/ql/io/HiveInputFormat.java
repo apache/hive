@@ -177,7 +177,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
+  protected static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats;
 
   static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
       Class inputFormatClass, JobConf job) throws IOException {
@@ -223,7 +223,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         cloneJobConf, reporter));
   }
 
-  private Map<String, PartitionDesc> pathToPartitionInfo;
+  protected Map<String, PartitionDesc> pathToPartitionInfo;
   MapredWork mrwork = null;
 
   protected void init(JobConf job) {

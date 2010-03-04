@@ -42,6 +42,9 @@ Trunk -  Unreleased
     HIVE-259. Add PERCENTILE aggregate function.
     (Jerome Boulon, Zheng via He Yongqiang)
 
+    HIVE-1197. Add BucketizedHiveInputFormat
+    (Siying Dong via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
