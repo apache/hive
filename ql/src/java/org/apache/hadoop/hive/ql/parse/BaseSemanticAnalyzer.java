@@ -75,7 +75,10 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
-
+  
+  public static int HIVE_COLUMN_ORDER_ASC = 1;
+  public static int HIVE_COLUMN_ORDER_DESC = 0;
+  
   /**
    * ReadEntitites that are passed to the hooks.
    */
@@ -355,10 +358,10 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
         colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()),
-            1));
+            HIVE_COLUMN_ORDER_ASC));
       } else {
         colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()),
-            0));
+            HIVE_COLUMN_ORDER_DESC));
       }
     }
     return colList;

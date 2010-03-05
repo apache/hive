@@ -110,7 +110,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   // be output
   protected transient JoinCondDesc[] condn;
   protected transient boolean noOuterJoin;
-  private transient Object[] dummyObj; // for outer joins, contains the
+  protected transient Object[] dummyObj; // for outer joins, contains the
   // potential nulls for the concerned
   // aliases
   protected transient RowContainer<ArrayList<Object>>[] dummyObjVectors; // empty
@@ -139,6 +139,48 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   transient Byte lastAlias = null;
 
   transient boolean handleSkewJoin = false;
+
+  public CommonJoinOperator() {
+  }
+  
+  public CommonJoinOperator(CommonJoinOperator<T> clone) {
+    this.joinEmitInterval = clone.joinEmitInterval;
+    this.joinCacheSize = clone.joinCacheSize;
+    this.nextSz = clone.nextSz;
+    this.childOperators = clone.childOperators;
+    this.parentOperators = clone.parentOperators;
+    this.counterNames = clone.counterNames;
+    this.counterNameToEnum = clone.counterNameToEnum;
+    this.done = clone.done;
+    this.operatorId = clone.operatorId;
+    this.storage = clone.storage;
+    this.condn = clone.condn;
+    
+    this.setSchema(clone.getSchema());
+    
+    this.alias = clone.alias;
+    this.beginTime = clone.beginTime;
+    this.inputRows = clone.inputRows;
+    this.childOperatorsArray = clone.childOperatorsArray;
+    this.childOperatorsTag = clone.childOperatorsTag;
+    this.colExprMap = clone.colExprMap;
+    this.counters = clone.counters;
+    this.dummyObj = clone.dummyObj;
+    this.dummyObjVectors = clone.dummyObjVectors;
+    this.forwardCache = clone.forwardCache;
+    this.groupKeyObject = clone.groupKeyObject;
+    this.handleSkewJoin = clone.handleSkewJoin;
+    this.hconf = clone.hconf;
+    this.id = clone.id;
+    this.inputObjInspectors = clone.inputObjInspectors;
+    this.inputRows = clone.inputRows;
+    this.noOuterJoin = clone.noOuterJoin;
+    this.numAliases = clone.numAliases;
+    this.operatorId = clone.operatorId;
+    this.posToAliasMap = clone.posToAliasMap;
+    this.spillTableDesc = clone.spillTableDesc;
+    this.statsMap = clone.statsMap;
+  }
 
   protected int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap) {
@@ -224,8 +266,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected void initializeOp(Configuration hconf) throws HiveException {
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
-    LOG.info("COMMONJOIN "
-        + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
     totalSz = 0;
     // Map that contains the rows for each alias
     storage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
@@ -699,7 +739,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    * maintained (inputNulls) where each entry denotes whether the element is to
    * be used or not (whether it is null or not). The size of the bitvector is
    * same as the number of inputs under consideration currently. When all inputs
-   * are accounted for, the output is forwared appropriately.
+   * are accounted for, the output is forwarded appropriately.
    */
   private void genObject(ArrayList<boolean[]> inputNulls, int aliasNum,
       IntermediateObject intObj, boolean firstRow) throws HiveException {

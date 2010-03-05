@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.ExecMapper.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -67,6 +68,8 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * run-time while extracting the operator specific counts.
    */
   protected HashMap<String, ProgressCounter> counterNameToEnum;
+  
+  private transient ExecMapperContext execContext;
 
   private static int seqId;
 
@@ -284,7 +287,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
     return true;
   }
-
+  
   /**
    * Initializes operators only if all parents have been initialized. Calls
    * operator specific initializer which then initializes child ops.
@@ -340,11 +343,23 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
-
+    
+    //pass the exec context to child operators
+    passExecContext(this.execContext);
+    
     initializeOp(hconf);
     LOG.info("Initialization Done " + id + " " + getName());
   }
-
+  
+  public void initializeLocalWork(Configuration hconf) throws HiveException {
+    if (childOperators != null) {
+      for (int i =0; i<childOperators.size();i++) {
+        Operator<? extends Serializable> childOp = this.childOperators.get(i);
+        childOp.initializeLocalWork(hconf);
+      }
+    }
+  }
+  
   /**
    * Operator specific initialization.
    */
@@ -368,6 +383,18 @@ public abstract class Operator<T extends Serializable> implements Serializable,
           childOperatorsTag[i]);
       if (reporter != null) {
         childOperatorsArray[i].setReporter(reporter);
+      }
+    }
+  }
+  
+  /**
+   * Pass the execContext reference to every child operator 
+   */
+  public void passExecContext(ExecMapperContext execContext) {
+    this.setExecContext(execContext);
+    if(childOperators != null) {
+      for (int i = 0; i < childOperators.size(); i++) {
+        childOperators.get(i).passExecContext(execContext);
       }
     }
   }
@@ -398,7 +425,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     // call the actual operator initialization function
     initialize(hconf, null);
   }
-
+  
   /**
    * Process the row.
    * 
@@ -470,7 +497,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     LOG.debug("End group Done");
   }
 
-  private boolean allInitializedParentsAreClosed() {
+  protected boolean allInitializedParentsAreClosed() {
     if (parentOperators != null) {
       for (Operator<? extends Serializable> parent : parentOperators) {
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
@@ -1116,5 +1143,19 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   public Object getGroupKeyObject() {
     return groupKeyObject;
+  }
+
+  public ExecMapperContext getExecContext() {
+    return execContext;
+  }
+
+  public void setExecContext(ExecMapperContext execContext) {
+    this.execContext = execContext;
+    if(this.childOperators != null) {
+      for (int i = 0; i<this.childOperators.size();i++) {
+        Operator<? extends Serializable> op = this.childOperators.get(i);
+        op.setExecContext(execContext);
+      }
+    }
   }
 }

@@ -89,6 +89,21 @@ public class JoinDesc implements Serializable {
     this(exprs, outputColumnNames, false, conds);
   }
 
+  public JoinDesc(JoinDesc clone) {
+    this.bigKeysDirMap = clone.bigKeysDirMap;
+    this.conds = clone.conds;
+    this.exprs = clone.exprs;
+    this.handleSkewJoin = clone.handleSkewJoin;
+    this.keyTableDesc = clone.keyTableDesc;
+    this.noOuterJoin = clone.noOuterJoin;
+    this.outputColumnNames = clone.outputColumnNames;
+    this.reversedExprs = clone.reversedExprs;
+    this.skewKeyDefinition = clone.skewKeyDefinition;
+    this.skewKeysValuesTables = clone.skewKeysValuesTables;
+    this.smallKeysDirMap = clone.smallKeysDirMap;
+    this.tagOrder = clone.tagOrder;
+  }
+
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
     return exprs;
   }

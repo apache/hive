@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
@@ -67,7 +69,7 @@ public class ParseContext {
   private HashMap<String, String> idToTableNameMap;
   private int destTableId;
   private UnionProcContext uCtx;
-  private List<MapJoinOperator> listMapJoinOpsNoReducer; // list of map join
+  private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer; // list of map join
   // operators with no
   // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
@@ -129,7 +131,7 @@ public class ParseContext {
       HashMap<TableScanOperator, Table> topToTable,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
-      UnionProcContext uCtx, List<MapJoinOperator> listMapJoinOpsNoReducer,
+      UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
@@ -366,7 +368,7 @@ public class ParseContext {
   /**
    * @return the listMapJoinOpsNoReducer
    */
-  public List<MapJoinOperator> getListMapJoinOpsNoReducer() {
+  public List<AbstractMapJoinOperator<? extends MapJoinDesc>> getListMapJoinOpsNoReducer() {
     return listMapJoinOpsNoReducer;
   }
 
@@ -375,7 +377,7 @@ public class ParseContext {
    *          the listMapJoinOpsNoReducer to set
    */
   public void setListMapJoinOpsNoReducer(
-      List<MapJoinOperator> listMapJoinOpsNoReducer) {
+      List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer) {
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
   }
 

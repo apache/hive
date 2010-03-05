@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -52,7 +54,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  */
 public final class MapJoinFactory {
 
-  public static int getPositionParent(MapJoinOperator op, Stack<Node> stack) {
+  public static int getPositionParent(AbstractMapJoinOperator<? extends MapJoinDesc> op, Stack<Node> stack) {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == op;
@@ -72,7 +74,7 @@ public final class MapJoinFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      MapJoinOperator mapJoin = (MapJoinOperator) nd;
+      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
       // find the branch on which this processor was invoked
@@ -122,7 +124,7 @@ public final class MapJoinFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      MapJoinOperator mapJoin = (MapJoinOperator) nd;
+      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       GenMRProcContext opProcCtx = (GenMRProcContext) procCtx;
 
       MapredWork cplan = GenMapRedUtils.getMapRedWork();
@@ -133,7 +135,7 @@ public final class MapJoinFactory {
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
-      boolean local = (pos == (mapJoin.getConf()).getPosBigTable()) ? false
+      boolean local = (pos == ((MapJoinDesc)(mapJoin.getConf())).getPosBigTable()) ? false
           : true;
 
       GenMapRedUtils.splitTasks(mapJoin, currTask, redTask, opProcCtx, false,
@@ -180,7 +182,7 @@ public final class MapJoinFactory {
         Object... nodeOutputs) throws SemanticException {
 
       SelectOperator sel = (SelectOperator) nd;
-      MapJoinOperator mapJoin = (MapJoinOperator) sel.getParentOperators().get(
+      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) sel.getParentOperators().get(
           0);
       assert sel.getParentOperators().size() == 1;
 
@@ -188,7 +190,7 @@ public final class MapJoinFactory {
       ParseContext parseCtx = ctx.getParseCtx();
 
       // is the mapjoin followed by a reducer
-      List<MapJoinOperator> listMapJoinOps = parseCtx
+      List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOps = parseCtx
           .getListMapJoinOpsNoReducer();
 
       if (listMapJoinOps.contains(mapJoin)) {
@@ -263,11 +265,11 @@ public final class MapJoinFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      MapJoinOperator mapJoin = (MapJoinOperator) nd;
+      AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin = (AbstractMapJoinOperator<? extends MapJoinDesc>) nd;
       GenMRProcContext ctx = (GenMRProcContext) procCtx;
 
       ctx.getParseCtx();
-      MapJoinOperator oldMapJoin = ctx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = ctx.getCurrMapJoinOp();
       assert oldMapJoin != null;
       GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mapJoin);
       if (mjCtx != null) {
@@ -335,7 +337,7 @@ public final class MapJoinFactory {
       UnionOperator currUnion = ctx.getCurrUnionOp();
       assert currUnion != null;
       ctx.getUnionTask(currUnion);
-      MapJoinOperator mapJoin = (MapJoinOperator) nd;
+      AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);

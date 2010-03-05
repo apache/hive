@@ -192,6 +192,8 @@ public class BucketMapJoinOptimizer implements Transform {
       for (int index = 0; index < joinAliases.size(); index++) {
         String alias = joinAliases.get(index);
         TableScanOperator tso = (TableScanOperator) topOps.get(alias);
+        if (tso == null)
+          return null;
         Table tbl = topToTable.get(tso);
         if(tbl.isPartitioned()) {
           PrunedPartitionList prunedParts = null;

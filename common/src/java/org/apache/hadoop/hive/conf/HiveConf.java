@@ -200,6 +200,7 @@ public class HiveConf extends Configuration {
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
     HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
+    HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     ;
 
     public final String varname;

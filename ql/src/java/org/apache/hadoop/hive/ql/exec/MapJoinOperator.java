@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,31 +49,13 @@ import org.apache.hadoop.util.ReflectionUtils;
 /**
  * Map side Join operator implementation.
  */
-public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
+public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implements
     Serializable {
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class
       .getName());
 
-  /**
-   * The expressions for join inputs's join keys.
-   */
-  protected transient Map<Byte, List<ExprNodeEvaluator>> joinKeys;
-  /**
-   * The ObjectInspectors for the join inputs's join keys.
-   */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
-  /**
-   * The standard ObjectInspectors for the join inputs's join keys.
-   */
-  protected transient Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
-
-  private transient int posBigTable; // one of the tables that is not in memory
-  transient int mapJoinRowsKey; // rows for a given key
-
   protected transient Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
-
-  protected transient RowContainer<ArrayList<Object>> emptyList = null;
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
@@ -135,35 +116,23 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
     return mapMetadata;
   }
 
-  transient boolean firstRow;
-
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
-  transient List<File> hTables;
-  transient int numMapRowsRead;
-  transient int heartbeatInterval;
   transient int maxMapJoinSize;
+  
+  public MapJoinOperator() {
+  }
+
+  public MapJoinOperator(AbstractMapJoinOperator<? extends MapJoinDesc> mjop) {
+    super(mjop);
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    numMapRowsRead = 0;
-
-    firstRow = true;
-    heartbeatInterval = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVESENDHEARTBEAT);
+    
     maxMapJoinSize = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
-
-    joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
-
-    populateJoinKeyValue(joinKeys, conf.getKeys());
-    joinKeysObjectInspectors = getObjectInspectorsFromEvaluators(joinKeys,
-        inputObjInspectors);
-    joinKeysStandardObjectInspectors = getStandardObjectInspectors(joinKeysObjectInspectors);
-
-    // all other tables are small, and are cached in the hash table
-    posBigTable = conf.getPosBigTable();
 
     metadataValueTag = new int[numAliases];
     for (int pos = 0; pos < numAliases; pos++) {
@@ -171,7 +140,6 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
     }
 
     mapJoinTables = new HashMap<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>>();
-    hTables = new ArrayList<File>();
 
     // initialize the hash tables for other tables
     for (int pos = 0; pos < numAliases; pos++) {
@@ -186,33 +154,6 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
 
       mapJoinTables.put(Byte.valueOf((byte) pos), hashTable);
     }
-
-    emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
-    RowContainer bigPosRC = getRowContainer(hconf, (byte) posBigTable,
-        order[posBigTable], joinCacheSize);
-    storage.put((byte) posBigTable, bigPosRC);
-
-    mapJoinRowsKey = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
-
-    List<? extends StructField> structFields = ((StructObjectInspector) outputObjInspector)
-        .getAllStructFieldRefs();
-    if (conf.getOutputColumnNames().size() < structFields.size()) {
-      List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
-      for (Byte alias : order) {
-        int sz = conf.getExprs().get(alias).size();
-        List<Integer> retained = conf.getRetainList().get(alias);
-        for (int i = 0; i < sz; i++) {
-          int pos = retained.get(i);
-          structFieldObjectInspectors.add(structFields.get(pos)
-              .getFieldObjectInspector());
-        }
-      }
-      outputObjInspector = ObjectInspectorFactory
-          .getStandardStructObjectInspector(conf.getOutputColumnNames(),
-          structFieldObjectInspectors);
-    }
-    initializeChildren(hconf);
   }
 
   @Override
@@ -258,11 +199,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
           firstRow = false;
         }
 
-        // Send some status periodically
-        numMapRowsRead++;
-        if (((numMapRowsRead % heartbeatInterval) == 0) && (reporter != null)) {
-          reporter.progress();
-        }
+        reportProgress();
 
         if ((numMapRowsRead > maxMapJoinSize) && (reporter != null)
             && (counterNameToEnum != null)) {
@@ -380,7 +317,7 @@ public class MapJoinOperator extends CommonJoinOperator<MapJoinDesc> implements
     }
     super.closeOp(abort);
   }
-
+  
   /**
    * Implements the getName function for the Node Interface.
    * 

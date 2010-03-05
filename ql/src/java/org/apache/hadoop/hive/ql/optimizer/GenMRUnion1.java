@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParse
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -141,7 +143,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // If there is a mapjoin at position 'pos'
     if (uPrsCtx.getMapJoinSubq(pos)) {
-      MapJoinOperator mjOp = ctx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = ctx.getCurrMapJoinOp();
       assert mjOp != null;
       GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
       assert mjCtx != null;

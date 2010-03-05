@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -74,6 +75,7 @@ public final class OperatorFactory {
     opvec.add(new OpTuple<GroupByDesc>(GroupByDesc.class, GroupByOperator.class));
     opvec.add(new OpTuple<JoinDesc>(JoinDesc.class, JoinOperator.class));
     opvec.add(new OpTuple<MapJoinDesc>(MapJoinDesc.class, MapJoinOperator.class));
+    opvec.add(new OpTuple<SMBJoinDesc>(SMBJoinDesc.class, SMBMapJoinOperator.class));
     opvec.add(new OpTuple<LimitDesc>(LimitDesc.class, LimitOperator.class));
     opvec.add(new OpTuple<TableScanDesc>(TableScanDesc.class, TableScanOperator.class));
     opvec.add(new OpTuple<UnionDesc>(UnionDesc.class, UnionOperator.class));

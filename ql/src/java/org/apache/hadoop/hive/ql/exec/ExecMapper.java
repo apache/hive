@@ -68,6 +68,32 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private long nextCntr = 1;
   private String lastInputFile = null;
   private MapredLocalWork localWork = null;
+  
+  private ExecMapperContext execContext = new ExecMapperContext();
+  
+  public static class ExecMapperContext {
+    boolean inputFileChanged = false;
+    String currentInputFile;
+    JobConf jc;
+    public boolean isInputFileChanged() {
+      return inputFileChanged;
+    }
+    public void setInputFileChanged(boolean inputFileChanged) {
+      this.inputFileChanged = inputFileChanged;
+    }
+    public String getCurrentInputFile() {
+      return currentInputFile;
+    }
+    public void setCurrentInputFile(String currentInputFile) {
+      this.currentInputFile = currentInputFile;
+    }
+    public JobConf getJc() {
+      return jc;
+    }
+    public void setJc(JobConf jc) {
+      this.jc = jc;
+    }
+  }
 
   @Override
   public void configure(JobConf job) {
@@ -86,6 +112,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     }
     try {
       jc = job;
+      execContext.jc = jc;
       // create map and fetch operators
       MapredWork mrwork = Utilities.getMapRedWork(job);
       mo = new MapOperator();
@@ -93,8 +120,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));
+      mo.setExecContext(execContext);
+      mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
-
+      
       // initialize map local work
       localWork = mrwork.getMapLocalWork();
       if (localWork == null) {
@@ -112,6 +141,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
         Operator<? extends Serializable> forwardOp = localWork.getAliasToWork()
             .get(entry.getKey());
+        forwardOp.setExecContext(execContext);
         // All the operators need to be initialized before process
         forwardOp.initialize(jc, new ObjectInspector[] {entry.getValue()
             .getOutputObjectInspector()});
@@ -141,11 +171,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setReporter(rp);
     }
     
-    if (localWork != null
-        && (this.lastInputFile == null || 
-            (localWork.getInputFileChangeSensitive() && inputFileChanged()))) {
+    if(inputFileChanged()) {
+      if (this.localWork != null
+          && (localWork.getInputFileChangeSensitive() || this.lastInputFile == null)) {
+        processMapLocalWork(localWork.getInputFileChangeSensitive());
+      }
       this.lastInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
-      processMapLocalWork(localWork.getInputFileChangeSensitive());      
     }
     
     try {
@@ -188,10 +219,13 @@ public class ExecMapper extends MapReduceBase implements Mapper {
    */
   private boolean inputFileChanged() {
     String currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+    execContext.currentInputFile = currentInputFile;
     if (this.lastInputFile == null
         || !this.lastInputFile.equals(currentInputFile)) {
+      execContext.inputFileChanged = true;
       return true;
     }
+    execContext.inputFileChanged = false;
     return false;
   }
 

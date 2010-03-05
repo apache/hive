@@ -45,6 +45,9 @@ Trunk -  Unreleased
     HIVE-1197. Add BucketizedHiveInputFormat
     (Siying Dong via namit)
 
+    HIVE-1194. Add sort merge join
+    (He Yongqiang via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

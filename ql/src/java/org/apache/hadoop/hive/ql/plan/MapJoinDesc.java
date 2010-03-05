@@ -50,6 +50,17 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public MapJoinDesc() {
   }
+  
+  public MapJoinDesc(MapJoinDesc clone) {
+    super(clone);
+    this.keys = clone.keys;
+    this.keyTblDesc = clone.keyTblDesc;
+    this.valueTblDescs = clone.valueTblDescs;
+    this.posBigTable = clone.posBigTable;
+    this.retainList = clone.retainList;
+    this.bigTableAlias = clone.bigTableAlias;
+    this.aliasBucketFileNameMapping = clone.aliasBucketFileNameMapping;
+  }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
       final TableDesc keyTblDesc, final Map<Byte, List<ExprNodeDesc>> values,

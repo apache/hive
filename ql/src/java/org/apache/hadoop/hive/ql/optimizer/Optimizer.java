@@ -58,6 +58,9 @@ public class Optimizer {
     transformations.add(new MapJoinProcessor());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN)) {
       transformations.add(new BucketMapJoinOptimizer());
+      if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)) {
+        transformations.add(new SortedMergeBucketMapJoinOptimizer());
+      }
     }
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());

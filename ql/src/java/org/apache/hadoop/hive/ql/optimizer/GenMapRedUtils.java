@@ -33,11 +33,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -157,7 +159,7 @@ public final class GenMapRedUtils {
     // The mapjoin has already been encountered. Some context must be stored
     // about that
     if (readInputMapJoin) {
-      MapJoinOperator currMapJoinOp = opProcCtx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) opProcCtx.getCurrMapJoinOp();
       assert currMapJoinOp != null;
       boolean local = ((pos == -1) || (pos == (currMapJoinOp.getConf())
           .getPosBigTable())) ? false : true;
@@ -217,7 +219,7 @@ public final class GenMapRedUtils {
       seenOps.add(currTopOp);
       boolean local = (pos == desc.getPosBigTable()) ? false : true;
       setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
-      setupBucketMapJoinInfo(plan, (MapJoinOperator)op);
+      setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op);
     }
 
     opProcCtx.setCurrTask(currTask);
@@ -226,16 +228,35 @@ public final class GenMapRedUtils {
   }
 
   private static void setupBucketMapJoinInfo(MapredWork plan,
-      MapJoinOperator currMapJoinOp) {
+      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
     if (currMapJoinOp != null) {
       LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping = 
         currMapJoinOp.getConf().getAliasBucketFileNameMapping();
       if(aliasBucketFileNameMapping!= null) {
         MapredLocalWork localPlan = plan.getMapLocalWork();
-        if (localPlan == null) {
-          localPlan = new MapredLocalWork(
-              new LinkedHashMap<String, Operator<? extends Serializable>>(),
-              new LinkedHashMap<String, FetchWork>());
+        if(localPlan == null) {
+          if(currMapJoinOp instanceof SMBMapJoinOperator) {
+            localPlan = ((SMBMapJoinOperator)currMapJoinOp).getConf().getLocalWork();
+          }
+          if (localPlan == null) {
+            localPlan = new MapredLocalWork(
+                new LinkedHashMap<String, Operator<? extends Serializable>>(),
+                new LinkedHashMap<String, FetchWork>());
+          }
+        } else {
+          //local plan is not null, we want to merge it into SMBMapJoinOperator's local work
+          if(currMapJoinOp instanceof SMBMapJoinOperator) {
+            MapredLocalWork smbLocalWork = ((SMBMapJoinOperator)currMapJoinOp).getConf().getLocalWork();
+            if(smbLocalWork != null) {
+              localPlan.getAliasToFetchWork().putAll(smbLocalWork.getAliasToFetchWork());
+              localPlan.getAliasToWork().putAll(smbLocalWork.getAliasToWork());
+            }
+          }
+        }
+        if(currMapJoinOp instanceof SMBMapJoinOperator) {
+          plan.setMapLocalWork(null);
+          ((SMBMapJoinOperator)currMapJoinOp).getConf().setLocalWork(localPlan);
+        } else {
           plan.setMapLocalWork(localPlan);
         }
         BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
@@ -364,11 +385,14 @@ public final class GenMapRedUtils {
               : true;
         }
         setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
+        if(op instanceof AbstractMapJoinOperator) {
+          setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op);          
+        }
       }
       currTopOp = null;
       opProcCtx.setCurrTopOp(currTopOp);
     } else if (opProcCtx.getCurrMapJoinOp() != null) {
-      MapJoinOperator mjOp = opProcCtx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) opProcCtx.getCurrMapJoinOp();
       if (readUnionData) {
         initUnionPlan(opProcCtx, currTask, false);
       } else {
@@ -376,7 +400,7 @@ public final class GenMapRedUtils {
 
         // In case of map-join followed by map-join, the file needs to be
         // obtained from the old map join
-        MapJoinOperator oldMapJoin = mjCtx.getOldMapJoin();
+        AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = (AbstractMapJoinOperator<? extends MapJoinDesc>) mjCtx.getOldMapJoin();
         String taskTmpDir = null;
         TableDesc tt_desc = null;
         Operator<? extends Serializable> rootOp = null;
@@ -819,8 +843,8 @@ public final class GenMapRedUtils {
     setTaskPlan(taskTmpDir, streamDesc, ts_op, cplan, local, tt_desc);
 
     // This can be cleaned up as a function table in future
-    if (op instanceof MapJoinOperator) {
-      MapJoinOperator mjOp = (MapJoinOperator) op;
+    if (op instanceof AbstractMapJoinOperator<?>) {
+      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) op;
       opProcCtx.setCurrMapJoinOp(mjOp);
       GenMRMapJoinCtx mjCtx = opProcCtx.getMapJoinCtx(mjOp);
       if (mjCtx == null) {
