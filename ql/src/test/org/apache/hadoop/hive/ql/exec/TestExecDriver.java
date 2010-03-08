@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -214,7 +215,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan1(Table src) {
+  private void populateMapRedPlan1(Table src) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     ArrayList<String> outputColumns = new ArrayList<String>();
@@ -242,7 +243,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan2(Table src) {
+  private void populateMapRedPlan2(Table src) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(1));
     ArrayList<String> outputColumns = new ArrayList<String>();
     for (int i = 0; i < 2; i++) {
@@ -275,7 +276,7 @@ public class TestExecDriver extends TestCase {
    * test reduce with multiple tagged inputs.
    */
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan3(Table src, Table src2) {
+  private void populateMapRedPlan3(Table src, Table src2) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(5));
     mr.setNeedsTagging(true);
     ArrayList<String> outputColumns = new ArrayList<String>();
@@ -316,7 +317,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan4(Table src) {
+  private void populateMapRedPlan4(Table src) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work
@@ -359,7 +360,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan5(Table src) {
+  private void populateMapRedPlan5(Table src) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work
@@ -391,7 +392,7 @@ public class TestExecDriver extends TestCase {
   }
 
   @SuppressWarnings("unchecked")
-  private void populateMapRedPlan6(Table src) {
+  private void populateMapRedPlan6(Table src) throws SemanticException {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work

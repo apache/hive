@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -129,7 +130,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   }
 
   private void createMergeJob(FileSinkOperator fsOp, GenMRProcContext ctx,
-      String finalName) {
+      String finalName) throws SemanticException {
     Task<? extends Serializable> currTask = ctx.getCurrTask();
     RowSchema fsRS = fsOp.getSchema();
 

@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -37,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -47,6 +52,8 @@ import org.apache.hadoop.io.Text;
  */
 public final class ObjectInspectorUtils {
 
+  protected final static Log LOG = LogFactory.getLog(ObjectInspectorUtils.class.getName());
+  
   /**
    * This enum controls how we copy primitive objects.
    * 
@@ -568,6 +575,20 @@ public final class ObjectInspectorUtils {
     return sb.toString();
   }
 
+  /**
+   * Get the type name of the Java class. 
+   */
+  public static String getTypeNameFromJavaClass(Type t) {
+    try {
+      ObjectInspector oi = ObjectInspectorFactory.getReflectionObjectInspector(t,
+          ObjectInspectorOptions.JAVA);
+      return oi.getTypeName();
+    } catch (Throwable e) {
+      LOG.info(StringUtils.stringifyException(e));
+      return "unknown";
+    }
+  }
+  
   private ObjectInspectorUtils() {
     // prevent instantiation
   }

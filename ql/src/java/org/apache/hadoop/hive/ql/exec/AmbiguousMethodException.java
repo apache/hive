@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -29,20 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class AmbiguousMethodException extends UDFArgumentException {
 
-  /**
-   * 
-   */
   private static final long serialVersionUID = 1L;
-
-  /**
-   * The UDF or UDAF class that has the ambiguity.
-   */
-  Class<?> funcClass;
-
-  /**
-   * The list of parameter types.
-   */
-  List<TypeInfo> argTypeInfos;
 
   /**
    * Constructor.
@@ -51,19 +39,13 @@ public class AmbiguousMethodException extends UDFArgumentException {
    *          The UDF or UDAF class.
    * @param argTypeInfos
    *          The list of argument types that lead to an ambiguity.
+   * @param methods
+   *          All potential matches.
    */
   public AmbiguousMethodException(Class<?> funcClass,
-      List<TypeInfo> argTypeInfos) {
-    super("Ambiguous method for " + funcClass + " with " + argTypeInfos);
-    this.funcClass = funcClass;
-    this.argTypeInfos = argTypeInfos;
-  }
-
-  Class<?> getFunctionClass() {
-    return funcClass;
-  }
-
-  List<TypeInfo> getArgTypeList() {
-    return argTypeInfos;
+      List<TypeInfo> argTypeInfos, List<Method> methods) {
+    super("Ambiguous method for " + funcClass + " with "
+        + argTypeInfos.toString().replace('[', '(').replace(']', ')'), 
+        funcClass, argTypeInfos, methods);
   }
 }

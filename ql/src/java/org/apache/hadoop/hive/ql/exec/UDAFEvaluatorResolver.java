@@ -41,6 +41,6 @@ public interface UDAFEvaluatorResolver {
    * Gets the evaluator class corresponding to the passed parameter list.
    */
   Class<? extends UDAFEvaluator> getEvaluatorClass(List<TypeInfo> argClasses)
-      throws AmbiguousMethodException;
+      throws UDFArgumentException;
 
 }

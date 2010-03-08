@@ -121,7 +121,8 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
 
         if (match) {
           if (udfMethod != null) {
-            throw new AmbiguousMethodException(udfClass, argTypeInfos);
+            throw new AmbiguousMethodException(udfClass, argTypeInfos, 
+                Arrays.asList(new Method[]{udfMethod, m}));
           } else {
             udfMethod = m;
           }

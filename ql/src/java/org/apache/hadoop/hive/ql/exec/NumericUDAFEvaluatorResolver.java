@@ -47,7 +47,7 @@ public class NumericUDAFEvaluatorResolver extends DefaultUDAFEvaluatorResolver {
    */
   @Override
   public Class<? extends UDAFEvaluator> getEvaluatorClass(
-      List<TypeInfo> argTypeInfos) throws AmbiguousMethodException {
+      List<TypeInfo> argTypeInfos) throws UDFArgumentException {
     // Go through the argClasses and for any string, void or date time, start
     // looking for doubles
     ArrayList<TypeInfo> args = new ArrayList<TypeInfo>();

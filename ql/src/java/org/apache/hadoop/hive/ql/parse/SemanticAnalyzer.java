@@ -3408,7 +3408,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             column = null;
           } else {
             column = TypeCheckProcFactory.DefaultExprProcessor
-                .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), column);
+                .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(),
+                    column);
           }
           if (column == null) {
             String reason = "Cannot convert column " + i + " from "
@@ -3626,7 +3627,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           column = null;
         } else {
           column = TypeCheckProcFactory.DefaultExprProcessor
-            .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), column);
+            .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), 
+                column);
         }
         if (column == null) {
           String reason = "Cannot convert column " + posn + " from "

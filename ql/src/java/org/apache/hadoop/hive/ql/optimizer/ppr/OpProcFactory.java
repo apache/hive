@@ -23,6 +23,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -97,7 +98,7 @@ public final class OpProcFactory {
     }
 
     private void addPruningPred(Map<TableScanOperator, ExprNodeDesc> opToPPR,
-        TableScanOperator top, ExprNodeDesc new_ppr_pred) {
+        TableScanOperator top, ExprNodeDesc new_ppr_pred) throws UDFArgumentException {
       ExprNodeDesc old_ppr_pred = opToPPR.get(top);
       ExprNodeDesc ppr_pred = null;
       if (old_ppr_pred != null) {

@@ -454,25 +454,6 @@ public final class TypeCheckProcFactory {
     }
 
     /**
-     * Get the exprNodeDesc.
-     *
-     * @param name
-     * @param children
-     * @return The expression node descriptor
-     * @throws UDFArgumentException
-     */
-    public static ExprNodeDesc getFuncExprNodeDesc(String name,
-        ExprNodeDesc... children) {
-      ArrayList<ExprNodeDesc> c = new ArrayList<ExprNodeDesc>(Arrays
-          .asList(children));
-      try {
-        return getFuncExprNodeDesc(name, c);
-      } catch (UDFArgumentException e) {
-        throw new RuntimeException("Hive 2 internal error", e);
-      }
-    }
-
-    /**
      * This function create an ExprNodeDesc for a UDF function given the
      * children (arguments). It will insert implicit type conversion functions
      * if necessary.
@@ -480,20 +461,22 @@ public final class TypeCheckProcFactory {
      * @throws UDFArgumentException
      */
     public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
-        List<ExprNodeDesc> children) throws UDFArgumentException {
+        ExprNodeDesc... children) throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
       if (fi == null) {
-        throw new UDFArgumentException("udf:" + udfName + " not found.");
+        throw new UDFArgumentException(udfName + " not found.");
       }
 
       GenericUDF genericUDF = fi.getGenericUDF();
       if (genericUDF == null) {
-        throw new UDFArgumentException("udf:" + udfName
-            + " is an aggregation function.");
+        throw new UDFArgumentException(udfName
+            + " is an aggregation function or a table function.");
       }
 
-      return ExprNodeGenericFuncDesc.newInstance(genericUDF, children);
+      List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(children.length);
+      childrenList.addAll(Arrays.asList(children));
+      return ExprNodeGenericFuncDesc.newInstance(genericUDF, childrenList);
     }
 
     static ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
@@ -546,7 +529,7 @@ public final class TypeCheckProcFactory {
         TypeInfo myt = children.get(0).getTypeInfo();
 
         if (myt.getCategory() == Category.LIST) {
-          // Only allow constant integer index for now
+          // Only allow integer index for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)
               || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(TypeInfoFactory.intTypeInfo))) {
@@ -559,7 +542,7 @@ public final class TypeCheckProcFactory {
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
               .getGenericUDFForIndex(), children);
         } else if (myt.getCategory() == Category.MAP) {
-          // Only allow only constant indexes for now
+          // Only allow constant map key for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT
                 .getMsg(expr));
@@ -601,28 +584,7 @@ public final class TypeCheckProcFactory {
           throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
         }
 
-        try {
-          desc = getFuncExprNodeDesc(funcText, children);
-        } catch (AmbiguousMethodException e) {
-          ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(
-              children.size());
-          for (int i = 0; i < children.size(); i++) {
-            argumentClasses.add(((PrimitiveTypeInfo) children.get(i)
-                .getTypeInfo()).getPrimitiveWritableClass());
-          }
-
-          if (isFunction) {
-            String reason = "Looking for UDF \"" + expr.getChild(0).getText()
-                + "\" with parameters " + argumentClasses;
-            throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE
-                .getMsg((ASTNode) expr.getChild(0), reason), e);
-          } else {
-            String reason = "Looking for Operator \"" + expr.getText()
-                + "\" with parameters " + argumentClasses;
-            throw new SemanticException(ErrorMsg.INVALID_OPERATOR_SIGNATURE
-                .getMsg(expr, reason), e);
-          }
-        }
+        desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), children);
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we

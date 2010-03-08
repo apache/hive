@@ -355,9 +355,9 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (11);
     } catch (Exception e) {
-      errorMessage = "FAILED: Unknown exception: " + e.getMessage();
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage, "\n"
+      console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     }
@@ -555,9 +555,9 @@ public class Driver implements CommandProcessor {
             Keys.QUERY_RET_CODE, String.valueOf(12));
       }
       // TODO: do better with handling types of Exception here
-      errorMessage = "FAILED: Unknown exception : " + e.getMessage();
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = "08S01";
-      console.printError(errorMessage, "\n"
+      console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
@@ -732,7 +732,7 @@ public class Driver implements CommandProcessor {
     try {
       ctx.clear();
     } catch (Exception e) {
-      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+      console.printError("FAILED: Hive Internal Error: " + Utilities.getNameMessage(e) + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return 13;
     }

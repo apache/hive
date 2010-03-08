@@ -24,12 +24,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
+import org.apache.hadoop.hive.ql.exec.Operator;
 
 /**
  * MapredLocalWork.

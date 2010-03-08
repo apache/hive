@@ -46,6 +46,9 @@ public class $className extends TestCase {
     return suite;
   }
 
+  static String debugHint = "\nSee build/ql/tmp/hive.log, "
+     + "or try \"ant test ... -Dtest.silent=false\" to get more logs.";
+
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.length() - 2)
@@ -59,19 +62,21 @@ public class $className extends TestCase {
       qt.cliInit("$fname");
       int ecode = qt.executeClient("$fname");
       if (ecode == 0) {
-        fail("Client Execution failed with error code = " + ecode);
+        fail("Client Execution failed with error code = " + ecode
+            + debugHint);
       }
 
       ecode = qt.checkCliDriverResults("$fname");
       if (ecode != 0) {
-        fail("Client execution results failed with error code = " + ecode);
+        fail("Client execution results failed with error code = " + ecode
+            + debugHint);
       }
     }
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.out.flush();
-      fail("Unexpected exception");
+      fail("Unexpected exception" + debugHint);
     }
 
     System.out.println("Done query: " + "$fname");

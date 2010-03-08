@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -455,7 +456,7 @@ public final class PlanUtils {
   public static ReduceSinkDesc getReduceSinkDesc(
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
-      int numPartitionFields, int numReducers) {
+      int numPartitionFields, int numReducers) throws SemanticException {
     ArrayList<ExprNodeDesc> partitionCols = null;
 
     if (numPartitionFields >= keyCols.size()) {

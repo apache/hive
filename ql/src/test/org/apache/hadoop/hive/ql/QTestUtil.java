@@ -753,6 +753,13 @@ public class QTestUtil {
         "-I", "lastAccessTime",
         "-I", "owner",
         "-I", "transient_lastDdlTime",
+        "-I", "java.lang.RuntimeException",
+        "-I", "at org",
+        "-I", "at sun",
+        "-I", "at java",
+        "-I", "at junit",
+        "-I", "Caused by:",
+        "-I", "[.][.][.] [0-9]* more",
         (new File(logDir, tname + ".out")).getPath(),
         (new File(outDir, tname + ".out")).getPath()};
 
@@ -828,7 +835,7 @@ public class QTestUtil {
         System.err.println("Query file " + fname + " failed with exception "
             + e.getMessage());
         e.printStackTrace();
-        System.err.flush();
+        outputTestFailureHelpMessage();
       }
     }
   }
@@ -890,6 +897,7 @@ public class QTestUtil {
             failed = true;
             System.err.println("Test " + qfiles[i].getName()
                 + " results check failed with error code " + ecode);
+            outputTestFailureHelpMessage();
           }
         }
 
@@ -903,6 +911,7 @@ public class QTestUtil {
             failed = true;
             System.err.println("Test " + qfiles[i].getName()
                 + " results check failed with error code " + ecode);
+            outputTestFailureHelpMessage();
           }
         }
       }
@@ -911,5 +920,11 @@ public class QTestUtil {
       return false;
     }
     return (!failed);
+  }
+  
+  public static void outputTestFailureHelpMessage() {
+    System.err.println("See build/ql/tmp/hive.log, "
+        + "or try \"ant test ... -Dtest.silent=false\" to get more logs.");
+    System.err.flush();
   }
 }

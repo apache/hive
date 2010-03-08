@@ -43,6 +43,9 @@ public class $className extends TestCase {
     return suite;
   }
 
+  static String debugHint = "\nSee build/ql/tmp/hive.log, "
+     + "or try \"ant test ... -Dtest.silent=false\" to get more logs.";
+
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.length() - 2)
@@ -56,25 +59,25 @@ public class $className extends TestCase {
       qt.init("$fname");
       ASTNode tree = qt.parseQuery("$fname");
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
-      fail("Unexpected success for query: " + "$fname");
+      fail("Unexpected success for query: " + "$fname" + debugHint);
     }
     catch (ParseException pe) {
       int ecode = qt.checkNegativeResults("$fname", pe);
       if (ecode != 0) {
-        fail("failed with error code = " + ecode);
+        fail("failed with error code = " + ecode + debugHint);
       }
     }
     catch (SemanticException se) {
       int ecode = qt.checkNegativeResults("$fname", se);
       if (ecode != 0) {
-        fail("failed with error code = " + ecode);
+        fail("failed with error code = " + ecode + debugHint);
       }
     }
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
       System.out.flush();
-      fail("Unexpected exception");
+      fail("Unexpected exception" + debugHint);
     }
 
     System.out.println("Done query: " + "$fname");

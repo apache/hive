@@ -605,9 +605,11 @@ public final class FunctionRegistry {
    * This method is shared between UDFRegistry and UDAFRegistry. methodName will
    * be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial"
    * for UDAFRegistry.
+   * @throws UDFArgumentException 
    */
   public static <T> Method getMethodInternal(Class<? extends T> udfClass,
-      String methodName, boolean exact, List<TypeInfo> argumentClasses) {
+      String methodName, boolean exact, List<TypeInfo> argumentClasses)
+      throws UDFArgumentException {
 
     List<Method> mlist = new ArrayList<Method>();
 
@@ -617,7 +619,7 @@ public final class FunctionRegistry {
       }
     }
 
-    return getMethodInternal(mlist, exact, argumentClasses);
+    return getMethodInternal(udfClass, mlist, exact, argumentClasses);
   }
 
   public static void registerTemporaryGenericUDAF(String functionName,
@@ -775,11 +777,14 @@ public final class FunctionRegistry {
    *          The classes for the argument.
    * @return The matching method.
    */
-  public static Method getMethodInternal(List<Method> mlist, boolean exact,
-      List<TypeInfo> argumentsPassed) {
-    int leastConversionCost = Integer.MAX_VALUE;
-    Method udfMethod = null;
+  public static Method getMethodInternal(Class<?> udfClass, List<Method> mlist, boolean exact,
+      List<TypeInfo> argumentsPassed) throws UDFArgumentException {
 
+    // result
+    List<Method> udfMethods = new ArrayList<Method>();
+    // The cost of the result
+    int leastConversionCost = Integer.MAX_VALUE;
+    
     for (Method m : mlist) {
       List<TypeInfo> argumentsAccepted = TypeInfoUtils.getParameterTypeInfos(m,
           argumentsPassed.size());
@@ -806,7 +811,8 @@ public final class FunctionRegistry {
       if (match) {
         // Always choose the function with least implicit conversions.
         if (conversionCost < leastConversionCost) {
-          udfMethod = m;
+          udfMethods.clear();
+          udfMethods.add(m);
           leastConversionCost = conversionCost;
           // Found an exact match
           if (leastConversionCost == 0) {
@@ -815,16 +821,23 @@ public final class FunctionRegistry {
         } else if (conversionCost == leastConversionCost) {
           // Ambiguous call: two methods with the same number of implicit
           // conversions
-          LOG.info("Ambigious methods: passed = " + argumentsPassed
-              + " method 1 = " + udfMethod + " method 2 = " + m);
-          udfMethod = null;
+          udfMethods.add(m);
           // Don't break! We might find a better match later.
         } else {
           // do nothing if implicitConversions > leastImplicitConversions
         }
       }
     }
-    return udfMethod;
+    
+    if (udfMethods.size() == 0) {
+      // No matching methods found
+      throw new NoMatchingMethodException(udfClass, argumentsPassed, mlist); 
+    }
+    if (udfMethods.size() > 1) {
+      // Ambiguous method found
+      throw new AmbiguousMethodException(udfClass, argumentsPassed, mlist); 
+    }
+    return udfMethods.get(0);
   }
 
   /**

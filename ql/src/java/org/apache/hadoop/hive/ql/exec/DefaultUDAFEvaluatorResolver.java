@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -55,7 +56,7 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
    *          The list of the parameter types.
    */
   public Class<? extends UDAFEvaluator> getEvaluatorClass(
-      List<TypeInfo> argClasses) throws AmbiguousMethodException {
+      List<TypeInfo> argClasses) throws UDFArgumentException {
 
     ArrayList<Class<? extends UDAFEvaluator>> classList =
         new ArrayList<Class<? extends UDAFEvaluator>>();
@@ -80,10 +81,7 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
       }
     }
 
-    Method m = FunctionRegistry.getMethodInternal(mList, false, argClasses);
-    if (m == null) {
-      throw new AmbiguousMethodException(udafClass, argClasses);
-    }
+    Method m = FunctionRegistry.getMethodInternal(udafClass, mList, false, argClasses);
 
     // Find the class that has this method.
     // Note that Method.getDeclaringClass() may not work here because the method
@@ -94,7 +92,7 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
         if (found == -1) {
           found = i;
         } else {
-          throw new AmbiguousMethodException(udafClass, argClasses);
+          throw new AmbiguousMethodException(udafClass, null, null); 
         }
       }
     }

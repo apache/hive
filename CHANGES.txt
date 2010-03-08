@@ -124,6 +124,9 @@ Trunk -  Unreleased
     HIVE-1137. Fix build.xml for references to IVY_HOME.
     (Carl Steinbach via zshao)
 
+    HIVE-1212. Explicitly say "Hive Internal Error" to ease debugging
+    (Zheng Shao via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

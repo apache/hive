@@ -55,12 +55,8 @@ public class DefaultUDFMethodResolver implements UDFMethodResolver {
    *          evaluate function signature.
    */
   @Override
-  public Method getEvalMethod(List<TypeInfo> argClasses) throws AmbiguousMethodException {
-    Method m = FunctionRegistry.getMethodInternal(udfClass, "evaluate", false,
+  public Method getEvalMethod(List<TypeInfo> argClasses) throws UDFArgumentException {
+    return FunctionRegistry.getMethodInternal(udfClass, "evaluate", false,
         argClasses);
-    if (m == null) {
-      throw new AmbiguousMethodException(udfClass, argClasses);
-    }
-    return m;
   }
 }
