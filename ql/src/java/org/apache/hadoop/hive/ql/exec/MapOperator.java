@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * Map operator. This triggers overall map side processing. This is a little
@@ -371,18 +373,48 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   }
 
   public void process(Writable value) throws HiveException {
+    Object row = null;
     try {
       if (!isPartitioned) {
-        Object row = deserializer.deserialize(value);
-        forward(row, rowObjectInspector);
+        row = deserializer.deserialize(value);
       } else {
         rowWithPart[0] = deserializer.deserialize(value);
-        forward(rowWithPart, rowObjectInspector);
       }
-    } catch (SerDeException e) {
+    } catch (Exception e) {
+      // Serialize the row and output.
+      String rawRowString;
+      try {
+        rawRowString = value.toString();
+      } catch (Exception e2) {
+        rawRowString = "[Error getting row data with exception " + 
+            StringUtils.stringifyException(e2) + " ]";
+      }
+      
       // TODO: policy on deserialization errors
       deserialize_error_count.set(deserialize_error_count.get() + 1);
-      throw new HiveException(e);
+      throw new HiveException("Hive Runtime Error while processing writable " + rawRowString, e);
+    }
+    
+    try {
+      if (!isPartitioned) {
+        forward(row, rowObjectInspector);
+      } else {
+        forward(rowWithPart, rowObjectInspector);
+      }
+    } catch (Exception e) {
+      // Serialize the row and output the error message.
+      String rowString;
+      try {
+        if (!isPartitioned) {
+          rowString = SerDeUtils.getJSONString(row, rowObjectInspector);
+        } else {
+          rowString = SerDeUtils.getJSONString(rowWithPart, rowObjectInspector);
+        }
+      } catch (Exception e2) {
+        rowString = "[Error getting row data with exception " + 
+            StringUtils.stringifyException(e2) + " ]";
+      }
+      throw new HiveException("Hive Runtime Error while processing row " + rowString, e);
     }
   }
 

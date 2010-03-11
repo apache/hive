@@ -46,6 +46,7 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * ExecMapper.
@@ -198,12 +199,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
     } catch (Throwable e) {
       abort = true;
-      e.printStackTrace();
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        throw new RuntimeException(e.getMessage(), e);
+        l4j.fatal(StringUtils.stringifyException(e));
+        throw new RuntimeException(e);
       }
     }
   }
@@ -277,7 +278,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
           // Don't create a new object if we are already out of memory
           throw (OutOfMemoryError) e;
         } else {
-          throw new RuntimeException("Map local work failed", e);
+          throw new RuntimeException("Hive Runtime Error: Map local work failed", e);
         }
       }
     }
@@ -342,7 +343,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       if (!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException("Error while closing operators", e);
+        throw new RuntimeException("Hive Runtime Error while closing operators", e);
       }
     }
   }

@@ -127,6 +127,9 @@ Trunk -  Unreleased
     HIVE-1212. Explicitly say "Hive Internal Error" to ease debugging
     (Zheng Shao via Ning Zhang)
 
+    HIVE-1216. Show the row with error in mapper/reducer
+    (Zheng Shao via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

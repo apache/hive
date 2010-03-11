@@ -1,0 +1,14 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_error AS 'org.apache.hadoop.hive.ql.udf.UDFTestErrorOnFalse'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_error AS 'org.apache.hadoop.hive.ql.udf.UDFTestErrorOnFalse'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: SELECT test_error(key < 125 OR key > 130)
+FROM (
+  SELECT *
+  FROM src
+  DISTRIBUTE BY rand()
+) map_output
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-05_23-12-16_809_4809554819212794550/10000
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

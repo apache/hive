@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -46,6 +47,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * ExecReducer.
@@ -84,9 +86,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   TableDesc keyTableDesc;
   TableDesc[] valueTableDesc;
 
+  ObjectInspector[] rowObjectInspector;
+  
   @Override
   public void configure(JobConf job) {
-    ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
+    rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
@@ -195,7 +199,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           keyObject = inputKeyDeserializer.deserialize(keyWritable);
         } catch (Exception e) {
           throw new HiveException(
-              "Unable to deserialize reduce input key from "
+              "Hive Runtime Error: Unable to deserialize reduce input key from "
               + Utilities.formatBinaryString(keyWritable.get(), 0,
               keyWritable.getSize()) + " with properties "
               + keyTableDesc.getProperties(), e);
@@ -215,7 +219,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
               .deserialize(valueWritable);
         } catch (SerDeException e) {
           throw new HiveException(
-              "Unable to deserialize reduce input value (tag="
+              "Hive Runtime Error: Unable to deserialize reduce input value (tag="
               + tag.get()
               + ") from "
               + Utilities.formatBinaryString(valueWritable.get(), 0,
@@ -236,7 +240,19 @@ public class ExecReducer extends MapReduceBase implements Reducer {
             nextCntr = getNextCntr(cntr);
           }
         }
-        reducer.process(row, tag.get());
+        try {
+          reducer.process(row, tag.get());
+        } catch (Exception e) {
+          String rowString = null;
+          try {
+            rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag.get()]);
+          } catch (Exception e2) {
+            rowString = "[Error getting row data with exception " + 
+                  StringUtils.stringifyException(e2) + " ]";
+          }
+          throw new HiveException("Hive Runtime Error while processing row (tag="
+              + tag.get() + ") " + rowString, e);
+        }
       }
 
     } catch (Throwable e) {
@@ -245,7 +261,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        throw new IOException(e);
+        l4j.fatal(StringUtils.stringifyException(e));
+        throw new RuntimeException(e);
       }
     }
   }
@@ -283,12 +300,12 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       reducer.close(abort);
       reportStats rps = new reportStats(rp);
       reducer.preorderMap(rps);
-      return;
+      
     } catch (Exception e) {
       if (!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException("Error while closing operators: "
+        throw new RuntimeException("Hive Runtime Error while closing operators: "
             + e.getMessage(), e);
       }
     }

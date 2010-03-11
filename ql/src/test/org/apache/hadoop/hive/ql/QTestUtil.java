@@ -251,6 +251,7 @@ public class QTestUtil {
       deleteDirectory(new File(warehousePath, s));
     }
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
+    FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
 
   private void runLoadCmd(String loadCmd) throws Exception {
