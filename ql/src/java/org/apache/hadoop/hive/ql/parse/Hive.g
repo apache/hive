@@ -7,7 +7,7 @@ ASTLabelType=CommonTree;
 backtrack=false;
 k=3;
 }
- 
+
 tokens {
 TOK_INSERT;
 TOK_QUERY;
@@ -162,7 +162,7 @@ package org.apache.hadoop.hive.ql.parse;
 @lexer::header {package org.apache.hadoop.hive.ql.parse;}
 
 
-@members { 
+@members {
   Stack msgs = new Stack<String>();
 }
 
@@ -172,7 +172,7 @@ catch (RecognitionException e) {
   throw e;
 }
 }
- 
+
 // starting rule
 statement
 	: explainStatement EOF
@@ -184,7 +184,7 @@ explainStatement
 @after { msgs.pop(); }
 	: KW_EXPLAIN (isExtended=KW_EXTENDED)? execStatement -> ^(TOK_EXPLAIN execStatement $isExtended?)
 	;
-		
+
 execStatement
 @init { msgs.push("statement"); }
 @after { msgs.pop(); }
@@ -196,7 +196,7 @@ execStatement
 loadStatement
 @init { msgs.push("load statement"); }
 @after { msgs.pop(); }
-    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tabName) 
+    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tabName)
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
     ;
 
@@ -228,23 +228,23 @@ createTableStatement
     : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier
       (  like=KW_LIKE likeName=Identifier
          tableLocation?
-       | (LPAREN columnNameTypeList RPAREN)? 
-         tableComment? 
-         tablePartition? 
-         tableBuckets? 
-         tableRowFormat? 
-         tableFileFormat? 
+       | (LPAREN columnNameTypeList RPAREN)?
+         tableComment?
+         tablePartition?
+         tableBuckets?
+         tableRowFormat?
+         tableFileFormat?
          tableLocation?
          (KW_AS selectStatement)?
       )
-    -> ^(TOK_CREATETABLE $name $ext? ifNotExists? 
-         ^(TOK_LIKETABLE $likeName?) 
-         columnNameTypeList? 
-         tableComment? 
-         tablePartition? 
-         tableBuckets? 
-         tableRowFormat? 
-         tableFileFormat? 
+    -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
+         ^(TOK_LIKETABLE $likeName?)
+         columnNameTypeList?
+         tableComment?
+         tablePartition?
+         tableBuckets?
+         tableRowFormat?
+         tableFileFormat?
          tableLocation?
          selectStatement?
         )
@@ -279,7 +279,7 @@ alterStatementSuffix
 alterStatementSuffixRename
 @init { msgs.push("rename statement"); }
 @after { msgs.pop(); }
-    : oldName=Identifier KW_RENAME KW_TO newName=Identifier 
+    : oldName=Identifier KW_RENAME KW_TO newName=Identifier
     -> ^(TOK_ALTERTABLE_RENAME $oldName $newName)
     ;
 
@@ -290,7 +290,7 @@ alterStatementSuffixAddCol
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS Identifier columnNameTypeList)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS Identifier columnNameTypeList)
     ;
-    
+
 alterStatementSuffixRenameCol
 @init { msgs.push("rename column name"); }
 @after { msgs.pop(); }
@@ -303,7 +303,7 @@ alterStatementChangeColPosition
     ->{$first != null}? ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION )
     -> ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION $afterCol)
     ;
-    
+
 alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
@@ -344,17 +344,17 @@ alterStatementSuffixSerdeProperties
 alterStatementSuffixFileFormat
 @init {msgs.push("alter fileformat statement"); }
 @after {msgs.pop(); }
-	:name=Identifier KW_SET KW_FILEFORMAT fileFormat 
+	:name=Identifier KW_SET KW_FILEFORMAT fileFormat
 	-> ^(TOK_ALTERTABLE_FILEFORMAT $name fileFormat)
 	;
-	
+
 alterStatementSuffixClusterbySortby
 @init {msgs.push("alter cluster by sort by statement");}
 @after{msgs.pop();}
 	:name=Identifier tableBuckets
 	->^(TOK_ALTERTABLE_CLUSTER_SORT $name tableBuckets)
 	;
-	
+
 fileFormat
 @init { msgs.push("file format specification"); }
 @after { msgs.pop(); }
@@ -371,7 +371,7 @@ tabTypeExpr
 
    : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
    ;
-   
+
 partTypeExpr
 @init { msgs.push("specifying table partitions"); }
 @after { msgs.pop(); }
@@ -381,8 +381,8 @@ partTypeExpr
 descStatement
 @init { msgs.push("describe statement"); }
 @after { msgs.pop(); }
-    : KW_DESCRIBE (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
-    | KW_DESCRIBE KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?) 
+    : (KW_DESCRIBE|KW_DESC) (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
+    | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     ;
 
 showStatement
@@ -394,14 +394,14 @@ showStatement
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     ;
-    
+
 metastoreCheck
 @init { msgs.push("metastore check statement"); }
 @after { msgs.pop(); }
     : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE table=Identifier partitionSpec? (COMMA partitionSpec)*)?
     -> ^(TOK_MSCK $repair? ($table partitionSpec*)?)
-    ;     
-    
+    ;
+
 createFunctionStatement
 @init { msgs.push("create function statement"); }
 @after { msgs.pop(); }
@@ -417,15 +417,15 @@ dropFunctionStatement
     ;
 
 createViewStatement
-@init { 
+@init {
     msgs.push("create view statement");
 }
 @after { msgs.pop(); }
     : KW_CREATE KW_VIEW ifNotExists? name=Identifier
         (LPAREN columnNameCommentList RPAREN)? tableComment?
-        KW_AS 
-        selectStatement 
-    -> ^(TOK_CREATEVIEW $name ifNotExists? 
+        KW_AS
+        selectStatement
+    -> ^(TOK_CREATEVIEW $name ifNotExists?
          columnNameCommentList?
          tableComment?
          selectStatement
@@ -456,7 +456,7 @@ tableComment
 tablePartition
 @init { msgs.push("table partition specification"); }
 @after { msgs.pop(); }
-    : KW_PARTITIONED KW_BY LPAREN columnNameTypeList RPAREN 
+    : KW_PARTITIONED KW_BY LPAREN columnNameTypeList RPAREN
     -> ^(TOK_TABLEPARTCOLS columnNameTypeList)
     ;
 
@@ -464,7 +464,7 @@ tableBuckets
 @init { msgs.push("table buckets specification"); }
 @after { msgs.pop(); }
     :
-      KW_CLUSTERED KW_BY LPAREN bucketCols=columnNameList RPAREN (KW_SORTED KW_BY LPAREN sortCols=columnNameOrderList RPAREN)? KW_INTO num=Number KW_BUCKETS 
+      KW_CLUSTERED KW_BY LPAREN bucketCols=columnNameList RPAREN (KW_SORTED KW_BY LPAREN sortCols=columnNameOrderList RPAREN)? KW_INTO num=Number KW_BUCKETS
     -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
     ;
 
@@ -501,7 +501,7 @@ rowFormatDelimited
 @init { msgs.push("serde properties specification"); }
 @after { msgs.pop(); }
     :
-      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? 
+      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?
     -> ^(TOK_SERDEPROPS tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?)
     ;
 
@@ -585,19 +585,19 @@ tableLocation
     :
       KW_LOCATION locn=StringLiteral -> ^(TOK_TABLELOCATION $locn)
     ;
-  
+
 columnNameTypeList
 @init { msgs.push("column name type list"); }
 @after { msgs.pop(); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
-    
+
 columnNameColonTypeList
 @init { msgs.push("column name type list"); }
 @after { msgs.pop(); }
     : columnNameColonType (COMMA columnNameColonType)* -> ^(TOK_TABCOLLIST columnNameColonType+)
     ;
-    
+
 columnNameList
 @init { msgs.push("column name list"); }
 @after { msgs.pop(); }
@@ -620,7 +620,7 @@ columnNameOrderList
 columnNameOrder
 @init { msgs.push("column name order"); }
 @after { msgs.pop(); }
-    : Identifier (asc=KW_ASC | desc=KW_DESC)? 
+    : Identifier (asc=KW_ASC | desc=KW_DESC)?
     -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC Identifier)
     ->                  ^(TOK_TABSORTCOLNAMEDESC Identifier)
     ;
@@ -634,14 +634,14 @@ columnNameCommentList
 columnNameComment
 @init { msgs.push("column name comment"); }
 @after { msgs.pop(); }
-    : colName=Identifier (KW_COMMENT comment=StringLiteral)? 
+    : colName=Identifier (KW_COMMENT comment=StringLiteral)?
     -> ^(TOK_TABCOL $colName TOK_NULL $comment?)
     ;
 
 columnRefOrder
 @init { msgs.push("column order"); }
 @after { msgs.pop(); }
-    : expression (asc=KW_ASC | desc=KW_DESC)? 
+    : expression (asc=KW_ASC | desc=KW_DESC)?
     -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC expression)
     ->                  ^(TOK_TABSORTCOLNAMEDESC expression)
     ;
@@ -649,15 +649,15 @@ columnRefOrder
 columnNameType
 @init { msgs.push("column specification"); }
 @after { msgs.pop(); }
-    : colName=Identifier colType (KW_COMMENT comment=StringLiteral)?    
+    : colName=Identifier colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
-    
+
 columnNameColonType
 @init { msgs.push("column specification"); }
 @after { msgs.pop(); }
-    : colName=Identifier COLON colType (KW_COMMENT comment=StringLiteral)?    
+    : colName=Identifier COLON colType (KW_COMMENT comment=StringLiteral)?
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
@@ -877,7 +877,7 @@ selectItem
 @init { msgs.push("selection target"); }
 @after { msgs.pop(); }
     :
-    ( selectExpression  ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?) -> ^(TOK_SELEXPR selectExpression Identifier*) 
+    ( selectExpression  ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?) -> ^(TOK_SELEXPR selectExpression Identifier*)
     ;
 
 trfmClause
@@ -888,8 +888,8 @@ trfmClause
       | KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
     inSerde=rowFormat inRec=recordWriter
-    KW_USING StringLiteral 
-    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))? 
+    KW_USING StringLiteral
+    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))?
     outSerde=rowFormat outRec=recordReader
     -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
     ;
@@ -916,7 +916,7 @@ tableAllColumns
     STAR -> ^(TOK_ALLCOLREF)
     | Identifier DOT STAR -> ^(TOK_ALLCOLREF Identifier)
     ;
-    
+
 // (table|column)
 tableOrColumn
 @init { msgs.push("table or column identifier"); }
@@ -938,7 +938,7 @@ aliasList
     :
     Identifier (COMMA Identifier)* -> ^(TOK_ALIASLIST Identifier+)
     ;
-   
+
 //----------------------- Rules for parsing fromClause ------------------------------
 // from [col1, col2, col3] table1, [col4, col5] table2
 fromClause
@@ -958,13 +958,13 @@ joinSource
 uniqueJoinSource
 @init { msgs.push("join source"); }
 @after { msgs.pop(); }
-    : KW_PRESERVE? fromSource uniqueJoinExpr 
+    : KW_PRESERVE? fromSource uniqueJoinExpr
     ;
 
 uniqueJoinExpr
 @init { msgs.push("unique join expression list"); }
 @after { msgs.pop(); }
-    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN 
+    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN
       -> ^(TOK_EXPLIST $e1*)
     ;
 
@@ -1004,7 +1004,7 @@ fromSource
     :
     (tableSource | subQuerySource) (lateralView^)*
     ;
-    
+
 tableSample
 @init { msgs.push("table sample specification"); }
 @after { msgs.pop(); }
@@ -1017,7 +1017,7 @@ tableSource
 @after { msgs.pop(); }
     :
     tabname=Identifier (ts=tableSample)? (alias=Identifier)? -> ^(TOK_TABREF $tabname $ts? $alias?)
- 
+
     ;
 
 subQuerySource
@@ -1026,7 +1026,7 @@ subQuerySource
     :
     LPAREN queryStatementExpression RPAREN Identifier -> ^(TOK_SUBQUERY queryStatementExpression Identifier)
     ;
-        
+
 //----------------------- Rules for parsing whereClause -----------------------------
 // where a=b and ...
 whereClause
@@ -1125,13 +1125,13 @@ castExpression
 @after { msgs.pop(); }
     :
     KW_CAST
-    LPAREN 
+    LPAREN
           expression
           KW_AS
           primitiveType
     RPAREN -> ^(TOK_FUNCTION primitiveType expression)
     ;
-    
+
 caseExpression
 @init { msgs.push("case expression"); }
 @after { msgs.pop(); }
@@ -1141,7 +1141,7 @@ caseExpression
     (KW_ELSE expression)?
     KW_END -> ^(TOK_FUNCTION KW_CASE expression*)
     ;
-    
+
 whenExpression
 @init { msgs.push("case expression"); }
 @after { msgs.pop(); }
@@ -1151,7 +1151,7 @@ whenExpression
     (KW_ELSE expression)?
     KW_END -> ^(TOK_FUNCTION KW_WHEN expression*)
     ;
-    
+
 constant
 @init { msgs.push("constant"); }
 @after { msgs.pop(); }
@@ -1159,7 +1159,7 @@ constant
     Number
     | StringLiteral
     | charSetStringLiteral
-    | booleanValue 
+    | booleanValue
     ;
 
 charSetStringLiteral
@@ -1227,7 +1227,7 @@ precedenceBitwiseXorExpression
     precedenceUnarySuffixExpression (precedenceBitwiseXorOperator^ precedenceUnarySuffixExpression)*
     ;
 
-	
+
 precedenceStarOperator
     :
     STAR | DIVIDE | MOD | DIV
@@ -1326,7 +1326,7 @@ tabName
    :
    Identifier partitionSpec? -> ^(TOK_TAB Identifier partitionSpec?)
    ;
-        
+
 partitionSpec
     :
     KW_PARTITION
@@ -1336,9 +1336,9 @@ partitionSpec
 partitionVal
     :
     Identifier EQUAL constant -> ^(TOK_PARTVAL Identifier constant)
-    ;    
+    ;
 
-sysFuncNames 
+sysFuncNames
     :
       KW_AND
     | KW_OR
@@ -1374,15 +1374,15 @@ sysFuncNames
     | TILDE
     | BITWISEOR
     | BITWISEXOR
-    | KW_RLIKE 
+    | KW_RLIKE
     | KW_REGEXP
     ;
 
 descFuncNames
-    : 
+    :
       sysFuncNames
     | StringLiteral
-    | Identifier 
+    | Identifier
     ;
 
 // Keywords
@@ -1604,7 +1604,7 @@ Letter
 
 fragment
 HexDigit
-    : 'a'..'f' | 'A'..'F' 
+    : 'a'..'f' | 'A'..'F'
     ;
 
 fragment
@@ -1629,14 +1629,14 @@ RegexComponent
 
 StringLiteral
     :
-    ( '\'' ( ~('\''|'\\') | ('\\' .) )* '\'' 
-    | '\"' ( ~('\"'|'\\') | ('\\' .) )* '\"' 
+    ( '\'' ( ~('\''|'\\') | ('\\' .) )* '\''
+    | '\"' ( ~('\"'|'\\') | ('\\' .) )* '\"'
     )+
     ;
 
 CharSetLiteral
-    :    
-    StringLiteral 
+    :
+    StringLiteral
     | '0' 'X' (HexDigit|Digit)+
     ;
 

@@ -249,6 +249,9 @@ Trunk -  Unreleased
     HIVE-1207. ScriptOperator AutoProgressor does not set the interval.
     (Zheng via He Yongqiang)
 
+    HIVE-1022. desc Table should work.
+    (namit via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
