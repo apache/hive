@@ -2,11 +2,12 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set mapred.min.split.size = 64;
 set dfs.block.size=64; 
 
-
+DROP TABLE T1;
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1;
 
+DROP TABLE T2;
 CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE;
 
 EXPLAIN INSERT OVERWRITE TABLE T2 SELECT * FROM (
@@ -27,7 +28,7 @@ SELECT tmp1.name as name FROM (
 EXPLAIN SELECT COUNT(1) FROM T2;
 SELECT COUNT(1) FROM T2;
 
-
+DROP TABLE T3;
 CREATE TABLE T3(name STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3;
 LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T3;

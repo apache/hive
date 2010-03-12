@@ -1,3 +1,7 @@
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
@@ -8,6 +12,10 @@ PREHOOK: type: LOAD
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
@@ -155,7 +163,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/sdong/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-03_13-34-44_281_7699816024642764738/10003 
+        file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-11_15-04-20_080_7842799634518360698/10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -261,12 +269,16 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/data/users/sdong/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-03_13-36-25_460_1971004153631800172/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-11_15-05-57_107_6151270668878797225/10000
 POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/data/users/sdong/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-03_13-36-25_460_1971004153631800172/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-11_15-05-57_107_6151270668878797225/10000
 5000000
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
@@ -340,11 +352,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/data/users/sdong/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-03_13-36-38_029_7372303432096245458/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-11_15-06-16_399_8325774968223283452/10000
 POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/data/users/sdong/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-03_13-36-38_029_7372303432096245458/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-11_15-06-16_399_8325774968223283452/10000
 1000
 PREHOOK: query: DROP TABLE T1
 PREHOOK: type: DROPTABLE
