@@ -33,3 +33,5 @@ FILE_INPUT_FORMAT = "file.inputformat"
 
 FILE_OUTPUT_FORMAT = "file.outputformat"
 
+META_TABLE_STORAGE = "storage_handler"
+

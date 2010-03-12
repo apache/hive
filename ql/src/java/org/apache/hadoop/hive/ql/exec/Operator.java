@@ -1145,6 +1145,14 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     return groupKeyObject;
   }
 
+  /**
+   * Called during semantic analysis as operators are being added
+   * in order to give them a chance to compute any additional plan information
+   * needed.  Does nothing by default.
+   */
+  public void augmentPlan() {
+  }
+
   public ExecMapperContext getExecContext() {
     return execContext;
   }

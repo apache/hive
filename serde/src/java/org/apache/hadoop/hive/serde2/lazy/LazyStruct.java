@@ -241,4 +241,27 @@ public class LazyStruct extends
     return this;
   }
 
+  protected boolean getParsed() {
+    return parsed;
+  }
+  
+  protected void setParsed(boolean parsed) {
+    this.parsed = parsed;
+  }
+
+  protected LazyObject[] getFields() {
+    return fields;
+  }
+
+  protected void setFields(LazyObject[] fields) {
+    this.fields = fields;
+  }
+  
+  protected boolean[] getFieldInited() {
+    return fieldInited;
+  }
+  
+  protected void setFieldInited(boolean[] fieldInited) {
+    this.fieldInited = fieldInited;
+  }
 }

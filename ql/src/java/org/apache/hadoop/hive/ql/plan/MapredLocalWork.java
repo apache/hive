@@ -41,7 +41,7 @@ public class MapredLocalWork implements Serializable {
   private LinkedHashMap<String, FetchWork> aliasToFetchWork;
   private boolean inputFileChangeSensitive;
   private BucketMapJoinContext bucketMapjoinContext;
-  
+
   public MapredLocalWork() {
   }
 
@@ -86,13 +86,20 @@ public class MapredLocalWork implements Serializable {
   public void setInputFileChangeSensitive(boolean inputFileChangeSensitive) {
     this.inputFileChangeSensitive = inputFileChangeSensitive;
   }
-  
+
   public void deriveExplainAttributes() {
     if (bucketMapjoinContext != null) {
       bucketMapjoinContext.deriveBucketMapJoinMapping();
     }
+    for (FetchWork fetchWork : aliasToFetchWork.values()) {
+      if (fetchWork.getTblDesc() == null) {
+        continue;
+      }
+      PlanUtils.configureTableJobPropertiesForStorageHandler(
+        fetchWork.getTblDesc());
+    }
   }
-  
+
   @Explain(displayName = "Bucket Mapjoin Context", normalExplain = false)
   public BucketMapJoinContext getBucketMapjoinContext() {
     return bucketMapjoinContext;
@@ -101,32 +108,32 @@ public class MapredLocalWork implements Serializable {
   public void setBucketMapjoinContext(BucketMapJoinContext bucketMapjoinContext) {
     this.bucketMapjoinContext = bucketMapjoinContext;
   }
-  
+
   public static class BucketMapJoinContext implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     // used for bucket map join
     private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
     private String mapJoinBigTableAlias;
     private Class<? extends BucketMatcher> bucketMatcherClass;
-    
+
     private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketBaseFileNameMapping;
 
     public void setMapJoinBigTableAlias(String bigTableAlias) {
       this.mapJoinBigTableAlias = bigTableAlias;
     }
 
-    
+
     public void deriveBucketMapJoinMapping() {
       if (aliasBucketFileNameMapping != null) {
-        Iterator<Entry<String, LinkedHashMap<String, ArrayList<String>>>> iter =  
+        Iterator<Entry<String, LinkedHashMap<String, ArrayList<String>>>> iter =
           aliasBucketFileNameMapping.entrySet().iterator();
         aliasBucketBaseFileNameMapping = new LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>>();
-        
+
         while (iter.hasNext()) {
           Entry<String, LinkedHashMap<String, ArrayList<String>>> old = iter.next();
-          
+
           LinkedHashMap<String, ArrayList<String>> newBucketBaseFileNameMapping = new LinkedHashMap<String, ArrayList<String>>();
           Iterator<Entry<String, ArrayList<String>>> oldAliasFileNameMappingIter = old.getValue().entrySet().iterator();
           while (oldAliasFileNameMappingIter.hasNext()) {
@@ -139,7 +146,7 @@ public class MapredLocalWork implements Serializable {
             if (oldTableBucketNames != null) {
               for (String bucketFName : oldTableBucketNames) {
                 newTableBucketFileBaseName.add(getBaseFileName(bucketFName));
-              }              
+              }
             }
             String bigTblBucketFileName = getBaseFileName(oldTableBucketFileNames.getKey());
             if(newBucketBaseFileNameMapping.containsKey(bigTblBucketFileName)) {
@@ -155,7 +162,7 @@ public class MapredLocalWork implements Serializable {
         }
       }
     }
-    
+
     private String getBaseFileName (String path) {
       try {
         URI uri = new URI(path);
@@ -185,12 +192,12 @@ public class MapredLocalWork implements Serializable {
     public LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> getAliasBucketFileNameMapping() {
       return aliasBucketFileNameMapping;
     }
-    
+
     public void setAliasBucketFileNameMapping(
         LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
       this.aliasBucketFileNameMapping = aliasBucketFileNameMapping;
     }
-    
+
     public String toString() {
       if (aliasBucketFileNameMapping != null)
         return "Mapping:" + aliasBucketFileNameMapping.toString();

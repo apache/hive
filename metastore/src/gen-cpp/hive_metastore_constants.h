@@ -27,6 +27,7 @@ class hive_metastoreConstants {
   std::string META_TABLE_PARTITION_COLUMNS;
   std::string FILE_INPUT_FORMAT;
   std::string FILE_OUTPUT_FORMAT;
+  std::string META_TABLE_STORAGE;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

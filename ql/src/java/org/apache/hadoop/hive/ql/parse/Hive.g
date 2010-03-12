@@ -119,6 +119,7 @@ TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
+TOK_STORAGEHANDLER;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_TABCOLNAME;
 TOK_TABLELOCATION;
@@ -577,6 +578,9 @@ tableFileFormat
       | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
       | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt)
+      | KW_STORED KW_BY storageHandler=StringLiteral
+         (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
+      -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
     ;
 
 tableLocation

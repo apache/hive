@@ -1,0 +1,16 @@
+PREHOOK: query: DROP TABLE non_native1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE non_native1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE non_native1(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE non_native1(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@non_native1
+PREHOOK: query: -- we do not support ALTER TABLE on non-native tables yet
+ALTER TABLE non_native1 RENAME TO new_non_native
+PREHOOK: type: ALTERTABLE_RENAME
+FAILED: Error in metadata: Cannot use ALTER TABLE on a non-native table
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

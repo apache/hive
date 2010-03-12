@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -70,6 +71,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient BytesWritable commonKey = new BytesWritable();
   protected transient TableIdEnum tabIdEnum = null;
   private transient LongWritable row_count;
+  private transient boolean isNativeTable = true;
 
   /**
    * The evaluators for the multiFile sprayer. If the table under consideration has 1000 buckets,
@@ -114,8 +116,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient boolean autoDelete = false;
 
   private void commit(int idx) throws IOException {
-    if (!fs.rename(outPaths[idx], finalPaths[idx])) {
-      throw new IOException("Unable to rename output to: " + finalPaths[idx]);
+    if (isNativeTable) {
+      if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+        throw new IOException("Unable to rename output to: " 
+          + finalPaths[idx]);
+      }
     }
     LOG.info("Committed " + outPaths[idx] + " to output file: " + finalPaths[idx]);
   }
@@ -126,6 +131,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass()
           .newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
+      isNativeTable = !conf.getTableInfo().isNonNative();
 
       JobConf jc;
       if (hconf instanceof JobConf) {
@@ -158,7 +164,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Path tmpPath = Utilities.toTempPath(specPath);
       Set<Integer> seenBuckets = new HashSet<Integer>();
       fs = (new Path(specPath)).getFileSystem(hconf);
-
       HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo()
         .getOutputFileFormatClass().newInstance();
       boolean isCompressed = conf.getCompressed();
@@ -193,12 +198,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
         }
 
-        finalPaths[filesIdx] = new Path(tmpPath, taskId);
-        LOG.info("Final Path: FS " + finalPaths[filesIdx]);
-
-        outPaths[filesIdx] = new Path(tmpPath, Utilities.toTempPath(taskId));
-
-        LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
+        if (isNativeTable) {
+          finalPaths[filesIdx] = new Path(tmpPath, taskId);
+          LOG.info("Final Path: FS " + finalPaths[filesIdx]);
+          outPaths[filesIdx] = new Path(tmpPath, Utilities.toTempPath(taskId));
+          LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
+        } else {
+          finalPaths[filesIdx] = outPaths[filesIdx] = new Path(specPath);
+        }
 
         // The reason to keep these instead of using
         // OutputFormat.getRecordWriter() is that
@@ -208,6 +215,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                                                                             hiveOutputFormat, isCompressed, finalPaths[filesIdx]);
         LOG.info("New Final Path: FS " + finalPaths[filesIdx]);
 
+        Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
         outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf
                                                                        .getTableInfo(), outputClass, conf, outPaths[filesIdx]);
 
@@ -217,7 +225,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert filesIdx == numFiles;
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, outPaths[0]);
+      if (isNativeTable) {
+        autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
+          outPaths[0]);
+      }
 
       int id = conf.getDestTableId();
       if ((id != 0) && (id <= TableIdEnum.values().length)) {
@@ -303,7 +314,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       try {
         for (int idx = 0; idx < numFiles; idx++) {
           outWriters[idx].close(abort);
-          if (!autoDelete) {
+          if (!autoDelete && isNativeTable) {
             fs.delete(outPaths[idx], true);
           }
         }
@@ -324,7 +335,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   @Override
   public void jobClose(Configuration hconf, boolean success) throws HiveException {
     try {
-      if (conf != null) {
+      if ((conf != null) && isNativeTable) {
         String specPath = conf.getDirName();
         FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
       }
@@ -362,5 +373,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   @Override
   public int getType() {
     return OperatorType.FILESINK;
+  }
+
+  @Override
+  public void augmentPlan() {
+    PlanUtils.configureTableJobPropertiesForStorageHandler(
+      getConf().getTableInfo());
   }
 }

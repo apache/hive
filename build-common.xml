@@ -429,6 +429,7 @@
 
   <target name="clean-test">
     <delete dir="${test.build.dir}"/>
+    <delete dir="${build.dir.hive}/ql/tmp"/>
     <delete dir="${build.dir.hive}/test"/>
   </target>
 

@@ -219,6 +219,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
         cloneJobConf);
+
+    Path [] paths = FileInputFormat.getInputPaths(job);
+    // for now we only get one path for splits which access a non-native
+    // table; should probably add a corresponding assertion
+    PartitionDesc part = getPartitionDescFromPath(
+      pathToPartitionInfo, paths[0]);
+    Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
     return new HiveRecordReader(inputFormat.getRecordReader(inputSplit,
         cloneJobConf, reporter));
   }
@@ -249,6 +256,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // class
       Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), newjob);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());

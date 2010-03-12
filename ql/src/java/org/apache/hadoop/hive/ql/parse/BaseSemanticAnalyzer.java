@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -209,6 +210,25 @@ public abstract class BaseSemanticAnalyzer {
       val = val.substring(1, val.length() - 1);
     }
     return val;
+  }
+
+  /**
+   * Converts parsed key/value properties pairs into a map.
+   *
+   * @param prop ASTNode parent of the key/value pairs
+   *
+   * @param mapProp property map which receives the mappings
+   */
+  public static void readProps(
+    ASTNode prop, Map<String, String> mapProp) {
+
+    for (int propChild = 0; propChild < prop.getChildCount(); propChild++) {
+      String key = unescapeSQLString(prop.getChild(propChild).getChild(0)
+          .getText());
+      String value = unescapeSQLString(prop.getChild(propChild).getChild(1)
+          .getText());
+      mapProp.put(key, value);
+    }
   }
 
   @SuppressWarnings("nls")

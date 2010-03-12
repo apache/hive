@@ -64,16 +64,21 @@ public class FetchOperator implements Serializable {
 
   public FetchOperator() {
   }
-  
+
   public FetchOperator(FetchWork work, JobConf job) {
     this.work = work;
     initialize(job);
   }
-  
+
   public void initialize(JobConf job) {
     this.job = job;
     tblDataDone = false;
     rowWithPart = new Object[2];
+    if (work.getTblDesc() != null) {
+      isNativeTable = !work.getTblDesc().isNonNative();
+    } else {
+      isNativeTable = true;
+    }
   }
 
   public FetchWork getWork() {
@@ -116,12 +121,13 @@ public class FetchOperator implements Serializable {
     this.tblDataDone = tblDataDone;
   }
 
+  private boolean isNativeTable;
   private FetchWork work;
   private int splitNum;
   private PartitionDesc currPart;
   private TableDesc currTbl;
   private boolean tblDataDone;
-  
+
   private transient RecordReader<WritableComparable, Writable> currRecReader;
   private transient InputSplit[] inputSplits;
   private transient InputFormat inputFormat;
@@ -145,7 +151,7 @@ public class FetchOperator implements Serializable {
       Class inputFormatClass, Configuration conf) throws IOException {
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance = 
+        InputFormat<WritableComparable, Writable> newInstance =
           (InputFormat<WritableComparable, Writable>) ReflectionUtils
             .newInstance(inputFormatClass, conf);
         inputFormats.put(inputFormatClass, newInstance);
@@ -193,15 +199,19 @@ public class FetchOperator implements Serializable {
         if (!tblDataDone) {
           currPath = work.getTblDirPath();
           currTbl = work.getTblDesc();
-          FileSystem fs = currPath.getFileSystem(job);
-          if (fs.exists(currPath)) {
-            FileStatus[] fStats = fs.listStatus(currPath);
-            for (FileStatus fStat : fStats) {
-              if (fStat.getLen() > 0) {
-                tblDataDone = true;
-                break;
+          if (isNativeTable) {
+            FileSystem fs = currPath.getFileSystem(job);
+            if (fs.exists(currPath)) {
+              FileStatus[] fStats = fs.listStatus(currPath);
+              for (FileStatus fStat : fStats) {
+                if (fStat.getLen() > 0) {
+                  tblDataDone = true;
+                  break;
+                }
               }
             }
+          } else {
+            tblDataDone = true;
           }
 
           if (!tblDataDone) {
@@ -261,6 +271,7 @@ public class FetchOperator implements Serializable {
         tmp = currPart.getTableDesc();
       }
       inputFormat = getInputFormatFromCache(tmp.getInputFileFormatClass(), job);
+      Utilities.copyTableJobPropertiesToConf(tmp, job);
       inputSplits = inputFormat.getSplits(job, 1);
       splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
@@ -291,7 +302,7 @@ public class FetchOperator implements Serializable {
 
   /**
    * Get the next row. The fetch context is modified appropriately.
-   * 
+   *
    **/
   public InspectableObject getNextRow() throws IOException {
     try {
@@ -321,10 +332,10 @@ public class FetchOperator implements Serializable {
       throw new IOException(e);
     }
   }
-  
+
   /**
    * Clear the context, if anything needs to be done.
-   * 
+   *
    **/
   public void clearFetchContext() throws HiveException {
     try {
@@ -340,10 +351,10 @@ public class FetchOperator implements Serializable {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
-  
+
   /**
-   * used for bucket map join. there is a hack for getting partitionDesc. 
-   * bucket map join right now only allow one partition present in bucket map join. 
+   * used for bucket map join. there is a hack for getting partitionDesc.
+   * bucket map join right now only allow one partition present in bucket map join.
    */
   public void setupContext (Iterator<Path> iterPath, Iterator<PartitionDesc> iterPartDesc) {
     this.iterPath = iterPath;

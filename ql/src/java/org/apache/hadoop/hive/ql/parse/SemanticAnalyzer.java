@@ -1129,6 +1129,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver rr) {
     OpParseContext ctx = new OpParseContext(rr);
     opParseCtx.put(op, ctx);
+    op.augmentPlan();
     return op;
   }
 
@@ -3137,8 +3138,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
     Table dest_tab; // destination table if any
-    String queryTmpdir; // the intermediate destination directory
-    Path dest_path; // the final destination directory
+    String queryTmpdir = null; // the intermediate destination directory
+    Path dest_path = null; // the final destination directory
     TableDesc table_desc = null;
     int currentTableId = 0;
     boolean isLocal = false;
@@ -3155,7 +3156,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
       }
       dest_path = dest_tab.getPath();
-      queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
+      boolean isNonNativeTable = dest_tab.isNonNative();
+      if (isNonNativeTable) {
+        queryTmpdir = dest_path.toUri().getPath();
+      } else {
+        queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
+      }
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -3166,9 +3172,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       destTableId++;
 
       // Create the work for moving the table
-      loadTableWork.add(new LoadTableDesc(queryTmpdir, ctx
-          .getExternalTmpFileURI(dest_path.toUri()), table_desc,
-          new HashMap<String, String>()));
+      if (!isNonNativeTable) {
+        loadTableWork.add(new LoadTableDesc(queryTmpdir, ctx
+            .getExternalTmpFileURI(dest_path.toUri()), table_desc,
+            new HashMap<String, String>()));
+      }
       if (!outputs.add(new WriteEntity(dest_tab))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName()));
@@ -3627,7 +3635,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           column = null;
         } else {
           column = TypeCheckProcFactory.DefaultExprProcessor
-            .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), 
+            .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(),
                 column);
         }
         if (column == null) {
@@ -5542,7 +5550,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             // If there is any unknown partition, create a map-reduce job for
             // the filter to prune correctly
-            if (partsList.getUnknownPartns().size() == 0) {
+            if ((partsList.getUnknownPartns().size() == 0)) {
               List<String> listP = new ArrayList<String>();
               List<PartitionDesc> partP = new ArrayList<PartitionDesc>();
 
@@ -5568,6 +5576,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (noMapRed) {
+        if (fetch.getTblDesc() != null) {
+          PlanUtils.configureTableJobPropertiesForStorageHandler(
+            fetch.getTblDesc());
+        }
         fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
         setFetchTask(fetchTask);
 
@@ -6235,6 +6247,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String outputFormat = null;
     String location = null;
     String serde = null;
+    String storageHandler = null;
     Map<String, String> mapProp = new HashMap<String, String>();
     boolean ifNotExists = false;
     boolean isExt = false;
@@ -6348,19 +6361,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLESERIALIZER:
-
         child = (ASTNode) child.getChild(0);
         serde = unescapeSQLString(child.getChild(0).getText());
         if (child.getChildCount() == 2) {
-          mapProp = new HashMap<String, String>();
-          ASTNode prop = (ASTNode) ((ASTNode) child.getChild(1)).getChild(0);
-          for (int propChild = 0; propChild < prop.getChildCount(); propChild++) {
-            String key = unescapeSQLString(prop.getChild(propChild).getChild(0)
-                .getText());
-            String value = unescapeSQLString(prop.getChild(propChild).getChild(
-                1).getText());
-            mapProp.put(key, value);
-          }
+          readProps(
+            (ASTNode) (child.getChild(1).getChild(0)),
+            mapProp);
         }
         break;
       case HiveParser.TOK_TBLSEQUENCEFILE:
@@ -6383,12 +6389,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLELOCATION:
         location = unescapeSQLString(child.getChild(0).getText());
         break;
+      case HiveParser.TOK_STORAGEHANDLER:
+        storageHandler = unescapeSQLString(child.getChild(0).getText());
+        if (child.getChildCount() == 2) {
+          readProps(
+            (ASTNode) (child.getChild(1).getChild(0)),
+            mapProp);
+        }
+        break;
       default:
         assert false;
       }
     }
 
-    if (inputFormat == null) {
+    if ((command_type == CTAS) && (storageHandler != null)) {
+      throw new SemanticException(ErrorMsg.CREATE_NON_NATIVE_AS.getMsg());
+    }
+
+    if ((inputFormat == null) && (storageHandler == null)) {
       assert outputFormat == null;
       if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
         inputFormat = SEQUENCEFILE_INPUT;
@@ -6423,7 +6441,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
           collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-          outputFormat, location, serde, mapProp, ifNotExists);
+          outputFormat, location, serde, storageHandler, mapProp, ifNotExists);
 
       validateCreateTable(crtTblDesc);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -6455,7 +6473,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
           collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-          outputFormat, location, serde, mapProp, ifNotExists);
+          outputFormat, location, serde, storageHandler, mapProp, ifNotExists);
       qb.setTableDesc(crtTblDesc);
 
       return selectStmt;
@@ -6540,17 +6558,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
-    try {
-      Class<?> origin = Class.forName(crtTblDesc.getOutputFormat(), true,
+    if (crtTblDesc.getStorageHandler() == null) {
+      try {
+        Class<?> origin = Class.forName(crtTblDesc.getOutputFormat(), true,
           JavaUtils.getClassLoader());
-      Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
+        Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils
           .getOutputFormatSubstitute(origin);
-      if (replaced == null) {
-        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
+        if (replaced == null) {
+          throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE
             .getMsg());
+        }
+      } catch (ClassNotFoundException e) {
+        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
       }
-    } catch (ClassNotFoundException e) {
-      throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
     }
 
     List<String> colNames = validateColumnNameUniqueness(crtTblDesc.getCols());

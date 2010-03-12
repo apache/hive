@@ -196,6 +196,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     String inputFormat = null;
     String outputFormat = null;
+    String storageHandler = null;
     String serde = null;
     ASTNode child = (ASTNode) ast.getChild(1);
 
@@ -208,6 +209,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         Class.forName(inputFormat);
         Class.forName(outputFormat);
+      } catch (ClassNotFoundException e) {
+        throw new SemanticException(e);
+      }
+      break;
+    case HiveParser.TOK_STORAGEHANDLER:
+      storageHandler =
+        unescapeSQLString(((ASTNode) child.getChild(1)).getToken().getText());
+      try {
+        Class.forName(storageHandler);
       } catch (ClassNotFoundException e) {
         throw new SemanticException(e);
       }
@@ -227,7 +237,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     }
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, inputFormat,
-        outputFormat, serde);
+        outputFormat, serde, storageHandler);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
@@ -254,15 +264,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
-  private HashMap<String, String> getProps(ASTNode prop) {
+  static HashMap<String, String> getProps(ASTNode prop) {
     HashMap<String, String> mapProp = new HashMap<String, String>();
-    for (int propChild = 0; propChild < prop.getChildCount(); propChild++) {
-      String key = unescapeSQLString(prop.getChild(propChild).getChild(0)
-          .getText());
-      String value = unescapeSQLString(prop.getChild(propChild).getChild(1)
-          .getText());
-      mapProp.put(key, value);
-    }
+    readProps(prop, mapProp);
     return mapProp;
   }
 

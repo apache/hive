@@ -34,4 +34,6 @@ $GLOBALS['hive_metastore_CONSTANTS']['FILE_INPUT_FORMAT'] = "file.inputformat";
 
 $GLOBALS['hive_metastore_CONSTANTS']['FILE_OUTPUT_FORMAT'] = "file.outputformat";
 
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_STORAGE'] = "storage_handler";
+
 ?>

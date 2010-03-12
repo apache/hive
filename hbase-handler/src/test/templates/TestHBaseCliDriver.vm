@@ -1,0 +1,123 @@
+package org.apache.hadoop.hive.cli;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import java.io.*;
+import java.util.*;
+
+import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
+import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
+import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
+import org.apache.hadoop.hive.ql.session.SessionState;
+
+
+
+import org.antlr.runtime.*;
+import org.antlr.runtime.tree.*;
+
+public class $className extends TestCase {
+
+  private HBaseQTestUtil qt;
+
+  public $className(String name) {
+    super(name);
+    qt = null;
+  }
+
+  @Override
+  protected void setUp() {
+    try {
+      boolean miniMR = false;
+      if ("$clusterMode".equals("miniMR")) {
+        miniMR = true;
+      }
+
+      qt = new HBaseQTestUtil(
+        "$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR);
+
+#foreach ($qf in $qfiles)
+      qt.addFile("$qf.getCanonicalPath()");
+#end
+    } catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in setup");
+    }
+  }
+
+  @Override
+  protected void tearDown() {
+    try {
+      qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
+  public static Test suite() {
+    TestSuite suite = new TestSuite();
+#foreach ($qf in $qfiles)
+  #set ($fname = $qf.getName())
+  #set ($eidx = $fname.length() - 2)
+  #set ($tname = $fname.substring(0, $eidx))
+    suite.addTest(new $className("testCliDriver_$tname"));
+#end
+    return suite;
+  }
+
+#foreach ($qf in $qfiles)
+  #set ($fname = $qf.getName())
+  #set ($eidx = $fname.length() - 2)
+  #set ($tname = $fname.substring(0, $eidx))
+  public void testCliDriver_$tname() throws Exception {
+    try {
+      System.out.println("Begin query: " + "$fname");
+      qt.cliInit("$fname");
+      int ecode = qt.executeClient("$fname");
+      if (ecode != 0) {
+        fail("Client Execution failed with error code = " + ecode);
+      }
+      if (SessionState.get() != null) {
+        HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
+          .getHiveHistory().getHistFileName());
+        Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();
+        Map<String, TaskInfo> taskInfoMap = hv.getTaskInfoMap();
+
+        if (jobInfoMap.size() != 0) {
+          String cmd = (String)jobInfoMap.keySet().toArray()[0];
+          QueryInfo ji = jobInfoMap.get(cmd);
+
+          if (!ji.hm.get(Keys.QUERY_RET_CODE.name()).equals("0")) {
+              fail("Wrong return code in hive history");
+          }
+        }
+      }
+
+      ecode = qt.checkCliDriverResults("$fname");
+      if (ecode != 0) {
+        fail("Client execution results failed with error code = " + ecode);
+      }
+    } catch (Throwable e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception");
+    }
+
+    System.out.println("Done query: " + "$fname");
+    assertTrue("Test passed", true);
+  }
+
+#end
+}
+

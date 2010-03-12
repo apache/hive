@@ -52,6 +52,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   String outputFormat;
   String location;
   String serName;
+  String storageHandler;
   HashMap<String, String> mapProp;
   boolean ifNotExists;
 
@@ -64,6 +65,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String fieldDelim, String fieldEscape, String collItemDelim,
       String mapKeyDelim, String lineDelim, String comment, String inputFormat,
       String outputFormat, String location, String serName,
+      String storageHandler,
       Map<String, String> mapProp, boolean ifNotExists) {
     this.tableName = tableName;
     this.isExternal = isExternal;
@@ -82,6 +84,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.numBuckets = numBuckets;
     this.partCols = new ArrayList<FieldSchema>(partCols);
     this.serName = serName;
+    this.storageHandler = storageHandler;
     this.mapProp = new HashMap<String, String>(mapProp);
     this.ifNotExists = ifNotExists;
   }
@@ -218,6 +221,15 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public void setOutputFormat(String outputFormat) {
     this.outputFormat = outputFormat;
+  }
+
+  @Explain(displayName = "storage handler")
+  public String getStorageHandler() {
+    return storageHandler;
+  }
+
+  public void setStorageHandler(String storageHandler) {
+    this.storageHandler = storageHandler;
   }
 
   @Explain(displayName = "location")

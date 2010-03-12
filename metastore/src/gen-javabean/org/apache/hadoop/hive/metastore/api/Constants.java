@@ -42,4 +42,6 @@ public class Constants {
 
   public static final String FILE_OUTPUT_FORMAT = "file.outputformat";
 
+  public static final String META_TABLE_STORAGE = "storage_handler";
+
 }

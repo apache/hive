@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -1130,12 +1131,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     // The input file does not exist, replace it by a empty file
     Class<? extends HiveOutputFormat> outFileFormat = null;
 
+    TableDesc tableDesc;
     if (isEmptyPath) {
-      outFileFormat = work.getPathToPartitionInfo().get(path).getTableDesc()
-          .getOutputFileFormatClass();
+      tableDesc = work.getPathToPartitionInfo().get(path).getTableDesc();
     } else {
-      outFileFormat = work.getAliasToPartnInfo().get(alias).getTableDesc()
-          .getOutputFileFormatClass();
+      tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
+    }
+    outFileFormat = tableDesc.getOutputFileFormatClass();
+
+    if (tableDesc.isNonNative()) {
+      FileInputFormat.addInputPaths(job, path);
+      LOG.info("Add a non-native table " + path);
+      return numEmptyPaths;
     }
 
     // create a dummy empty file in a new directory

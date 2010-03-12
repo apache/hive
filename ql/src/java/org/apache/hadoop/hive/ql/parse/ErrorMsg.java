@@ -138,7 +138,9 @@ public enum ErrorMsg {
       + "number of column names specified by CREATE VIEW"),
   DML_AGAINST_VIEW("A view cannot be used as target table for LOAD or INSERT"),
   UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
-      + "STRING instead.");
+      + "STRING instead."),
+  CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
+  LOAD_INTO_NON_NATIVE("A non-native table cannot be used as target for LOAD");
 
   private String mesg;
   private String sqlState;

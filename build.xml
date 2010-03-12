@@ -46,6 +46,16 @@
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
 
+  <!-- hbase-handler is enabled by default only for Hadoop 0.20.x -->
+  <condition property="hbase.enabled" value="true" else="false">
+    <matches string="${hadoop.version.ant-internal}" pattern="^0\.20\..*" />
+  </condition>
+
+  <!-- only iterate over hbase-handler when enabled -->
+  <condition property="hbase.iterate" value=",hbase-handler/build.xml" else="">
+    <istrue value="${hbase.enabled}"/>
+  </condition>
+
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
   </condition>
@@ -82,7 +92,7 @@
       <subant target="@{target}">
         <property name="build.dir.hive" location="${build.dir.hive}"/>
         <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
+        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml${hbase.iterate},ant/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -93,7 +103,7 @@
       <subant target="@{target}">
         <property name="build.dir.hive" location="${build.dir.hive}"/>
         <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
+        <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml${hbase.iterate}"/>
       </subant>
     </sequential>
   </macrodef>
@@ -286,6 +296,7 @@
       <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
+      <fileset file="${build.dir.hive}/contrib/hive-hbase_handler-${version}.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +37,10 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
@@ -479,6 +484,42 @@ public final class PlanUtils {
     }
     return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey,
         tag, partitionCols, order.toString(), numReducers);
+  }
+
+  /**
+   * Loads the storage handler (if one exists) for the given table
+   * and invokes {@link HiveStorageHandler#configureTableJobProperties}.
+   *
+   * @param tableDesc table descriptor
+   */
+  public static void configureTableJobPropertiesForStorageHandler(
+    TableDesc tableDesc) {
+
+    if (tableDesc == null) {
+      return;
+    }
+
+    try {
+      HiveStorageHandler storageHandler =
+        HiveUtils.getStorageHandler(
+          Hive.get().getConf(),
+          tableDesc.getProperties().getProperty(
+            org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE));
+      if (storageHandler != null) {
+        Map<String, String> jobProperties = new LinkedHashMap<String, String>();
+        storageHandler.configureTableJobProperties(
+          tableDesc,
+          jobProperties);
+        // Job properties are only relevant for non-native tables, so
+        // for native tables, leave it null to avoid cluttering up
+        // plans.
+        if (!jobProperties.isEmpty()) {
+          tableDesc.setJobProperties(jobProperties);
+        }
+      }
+    } catch (HiveException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   private PlanUtils() {

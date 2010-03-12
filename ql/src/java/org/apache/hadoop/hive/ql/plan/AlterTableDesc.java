@@ -52,6 +52,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   HashMap<String, String> props;
   String inputFormat;
   String outputFormat;
+  String storageHandler;
   int numberBuckets;
   ArrayList<String> bucketColumns;
   ArrayList<Order> sortColumns;
@@ -132,13 +133,14 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new table output format
    */
   public AlterTableDesc(String name, String inputFormat, String outputFormat,
-      String serdeName) {
+      String serdeName, String storageHandler) {
     super();
     op = AlterTableTypes.ADDFILEFORMAT;
     oldName = name;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serdeName = serdeName;
+    this.storageHandler = storageHandler;
   }
 
   public AlterTableDesc(String tableName, int numBuckets,
@@ -293,6 +295,22 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public void setOutputFormat(String outputFormat) {
     this.outputFormat = outputFormat;
+  }
+
+  /**
+   * @return the storage handler
+   */
+  @Explain(displayName = "storage handler")
+  public String getStorageHandler() {
+    return storageHandler;
+  }
+
+  /**
+   * @param storageHandler
+   *          the storage handler to set
+   */
+  public void setStorageHandler(String storageHandler) {
+    this.storageHandler = storageHandler;
   }
 
   /**

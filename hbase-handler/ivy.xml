@@ -1,0 +1,8 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache.hadoop.hive" module="contrib"/>
+    <dependencies>
+        <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
+          <artifact name="hadoop" type="source" ext="tar.gz"/>
+        </dependency> 
+    </dependencies>
+</ivy-module>

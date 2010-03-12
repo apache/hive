@@ -84,7 +84,7 @@ public class QTestUtil {
 
   private ParseDriver pd;
   private Hive db;
-  private final HiveConf conf;
+  protected final HiveConf conf;
   private Driver drv;
   private SemanticAnalyzer sem;
   private FileSystem fs;
@@ -199,7 +199,14 @@ public class QTestUtil {
     }
 
     srcTables = new LinkedList<String>();
+
+    preTestUtilInit();
     init();
+  }
+
+  protected void preTestUtilInit() throws Exception {
+    // do some initialization before we setup the hive
+    // for example, in a HBase Test Util, we setup a hbase mini cluster here
   }
 
   public void shutdown() throws Exception {

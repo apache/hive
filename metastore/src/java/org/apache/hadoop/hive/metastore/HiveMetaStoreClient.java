@@ -56,13 +56,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean open = false;
   private URI metastoreUris[];
   private final boolean standAloneClient = false;
+  private HiveMetaHookLoader hookLoader;
 
   // for thrift connects
   private int retries = 5;
 
   static final private Log LOG = LogFactory.getLog("hive.metastore");
 
-  public HiveMetaStoreClient(HiveConf conf) throws MetaException {
+  public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader)
+    throws MetaException {
+
+    this.hookLoader = hookLoader;
     if (conf == null) {
       conf = new HiveConf(HiveMetaStoreClient.class);
     }
@@ -262,7 +266,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    client.create_table(tbl);
+    HiveMetaHook hook = getHook(tbl);
+    if (hook != null) {
+      hook.preCreateTable(tbl);
+    }
+    boolean success = false;
+    try {
+      client.create_table(tbl);
+      if (hook != null) {
+        hook.commitCreateTable(tbl);
+      }
+      success = true;
+    } finally {
+      if (!success && (hook != null)) {
+        hook.rollbackCreateTable(tbl);
+      }
+    }
   }
 
   /**
@@ -356,11 +375,33 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public void dropTable(String dbname, String name, boolean deleteData,
       boolean ignoreUknownTab) throws MetaException, TException,
       NoSuchObjectException {
+
+    Table tbl;
     try {
-      client.drop_table(dbname, name, deleteData);
+      tbl = getTable(dbname, name);
     } catch (NoSuchObjectException e) {
       if (!ignoreUknownTab) {
         throw e;
+      }
+      return;
+    }
+    HiveMetaHook hook = getHook(tbl);
+    if (hook != null) {
+      hook.preDropTable(tbl);
+    }
+    boolean success = false;
+    try {
+      client.drop_table(dbname, name, deleteData);
+      if (hook != null) {
+        hook.commitDropTable(tbl, deleteData);
+      }
+    } catch (NoSuchObjectException e) {
+      if (!ignoreUknownTab) {
+        throw e;
+      }
+    } finally {
+      if (!success && (hook != null)) {
+        hook.rollbackDropTable(tbl);
       }
     }
   }
@@ -557,5 +598,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean dropPartitionByName(String dbName, String tableName, String partName, boolean deleteData) 
       throws NoSuchObjectException, MetaException, TException {
     return client.drop_partition_by_name(dbName, tableName, partName, deleteData);
+  }
+
+  private HiveMetaHook getHook(Table tbl) throws MetaException {
+    if (hookLoader == null) {
+      return null;
+    }
+    return hookLoader.getHook(tbl);
   }
 }

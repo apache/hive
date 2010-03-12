@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.util.ReflectionUtils;
+
 /**
  * General collection of helper functions.
  * 
@@ -118,6 +122,25 @@ public final class HiveUtils {
     // identifiers, then we'll need to escape any backticks
     // in identifier by doubling them up.
     return "`" + identifier + "`";
+  }
+
+  public static HiveStorageHandler getStorageHandler(
+    Configuration conf, String className) throws HiveException {
+    
+    if (className == null) {
+      return null;
+    }
+    try {
+      Class<? extends HiveStorageHandler> handlerClass =
+        (Class<? extends HiveStorageHandler>)
+        Class.forName(className, true, JavaUtils.getClassLoader());
+      HiveStorageHandler storageHandler = (HiveStorageHandler)
+        ReflectionUtils.newInstance(handlerClass, conf);
+      return storageHandler;
+    } catch (ClassNotFoundException e) {
+      throw new HiveException("Error in loading storage handler."
+          + e.getMessage(), e);
+    }
   }
 
   private HiveUtils() {

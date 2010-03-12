@@ -58,7 +58,7 @@ public class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key4", "0");
 
     try {
-      client = new HiveMetaStoreClient(hiveConf);
+      client = new HiveMetaStoreClient(hiveConf, null);
     } catch (Throwable e) {
       System.err.println("Unable to open the metastore");
       System.err.println(StringUtils.stringifyException(e));

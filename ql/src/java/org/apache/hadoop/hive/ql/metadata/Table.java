@@ -78,6 +78,7 @@ public class Table implements Serializable {
   private Class<? extends HiveOutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private URI uri;
+  private HiveStorageHandler storageHandler;
   
   /**
    * Used only for serialization.
@@ -223,7 +224,11 @@ public class Table implements Serializable {
   }
 
   final public Path getPath() {
-    return new Path(tTable.getSd().getLocation());
+    String location = tTable.getSd().getLocation();
+    if (location == null) {
+      return null;
+    }
+    return new Path(location);
   }
 
   final public String getTableName() {
@@ -232,7 +237,10 @@ public class Table implements Serializable {
 
   final public URI getDataLocation() {
     if (uri == null) {
-      uri = getPath().toUri();
+      Path path = getPath();
+      if (path != null) {
+        uri = path.toUri();
+      }
     }
     return uri;
   }
@@ -250,11 +258,34 @@ public class Table implements Serializable {
     return deserializer;
   }
 
+  public HiveStorageHandler getStorageHandler() {
+    if (storageHandler != null) {
+      return storageHandler;
+    }
+    try {
+      storageHandler = HiveUtils.getStorageHandler(
+        Hive.get().getConf(),
+        getProperty(
+          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return storageHandler;
+  }
+
   final public Class<? extends InputFormat> getInputFormatClass() {
     if (inputFormatClass == null) {
       try {
-        inputFormatClass = (Class<? extends InputFormat>)
-            Class.forName(tTable.getSd().getInputFormat(), true, JavaUtils.getClassLoader());
+        String className = tTable.getSd().getInputFormat();
+        if (className == null) {
+          if (getStorageHandler() == null) {
+            return null;
+          }
+          inputFormatClass = getStorageHandler().getInputFormatClass();
+        } else {
+          inputFormatClass = (Class<? extends InputFormat>)
+            Class.forName(className, true, JavaUtils.getClassLoader());
+        }
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -267,14 +298,22 @@ public class Table implements Serializable {
     
     if (outputFormatClass == null) {
       try {
-        Class<?> c = Class.forName(tTable.getSd().getOutputFormat(), true, 
+        String className = tTable.getSd().getOutputFormat();
+        Class<?> c;
+        if (className == null) {
+          if (getStorageHandler() == null) {
+            return null;
+          }
+          c = getStorageHandler().getOutputFormatClass();
+        } else {
+          c = Class.forName(className, true,
             JavaUtils.getClassLoader());
+        }
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
           outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
         } else {
           outputFormatClass = (Class<? extends HiveOutputFormat>)c;
         }
-            
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -509,6 +548,11 @@ public class Table implements Serializable {
   }
 
   public void setInputFormatClass(String name) throws HiveException {
+    if (name == null) {
+      inputFormatClass = null;
+      tTable.getSd().setInputFormat(null);
+      return;
+    }
     try {
       setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>) Class
           .forName(name, true, JavaUtils.getClassLoader()));
@@ -518,6 +562,11 @@ public class Table implements Serializable {
   }
 
   public void setOutputFormatClass(String name) throws HiveException {
+    if (name == null) {
+      outputFormatClass = null;
+      tTable.getSd().setOutputFormat(null);
+      return;
+    }
     try {
       Class<?> origin = Class.forName(name, true, JavaUtils.getClassLoader());
       setOutputFormatClass(HiveFileFormatUtils
@@ -689,5 +738,11 @@ public class Table implements Serializable {
   
   public void setCreateTime(int createTime) {
     tTable.setCreateTime(createTime);
+  }
+
+  public boolean isNonNative() {
+    return getProperty(
+      org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)
+      != null;
   }
 };

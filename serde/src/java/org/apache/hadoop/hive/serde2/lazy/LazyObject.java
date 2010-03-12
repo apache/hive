@@ -63,4 +63,12 @@ public abstract class LazyObject<OI extends ObjectInspector> {
 
   @Override
   public abstract int hashCode();
+
+  protected OI getInspector() {
+    return oi;
+  }
+
+  protected void setInspector(OI oi) {
+    this.oi = oi;
+  }
 }

@@ -238,5 +238,5 @@ const string META_TABLE_SERDE     = "serde",
 const string META_TABLE_PARTITION_COLUMNS = "partition_columns",
 const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
-
+const string META_TABLE_STORAGE   = "storage_handler",
 

@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<project name="hbase-handler" default="jar">
+
+  <property name="hbase-handler.lib.dir" value="${basedir}/lib"/>
+  <property name="src.dir"  location="${basedir}/src/java"/>
+  <property name="hbase-handler.test.query.dir" location="${basedir}/src/test/queries"/>
+  <property name="ql.test.template.dir" location="${basedir}/../ql/src/test/templates"/>
+  <property name="ql.hbase.test.template.dir" location="${basedir}/src/test/templates"/>
+  <property name="hbase-handler.test.results.dir" location="${basedir}/src/test/results"/>
+
+  <import file="../build-common.xml"/>
+
+  <path id="test.classpath">
+    <pathelement location="${build.dir.hive}/ql/test/classes" />
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="" />
+    <pathelement location="${hadoop.conf.dir}"/>
+    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${hive.conf.dir}"/>
+    <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
+    <pathelement location="${hadoop.test.jar}"/>
+    <pathelement location="${jetty.test.jar}"/>
+    <pathelement location="${servlet.test.jar}"/>
+    <pathelement location="${jasper.test.jar}"/>
+    <pathelement location="${jasperc.test.jar}"/>
+    <pathelement location="${jsp.test.jar}"/>
+    <pathelement location="${common.jar}"/>
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
+    <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
+    <path refid="classpath"/>
+  </path>
+
+  <target name="test-jar" depends="compile-test, jar">
+    <delete file="${test.build.dir}/test-udfs.jar"/>
+    <jar jarfile="${test.build.dir}/test-udfs.jar">
+        <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
+        <fileset dir="${test.build.classes}" includes="**/udf/generic/*.class"/>
+    </jar>
+  </target>
+
+  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
+    <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+    
+    <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
+    <mkdir dir="${test.log.dir}/hbase-handler"/>
+    <mkdir dir="${hbase-handler.test.results.dir}"/>
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.hbase.test.template.dir}" template="TestHBaseCliDriver.vm" 
+              queryDirectory="${hbase-handler.test.query.dir}" 
+              queryFile="${qfile}"
+              clusterMode="${clustermode}"
+              resultsDirectory="${hbase-handler.test.results.dir}" className="TestHBaseCliDriver"
+              logFile="${test.log.dir}/testhbaseclidrivergen.log"
+              logDirectory="${test.log.dir}/hbase-handler"/>
+
+  </target>
+
+  <!-- override target jar because tests need to add hbase-handler jars,
+       which needs to be a constant without the version number -->
+  <target name="jar" depends="compile">
+    <echo message="Jar: ${ant.project.name}"/>
+    <jar
+      jarfile="${build.dir}/hive_${ant.project.name}.jar"
+      basedir="${build.classes}">
+      <manifest>
+        <!-- Not putting these in their own manifest section, since that inserts
+        a new-line, which breaks the reading of the attributes. -->
+        <attribute name="Implementation-Title" value="Hive"/>
+        <attribute name="Implementation-Version" value="${version}"/>
+        <attribute name="Implementation-Vendor" value="Apache"/>
+      </manifest>
+    </jar>
+  </target>
+
+</project>

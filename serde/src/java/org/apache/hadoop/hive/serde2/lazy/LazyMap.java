@@ -288,7 +288,7 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
    * cachedMap is reused for different calls to getMap(). But each LazyMap has a
    * separate cachedMap so we won't overwrite the data by accident.
    */
-  LinkedHashMap<Object, Object> cachedMap;
+  protected LinkedHashMap<Object, Object> cachedMap;
 
   /**
    * Return the map object representing this LazyMap. Note that the keyObjects
@@ -336,4 +336,11 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
     return mapSize;
   }
 
+  protected boolean getParsed() {
+    return parsed;
+  }
+
+  protected void setParsed(boolean parsed) {
+    this.parsed = parsed;
+  }
 }

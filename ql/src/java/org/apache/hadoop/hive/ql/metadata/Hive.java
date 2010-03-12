@@ -28,18 +28,21 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -53,6 +56,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
@@ -918,7 +922,32 @@ public class Hive {
    *           if a working client can't be created
    */
   private IMetaStoreClient createMetaStoreClient() throws MetaException {
-    return new HiveMetaStoreClient(conf);
+
+    HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
+        public HiveMetaHook getHook(
+          org.apache.hadoop.hive.metastore.api.Table tbl)
+          throws MetaException {
+
+          try {
+            if (tbl == null) {
+              return null;
+            }
+            HiveStorageHandler storageHandler =
+              HiveUtils.getStorageHandler(
+                conf,
+                tbl.getParameters().get(Constants.META_TABLE_STORAGE));
+            if (storageHandler == null) {
+              return null;
+            }
+            return storageHandler.getMetaHook();
+          } catch (HiveException ex) {
+            LOG.error(StringUtils.stringifyException(ex));
+            throw new MetaException(
+              "Failed to load storage handler:  " + ex.getMessage());
+          }
+        }
+      };
+    return new HiveMetaStoreClient(conf, hookLoader);
   }
 
   /**

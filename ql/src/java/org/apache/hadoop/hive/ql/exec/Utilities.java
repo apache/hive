@@ -1197,4 +1197,22 @@ public final class Utilities {
     }
     return notificationInterval;
   }
+
+  /**
+   * Copies the storage handler properties configured for a table descriptor
+   * to a runtime job configuration.
+   *
+   * @param tbl table descriptor from which to read
+   *
+   * @param job configuration which receives configured properties
+   */
+  public static void copyTableJobPropertiesToConf(TableDesc tbl, JobConf job) {
+    Map<String, String> jobProperties = tbl.getJobProperties();
+    if (jobProperties == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
+      job.set(entry.getKey(), entry.getValue());
+    }
+  }
 }

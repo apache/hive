@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -216,9 +217,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc
         .getTableName());
 
-    if (tbl.isView()) {
-      throw new HiveException("Cannot use ALTER TABLE on a view");
-    }
+    validateAlterTableType(tbl);
 
     // If the add partition was created with IF NOT EXISTS, then we should
     // not throw an error if the specified part does exist.
@@ -242,6 +241,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private void validateAlterTableType(Table tbl) throws HiveException {
+    if (tbl.isView()) {
+      throw new HiveException("Cannot use ALTER TABLE on a view");
+    }
+
+    if (tbl.isNonNative()) {
+      throw new HiveException("Cannot use ALTER TABLE on a non-native table");
+    }
+  }
+  
   /**
    * MetastoreCheck, see if the data in the metastore matches what is on the
    * dfs. Current version checks for tables and partitions that are either
@@ -960,9 +969,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl
         .getOldName());
 
-    if (tbl.isView()) {
-      throw new HiveException("Cannot use ALTER TABLE on a view");
-    }
+    validateAlterTableType(tbl);
+
     Table oldTbl = tbl.copy();
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
@@ -1278,16 +1286,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setNumBuckets(crtTbl.getNumBuckets());
     }
 
+    if (crtTbl.getStorageHandler() != null) {
+      tbl.setProperty(
+        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE,
+        crtTbl.getStorageHandler());
+    }
+    HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
     if (crtTbl.getSerName() != null) {
       tbl.setSerializationLib(crtTbl.getSerName());
-      if (crtTbl.getMapProp() != null) {
-        Iterator<Entry<String, String>> iter = crtTbl.getMapProp().entrySet()
-            .iterator();
-        while (iter.hasNext()) {
-          Entry<String, String> m = (Entry<String, String>) iter.next();
-          tbl.setSerdeParam(m.getKey(), m.getValue());
-        }
-      }
     } else {
       if (crtTbl.getFieldDelim() != null) {
         tbl.setSerdeParam(Constants.FIELD_DELIM, crtTbl.getFieldDelim());
@@ -1311,15 +1318,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    /**
+    if (crtTbl.getMapProp() != null) {
+      Iterator<Entry<String, String>> iter = crtTbl.getMapProp().entrySet()
+        .iterator();
+      while (iter.hasNext()) {
+        Entry<String, String> m = (Entry<String, String>) iter.next();
+        tbl.setSerdeParam(m.getKey(), m.getValue());
+      }
+    }
+
+    /*
      * We use LazySimpleSerDe by default.
      * 
      * If the user didn't specify a SerDe, and any of the columns are not simple
      * types, we will have to use DynamicSerDe instead.
      */
     if (crtTbl.getSerName() == null) {
-      LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
-      tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      if (storageHandler == null) {
+        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
+        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      } else {
+        String serDeClassName = storageHandler.getSerDeClass().getName();
+        LOG.info("Use StorageHandler-supplied " + serDeClassName
+          + " for table " + crtTbl.getTableName());
+        tbl.setSerializationLib(serDeClassName);
+      }
     } else {
       // let's validate that the serde exists
       validateSerDe(crtTbl.getSerName());
@@ -1343,6 +1366,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     tbl.setInputFormatClass(crtTbl.getInputFormat());
     tbl.setOutputFormatClass(crtTbl.getOutputFormat());
+
+    tbl.getTTable().getSd().setInputFormat(
+      tbl.getInputFormatClass().getName());
+    tbl.getTTable().getSd().setOutputFormat(
+      tbl.getOutputFormatClass().getName());
 
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");

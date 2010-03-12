@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -38,6 +40,7 @@ public class TableDesc implements Serializable, Cloneable {
   private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
+  private Map<String, String> jobProperties;
 
   public TableDesc() {
   }
@@ -100,6 +103,15 @@ public class TableDesc implements Serializable, Cloneable {
     this.properties = properties;
   }
 
+  public void setJobProperties(Map<String, String> jobProperties) {
+    this.jobProperties = jobProperties;
+  }
+
+  @Explain(displayName = "jobProperties", normalExplain = false)
+  public Map<String, String> getJobProperties() {
+    return jobProperties;
+  }
+
   /**
    * @return the serdeClassName
    */
@@ -132,6 +144,12 @@ public class TableDesc implements Serializable, Cloneable {
     return getOutputFileFormatClass().getName();
   }
 
+  public boolean isNonNative() {
+    return (properties.getProperty(
+        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)
+      != null);
+  }
+  
   @Override
   public Object clone() {
     TableDesc ret = new TableDesc();
@@ -147,6 +165,9 @@ public class TableDesc implements Serializable, Cloneable {
     }
 
     ret.setProperties(newProp);
+    if (jobProperties != null) {
+      ret.jobProperties = new LinkedHashMap<String, String>(jobProperties);
+    }
     return ret;
   }
 }

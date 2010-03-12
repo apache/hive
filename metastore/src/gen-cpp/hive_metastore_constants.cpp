@@ -36,6 +36,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   FILE_OUTPUT_FORMAT = "file.outputformat";
 
+  META_TABLE_STORAGE = "storage_handler";
+
 }
 
 }}} // namespace

@@ -319,9 +319,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tblPath = wh.getDefaultTablePath(
               tbl.getDbName(), tbl.getTableName());
           } else {
-            if (!isExternal(tbl)) {
+            if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
               LOG.warn("Location: " + tbl.getSd().getLocation()
-                + "specified for non-external table:" + tbl.getTableName());
+                + " specified for non-external table:" + tbl.getTableName());
             }
             tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
           }
@@ -418,15 +418,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @return True if the table is external, otherwise false.
      */
     private boolean isExternal(Table table) {
-      if (table == null) {
-        return false;
-      }
-      Map<String, String> params = table.getParameters();
-      if (params == null) {
-        return false;
-      }
-
-      return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
+      return MetaStoreUtils.isExternalTable(table);
     }
 
     public Table get_table(String dbname, String name) throws MetaException,
