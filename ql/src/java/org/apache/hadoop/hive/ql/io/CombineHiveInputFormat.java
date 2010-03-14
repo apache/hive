@@ -42,6 +42,12 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+
 
 /**
  * CombineHiveInputFormat is a parameterized InputFormat which looks at the path
@@ -217,6 +223,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
 
+    if (combine == null)
+      return super.getSplits(job, numSplits);
+
     if (combine.getInputPathsShim(job).length == 0) {
       throw new IOException("No input paths specified in job");
     }
@@ -227,6 +236,35 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Path[] paths = combine.getInputPathsShim(job);
     for (Path path : paths) {
       LOG.info("CombineHiveInputSplit creating pool for " + path);
+
+      // The following code should be removed, once
+      // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
+      // Hadoop does not handle non-splitable files correctly for CombineFileInputFormat,
+      // so don't use CombineFileInputFormat for non-splittable files
+      FileSystem inpFs = path.getFileSystem(job);
+
+      FileStatus fStats = inpFs.getFileStatus(path);
+      Path tstPath = path;
+
+      // If path is a directory
+      if (fStats.isDir()) {
+        FileStatus[] fStatus = inpFs.listStatus(path);
+        if (fStatus.length > 0) {
+          tstPath = fStatus[0].getPath();
+        }
+      }
+
+      PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, path);
+
+      // Use HiveInputFormat if any of the paths is not splittable
+      Class inputFormatClass = part.getInputFileFormatClass();
+      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+
+      if ((inputFormat instanceof TextInputFormat) &&
+          ((new CompressionCodecFactory(job)).getCodec(tstPath) != null)) {
+        return super.getSplits(job, numSplits);
+      }
+
       combine.createPool(job, new CombineFilter(path));
     }
 
@@ -248,6 +286,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
+    if (!(split instanceof CombineHiveInputSplit)) {
+      return super.getRecordReader(split, job, reporter);
+    }
+
     CombineHiveInputSplit hsplit = (CombineHiveInputSplit) split;
 
     String inputFormatClassName = null;
@@ -270,25 +312,27 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
   protected static PartitionDesc getPartitionDescFromPath(
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir) throws IOException {
-    // The format of the keys in pathToPartitionInfo sometimes contains a port
-    // and sometimes doesn't, so we just compare paths.
-    URI dirUri = dir.toUri();
-    for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
-        .entrySet()) {
-      try {
-        // Take only the path part of the URI.
+    try {
+      // Take only the path part of the URI.
+
+      // The format of the keys in pathToPartitionInfo sometimes contains a port
+      // and sometimes doesn't, so we just compare paths.
+      URI dirUri = new URI(dir.toUri().getPath());
+      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
+             .entrySet()) {
         URI pathOfPartition = new URI(entry.getKey());
         pathOfPartition = new URI(pathOfPartition.getPath());
 
         if (!pathOfPartition.relativize(dirUri).equals(dirUri)) {
           return entry.getValue();
         }
-      } catch (URISyntaxException e2) {
-        LOG.info("getPartitionDescFromPath ", e2);
       }
+    } catch (URISyntaxException e2) {
+      LOG.info("getPartitionDescFromPath ", e2);
     }
+
     throw new IOException("cannot find dir = " + dir.toString()
-        + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
+                          + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
   }
 
   static class CombineFilter implements PathFilter {

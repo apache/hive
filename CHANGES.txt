@@ -261,6 +261,9 @@ Trunk -  Unreleased
     HIVE-1241. Drop the table at the beginning of tests
     (He Yongqiang via namit)
 
+    HIVE-1242. CombinHiveInputFormat does not work for compressed text files.
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
