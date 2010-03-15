@@ -63,6 +63,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   static final private Log LOG = LogFactory.getLog("hive.metastore");
 
+  public HiveMetaStoreClient(HiveConf conf)
+    throws MetaException {
+    this(conf, null);
+  }
+
   public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader)
     throws MetaException {
 
