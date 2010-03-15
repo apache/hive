@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -34,7 +35,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 public class MetaStoreUtils {
@@ -64,12 +63,12 @@ public class MetaStoreUtils {
 
   /**
    * printStackTrace
-   * 
+   *
    * Helper function to print an exception stack trace to the log and not stderr
-   * 
+   *
    * @param e
    *          the exception
-   * 
+   *
    */
   static public void printStackTrace(Exception e) {
     for (StackTraceElement s : e.getStackTrace()) {
@@ -118,15 +117,15 @@ public class MetaStoreUtils {
 
   /**
    * recursiveDelete
-   * 
+   *
    * just recursively deletes a dir - you'd think Java would have something to
    * do this??
-   * 
+   *
    * @param f
    *          - the file/dir to delete
    * @exception IOException
    *              propogate f.delete() exceptions
-   * 
+   *
    */
   static public void recursiveDelete(File f) throws IOException {
     if (f.isDirectory()) {
@@ -142,9 +141,9 @@ public class MetaStoreUtils {
 
   /**
    * getDeserializer
-   * 
+   *
    * Get the Deserializer for a table given its name and properties.
-   * 
+   *
    * @param conf
    *          hadoop config
    * @param schema
@@ -152,9 +151,9 @@ public class MetaStoreUtils {
    * @return the Deserializer
    * @exception MetaException
    *              if any problems instantiating the Deserializer
-   * 
+   *
    *              todo - this should move somewhere into serde.jar
-   * 
+   *
    */
   static public Deserializer getDeserializer(Configuration conf,
       Properties schema) throws MetaException {
@@ -174,9 +173,9 @@ public class MetaStoreUtils {
 
   /**
    * getDeserializer
-   * 
+   *
    * Get the Deserializer for a table.
-   * 
+   *
    * @param conf
    *          - hadoop config
    * @param table
@@ -184,9 +183,9 @@ public class MetaStoreUtils {
    * @return the Deserializer
    * @exception MetaException
    *              if any problems instantiating the Deserializer
-   * 
+   *
    *              todo - this should move somewhere into serde.jar
-   * 
+   *
    */
   static public Deserializer getDeserializer(Configuration conf,
       org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
@@ -210,9 +209,9 @@ public class MetaStoreUtils {
 
   /**
    * getDeserializer
-   * 
+   *
    * Get the Deserializer for a partition.
-   * 
+   *
    * @param conf
    *          - hadoop config
    * @param partition
@@ -220,7 +219,7 @@ public class MetaStoreUtils {
    * @return the Deserializer
    * @exception MetaException
    *              if any problems instantiating the Deserializer
-   * 
+   *
    */
   static public Deserializer getDeserializer(Configuration conf,
       org.apache.hadoop.hive.metastore.api.Partition part,
@@ -289,10 +288,10 @@ public class MetaStoreUtils {
 
   /**
    * validateName
-   * 
+   *
    * Checks the name conforms to our standars which are: "[a-zA-z_0-9]+". checks
    * this is just characters and numbers and _
-   * 
+   *
    * @param name
    *          the name to validate
    * @return true or false depending on conformance
@@ -521,7 +520,7 @@ public class MetaStoreUtils {
 
   /**
    * Convert FieldSchemas to Thrift DDL + column names and column types
-   * 
+   *
    * @param structName
    *          The name of the table
    * @param fieldSchemas
@@ -665,7 +664,7 @@ public class MetaStoreUtils {
           org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL,
           getDDLFromFieldSchema(tableName, sd.getCols()));
     }
-    
+
     String partString = "";
     String partStringSep = "";
     for (FieldSchema partKey : partitionKeys) {
@@ -736,7 +735,7 @@ public class MetaStoreUtils {
 
   /**
    * Catches exceptions that can't be handled and bundles them to MetaException
-   * 
+   *
    * @param e
    * @throws MetaException
    */
@@ -840,5 +839,28 @@ public class MetaStoreUtils {
       return false;
     }
     return (table.getParameters().get(Constants.META_TABLE_STORAGE) != null);
+  }
+
+  /**
+   * Returns true if partial has the same values as full for all values that
+   * aren't empty in partial.
+   */
+
+  public static boolean pvalMatches(List<String> partial, List<String> full) {
+    if(partial.size() != full.size()) {
+      return false;
+    }
+    Iterator<String> p = partial.iterator();
+    Iterator<String> f = full.iterator();
+
+    while(p.hasNext()) {
+      String pval = p.next();
+      String fval = f.next();
+
+      if (pval.length() != 0 && !pval.equals(fval)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

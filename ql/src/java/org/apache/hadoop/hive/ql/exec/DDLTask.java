@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -92,7 +91,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * DDLTask implementation.
- * 
+ *
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -112,6 +111,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     this.conf = conf;
   }
 
+  @Override
   public int execute() {
 
     // Create the db
@@ -204,7 +204,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Add a partition to a table.
-   * 
+   *
    * @param db
    *          Database to add the partition to.
    * @param addPartitionDesc
@@ -250,12 +250,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Cannot use ALTER TABLE on a non-native table");
     }
   }
-  
+
   /**
    * MetastoreCheck, see if the data in the metastore matches what is on the
    * dfs. Current version checks for tables and partitions that are either
    * missing on disk on in the metastore.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param msckDesc
@@ -334,7 +334,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write the result of msck to a writer.
-   * 
+   *
    * @param result
    *          The result we're going to write
    * @param msg
@@ -368,7 +368,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of partitions to a file.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param showParts
@@ -389,15 +389,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       console.printError("Table " + tabName + " is not a partitioned table");
       return 1;
     }
-
-    parts = db.getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl
-        .getTableName(), Short.MAX_VALUE);
+    if (showParts.getPartSpec() != null) {
+      parts = db.getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+          tbl.getTableName(), showParts.getPartSpec(), (short) -1);
+    } else {
+      parts = db.getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl
+          .getTableName(), (short) -1);
+    }
 
     // write the results in the file
     try {
       Path resFile = new Path(showParts.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
       Iterator<String> iterParts = parts.iterator();
 
       while (iterParts.hasNext()) {
@@ -421,7 +425,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the tables in the database to a file.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param showTbls
@@ -445,7 +449,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       Path resFile = new Path(showTbls.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       Iterator<String> iterTbls = sortedTbls.iterator();
 
@@ -469,7 +473,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the user defined functions to a file.
-   * 
+   *
    * @param showFuncs
    *          are the functions we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -491,7 +495,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       Path resFile = new Path(showFuncs.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
       SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
       Iterator<String> iterFuncs = sortedFuncs.iterator();
 
@@ -515,7 +519,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Shows a description of a function.
-   * 
+   *
    * @param descFunc
    *          is the function we are describing
    * @throws HiveException
@@ -527,7 +531,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       Path resFile = new Path(descFunc.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
 
       // get the function documentation
       Description desc = null;
@@ -577,7 +581,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write the status of tables to a file.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param showTblStatus
@@ -617,7 +621,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       Path resFile = new Path(showTblStatus.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
 
       Iterator<Table> iterTables = tbls.iterator();
       while (iterTables.hasNext()) {
@@ -699,7 +703,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write the description of a table to a file.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param descTbl
@@ -763,7 +767,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       Path resFile = new Path(descTbl.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = (DataOutput) fs.create(resFile);
+      DataOutput outStream = fs.create(resFile);
       Iterator<FieldSchema> iterCols = cols.iterator();
       while (iterCols.hasNext()) {
         // create a row per column
@@ -955,7 +959,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Alter a given table.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param alterTbl
@@ -1162,7 +1166,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Drop a given table.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param dropTbl
@@ -1267,7 +1271,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Create a new table.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param crtTbl
@@ -1322,14 +1326,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Iterator<Entry<String, String>> iter = crtTbl.getMapProp().entrySet()
         .iterator();
       while (iter.hasNext()) {
-        Entry<String, String> m = (Entry<String, String>) iter.next();
+        Entry<String, String> m = iter.next();
         tbl.setSerdeParam(m.getKey(), m.getValue());
       }
     }
 
     /*
      * We use LazySimpleSerDe by default.
-     * 
+     *
      * If the user didn't specify a SerDe, and any of the columns are not simple
      * types, we will have to use DynamicSerDe instead.
      */
@@ -1423,7 +1427,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Create a new table like an existing table.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param crtTbl
@@ -1459,7 +1463,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Create a new view.
-   * 
+   *
    * @param db
    *          The database in question.
    * @param crtView
@@ -1503,6 +1507,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  @Override
   public int getType() {
     return StageType.DDL;
   }

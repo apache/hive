@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -47,6 +49,7 @@ public class TestHiveMetaStore extends TestCase {
   private HiveMetaStoreClient client;
   private HiveConf hiveConf;
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
@@ -66,6 +69,7 @@ public class TestHiveMetaStore extends TestCase {
     }
   }
 
+  @Override
   protected void tearDown() throws Exception {
     try {
       super.tearDown();
@@ -80,7 +84,7 @@ public class TestHiveMetaStore extends TestCase {
   /**
    * tests create table and partition and tries to drop the table without
    * droppping the partition
-   * 
+   *
    * @throws Exception
    */
   public void testPartition() throws Exception {
@@ -91,6 +95,13 @@ public class TestHiveMetaStore extends TestCase {
       List<String> vals = new ArrayList<String>(2);
       vals.add("2008-07-01 14:13:12");
       vals.add("14");
+      List <String> vals2 = new ArrayList<String>(2);
+      vals2.add("2008-07-01 14:13:12");
+      vals2.add("15");
+      List <String> vals3 = new ArrayList<String>(2);
+      vals3 = new ArrayList<String>(2);
+      vals3.add("2008-07-02 14:13:12");
+      vals3.add("15");
 
       client.dropTable(dbName, tblName);
       client.dropDatabase(dbName);
@@ -144,25 +155,93 @@ public class TestHiveMetaStore extends TestCase {
       part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
       part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
 
+      Partition part2 = new Partition();
+      part2.setDbName(dbName);
+      part2.setTableName(tblName);
+      part2.setValues(vals2);
+      part2.setParameters(new HashMap<String, String>());
+      part2.setSd(tbl.getSd());
+      part2.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part2.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
+
+      Partition part3 = new Partition();
+      part3.setDbName(dbName);
+      part3.setTableName(tblName);
+      part3.setValues(vals3);
+      part3.setParameters(new HashMap<String, String>());
+      part3.setSd(tbl.getSd());
+      part3.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part3.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
+
       Partition retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
+      Partition retp2 = client.add_partition(part2);
+      assertNotNull("Unable to create partition " + part2, retp2);
+      Partition retp3 = client.add_partition(part3);
+      assertNotNull("Unable to create partition " + part3, retp3);
 
-      Partition part2 = client.getPartition(dbName, tblName, part.getValues());
-      assertTrue("Partitions are not same", part.equals(part2));
+      Partition part_get = client.getPartition(dbName, tblName, part.getValues());
+      assertTrue("Partitions are not same", part.equals(part_get));
 
       String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
-      Partition part3 = client.getPartitionByName(dbName, tblName, partName);
-      assertTrue("Partitions are not the same", part.equals(part2));
-      
+      String part2Name = "ds=2008-07-01 14%3A13%3A12/hr=15";
+      String part3Name ="ds=2008-07-02 14%3A13%3A12/hr=15";
+
+      part_get = client.getPartition(dbName, tblName, partName);
+      assertTrue("Partitions are not the same", part.equals(part_get));
+
+      // Test partition listing with a partial spec - ds is specified but hr is not
+      List<String> partialVals = new ArrayList<String>();
+      partialVals.add(vals.get(0));
+      partialVals.add("");
+      Set<Partition> parts = new HashSet<Partition>();
+      parts.add(part);
+      parts.add(part2);
+
+      List<Partition> partial = client.listPartitions(dbName, tblName, partialVals,
+          (short) -1);
+      assertTrue("Should have returned 2 partitions", partial.size() == 2);
+      assertTrue("Not all parts returned", partial.containsAll(parts));
+
+      Set<String> partNames = new HashSet<String>();
+      partNames.add(partName);
+      partNames.add(part2Name);
+      List<String> partialNames = client.listPartitionNames(dbName, tblName, partialVals,
+          (short) -1);
+      assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertTrue("Not all part names returned", partialNames.containsAll(partNames));
+
+      // Test partition listing with a partial spec - hr is specified but ds is not
+      parts.clear();
+      parts.add(part2);
+      parts.add(part3);
+
+      partialVals.clear();
+      partialVals.add("");
+      partialVals.add(vals2.get(1));
+
+      partial = client.listPartitions(dbName, tblName, partialVals, (short) -1);
+      assertTrue("Should have returned 2 partitions", partial.size() == 2);
+      assertTrue("Not all parts returned", partial.containsAll(parts));
+
+      partNames.clear();
+      partNames.add(part2Name);
+      partNames.add(part3Name);
+      partialNames = client.listPartitionNames(dbName, tblName, partialVals,
+          (short) -1);
+      assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertTrue("Not all part names returned", partialNames.containsAll(partNames));
+
+      // Verify escaped partition names don't return partitions
       boolean exceptionThrown = false;
       try {
         String badPartName = "ds=2008-07-01 14%3A13%3A12/hrs=14";
-        client.getPartitionByName(dbName, tblName, badPartName);
+        client.getPartition(dbName, tblName, badPartName);
       } catch(NoSuchObjectException e) {
         exceptionThrown = true;
       }
       assertTrue("Bad partition spec should have thrown an exception", exceptionThrown);
-      
+
       FileSystem fs = FileSystem.get(hiveConf);
       Path partPath = new Path(part2.getSd().getLocation());
 
@@ -172,15 +251,15 @@ public class TestHiveMetaStore extends TestCase {
       assertFalse(fs.exists(partPath));
 
       // Test append_partition_by_name
-      client.appendPartitionByName(dbName, tblName, partName);
+      client.appendPartition(dbName, tblName, partName);
       Partition part4 = client.getPartition(dbName, tblName, part.getValues());
       assertTrue("Append partition by name failed", part4.getValues().equals(vals));;
       Path part4Path = new Path(part4.getSd().getLocation());
       assertTrue(fs.exists(part4Path));
-      
+
       // Test drop_partition_by_name
-      assertTrue("Drop partition by name failed", 
-          client.dropPartitionByName(dbName, tblName, partName, true));
+      assertTrue("Drop partition by name failed",
+          client.dropPartition(dbName, tblName, partName, true));
       assertFalse(fs.exists(part4Path));
 
       // add the partition again so that drop table with a partition can be
@@ -202,10 +281,10 @@ public class TestHiveMetaStore extends TestCase {
       assertTrue(fs.exists(partPath));
       client.dropPartition(dbName, tblName, part.getValues(), true);
       assertTrue(fs.exists(partPath));
-      
+
       ret = client.dropDatabase(dbName);
       assertTrue("Unable to create the databse " + dbName, ret);
-      
+
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed.");

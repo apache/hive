@@ -47,7 +47,7 @@ public interface IMetaStoreClient {
 
   /**
    * Drop the table.
-   * 
+   *
    * @param tableName
    *          The table to drop
    * @param deleteData
@@ -67,7 +67,7 @@ public interface IMetaStoreClient {
 
   /**
    * Drop the table.
-   * 
+   *
    * @param dbname
    *          The database for this table
    * @param tableName
@@ -93,7 +93,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object.
-   * 
+   *
    * @param tableName
    *          Name of the table to fetch.
    * @return An object representing the table.
@@ -109,7 +109,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object.
-   * 
+   *
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -141,9 +141,11 @@ public interface IMetaStoreClient {
       List<String> partVals) throws InvalidObjectException,
       AlreadyExistsException, MetaException, TException;
 
+  public Partition appendPartition(String tableName, String dbName, String name)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
   /**
    * Add a partition to the table.
-   * 
+   *
    * @param partition
    *          The partition to add
    * @return The partition added
@@ -183,9 +185,9 @@ public interface IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String,
    *      java.lang.String, java.util.List)
    */
-  public Partition getPartitionByName(String dbName, String tblName,
+  public Partition getPartition(String dbName, String tblName,
       String name) throws MetaException, UnknownTableException, NoSuchObjectException, TException;
-  
+
   /**
    * @param tbl_name
    * @param db_name
@@ -198,8 +200,14 @@ public interface IMetaStoreClient {
   public List<Partition> listPartitions(String db_name, String tbl_name,
       short max_parts) throws NoSuchObjectException, MetaException, TException;
 
+  public List<Partition> listPartitions(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts) throws NoSuchObjectException, MetaException, TException;
+
   public List<String> listPartitionNames(String db_name, String tbl_name,
       short max_parts) throws MetaException, TException;
+
+  public List<String> listPartitionNames(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts) throws MetaException, TException;
 
   /**
    * @param tbl
@@ -238,9 +246,12 @@ public interface IMetaStoreClient {
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
 
+  public boolean dropPartition(String db_name, String tbl_name,
+      String name, boolean deleteData) throws NoSuchObjectException,
+      MetaException, TException;
   /**
    * updates a partition to new partition
-   * 
+   *
    * @param dbName
    *          database of the old partition
    * @param tblName

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 
@@ -31,6 +32,9 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tabName;
   String resFile;
+  // Filter the partitions to show based on on supplied spec
+  Map<String, String> partSpec;
+
   /**
    * table name for the result of show tables.
    */
@@ -57,9 +61,11 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
    * @param resFile
    *          File to store the results in
    */
-  public ShowPartitionsDesc(String tabName, Path resFile) {
+  public ShowPartitionsDesc(String tabName, Path resFile,
+      Map<String, String> partSpec) {
     this.tabName = tabName;
     this.resFile = resFile.toString();
+    this.partSpec = partSpec;
   }
 
   /**
@@ -76,6 +82,22 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
    */
   public void setTabName(String tabName) {
     this.tabName = tabName;
+  }
+
+  /**
+   * @return the name of the table.
+   */
+  @Explain(displayName = "partSpec")
+  public Map<String, String> getPartSpec() {
+    return partSpec;
+  }
+
+  /**
+   * @param tabName
+   *          the table whose partitions have to be listed
+   */
+  public void setPartSpec(Map<String, String> partSpec) {
+    this.partSpec = partSpec;
   }
 
   /**

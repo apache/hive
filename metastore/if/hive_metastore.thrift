@@ -206,11 +206,22 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // returns all the partitions for this table in reverse chronological order.
-  // if max parts is given then it will return only that many
+  // If max parts is given then it will return only that many.
   list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
+                       
+  // get_partition_mp methods allow filtering by a partial partition specification, 
+  // as needed for dynamic partitions. The values that are not restricted should 
+  // be empty strings. Nulls were considered (instead of "") but caused errors in 
+  // generated Python code.
+  list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name 
+  	3:list<string> part_vals, 4:i16 max_parts=-1)
+                       throws(1:MetaException o1)
+  list<string> get_partition_names_ps(1:string db_name, 
+  	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
+  	                   throws(1:MetaException o1)
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part

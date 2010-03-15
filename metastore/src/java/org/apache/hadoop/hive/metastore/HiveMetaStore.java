@@ -152,7 +152,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     /**
      * create default database if it doesn't exist
-     * 
+     *
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
@@ -193,6 +193,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return fb_status.ALIVE;
     }
 
+    @Override
     public void shutdown() {
       logStartFunction("Shutting down the object store...");
       try {
@@ -412,7 +413,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     /**
      * Is this an external table?
-     * 
+     *
      * @param table
      *          Check if this table is external.
      * @return True if the table is external, otherwise false.
@@ -499,7 +500,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return part;
 
     }
-    
+
     public Partition append_partition(String dbName, String tableName,
         List<String> part_vals) throws InvalidObjectException,
         AlreadyExistsException, MetaException {
@@ -510,7 +511,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.debug(part);
         }
       }
-      return append_partition_common(dbName, tableName, part_vals);      
+      return append_partition_common(dbName, tableName, part_vals);
     }
 
     public int add_partitions(List<Partition> parts) throws MetaException,
@@ -570,7 +571,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         part.getSd().setLocation(partLocation.toString());
 
         // Check to see if the directory already exists before calling mkdirs()
-        // because if the file system is read-only, mkdirs will throw an  
+        // because if the file system is read-only, mkdirs will throw an
         // exception even if the directory already exists.
         if (!wh.isDir(partLocation)) {
           if (!wh.mkdirs(partLocation)) {
@@ -637,7 +638,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("drop_partition");
       logStartFunction("drop_partition", db_name, tbl_name);
       LOG.info("Partition values:" + part_vals);
-      
+
       return drop_partition_common(db_name, tbl_name, part_vals, deleteData);
     }
 
@@ -739,7 +740,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     /**
      * Return the schema of the table. This function includes partition columns
      * in addition to the regular columns.
-     * 
+     *
      * @param db
      *          Name of the database
      * @param tableName
@@ -812,11 +813,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return toReturn;
     }
 
-    private List<String> getPartValsFromName(String dbName, String tblName, 
+    private List<String> getPartValsFromName(String dbName, String tblName,
         String partName) throws MetaException, InvalidObjectException {
       // Unescape the partition name
       LinkedHashMap<String, String> hm = Warehouse.makeSpecFromName(partName);
-      
+
       // getPartition expects partition values in a list. use info from the
       // table to put the partition column values in order
       Table t = getMS().getTable(dbName, tblName);
@@ -824,7 +825,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new InvalidObjectException(dbName + "." + tblName
             + " table not found");
       }
-      
+
       List<String> partVals = new ArrayList<String>();
       for(FieldSchema field : t.getPartitionKeys()) {
         String key = field.getName();
@@ -836,13 +837,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return partVals;
     }
-    
+
     public Partition get_partition_by_name(String db_name, String tbl_name,
         String part_name) throws MetaException, NoSuchObjectException, TException {
       incrementCounter("get_partition_by_name");
       logStartFunction("get_partition_by_name: db=" + db_name + " tbl="
           + tbl_name + " part=" + part_name);
-     
+
       List<String> partVals = null;
       try {
         partVals = getPartValsFromName(db_name, tbl_name, part_name);
@@ -850,7 +851,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new NoSuchObjectException(e.getMessage());
       }
       Partition p = getMS().getPartition(db_name, tbl_name, partVals);
-      
+
       if(p == null) {
         throw new NoSuchObjectException(db_name + "." + tbl_name
             + " partition (" + part_name + ") not found");
@@ -859,13 +860,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     public Partition append_partition_by_name(String db_name, String tbl_name,
-        String part_name) throws InvalidObjectException, 
+        String part_name) throws InvalidObjectException,
         AlreadyExistsException, MetaException, TException {
       incrementCounter("append_partition_by_name");
       logStartFunction("append_partition_by_name: db=" + db_name + " tbl="
           + tbl_name + " part=" + part_name);
       List<String> partVals = getPartValsFromName(db_name, tbl_name, part_name);
-      
+
       return append_partition_common(db_name, tbl_name, partVals);
     }
 
@@ -876,16 +877,77 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("drop_partition_by_name");
       logStartFunction("drop_partition_by_name: db=" + db_name + " tbl="
           + tbl_name + " part=" + part_name);
-      
+
       List<String> partVals = null;
       try {
         partVals = getPartValsFromName(db_name, tbl_name, part_name);
       } catch (InvalidObjectException e) {
         throw new NoSuchObjectException(e.getMessage());
       }
-      
+
       return drop_partition_common(db_name, tbl_name, partVals, deleteData);
     }
+
+    @Override
+    public List<Partition> get_partitions_ps(String db_name, String tbl_name,
+        List<String> part_vals, short max_parts) throws MetaException,
+        TException {
+      incrementCounter("get_partitions_ps");
+      logStartFunction("get_partitions_ps", db_name, tbl_name);
+      List<Partition> parts = null;
+      List<Partition> matchingParts = new ArrayList<Partition>();
+
+      // This gets all the partitions and then filters based on the specified
+      // criteria. An alternative approach would be to get all the partition
+      // names, do the filtering on the names, and get the partition for each
+      // of the names. that match.
+
+      try {
+         parts = get_partitions(db_name, tbl_name, (short) -1);
+      } catch (NoSuchObjectException e) {
+        throw new MetaException(e.getMessage());
+      }
+
+      for (Partition p : parts) {
+        if (MetaStoreUtils.pvalMatches(part_vals, p.getValues())) {
+          matchingParts.add(p);
+        }
+      }
+
+      return matchingParts;
+    }
+
+    @Override
+    public List<String> get_partition_names_ps(String db_name, String tbl_name,
+        List<String> part_vals, short max_parts) throws MetaException, TException {
+      incrementCounter("get_partition_names_ps");
+      logStartFunction("get_partitions_names_ps", db_name, tbl_name);
+      Table t;
+      try {
+        t = get_table(db_name, tbl_name);
+      } catch (NoSuchObjectException e) {
+        throw new MetaException(e.getMessage());
+      }
+
+     List<String> partNames = get_partition_names(db_name, tbl_name, max_parts);
+     List<String> filteredPartNames = new ArrayList<String>();
+
+      for(String name : partNames) {
+        LinkedHashMap<String, String> spec = Warehouse.makeSpecFromName(name);
+        List<String> vals = new ArrayList<String>();
+        // Since we are iterating through a LinkedHashMap, iteration should
+        // return the partition values in the correct order for comparison.
+        for (String val : spec.values()) {
+          vals.add(val);
+        }
+        if (MetaStoreUtils.pvalMatches(part_vals, vals)) {
+          filteredPartNames.add(name);
+        }
+      }
+
+      return filteredPartNames;
+    }
+
   }
 
   /**

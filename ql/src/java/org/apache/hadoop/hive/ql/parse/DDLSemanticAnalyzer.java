@@ -273,7 +273,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Get the fully qualified name in the ast. e.g. the ast of the form ^(DOT
    * ^(DOT a b) c) will generate a name of the form a.b.c
-   * 
+   *
    * @param ast
    *          The AST from which the qualified name has to be extracted
    * @return String
@@ -289,7 +289,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Create a FetchTask for a given table and thrift ddl schema.
-   * 
+   *
    * @param tablename
    *          tablename
    * @param schema
@@ -346,7 +346,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
     ShowPartitionsDesc showPartsDesc;
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
-    showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile());
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    // We only can have a single partition spec
+    assert(partSpecs.size() <= 1);
+    Map<String, String> partSpec = null;
+    if(partSpecs.size() > 0) {
+      partSpec = partSpecs.get(0);
+    }
+    showPartsDesc = new ShowPartitionsDesc(tableName, ctx.getResFile(), partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showPartsDesc), conf));
     setFetchTask(createFetchTask(showPartsDesc.getSchema()));
@@ -396,7 +403,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "SHOW FUNCTIONS;".
-   * 
+   *
    * @param ast
    *          The parsed command tree.
    * @throws SemanticException
@@ -418,7 +425,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "DESCRIBE FUNCTION;".
-   * 
+   *
    * @param ast
    *          The parsed command tree.
    * @throws SemanticException
@@ -508,7 +515,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add one or more partitions to a table. Useful when the data has been copied
    * to the right location by some other process.
-   * 
+   *
    * @param ast
    *          The parsed command tree.
    * @throws SemanticException
@@ -568,7 +575,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Verify that the information in the metastore matches up with the data on
    * the fs.
-   * 
+   *
    * @param ast
    *          Query tree.
    * @throws SemanticException
@@ -593,7 +600,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Get the partition specs from the tree.
-   * 
+   *
    * @param ast
    *          Tree to extract partitions from.
    * @return A list of partition name to value mappings.

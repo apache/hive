@@ -242,6 +242,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.append_partition(db_name, table_name, part_vals);
   }
 
+  public Partition appendPartition(String dbName, String tableName, String partName)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+    return client.append_partition_by_name(dbName, tableName, partName);
+  }
   /**
    * @param name
    * @param location_uri
@@ -326,6 +330,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return dropPartition(db_name, tbl_name, part_vals, true);
   }
 
+  public boolean dropPartition(String dbName, String tableName, String partName, boolean deleteData)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.drop_partition_by_name(dbName, tableName, partName, deleteData);
+  }
   /**
    * @param db_name
    * @param tbl_name
@@ -453,6 +461,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_partitions(db_name, tbl_name, max_parts);
   }
 
+  @Override
+  public List<Partition> listPartitions(String db_name, String tbl_name, List<String> part_vals,
+      short max_parts) throws NoSuchObjectException, MetaException, TException {
+    return client.get_partitions_ps(db_name, tbl_name, part_vals, max_parts);
+  }
+
   /**
    * @param name
    * @return the database
@@ -543,6 +557,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_partition_names(dbName, tblName, max);
   }
 
+  @Override
+  public List<String> listPartitionNames(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts) throws MetaException, TException {
+    return client.get_partition_names_ps(db_name, tbl_name, part_vals, max_parts);
+  }
+
   public void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
     client.alter_partition(dbName, tblName, newPart);
@@ -585,20 +605,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_config_value(name, defaultValue);
   }
 
-  public Partition getPartitionByName(String db, String tableName, String partName)
+  public Partition getPartition(String db, String tableName, String partName)
       throws MetaException, TException, UnknownTableException, NoSuchObjectException {
     return client.get_partition_by_name(db, tableName, partName);
   }
 
-  public Partition appendPartitionByName(String dbName, String tableName, String partName) 
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    return client.append_partition_by_name(dbName, tableName, partName);
-  }
-  
-  public boolean dropPartitionByName(String dbName, String tableName, String partName, boolean deleteData) 
-      throws NoSuchObjectException, MetaException, TException {
-    return client.drop_partition_by_name(dbName, tableName, partName, deleteData);
-  }
 
   private HiveMetaHook getHook(Table tbl) throws MetaException {
     if (hookLoader == null) {

@@ -19,12 +19,10 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,13 +46,9 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -64,7 +58,7 @@ import org.apache.thrift.TException;
  * The Hive class contains information about this instance of Hive. An instance
  * of Hive represents a set of data in a file system (usually HDFS) organized
  * for easy query processing
- * 
+ *
  */
 
 public class Hive {
@@ -93,12 +87,12 @@ public class Hive {
    * Gets hive object for the current thread. If one is not initialized then a
    * new one is created If the new configuration is different in metadata conf
    * vars then a new one is created.
-   * 
+   *
    * @param c
    *          new Hive Configuration
    * @return Hive object for current thread
    * @throws HiveException
-   * 
+   *
    */
   public static Hive get(HiveConf c) throws HiveException {
     boolean needsRefresh = false;
@@ -118,7 +112,7 @@ public class Hive {
 
   /**
    * get a connection to metastore. see get(HiveConf) function for comments
-   * 
+   *
    * @param c
    *          new conf
    * @param needsRefresh
@@ -152,10 +146,10 @@ public class Hive {
 
   /**
    * Hive
-   * 
+   *
    * @param argFsRoot
    * @param c
-   * 
+   *
    */
   private Hive(HiveConf c) throws HiveException {
     conf = c;
@@ -171,7 +165,7 @@ public class Hive {
 
   /**
    * Creates a table metdata and the directory for the table data
-   * 
+   *
    * @param tableName
    *          name of the table
    * @param columns
@@ -195,7 +189,7 @@ public class Hive {
 
   /**
    * Creates a table metdata and the directory for the table data
-   * 
+   *
    * @param tableName
    *          name of the table
    * @param columns
@@ -249,7 +243,7 @@ public class Hive {
 
   /**
    * Updates the existing table metadata with the new metadata.
-   * 
+   *
    * @param tblName
    *          name of the existing table
    * @param newTbl
@@ -272,7 +266,7 @@ public class Hive {
 
   /**
    * Updates the existing table metadata with the new metadata.
-   * 
+   *
    * @param tblName
    *          name of the existing table
    * @param newTbl
@@ -296,7 +290,7 @@ public class Hive {
 
   /**
    * Creates the table with the give objects
-   * 
+   *
    * @param tbl
    *          a table object
    * @throws HiveException
@@ -307,7 +301,7 @@ public class Hive {
 
   /**
    * Creates the table with the give objects
-   * 
+   *
    * @param tbl
    *          a table object
    * @param ifNotExists
@@ -334,7 +328,7 @@ public class Hive {
   /**
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
-   * 
+   *
    * @param dbName
    *          database where the table lives
    * @param tableName
@@ -348,7 +342,7 @@ public class Hive {
 
   /**
    * Drops the table.
-   * 
+   *
    * @param tableName
    * @param deleteData
    *          deletes the underlying data along with metadata
@@ -376,7 +370,7 @@ public class Hive {
 
   /**
    * Returns metadata of the table.
-   * 
+   *
    * @param dbName
    *          the name of the database
    * @param tableName
@@ -393,7 +387,7 @@ public class Hive {
 
   /**
    * Returns metadata of the table
-   * 
+   *
    * @param dbName
    *          the name of the database
    * @param tableName
@@ -409,7 +403,7 @@ public class Hive {
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
     }
-    
+
     // Get the table from metastore
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
@@ -423,7 +417,7 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException("Unable to fetch table " + tableName, e);
     }
-    
+
     // For non-views, we need to do some extra fixes
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
@@ -436,7 +430,7 @@ public class Hive {
               Integer.toString(b[0]));
         }
       }
-      
+
       // Use LazySimpleSerDe for MetadataTypedColumnsetSerDe.
       // NOTE: LazySimpleSerDe does not support tables with a single column of
       // col
@@ -452,9 +446,9 @@ public class Hive {
             org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
     }
-    
+
     Table table = new Table(tTable);
-    
+
     table.checkValidity();
     return table;
   }
@@ -466,7 +460,7 @@ public class Hive {
   /**
    * returns all existing tables from default database which match the given
    * pattern. The matching occurs as per Java regular expressions
-   * 
+   *
    * @param tablePattern
    *          java re pattern
    * @return list of table names
@@ -480,7 +474,7 @@ public class Hive {
   /**
    * returns all existing tables from the given database which match the given
    * pattern. The matching occurs as per Java regular expressions
-   * 
+   *
    * @param database
    *          the database name
    * @param tablePattern
@@ -528,7 +522,7 @@ public class Hive {
    * the partition with the contents of loadPath. - If he partition does not
    * exist - one is created - files in loadPath are moved into Hive. But the
    * directory itself is not removed.
-   * 
+   *
    * @param loadPath
    *          Directory containing files to load into Table
    * @param tableName
@@ -597,7 +591,7 @@ public class Hive {
    * the contents of loadPath. - If table does not exist - an exception is
    * thrown - files in loadPath are moved into Hive. But the directory itself is
    * not removed.
-   * 
+   *
    * @param loadPath
    *          Directory containing files to load into Table
    * @param tableName
@@ -620,7 +614,7 @@ public class Hive {
 
   /**
    * Creates a partition.
-   * 
+   *
    * @param tbl
    *          table for which partition needs to be created
    * @param partSpec
@@ -636,7 +630,7 @@ public class Hive {
 
   /**
    * Creates a partition
-   * 
+   *
    * @param tbl
    *          table for which partition needs to be created
    * @param partSpec
@@ -673,7 +667,7 @@ public class Hive {
 
   /**
    * Returns partition metadata
-   * 
+   *
    * @param tbl
    *          the partition's table
    * @param partSpec
@@ -730,7 +724,7 @@ public class Hive {
 
   public List<String> getPartitionNames(String dbName, String tblName, short max)
       throws HiveException {
-    List names = null;
+    List<String> names = null;
     try {
       names = getMSC().listPartitionNames(dbName, tblName, max);
     } catch (Exception e) {
@@ -740,9 +734,25 @@ public class Hive {
     return names;
   }
 
+  public List<String> getPartitionNames(String dbName, String tblName,
+      Map<String, String> partSpec, short max) throws HiveException {
+    List<String> names = null;
+    Table t = getTable(dbName, tblName);
+
+    List<String> pvals = getPvals(t.getPartCols(), partSpec);
+
+    try {
+      names = getMSC().listPartitionNames(dbName, tblName, pvals, max);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    return names;
+  }
+
   /**
    * get all the partitions that the table has
-   * 
+   *
    * @param tbl
    *          object for which partition is needed
    * @return list of partition objects
@@ -769,6 +779,54 @@ public class Hive {
       parts.add(part);
       return parts;
     }
+  }
+
+  private static List<String> getPvals(List<FieldSchema> partCols,
+      Map<String, String> partSpec) {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : partCols) {
+      String val = partSpec.get(field.getName());
+      if (val == null) {
+        val = "";
+      }
+      pvals.add(val);
+    }
+    return pvals;
+  }
+
+  /**
+   * get all the partitions of the table that matches the given partial
+   * specification. partition columns whose value is can be anything should be
+   * an empty string.
+   *
+   * @param tbl
+   *          object for which partition is needed. Must be partitioned.
+   * @return list of partition objects
+   * @throws HiveException
+   */
+  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
+  throws HiveException {
+    if (!tbl.isPartitioned()) {
+      throw new HiveException("Partition spec should only be supplied for a " +
+      		"partitioned table");
+    }
+
+    List<String> partialPvals = getPvals(tbl.getPartCols(), partialPartSpec);
+
+    List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
+    try {
+      partitions = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(),
+          partialPvals, (short) -1);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+
+    List<Partition> qlPartitions = new ArrayList<Partition>();
+    for (org.apache.hadoop.hive.metastore.api.Partition p : partitions) {
+      qlPartitions.add( new Partition(tbl, p));
+    }
+
+    return qlPartitions;
   }
 
   static private void checkPaths(FileSystem fs, FileStatus[] srcs, Path destf,
@@ -849,7 +907,7 @@ public class Hive {
   /**
    * Replaces files in the partition with new data set specifed by srcf. Works
    * by moving files
-   * 
+   *
    * @param srcf
    *          Files to be moved. Leaf Directories or Globbed File Paths
    * @param destf
@@ -916,7 +974,7 @@ public class Hive {
   /**
    * Creates a metastore client. Currently it creates only JDBC based client as
    * File based store support is removed
-   * 
+   *
    * @returns a Meta Store Client
    * @throws HiveMetaException
    *           if a working client can't be created
@@ -951,7 +1009,7 @@ public class Hive {
   }
 
   /**
-   * 
+   *
    * @return the metastore client for the current thread
    * @throws MetaException
    */
