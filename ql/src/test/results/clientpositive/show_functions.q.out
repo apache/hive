@@ -125,6 +125,15 @@ var_samp
 variance
 weekofyear
 when
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
 year
 |
 ~
@@ -165,6 +174,7 @@ space
 to_date
 ucase
 variance
+xpath_double
 PREHOOK: query: SHOW FUNCTIONS 'log.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS 'log.*'

@@ -157,6 +157,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
+import org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathBoolean;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathDouble;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathFloat;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathInteger;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathLong;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathShort;
+import org.apache.hadoop.hive.ql.udf.xml.UDFXPathString;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -256,6 +264,16 @@ public final class FunctionRegistry {
 
     registerUDF("get_json_object", UDFJson.class, false);
 
+    registerUDF("xpath_string", UDFXPathString.class, false);
+    registerUDF("xpath_boolean", UDFXPathBoolean.class, false);
+    registerUDF("xpath_number", UDFXPathDouble.class, false);
+    registerUDF("xpath_double", UDFXPathDouble.class, false);
+    registerUDF("xpath_float", UDFXPathFloat.class, false);
+    registerUDF("xpath_long", UDFXPathLong.class, false);
+    registerUDF("xpath_int", UDFXPathInteger.class, false);
+    registerUDF("xpath_short", UDFXPathShort.class, false);
+    registerGenericUDF("xpath", GenericUDFXPath.class);
+
     registerUDF("+", UDFOPPlus.class, true);
     registerUDF("-", UDFOPMinus.class, true);
     registerUDF("*", UDFOPMultiply.class, true);
@@ -309,7 +327,7 @@ public final class FunctionRegistry {
     // Aggregate functions
     registerGenericUDAF("max", new GenericUDAFMax());
     registerGenericUDAF("min", new GenericUDAFMin());
-    
+
     registerGenericUDAF("sum", new GenericUDAFSum());
     registerGenericUDAF("count", new GenericUDAFCount());
     registerGenericUDAF("avg", new GenericUDAFAverage());
@@ -323,7 +341,7 @@ public final class FunctionRegistry {
     registerGenericUDAF("var_samp", new GenericUDAFVarianceSample());
 
     registerUDAF("percentile", UDAFPercentile.class);
-    
+
     // Generic UDFs
     registerGenericUDF("array", GenericUDFArray.class);
     registerGenericUDF("map", GenericUDFMap.class);
@@ -427,7 +445,7 @@ public final class FunctionRegistry {
   /**
    * Returns a set of registered function names. This is used for the CLI
    * command "SHOW FUNCTIONS;"
-   * 
+   *
    * @return set of strings contains function names
    */
   public static Set<String> getFunctionNames() {
@@ -438,7 +456,7 @@ public final class FunctionRegistry {
    * Returns a set of registered function names. This is used for the CLI
    * command "SHOW FUNCTIONS 'regular expression';" Returns an empty set when
    * the regular expression is not valid.
-   * 
+   *
    * @param funcPatternStr
    *          regular expression of the interested function names
    * @return set of strings contains function names
@@ -461,7 +479,7 @@ public final class FunctionRegistry {
 
   /**
    * Returns the set of synonyms of the supplied function.
-   * 
+   *
    * @param funcName
    *          the name of the function
    * @return Set of synonyms for funcName
@@ -509,10 +527,10 @@ public final class FunctionRegistry {
   /**
    * Find a common class that objects of both TypeInfo a and TypeInfo b can
    * convert to. This is used for comparing objects of type a and type b.
-   * 
+   *
    * When we are comparing string and double, we will always convert both of
    * them to double and then compare.
-   * 
+   *
    * @return null if no common class could be found.
    */
   public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
@@ -533,9 +551,9 @@ public final class FunctionRegistry {
   /**
    * Find a common class that objects of both TypeInfo a and TypeInfo b can
    * convert to. This is used for places other than comparison.
-   * 
+   *
    * The common class of string and double is string.
-   * 
+   *
    * @return null if no common class could be found.
    */
   public static TypeInfo getCommonClass(TypeInfo a, TypeInfo b) {
@@ -581,7 +599,7 @@ public final class FunctionRegistry {
 
   /**
    * Get the GenericUDAF evaluator for the name and argumentClasses.
-   * 
+   *
    * @param name
    *          the name of the UDAF
    * @param argumentTypeInfos
@@ -605,7 +623,7 @@ public final class FunctionRegistry {
    * This method is shared between UDFRegistry and UDAFRegistry. methodName will
    * be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial"
    * for UDAFRegistry.
-   * @throws UDFArgumentException 
+   * @throws UDFArgumentException
    */
   public static <T> Method getMethodInternal(Class<? extends T> udfClass,
       String methodName, boolean exact, List<TypeInfo> argumentClasses)
@@ -768,7 +786,7 @@ public final class FunctionRegistry {
   /**
    * Gets the closest matching method corresponding to the argument list from a
    * list of methods.
-   * 
+   *
    * @param mlist
    *          The list of methods to inspect.
    * @param exact
@@ -784,7 +802,7 @@ public final class FunctionRegistry {
     List<Method> udfMethods = new ArrayList<Method>();
     // The cost of the result
     int leastConversionCost = Integer.MAX_VALUE;
-    
+
     for (Method m : mlist) {
       List<TypeInfo> argumentsAccepted = TypeInfoUtils.getParameterTypeInfos(m,
           argumentsPassed.size());
@@ -828,14 +846,14 @@ public final class FunctionRegistry {
         }
       }
     }
-    
+
     if (udfMethods.size() == 0) {
       // No matching methods found
-      throw new NoMatchingMethodException(udfClass, argumentsPassed, mlist); 
+      throw new NoMatchingMethodException(udfClass, argumentsPassed, mlist);
     }
     if (udfMethods.size() > 1) {
       // Ambiguous method found
-      throw new AmbiguousMethodException(udfClass, argumentsPassed, mlist); 
+      throw new AmbiguousMethodException(udfClass, argumentsPassed, mlist);
     }
     return udfMethods.get(0);
   }

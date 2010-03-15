@@ -51,6 +51,9 @@ Trunk -  Unreleased
     HIVE-705. Read HBase tables via Hive
     (John Sichi via namit)
 
+    HIVE-1027. Create UDFs for XPath expression evaluation
+    (Patrick Angeles via Ning Zhang)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

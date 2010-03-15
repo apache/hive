@@ -1,0 +1,62 @@
+PREHOOK: query: DESCRIBE FUNCTION xpath
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION xpath
+POSTHOOK: type: DESCFUNCTION
+xpath(xml, xpath) - Returns a string array of values within xml nodes that match the xpath expression
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED xpath
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED xpath
+POSTHOOK: type: DESCFUNCTION
+xpath(xml, xpath) - Returns a string array of values within xml nodes that match the xpath expression
+Example:
+  > SELECT xpath('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/text()') FROM src LIMIT 1
+  []
+  > SELECT xpath('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/b/text()') FROM src LIMIT 1
+  ["b1","b2","b3"]
+  > SELECT xpath('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/c/text()') FROM src LIMIT 1
+  ["c1","c2"]
+PREHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/text()') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1416181007/10000
+POSTHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/text()') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1416181007/10000
+[]
+PREHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/*/text()') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1851591863/10000
+POSTHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/*/text()') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1851591863/10000
+["b1","b2","b3","c1","c2"]
+PREHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/b/text()') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/113811557/10000
+POSTHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/b/text()') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/113811557/10000
+["b1","b2","b3"]
+PREHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/c/text()') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1674548693/10000
+POSTHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/c/text()') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1674548693/10000
+["c1","c2"]
+PREHOOK: query: SELECT xpath ('<a><b class="bb">b1</b><b>b2</b><b>b3</b><c class="bb">c1</c><c>c2</c></a>', 'a/*[@class="bb"]/text()') FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/378718949/10000
+POSTHOOK: query: SELECT xpath ('<a><b class="bb">b1</b><b>b2</b><b>b3</b><c class="bb">c1</c><c>c2</c></a>', 'a/*[@class="bb"]/text()') FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/378718949/10000
+["b1","c1"]
