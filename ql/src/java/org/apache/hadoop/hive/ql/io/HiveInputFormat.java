@@ -149,7 +149,7 @@ public class HiveInputFormat<K extends WritableComparable,
     }
 
     Configuration conf;
-    
+
     @Override
     public Configuration getConf() {
       return conf;
@@ -205,7 +205,7 @@ public class HiveInputFormat<K extends WritableComparable,
 
     //clone a jobConf for setting needed columns for reading
     JobConf cloneJobConf = new JobConf(job);
-    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath().toString(), 
+    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath().toString(),
                       hsplit.getPath().toUri().getPath());
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, cloneJobConf);
@@ -213,7 +213,7 @@ public class HiveInputFormat<K extends WritableComparable,
     		cloneJobConf, reporter));
   }
 
-  private Map<String, partitionDesc> pathToPartitionInfo;
+  protected Map<String, partitionDesc> pathToPartitionInfo;
   mapredWork mrwork = null;
 
   protected void init(JobConf job) {
@@ -290,7 +290,7 @@ public class HiveInputFormat<K extends WritableComparable,
       init(job);
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Iterator<Entry<String, ArrayList<String>>> iterator = 
+    Iterator<Entry<String, ArrayList<String>>> iterator =
       this.mrwork.getPathToAliases().entrySet().iterator();
 
     while (iterator.hasNext()) {

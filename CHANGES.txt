@@ -27,6 +27,9 @@ Release 0.5.1 - Unreleased
     HIVE-1200. Fix CombineHiveInputFormat
     (Zheng Shao via namit)
 
+    HIVE-1242. CombineHiveInputFormat does not work for compressed text files
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0
 
   INCOMPATIBLE CHANGES
