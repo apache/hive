@@ -27,7 +27,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
@@ -135,7 +134,7 @@ public final class MapJoinFactory {
 
       // find the branch on which this processor was invoked
       int pos = getPositionParent(mapJoin, stack);
-      boolean local = (pos == ((MapJoinDesc)(mapJoin.getConf())).getPosBigTable()) ? false
+      boolean local = (pos == ((mapJoin.getConf())).getPosBigTable()) ? false
           : true;
 
       GenMapRedUtils.splitTasks(mapJoin, currTask, redTask, opProcCtx, false,
@@ -270,7 +269,7 @@ public final class MapJoinFactory {
 
       ctx.getParseCtx();
       AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = ctx.getCurrMapJoinOp();
-      assert oldMapJoin != null;
+
       GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mapJoin);
       if (mjCtx != null) {
         mjCtx.setOldMapJoin(oldMapJoin);

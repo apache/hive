@@ -142,6 +142,9 @@ Trunk -  Unreleased
     HIVE-1216. Show the row with error in mapper/reducer
     (Zheng Shao via He Yongqiang)
 
+    HIVE-1246. Map join followde by another map join runs in a single map-only job
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -39,10 +38,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -119,7 +115,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
   transient int maxMapJoinSize;
-  
+
   public MapJoinOperator() {
   }
 
@@ -130,7 +126,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    
+
     maxMapJoinSize = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
 
@@ -312,15 +308,17 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    for (HashMapWrapper hashTable : mapJoinTables.values()) {
-      hashTable.close();
+    if(mapJoinTables != null) {
+      for (HashMapWrapper hashTable : mapJoinTables.values()) {
+        hashTable.close();
+      }
     }
     super.closeOp(abort);
   }
-  
+
   /**
    * Implements the getName function for the Node Interface.
-   * 
+   *
    * @return the name of the operator
    */
   @Override

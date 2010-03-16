@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,18 +32,19 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -51,29 +53,21 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 /**
  * Implementation of one of the rule-based map join optimization. User passes
@@ -83,9 +77,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
  * implemented, this transformation can also be done based on costs.
  */
 public class MapJoinProcessor implements Transform {
-  
+
   private static final Log LOG = LogFactory.getLog(MapJoinProcessor.class.getName());
-  
+
   private ParseContext pGraphContext;
 
   /**
@@ -102,10 +96,10 @@ public class MapJoinProcessor implements Transform {
     pGraphContext.getOpParseCtx().put(op, ctx);
     return op;
   }
-  
+
   /**
    * convert a regular join to a a map-side join.
-   * 
+   *
    * @param op
    *          join operator
    * @param qbJoin
@@ -255,7 +249,7 @@ public class MapJoinProcessor implements Transform {
         keyTableDesc, valueExprMap, valueTableDescs, outputColumnNames,
         mapJoinPos, joinCondns), new RowSchema(outputRS.getColumnInfos()),
         newPar), outputRS);
-    
+
     mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
     mapJoinOp.setColumnExprMap(colExprMap);
 
@@ -340,7 +334,7 @@ public class MapJoinProcessor implements Transform {
 
   /**
    * Is it a map-side join.
-   * 
+   *
    * @param op
    *          join operator
    * @param qbJoin
@@ -386,7 +380,7 @@ public class MapJoinProcessor implements Transform {
   /**
    * Transform the query tree. For each join, check if it is a map-side join
    * (user specified). If yes, convert it to a map-side join.
-   * 
+   *
    * @param pactx
    *          current parse context
    */
@@ -438,15 +432,13 @@ public class MapJoinProcessor implements Transform {
         getMapJoinFS());
     opRules.put(new RuleRegExp(new String("R2"), "MAPJOIN%.*RS%"),
         getMapJoinDefault());
-    opRules.put(new RuleRegExp(new String("R3"), "MAPJOIN%.*MAPJOIN%"),
-        getMapJoinDefault());
     opRules.put(new RuleRegExp(new String("R4"), "MAPJOIN%.*UNION%"),
         getMapJoinDefault());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefault(), opRules,
-        new MapJoinWalkerCtx(listMapJoinOpsNoRed));
+        new MapJoinWalkerCtx(listMapJoinOpsNoRed, pGraphContext));
 
     GraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -472,9 +464,129 @@ public class MapJoinProcessor implements Transform {
 
       MapJoinWalkerCtx ctx = (MapJoinWalkerCtx) procCtx;
       MapJoinOperator mapJoin = (MapJoinOperator) nd;
-      ctx.setCurrMapJoinOp(mapJoin);
+      if (ctx.getListRejectedMapJoins() != null && !ctx.getListRejectedMapJoins().contains(mapJoin)) {
+        //for rule: MapJoin%.*MapJoin
+        // have a child mapjoin. if the the current mapjoin is on a local work,
+        // will put the current mapjoin in the rejected list.
+        Boolean bigBranch = findGrandChildSubqueryMapjoin(ctx, mapJoin);
+        if (bigBranch == null) { // no child map join
+          ctx.setCurrMapJoinOp(mapJoin);
+          return null;
+        }
+        if(bigBranch) {
+          addNoReducerMapJoinToCtx(ctx, mapJoin);
+        } else {
+          addRejectMapJoinToCtx(ctx, mapJoin);
+        }
+      } else {
+        ctx.setCurrMapJoinOp(mapJoin);
+      }
       return null;
     }
+
+    private Boolean findGrandChildSubqueryMapjoin(MapJoinWalkerCtx ctx, MapJoinOperator mapJoin) {
+      Operator<? extends Serializable> parent = mapJoin;
+      while (true) {
+        if(parent.getChildOperators() == null || parent.getChildOperators().size() != 1) {
+          return null;
+        }
+        Operator<? extends Serializable> ch = parent.getChildOperators().get(0);
+        if(ch instanceof MapJoinOperator) {
+          if (!nonSubqueryMapJoin(ctx.getpGraphContext(), (MapJoinOperator) ch,
+              mapJoin)) {
+            if (ch.getParentOperators().indexOf(parent) == ((MapJoinOperator) ch)
+                .getConf().getPosBigTable()) {
+              //not come from the local branch
+              return true;
+            }
+          }
+          return false; // not from a sub-query.
+        }
+
+        if ((ch instanceof JoinOperator)
+            || (ch instanceof UnionOperator)
+            || (ch instanceof ReduceSinkOperator)
+            || (ch instanceof LateralViewJoinOperator)
+            || (ch instanceof GroupByOperator)
+            || (ch instanceof ScriptOperator)) {
+          return null;
+        }
+
+        parent = ch;
+      }
+    }
+
+    private boolean nonSubqueryMapJoin(ParseContext pGraphContext,
+        MapJoinOperator mapJoin, MapJoinOperator parentMapJoin) {
+      QBJoinTree joinTree = pGraphContext.getMapJoinContext().get(mapJoin);
+      QBJoinTree parentJoinTree = pGraphContext.getMapJoinContext().get(parentMapJoin);
+      if(joinTree.getJoinSrc() != null && joinTree.getJoinSrc().equals(parentJoinTree)) {
+        return true;
+      }
+      return false;
+    }
+  }
+
+  private static void addNoReducerMapJoinToCtx(MapJoinWalkerCtx ctx,
+      AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin) {
+    if (ctx.getListRejectedMapJoins() != null
+        && ctx.getListRejectedMapJoins().contains(mapJoin)) {
+      return;
+    }
+    List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed = ctx.getListMapJoinsNoRed();
+    if (listMapJoinsNoRed == null) {
+      listMapJoinsNoRed = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
+    }
+    if (!listMapJoinsNoRed.contains(mapJoin)) {
+      listMapJoinsNoRed.add(mapJoin);
+    }
+    ctx.setListMapJoins(listMapJoinsNoRed);
+  }
+
+  private static void addRejectMapJoinToCtx(MapJoinWalkerCtx ctx,
+      AbstractMapJoinOperator<? extends MapJoinDesc> mapjoin) {
+    // current map join is null means it has been handled by CurrentMapJoin
+    // process.
+    if(mapjoin == null) {
+      return;
+    }
+    List<AbstractMapJoinOperator<? extends MapJoinDesc>> listRejectedMapJoins = ctx.getListRejectedMapJoins();
+    if (listRejectedMapJoins == null) {
+      listRejectedMapJoins = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
+    }
+    if (!listRejectedMapJoins.contains(mapjoin)) {
+      listRejectedMapJoins.add(mapjoin);
+    }
+
+    if (ctx.getListMapJoinsNoRed() != null
+        && ctx.getListMapJoinsNoRed().contains(mapjoin)) {
+      ctx.getListMapJoinsNoRed().remove(mapjoin);
+    }
+
+    ctx.setListRejectedMapJoins(listRejectedMapJoins);
+  }
+
+  private static int findGrandparentBranch(Operator <? extends Serializable> currOp, Operator <? extends Serializable> grandParent) {
+    int pos = -1;
+    for (int i = 0; i < currOp.getParentOperators().size(); i++) {
+      List<Operator<? extends Serializable>> parentOpList = new LinkedList<Operator<? extends Serializable>>();
+      parentOpList.add(currOp.getParentOperators().get(i));
+      boolean found = false;
+      while (!parentOpList.isEmpty()) {
+        Operator<? extends Serializable> p = parentOpList.remove(0);
+        if(p == grandParent) {
+          found = true;
+          break;
+        } else if (p.getParentOperators() != null){
+          parentOpList.addAll(p.getParentOperators());
+        }
+      }
+      if(found) {
+        pos = i;
+        break;
+      }
+    }
+    return pos;
   }
 
   /**
@@ -500,13 +612,7 @@ public class MapJoinProcessor implements Transform {
           && (listRejectedMapJoins.contains(mapJoin))) {
         return null;
       }
-
-      List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed = ctx.getListMapJoinsNoRed();
-      if (listMapJoinsNoRed == null) {
-        listMapJoinsNoRed = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
-      }
-      listMapJoinsNoRed.add(mapJoin);
-      ctx.setListMapJoins(listMapJoinsNoRed);
+      addNoReducerMapJoinToCtx(ctx, mapJoin);
       return null;
     }
   }
@@ -525,13 +631,7 @@ public class MapJoinProcessor implements Transform {
         Object... nodeOutputs) throws SemanticException {
       MapJoinWalkerCtx ctx = (MapJoinWalkerCtx) procCtx;
       AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin = ctx.getCurrMapJoinOp();
-      List<AbstractMapJoinOperator<? extends MapJoinDesc>> listRejectedMapJoins = ctx
-          .getListRejectedMapJoins();
-      if (listRejectedMapJoins == null) {
-        listRejectedMapJoins = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
-      }
-      listRejectedMapJoins.add(mapJoin);
-      ctx.setListRejectedMapJoins(listRejectedMapJoins);
+      addRejectMapJoinToCtx(ctx, mapJoin);
       return null;
     }
   }
@@ -573,17 +673,21 @@ public class MapJoinProcessor implements Transform {
    *
    */
   public static class MapJoinWalkerCtx implements NodeProcessorCtx {
+
+    private ParseContext pGraphContext;
     private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed;
     private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listRejectedMapJoins;
     private AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp;
 
     /**
      * @param listMapJoinsNoRed
+     * @param pGraphContext2
      */
-    public MapJoinWalkerCtx(List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed) {
+    public MapJoinWalkerCtx(List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed, ParseContext pGraphContext) {
       this.listMapJoinsNoRed = listMapJoinsNoRed;
       currMapJoinOp = null;
       listRejectedMapJoins = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
+      this.pGraphContext = pGraphContext;
     }
 
     /**
@@ -631,5 +735,14 @@ public class MapJoinProcessor implements Transform {
         List<AbstractMapJoinOperator<? extends MapJoinDesc>> listRejectedMapJoins) {
       this.listRejectedMapJoins = listRejectedMapJoins;
     }
+
+    public ParseContext getpGraphContext() {
+      return pGraphContext;
+    }
+
+    public void setpGraphContext(ParseContext pGraphContext) {
+      this.pGraphContext = pGraphContext;
+    }
+
   }
 }

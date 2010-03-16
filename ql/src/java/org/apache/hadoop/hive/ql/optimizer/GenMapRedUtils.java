@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -62,7 +61,6 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -70,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -84,7 +83,7 @@ public final class GenMapRedUtils {
 
   /**
    * Initialize the current plan by adding it to root tasks.
-   * 
+   *
    * @param op
    *          the reduce sink operator encountered
    * @param opProcCtx
@@ -130,9 +129,15 @@ public final class GenMapRedUtils {
     opProcCtx.setCurrAliasId(currAliasId);
   }
 
+  public static void initMapJoinPlan(
+      Operator<? extends Serializable> op, GenMRProcContext ctx,
+      boolean readInputMapJoin, boolean readInputUnion, boolean setReducer, int pos) throws SemanticException {
+    initMapJoinPlan(op, ctx, readInputMapJoin, readInputUnion, setReducer, pos, false);
+  }
+
   /**
    * Initialize the current plan by adding it to root tasks.
-   * 
+   *
    * @param op
    *          the map join operator encountered
    * @param opProcCtx
@@ -142,7 +147,7 @@ public final class GenMapRedUtils {
    */
   public static void initMapJoinPlan(Operator<? extends Serializable> op,
       GenMRProcContext opProcCtx, boolean readInputMapJoin,
-      boolean readInputUnion, boolean setReducer, int pos)
+      boolean readInputUnion, boolean setReducer, int pos, boolean createLocalPlan)
       throws SemanticException {
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx
         .getMapCurrCtx();
@@ -159,7 +164,7 @@ public final class GenMapRedUtils {
     // The mapjoin has already been encountered. Some context must be stored
     // about that
     if (readInputMapJoin) {
-      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) opProcCtx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp = opProcCtx.getCurrMapJoinOp();
       assert currMapJoinOp != null;
       boolean local = ((pos == -1) || (pos == (currMapJoinOp.getConf())
           .getPosBigTable())) ? false : true;
@@ -197,7 +202,7 @@ public final class GenMapRedUtils {
         }
 
         setTaskPlan(taskTmpDir, taskTmpDir, rootOp, plan, local, tt_desc);
-        setupBucketMapJoinInfo(plan, currMapJoinOp);
+        setupBucketMapJoinInfo(plan, currMapJoinOp, createLocalPlan);
       } else {
         initUnionPlan(opProcCtx, currTask, false);
       }
@@ -219,7 +224,7 @@ public final class GenMapRedUtils {
       seenOps.add(currTopOp);
       boolean local = (pos == desc.getPosBigTable()) ? false : true;
       setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
-      setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op);
+      setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op, createLocalPlan);
     }
 
     opProcCtx.setCurrTask(currTask);
@@ -228,9 +233,9 @@ public final class GenMapRedUtils {
   }
 
   private static void setupBucketMapJoinInfo(MapredWork plan,
-      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
+      AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp, boolean createLocalPlan) {
     if (currMapJoinOp != null) {
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping = 
+      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping =
         currMapJoinOp.getConf().getAliasBucketFileNameMapping();
       if(aliasBucketFileNameMapping!= null) {
         MapredLocalWork localPlan = plan.getMapLocalWork();
@@ -238,7 +243,7 @@ public final class GenMapRedUtils {
           if(currMapJoinOp instanceof SMBMapJoinOperator) {
             localPlan = ((SMBMapJoinOperator)currMapJoinOp).getConf().getLocalWork();
           }
-          if (localPlan == null) {
+          if (localPlan == null && createLocalPlan) {
             localPlan = new MapredLocalWork(
                 new LinkedHashMap<String, Operator<? extends Serializable>>(),
                 new LinkedHashMap<String, FetchWork>());
@@ -253,6 +258,11 @@ public final class GenMapRedUtils {
             }
           }
         }
+
+        if(localPlan == null) {
+          return;
+        }
+
         if(currMapJoinOp instanceof SMBMapJoinOperator) {
           plan.setMapLocalWork(null);
           ((SMBMapJoinOperator)currMapJoinOp).getConf().setLocalWork(localPlan);
@@ -271,7 +281,7 @@ public final class GenMapRedUtils {
 
   /**
    * Initialize the current union plan.
-   * 
+   *
    * @param op
    *          the reduce sink operator encountered
    * @param opProcCtx
@@ -333,9 +343,17 @@ public final class GenMapRedUtils {
     }
   }
 
+
+  public static void joinPlan(Operator<? extends Serializable> op,
+      Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
+      GenMRProcContext opProcCtx, int pos, boolean split,
+      boolean readMapJoinData, boolean readUnionData) throws SemanticException {
+    joinPlan(op, oldTask, task, opProcCtx, pos, split, readMapJoinData, readUnionData, false);
+  }
+
   /**
    * Merge the current task with the task for the current reducer.
-   * 
+   *
    * @param op
    *          operator being processed
    * @param oldTask
@@ -350,7 +368,7 @@ public final class GenMapRedUtils {
   public static void joinPlan(Operator<? extends Serializable> op,
       Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
       GenMRProcContext opProcCtx, int pos, boolean split,
-      boolean readMapJoinData, boolean readUnionData) throws SemanticException {
+      boolean readMapJoinData, boolean readUnionData, boolean createLocalWork) throws SemanticException {
     Task<? extends Serializable> currTask = task;
     MapredWork plan = (MapredWork) currTask.getWork();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
@@ -386,13 +404,13 @@ public final class GenMapRedUtils {
         }
         setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
         if(op instanceof AbstractMapJoinOperator) {
-          setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op);          
+          setupBucketMapJoinInfo(plan, (AbstractMapJoinOperator<? extends MapJoinDesc>)op, createLocalWork);
         }
       }
       currTopOp = null;
       opProcCtx.setCurrTopOp(currTopOp);
     } else if (opProcCtx.getCurrMapJoinOp() != null) {
-      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) opProcCtx.getCurrMapJoinOp();
+      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = opProcCtx.getCurrMapJoinOp();
       if (readUnionData) {
         initUnionPlan(opProcCtx, currTask, false);
       } else {
@@ -400,15 +418,20 @@ public final class GenMapRedUtils {
 
         // In case of map-join followed by map-join, the file needs to be
         // obtained from the old map join
-        AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = (AbstractMapJoinOperator<? extends MapJoinDesc>) mjCtx.getOldMapJoin();
+        AbstractMapJoinOperator<? extends MapJoinDesc> oldMapJoin = mjCtx.getOldMapJoin();
         String taskTmpDir = null;
         TableDesc tt_desc = null;
         Operator<? extends Serializable> rootOp = null;
 
+        boolean local = ((pos == -1) || (pos == (mjOp.getConf())
+            .getPosBigTable())) ? false : true;
         if (oldMapJoin == null) {
-          taskTmpDir = mjCtx.getTaskTmpDir();
-          tt_desc = mjCtx.getTTDesc();
-          rootOp = mjCtx.getRootMapJoinOp();
+          if (opProcCtx.getParseCtx().getListMapJoinOpsNoReducer().contains(mjOp)
+              || local || (oldTask != null) && (parTasks != null)) {
+            taskTmpDir = mjCtx.getTaskTmpDir();
+            tt_desc = mjCtx.getTTDesc();
+            rootOp = mjCtx.getRootMapJoinOp();
+          }
         } else {
           GenMRMapJoinCtx oldMjCtx = opProcCtx.getMapJoinCtx(oldMapJoin);
           assert oldMjCtx != null;
@@ -417,22 +440,20 @@ public final class GenMapRedUtils {
           rootOp = oldMjCtx.getRootMapJoinOp();
         }
 
-        boolean local = ((pos == -1) || (pos == (mjOp.getConf())
-            .getPosBigTable())) ? false : true;
         setTaskPlan(taskTmpDir, taskTmpDir, rootOp, plan, local, tt_desc);
-        setupBucketMapJoinInfo(plan, oldMapJoin);
+        setupBucketMapJoinInfo(plan, oldMapJoin, createLocalWork);
       }
       opProcCtx.setCurrMapJoinOp(null);
 
       if ((oldTask != null) && (parTasks != null)) {
         for (Task<? extends Serializable> parTask : parTasks) {
           parTask.addDependentTask(currTask);
+          if(opProcCtx.getRootTasks().contains(currTask)) {
+            opProcCtx.getRootTasks().remove(currTask);
+          }
         }
       }
 
-      if (opProcCtx.getRootTasks().contains(currTask)) {
-        opProcCtx.getRootTasks().remove(currTask);
-      }
     }
 
     opProcCtx.setCurrTask(currTask);
@@ -440,7 +461,7 @@ public final class GenMapRedUtils {
 
   /**
    * Split the current plan by creating a temporary destination.
-   * 
+   *
    * @param op
    *          the reduce sink operator encountered
    * @param opProcCtx
@@ -472,7 +493,7 @@ public final class GenMapRedUtils {
 
   /**
    * set the current task in the mapredWork.
-   * 
+   *
    * @param alias_id
    *          current alias
    * @param topOp
@@ -631,7 +652,7 @@ public final class GenMapRedUtils {
 
   /**
    * set the current task in the mapredWork.
-   * 
+   *
    * @param alias
    *          current alias
    * @param topOp
@@ -646,6 +667,10 @@ public final class GenMapRedUtils {
   public static void setTaskPlan(String path, String alias,
       Operator<? extends Serializable> topOp, MapredWork plan, boolean local,
       TableDesc tt_desc) throws SemanticException {
+
+    if(path == null || alias == null) {
+      return;
+    }
 
     if (!local) {
       if (plan.getPathToAliases().get(path) == null) {
@@ -673,7 +698,7 @@ public final class GenMapRedUtils {
 
   /**
    * set key and value descriptor.
-   * 
+   *
    * @param plan
    *          current plan
    * @param topOp
@@ -707,7 +732,7 @@ public final class GenMapRedUtils {
 
   /**
    * create a new plan and return.
-   * 
+   *
    * @return the new plan
    */
   public static MapredWork getMapRedWork() {
@@ -723,7 +748,7 @@ public final class GenMapRedUtils {
 
   /**
    * insert in the map for the operator to row resolver.
-   * 
+   *
    * @param op
    *          operator created
    * @param rr
@@ -857,7 +882,7 @@ public final class GenMapRedUtils {
       opProcCtx.setMapJoinCtx(mjOp, mjCtx);
       opProcCtx.getMapCurrCtx().put(parent,
           new GenMapRedCtx(childTask, null, null));
-      setupBucketMapJoinInfo(cplan, mjOp);
+      setupBucketMapJoinInfo(cplan, mjOp, false);
     }
 
     currTopOp = null;
@@ -937,4 +962,5 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
+
 }

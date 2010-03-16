@@ -28,11 +28,10 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
   Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -53,16 +52,57 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                  outputColumnNames: _col0
+                  Common Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col0}
+                      1 {value}
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col0]]
+                      1 [Column[key]]
+                    outputColumnNames: _col0, _col5
+                    Position of Big Table: 0
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col5
+                            type: string
+                      outputColumnNames: _col0, _col5
+                      Select Operator
+                        expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col5
+                              type: string
+                        outputColumnNames: _col0, _col1
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: dest_j1
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
             subq:x 
+              Fetch Operator
+                limit: -1
+            z 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
@@ -81,68 +121,50 @@ STAGE PLANS:
                     1 [Column[key]]
                   outputColumnNames: _col0
                   Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/296504271/10002 
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-            outputColumnNames: _col0
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-              outputColumnNames: _col0
-              Common Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                condition expressions:
-                  0 {_col0}
-                  1 {value}
-                handleSkewJoin: false
-                keys:
-                  0 [Column[_col0]]
-                  1 [Column[key]]
-                outputColumnNames: _col0, _col5
-                Position of Big Table: 0
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col5
-                        type: string
-                  outputColumnNames: _col0, _col5
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
-                          expr: _col5
-                          type: string
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: dest_j1
-      Local Work:
-        Map Reduce Local Work
-          Alias -> Map Local Tables:
-            z 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                      outputColumnNames: _col0
+                      Common Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0}
+                          1 {value}
+                        handleSkewJoin: false
+                        keys:
+                          0 [Column[_col0]]
+                          1 [Column[key]]
+                        outputColumnNames: _col0, _col5
+                        Position of Big Table: 0
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col5
+                                type: string
+                          outputColumnNames: _col0, _col5
+                          Select Operator
+                            expressions:
+                                  expr: _col0
+                                  type: string
+                                  expr: _col5
+                                  type: string
+                            outputColumnNames: _col0, _col1
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: dest_j1
             z 
               TableScan
                 alias: z
@@ -193,14 +215,14 @@ STAGE PLANS:
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                   name: dest_j1
 
-  Stage: Stage-5
+  Stage: Stage-4
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-3
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/562095980/10000
+          destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-31_248_3138742764068185194/10000
 
   Stage: Stage-0
     Move Operator
@@ -212,10 +234,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/296504271/10003 
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-31_248_3138742764068185194/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -264,11 +286,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1591031497/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-38_314_5886463496780818123/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1591031497/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-38_314_5886463496780818123/10000
 128	val_128
 128	val_128
 128	val_128
