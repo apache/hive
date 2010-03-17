@@ -820,18 +820,32 @@ selectClause
 @init { msgs.push("select clause"); }
 @after { msgs.pop(); }
     :
-    KW_SELECT (KW_ALL | dist=KW_DISTINCT)?
-    selectList -> {$dist == null}? ^(TOK_SELECT selectList)
-               ->                  ^(TOK_SELECTDI selectList)
+    KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList) 
+                          | (transform=KW_TRANSFORM selectTrfmClause))
+     -> {$transform == null && $dist == null}? ^(TOK_SELECT hintClause? selectList)
+     -> {$transform == null && $dist != null}? ^(TOK_SELECTDI hintClause? selectList)
+     -> ^(TOK_SELECT hintClause? ^(TOK_SELEXPR selectTrfmClause) )
     |
-    trfmClause  ->^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
+    trfmClause  ->^(TOK_SELECT ^(TOK_SELEXPR trfmClause))
     ;
 
 selectList
 @init { msgs.push("select list"); }
 @after { msgs.pop(); }
     :
-    hintClause? selectItem ( COMMA  selectItem )* -> hintClause? selectItem+
+    selectItem ( COMMA  selectItem )* -> selectItem+
+    ;
+    
+selectTrfmClause
+@init { msgs.push("transform clause"); }
+@after { msgs.pop(); }
+    :
+    LPAREN selectExpressionList RPAREN
+    inSerde=rowFormat inRec=recordWriter
+    KW_USING StringLiteral
+    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))?
+    outSerde=rowFormat outRec=recordReader
+    -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
     ;
 
 hintClause
@@ -888,8 +902,7 @@ trfmClause
 @init { msgs.push("transform clause"); }
 @after { msgs.pop(); }
     :
-    ( KW_SELECT KW_TRANSFORM LPAREN selectExpressionList RPAREN
-      | KW_MAP    selectExpressionList
+    (   KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
     inSerde=rowFormat inRec=recordWriter
     KW_USING StringLiteral

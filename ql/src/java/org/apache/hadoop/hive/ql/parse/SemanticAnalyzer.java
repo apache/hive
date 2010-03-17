@@ -1760,6 +1760,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // For UDTF's, skip the function name to get the expressions
     int startPosn = isUDTF ? posn + 1 : posn;
+    if (isInTransform) {
+      startPosn = 0;
+    }
 
     // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
     for (int i = startPosn; i < exprList.getChildCount(); ++i) {

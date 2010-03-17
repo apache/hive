@@ -276,6 +276,9 @@ Trunk -  Unreleased
     HIVE-1242. CombinHiveInputFormat does not work for compressed text files.
     (Namit Jain via Ning Zhang)
 
+    HIVE-1247. Transform does not work with hints
+    (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
