@@ -1,0 +1,348 @@
+PREHOOK: query: DROP TABLE filter_join_breaktask
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE filter_join_breaktask
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@filter_join_breaktask
+PREHOOK: query: INSERT OVERWRITE TABLE filter_join_breaktask PARTITION(ds='2008-04-08')
+SELECT key, value from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@filter_join_breaktask@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE filter_join_breaktask PARTITION(ds='2008-04-08')
+SELECT key, value from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@filter_join_breaktask@ds=2008-04-08
+PREHOOK: query: EXPLAIN EXTENDED  
+SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED  
+SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF filter_join_breaktask f) (TOK_TABREF filter_join_breaktask m) (AND (AND (AND (= (. (TOK_TABLE_OR_COL f) key) (. (TOK_TABLE_OR_COL m) key)) (= (. (TOK_TABLE_OR_COL f) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL m) ds) '2008-04-08')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL f) key)))) (TOK_TABREF filter_join_breaktask g) (AND (AND (AND (AND (= (. (TOK_TABLE_OR_COL g) value) (. (TOK_TABLE_OR_COL m) value)) (= (. (TOK_TABLE_OR_COL g) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL m) ds) '2008-04-08')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL m) value))) (!= (. (TOK_TABLE_OR_COL m) value) '')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL f) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL g) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        f 
+          TableScan
+            alias: f
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: ((ds = '2008-04-08') and key is not null)
+                  type: boolean
+              Filter Operator
+                isSamplingPred: false
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Filter Operator
+                  isSamplingPred: false
+                  predicate:
+                      expr: key is not null
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: key
+                          type: int
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: key
+                          type: int
+                    tag: 0
+                    value expressions:
+                          expr: key
+                          type: int
+        m 
+          TableScan
+            alias: m
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: ((((ds = '2008-04-08') and (ds = '2008-04-08')) and value is not null) and (value <> ''))
+                  type: boolean
+              Filter Operator
+                isSamplingPred: false
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: int
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: int
+                  tag: 1
+                  value expressions:
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+      Needs Tagging: true
+      Path -> Alias:
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [f, m]
+      Path -> Partition:
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+          Partition
+            base file name: ds=2008-04-08
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2008-04-08
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+              file.inputformat org.apache.hadoop.mapred.TextInputFormat
+              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask
+              name filter_join_breaktask
+              partition_columns ds
+              serialization.ddl struct filter_join_breaktask { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1268931012
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask
+                name filter_join_breaktask
+                partition_columns ds
+                serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1268931012
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: filter_join_breaktask
+            name: filter_join_breaktask
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 {VALUE._col1} {VALUE._col2}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col4, _col5
+          Filter Operator
+            isSamplingPred: false
+            predicate:
+                expr: (_col5 = '2008-04-08')
+                type: boolean
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: _col4 is not null
+                  type: boolean
+              Filter Operator
+                isSamplingPred: false
+                predicate:
+                    expr: (_col4 <> '')
+                    type: boolean
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-26_479_724779691836428247/10002
+                  NumFilesPerFileSink: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        columns _col0,_col4
+                        columns.types int,string
+                        escape.delim \
+                  TotalFiles: 1
+                  MultiFileSpray: false
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col4
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col4
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: int
+        g 
+          TableScan
+            alias: g
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Filter Operator
+                isSamplingPred: false
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: value
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: value
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: value
+                        type: string
+      Needs Tagging: true
+      Path -> Alias:
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-26_479_724779691836428247/10002 [$INTNAME]
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [g]
+      Path -> Partition:
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-26_479_724779691836428247/10002 
+          Partition
+            base file name: 10002
+            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            properties:
+              columns _col0,_col4
+              columns.types int,string
+              escape.delim \
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns _col0,_col4
+                columns.types int,string
+                escape.delim \
+        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+          Partition
+            base file name: ds=2008-04-08
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2008-04-08
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+              file.inputformat org.apache.hadoop.mapred.TextInputFormat
+              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask
+              name filter_join_breaktask
+              partition_columns ds
+              serialization.ddl struct filter_join_breaktask { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1268931012
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/filter_join_breaktask
+                name filter_join_breaktask
+                partition_columns ds
+                serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1268931012
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: filter_join_breaktask
+            name: filter_join_breaktask
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col7
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col7
+                  type: string
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-26_479_724779691836428247/10001
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types int:string
+                    serialization.format 1
+              TotalFiles: 1
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-27_453_7500070879794525924/10000
+POSTHOOK: query: SELECT f.key, g.value 
+FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
+JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-18_09-50-27_453_7500070879794525924/10000
+146	val_146
+150	val_150
+213	val_213
+238	val_238
+255	val_255
+273	val_273
+278	val_278
+311	val_311
+401	val_401
+406	val_406
+66	val_66
+98	val_98
+PREHOOK: query: DROP TABLE filter_join_breaktask
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE filter_join_breaktask
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@filter_join_breaktask

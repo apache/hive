@@ -83,13 +83,16 @@ public final class ColumnPrunerProcFactory {
       // merge it with the downstream col list
       cppCtx.getPrunedColLists().put(op,
           Utilities.mergeUniqElems(cppCtx.genColLists(op), cl));
+
+      pruneOperator(cppCtx, op, cppCtx.getPrunedColLists().get(op));
+
       return null;
     }
   }
 
   /**
    * Factory method to get the ColumnPrunerFilterProc class.
-   * 
+   *
    * @return ColumnPrunerFilterProc
    */
   public static ColumnPrunerFilterProc getFilterProc() {
@@ -126,7 +129,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * Factory method to get the ColumnPrunerGroupByProc class.
-   * 
+   *
    * @return ColumnPrunerGroupByProc
    */
   public static ColumnPrunerGroupByProc getGroupByProc() {
@@ -149,7 +152,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * Factory method to get the ColumnPrunerDefaultProc class.
-   * 
+   *
    * @return ColumnPrunerDefaultProc
    */
   public static ColumnPrunerDefaultProc getDefaultProc() {
@@ -182,7 +185,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * Factory method to get the ColumnPrunerDefaultProc class.
-   * 
+   *
    * @return ColumnPrunerTableScanProc
    */
   public static ColumnPrunerTableScanProc getTableScanProc() {
@@ -257,7 +260,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * The Factory method to get ColumnPrunerReduceSinkProc class.
-   * 
+   *
    * @return ColumnPrunerReduceSinkProc
    */
   public static ColumnPrunerReduceSinkProc getReduceSinkProc() {
@@ -342,7 +345,7 @@ public final class ColumnPrunerProcFactory {
      * know that. ReduceSinkOperator may send out every output columns of its
      * parent select. When the select operator is pruned, its child reduce
      * sink(direct child) operator should also be pruned.
-     * 
+     *
      * @param op
      * @param retainedSelOutputCols
      * @throws SemanticException
@@ -453,7 +456,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * The Factory method to get the ColumnPrunerSelectProc class.
-   * 
+   *
    * @return ColumnPrunerSelectProc
    */
   public static ColumnPrunerSelectProc getSelectProc() {
@@ -475,7 +478,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * The Factory method to get ColumnJoinProc class.
-   * 
+   *
    * @return ColumnPrunerJoinProc
    */
   public static ColumnPrunerJoinProc getJoinProc() {
@@ -492,6 +495,24 @@ public final class ColumnPrunerProcFactory {
       pruneJoinOperator(ctx, op, op.getConf(), op.getColumnExprMap(), op
           .getConf().getRetainList(), true);
       return null;
+    }
+  }
+
+  private static void pruneOperator(NodeProcessorCtx ctx,
+      Operator<? extends Serializable> op,
+      List<String> cols)
+      throws SemanticException {
+    ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
+    ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
+    RowResolver rr = cppCtx.getOpToParseCtxMap().get(op).getRR();
+    for (int i = 0; i < cols.size(); i++) {
+      String internalName = cols.get(i);
+      String[] nm = rr.reverseLookup(internalName);
+      ColumnInfo col = rr.get(nm[0], nm[1]);
+      rs.add(col);
+    }
+    if (op.getSchema() != null) {
+      op.getSchema().setSignature(rs);
     }
   }
 
@@ -603,7 +624,7 @@ public final class ColumnPrunerProcFactory {
 
   /**
    * The Factory method to get ColumnMapJoinProc class.
-   * 
+   *
    * @return ColumnPrunerMapJoinProc
    */
   public static ColumnPrunerMapJoinProc getMapJoinProc() {

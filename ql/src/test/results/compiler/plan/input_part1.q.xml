@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_17" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -75,11 +75,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart</string> 
+          <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266455904</string> 
+          <string>1268858224</string> 
          </void> 
         </object> 
        </void> 
@@ -132,7 +132,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-18-26_614_8773783764346917841/10001</string> 
+                           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-17_13-37-06_324_6364489866768984396/10001</string> 
                           </void> 
                           <void property="numFiles"> 
                            <int>1</int> 
@@ -669,9 +669,9 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="ArrayList0" class="java.util.ArrayList"> 
+                   <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>key</string> 
                       </void> 
@@ -681,7 +681,7 @@
                      </object> 
                     </void> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>value</string> 
                       </void> 
@@ -691,9 +691,9 @@
                      </object> 
                     </void> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
-                       <string>ds</string> 
+                       <string>hr</string> 
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
@@ -701,9 +701,9 @@
                      </object> 
                     </void> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
-                       <string>hr</string> 
+                       <string>ds</string> 
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
@@ -940,7 +940,20 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="ArrayList0"/> 
+               <object id="ArrayList0" class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <object idref="ColumnInfo0"/> 
+                </void> 
+                <void method="add"> 
+                 <object idref="ColumnInfo1"/> 
+                </void> 
+                <void method="add"> 
+                 <object idref="ColumnInfo3"/> 
+                </void> 
+                <void method="add"> 
+                 <object idref="ColumnInfo2"/> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -1004,7 +1017,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>srcpart</string> 
@@ -1016,7 +1029,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>hr=12</string> 
@@ -1086,11 +1099,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1266455904</string> 
+           <string>1268858224</string> 
           </void> 
          </object> 
         </void> 

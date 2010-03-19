@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_17" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+          <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266455941</string> 
+          <string>1268858252</string> 
          </void> 
         </object> 
        </void> 
@@ -149,11 +149,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+          <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1266455941</string> 
+          <string>1268858252</string> 
          </void> 
         </object> 
        </void> 
@@ -673,9 +673,9 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="ArrayList1" class="java.util.ArrayList"> 
+                   <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>key</string> 
                       </void> 
@@ -685,7 +685,7 @@
                      </object> 
                     </void> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>value</string> 
                       </void> 
@@ -853,7 +853,14 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="ArrayList1"/> 
+               <object id="ArrayList1" class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <object idref="ColumnInfo0"/> 
+                </void> 
+                <void method="add"> 
+                 <object idref="ColumnInfo1"/> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -1386,9 +1393,9 @@
                 <void property="schema"> 
                  <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
                   <void property="signature"> 
-                   <object id="ArrayList3" class="java.util.ArrayList"> 
+                   <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>key</string> 
                       </void> 
@@ -1398,7 +1405,7 @@
                      </object> 
                     </void> 
                     <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                     <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>value</string> 
                       </void> 
@@ -1566,7 +1573,14 @@
             <void property="schema"> 
              <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
               <void property="signature"> 
-               <object idref="ArrayList3"/> 
+               <object id="ArrayList3" class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <object idref="ColumnInfo2"/> 
+                </void> 
+                <void method="add"> 
+                 <object idref="ColumnInfo3"/> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -1633,7 +1647,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1648,7 +1662,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1705,11 +1719,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1266455941</string> 
+           <string>1268858252</string> 
           </void> 
          </object> 
         </void> 
@@ -1760,7 +1774,7 @@
                       <void property="conf"> 
                        <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                         <void property="dirName"> 
-                         <string>file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_17-19-02_327_8287747871729517073/10001</string> 
+                         <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-17_13-37-33_495_2760752754228511940/10001</string> 
                         </void> 
                         <void property="numFiles"> 
                          <int>1</int> 
@@ -2158,7 +2172,7 @@
                 <void property="signature"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <object id="ColumnInfo4" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                     <void property="internalName"> 
                      <string>_col0</string> 
                     </void> 
@@ -2168,7 +2182,7 @@
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <object id="ColumnInfo5" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                     <void property="internalName"> 
                      <string>_col1</string> 
                     </void> 
@@ -2178,7 +2192,7 @@
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object id="ColumnInfo2" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <object id="ColumnInfo6" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                     <void property="internalName"> 
                      <string>_col2</string> 
                     </void> 
@@ -2188,7 +2202,7 @@
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                   <object id="ColumnInfo7" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                     <void property="internalName"> 
                      <string>_col3</string> 
                     </void> 
@@ -2332,16 +2346,16 @@
             <void property="signature"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object idref="ColumnInfo0"/> 
+               <object idref="ColumnInfo4"/> 
               </void> 
               <void method="add"> 
-               <object idref="ColumnInfo1"/> 
+               <object idref="ColumnInfo5"/> 
               </void> 
               <void method="add"> 
-               <object idref="ColumnInfo2"/> 
+               <object idref="ColumnInfo6"/> 
               </void> 
               <void method="add"> 
-               <object idref="ColumnInfo3"/> 
+               <object idref="ColumnInfo7"/> 
               </void> 
              </object> 
             </void> 

@@ -279,6 +279,9 @@ Trunk -  Unreleased
     HIVE-1247. Transform does not work with hints
     (He Yongqiang via namit)
 
+    HIVE-1252. Column pruning buf after a filter
+    (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
