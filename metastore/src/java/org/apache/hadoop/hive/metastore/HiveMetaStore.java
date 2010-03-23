@@ -957,7 +957,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     int port = 9083;
 
     if (args.length > 0) {
-      port = Integer.getInteger(args[0]);
+      port = new Integer(args[0]);
     }
     try {
       TServerTransport serverTransport = new TServerSocket(port);

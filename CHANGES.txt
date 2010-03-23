@@ -288,6 +288,9 @@ Trunk -  Unreleased
     HIVE-1261. ql.metadata.Hive#close() should check for null metaStoreClient
     (bc Wong via namit)
 
+    HIVE-1268. Cannot start metastore thrift server on a specific port
+    (bc Wong via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
