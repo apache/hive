@@ -291,6 +291,9 @@ Trunk -  Unreleased
     HIVE-1268. Cannot start metastore thrift server on a specific port
     (bc Wong via namit)
 
+    HIVE-1257. join between hbase and other tables does not work
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

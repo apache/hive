@@ -1,0 +1,202 @@
+PREHOOK: query: DROP TABLE users
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE users
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE states
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE states
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE countries
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE countries
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- From HIVE-1257
+
+CREATE TABLE users(key string, state string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "info:state,info:country,info:country_id"
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- From HIVE-1257
+
+CREATE TABLE users(key string, state string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "info:state,info:country,info:country_id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@users
+PREHOOK: query: CREATE TABLE states(key string, name string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "state:name"
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE states(key string, name string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "state:name"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@states
+PREHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "info:name,info:country,info:country_id"
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE countries(key string, name string, country string, country_id int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "info:name,info:country,info:country_id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@countries
+PREHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@users
+POSTHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@users
+PREHOOK: query: INSERT OVERWRITE TABLE states SELECT 'IA', 'Iowa'
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@states
+POSTHOOK: query: INSERT OVERWRITE TABLE states SELECT 'IA', 'Iowa'
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@states
+PREHOOK: query: INSERT OVERWRITE TABLE countries SELECT 'USA', 'United States', 'USA', 1
+FROM src WHERE key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@countries
+POSTHOOK: query: INSERT OVERWRITE TABLE countries SELECT 'USA', 'United States', 'USA', 1
+FROM src WHERE key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@countries
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-19_117_4712777556867957470/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-19_117_4712777556867957470/10000
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-25_489_4149172260159935049/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-25_489_4149172260159935049/10000
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-32_285_599526889736525802/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-32_285_599526889736525802/10000
+PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@states
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-38_500_2952626450057612534/10000
+POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@states
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-38_500_2952626450057612534/10000
+user1	IA	Iowa
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-45_911_3744508358740860232/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-45_911_3744508358740860232/10000
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-52_375_497455375799515705/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
+ON (u.country = c.country)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-52_375_497455375799515705/10000
+user1	USA	United States	USA
+PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@countries
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-59_778_6209720937134856434/10000
+POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
+ON (u.country_id = c.country_id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@countries
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-31-59_778_6209720937134856434/10000
+PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@users
+PREHOOK: Input: default@states
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-32-06_717_1044214443379190261/10000
+POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
+ON (u.state = s.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@users
+POSTHOOK: Input: default@states
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-23_12-32-06_717_1044214443379190261/10000
+user1	IA	Iowa
+PREHOOK: query: DROP TABLE users
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE users
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@users
+PREHOOK: query: DROP TABLE states
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE states
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@states
+PREHOOK: query: DROP TABLE countries
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE countries
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@countries

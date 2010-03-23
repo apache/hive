@@ -51,12 +51,12 @@ STAGE PLANS:
           columns: host string, identity string, user string, time string, request string, status int, size int, referer string, agent string
           if not exists: false
           input format: org.apache.hadoop.mapred.TextInputFormat
-          serde properties:
-            input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
-            output.format.string %1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.contrib.serde2.RegexSerDe
+          serde properties:
+            input.regex ([^ ]*) ([^ ]*) ([^ ]*) (-|\[[^\]]*\]) ([^ "]*|"[^"]*") (-|[0-9]*) (-|[0-9]*)(?: ([^ "]*|"[^"]*") ([^ "]*|"[^"]*"))?
+            output.format.string %1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s
           name: serde_regex
           isExternal: false
 

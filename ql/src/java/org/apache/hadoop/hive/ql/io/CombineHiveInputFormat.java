@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
 import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
@@ -259,6 +260,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       // Use HiveInputFormat if any of the paths is not splittable
       Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+
+      TableDesc tableDesc = part.getTableDesc();
+      if ((tableDesc != null) && tableDesc.isNonNative()) {
+        return super.getSplits(job, numSplits);
+      }
 
       if ((inputFormat instanceof TextInputFormat) &&
           ((new CompressionCodecFactory(job)).getCodec(tstPath) != null)) {
