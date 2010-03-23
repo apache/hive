@@ -148,6 +148,9 @@ Trunk -  Unreleased
     HIVE-1220. accept TBLPROPERTIES on CREATE TABLE/VIEW
     (John Sichi via namit)
 
+    HIVE-1258. Disable merge files when bucketing/sorting is being enforced
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

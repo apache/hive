@@ -59,10 +59,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
-  Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -114,15 +111,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: smb_join_results
 
-  Stage: Stage-4
-    Conditional Operator
-
-  Stage: Stage-3
-    Move Operator
-      files:
-          hdfs directory: true
-          destination: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-30-51_831_3128034463114016895/10000
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -132,36 +120,6 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-30-51_831_3128034463114016895/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: k1
-                    type: int
-                    expr: v1
-                    type: string
-                    expr: k2
-                    type: int
-                    expr: v2
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: smb_join_results
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -179,11 +137,11 @@ POSTHOOK: Output: default@smb_join_results
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-02_930_6832052206450057786/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-23_638_3207464793867439237/10000
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-02_930_6832052206450057786/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-23_638_3207464793867439237/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1225,20 +1183,20 @@ POSTHOOK: Output: default@normal_join_results
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-13_518_8458626252384968118/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-31_822_6925000698525164292/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-13_518_8458626252384968118/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-31_822_6925000698525164292/10000
 278697	278697	101852390308	101852390308
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-18_026_297452978282339779/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-36_044_2094101145793654521/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-18_026_297452978282339779/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-36_044_2094101145793654521/10000
 278697	278697	101852390308	101852390308
 PREHOOK: query: explain
 insert overwrite table smb_join_results
@@ -1253,10 +1211,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
-  Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1308,15 +1263,6 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: smb_join_results
 
-  Stage: Stage-4
-    Conditional Operator
-
-  Stage: Stage-3
-    Move Operator
-      files:
-          hdfs directory: true
-          destination: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-22_176_7018024963107388820/10000
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -1326,36 +1272,6 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-22_176_7018024963107388820/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: k1
-                    type: int
-                    expr: v1
-                    type: string
-                    expr: k2
-                    type: int
-                    expr: v2
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: smb_join_results
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -1385,11 +1301,11 @@ POSTHOOK: Output: default@smb_join_results
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-40_610_3326865599315045369/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-45_314_3505330141876651485/10000
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-40_610_3326865599315045369/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-45_314_3505330141876651485/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -2431,20 +2347,20 @@ POSTHOOK: Output: default@normal_join_results
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-53_779_4798477096420648584/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-52_285_1158676300848339812/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-53_779_4798477096420648584/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-52_285_1158676300848339812/10000
 278697	278697	101852390308	101852390308
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-58_594_6013861435432634842/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-55_185_720418110923506665/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-31-58_594_6013861435432634842/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-35-55_185_720418110923506665/10000
 278697	278697	101852390308	101852390308
 PREHOOK: query: explain
 insert overwrite table smb_join_results
@@ -2459,10 +2375,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
-  Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2518,15 +2431,6 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: smb_join_results
 
-  Stage: Stage-4
-    Conditional Operator
-
-  Stage: Stage-3
-    Move Operator
-      files:
-          hdfs directory: true
-          destination: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-02_940_4332996281799821927/10000
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -2536,36 +2440,6 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-02_940_4332996281799821927/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: k1
-                    type: int
-                    expr: v1
-                    type: string
-                    expr: k2
-                    type: int
-                    expr: v2
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: smb_join_results
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -2593,10 +2467,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
-  Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2656,15 +2527,6 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: smb_join_results
 
-  Stage: Stage-4
-    Conditional Operator
-
-  Stage: Stage-3
-    Move Operator
-      files:
-          hdfs directory: true
-          destination: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-13_224_9136682697779596188/10000
-
   Stage: Stage-0
     Move Operator
       tables:
@@ -2674,36 +2536,6 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-13_224_9136682697779596188/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: k1
-                    type: int
-                    expr: v1
-                    type: string
-                    expr: k2
-                    type: int
-                    expr: v2
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: smb_join_results
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -2807,12 +2639,12 @@ PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-23_983_2494250362900818478/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-36-05_384_2668760504635295425/10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-460/build/ql/scratchdir/hive_2010-03-04_13-32-23_983_2494250362900818478/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2010-03-23_15-36-05_384_2668760504635295425/10000
 PREHOOK: query: drop table smb_join_results
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table smb_join_results

@@ -3128,6 +3128,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setNumFiles(numFiles);
       ctx.setPartnCols(partnColsNoConvert);
       ctx.setTotalFiles(totalFiles);
+      //disable "merge mapfiles" and "merge mapred files".
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     }
     return input;
   }
