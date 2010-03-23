@@ -1,25 +1,21 @@
 DROP TABLE hbase_table_1;
 CREATE TABLE hbase_table_1(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-);
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
 
 DESCRIBE EXTENDED hbase_table_1;
 
 select * from hbase_table_1;
 
-EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *;
-FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *;
+EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0;
+FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0;
 
 DROP TABLE hbase_table_2;
 CREATE EXTERNAL TABLE hbase_table_2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-);
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
 
 EXPLAIN 
 SELECT Y.* 
@@ -58,9 +54,7 @@ ORDER BY key,value;
 DROP TABLE empty_hbase_table;
 CREATE TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string"
-);
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string");
 
 DROP TABLE empty_normal_table;
 CREATE TABLE empty_normal_table(key int, value string);
@@ -112,10 +106,8 @@ SELECT * FROM hbase_table_4 ORDER BY key;
 DROP TABLE hbase_table_5;
 CREATE EXTERNAL TABLE hbase_table_5(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "a:",
-"hbase.table.name" = "hbase_table_4"
-);
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "a:")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_4");
 
 SELECT * FROM hbase_table_5 ORDER BY key;
 

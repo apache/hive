@@ -62,11 +62,6 @@ public class HiveAlterHandler implements AlterHandler {
           + " is not a valid object name");
     }
 
-    if (newt.getViewExpandedText() != null) {
-      throw new InvalidOperationException(newt.getTableName()
-          + " is a view, so it cannot be modified via ALTER TABLE");
-    }
-
     Path srcPath = null;
     FileSystem srcFs = null;
     Path destPath = null;

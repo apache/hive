@@ -133,6 +133,7 @@ TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
+TOK_ALTERVIEW_PROPERTIES;
 TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
@@ -236,6 +237,7 @@ createTableStatement
          tableRowFormat?
          tableFileFormat?
          tableLocation?
+         tablePropertiesPrefixed?
          (KW_AS selectStatement)?
       )
     -> ^(TOK_CREATETABLE $name $ext? ifNotExists?
@@ -247,6 +249,7 @@ createTableStatement
          tableRowFormat?
          tableFileFormat?
          tableLocation?
+         tablePropertiesPrefixed?
          selectStatement?
         )
     ;
@@ -260,11 +263,16 @@ dropTableStatement
 alterStatement
 @init { msgs.push("alter statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER! KW_TABLE! alterStatementSuffix
+    : KW_ALTER!
+        (
+            KW_TABLE! alterTableStatementSuffix
+        |
+            KW_VIEW! alterViewStatementSuffix
+        )
     ;
 
-alterStatementSuffix
-@init { msgs.push("alter statement"); }
+alterTableStatementSuffix
+@init { msgs.push("alter table statement"); }
 @after { msgs.pop(); }
     : alterStatementSuffixRename
     | alterStatementSuffixAddCol
@@ -275,6 +283,12 @@ alterStatementSuffix
     | alterStatementSuffixSerdeProperties
     | alterStatementSuffixFileFormat
     | alterStatementSuffixClusterbySortby
+    ;
+
+alterViewStatementSuffix
+@init { msgs.push("alter view statement"); }
+@after { msgs.pop(); }
+    : alterViewSuffixProperties
     ;
 
 alterStatementSuffixRename
@@ -329,8 +343,15 @@ alterStatementSuffixDropPartitions
 alterStatementSuffixProperties
 @init { msgs.push("alter properties statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_PROPERTIES tableProperties
+    : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_PROPERTIES $name tableProperties)
+    ;
+
+alterViewSuffixProperties
+@init { msgs.push("alter view properties statement"); }
+@after { msgs.pop(); }
+    : name=Identifier KW_SET KW_TBLPROPERTIES tableProperties
+    -> ^(TOK_ALTERVIEW_PROPERTIES $name tableProperties)
     ;
 
 alterStatementSuffixSerdeProperties
@@ -424,11 +445,13 @@ createViewStatement
 @after { msgs.pop(); }
     : KW_CREATE KW_VIEW ifNotExists? name=Identifier
         (LPAREN columnNameCommentList RPAREN)? tableComment?
+        tablePropertiesPrefixed?
         KW_AS
         selectStatement
     -> ^(TOK_CREATEVIEW $name ifNotExists?
          columnNameCommentList?
          tableComment?
+         tablePropertiesPrefixed?
          selectStatement
         )
     ;
@@ -514,6 +537,13 @@ tableRowFormat
     -> ^(TOK_TABLEROWFORMAT rowFormatDelimited)
     | rowFormatSerde
     -> ^(TOK_TABLESERIALIZER rowFormatSerde)
+    ;
+
+tablePropertiesPrefixed
+@init { msgs.push("table properties with prefix"); }
+@after { msgs.pop(); }
+    :
+        KW_TBLPROPERTIES! tableProperties
     ;
 
 tableProperties
@@ -1525,7 +1555,7 @@ KW_WITH: 'WITH';
 KW_SERDEPROPERTIES: 'SERDEPROPERTIES';
 KW_LIMIT: 'LIMIT';
 KW_SET: 'SET';
-KW_PROPERTIES: 'TBLPROPERTIES';
+KW_TBLPROPERTIES: 'TBLPROPERTIES';
 KW_VALUE_TYPE: '$VALUE$';
 KW_ELEM_TYPE: '$ELEM$';
 KW_CASE: 'CASE';

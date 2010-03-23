@@ -56,6 +56,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
     commandType.put(HiveParser.TOK_CREATEVIEW, "CREATEVIEW");
     commandType.put(HiveParser.TOK_DROPVIEW, "DROPVIEW");
+    commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, "ALTERVIEW_PROPERTIES");
     commandType.put(HiveParser.TOK_QUERY, "QUERY");
   }
 
@@ -88,6 +89,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       case HiveParser.TOK_ALTERTABLE_SERIALIZER:
       case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
+      case HiveParser.TOK_ALTERVIEW_PROPERTIES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOWFUNCTIONS:

@@ -217,7 +217,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc
         .getTableName());
 
-    validateAlterTableType(tbl);
+    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.ADDPARTITION);
 
     // If the add partition was created with IF NOT EXISTS, then we should
     // not throw an error if the specified part does exist.
@@ -241,9 +241,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private void validateAlterTableType(Table tbl) throws HiveException {
+  private void validateAlterTableType(
+    Table tbl, AlterTableDesc.AlterTableTypes alterType)  throws HiveException {
+
     if (tbl.isView()) {
-      throw new HiveException("Cannot use ALTER TABLE on a view");
+      switch (alterType) {
+      case ADDPROPS:
+        // allow this form
+        break;
+      default:
+        throw new HiveException(
+          "Cannot use this form of ALTER TABLE on a view");
+      }
     }
 
     if (tbl.isNonNative()) {
@@ -973,7 +982,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl
         .getOldName());
 
-    validateAlterTableType(tbl);
+    validateAlterTableType(tbl, alterTbl.getOp());
+
+    if (tbl.isView()) {
+      if (!alterTbl.getExpectView()) {
+        throw new HiveException("Cannot alter a view with ALTER TABLE");
+      }
+    } else {
+      if (alterTbl.getExpectView()) {
+        throw new HiveException("Cannot alter a base table with ALTER VIEW");
+      }
+    }
 
     Table oldTbl = tbl.copy();
 
@@ -1322,13 +1341,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    if (crtTbl.getMapProp() != null) {
-      Iterator<Entry<String, String>> iter = crtTbl.getMapProp().entrySet()
+    if (crtTbl.getSerdeProps() != null) {
+      Iterator<Entry<String, String>> iter = crtTbl.getSerdeProps().entrySet()
         .iterator();
       while (iter.hasNext()) {
         Entry<String, String> m = iter.next();
         tbl.setSerdeParam(m.getKey(), m.getValue());
       }
+    }
+    if (crtTbl.getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
     }
 
     /*
@@ -1482,6 +1504,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl.setFields(crtView.getSchema());
     if (crtView.getComment() != null) {
       tbl.setProperty("comment", crtView.getComment());
+    }
+    if (crtView.getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(crtView.getTblProps());
     }
 
     int rc = setGenericTableAttributes(tbl);

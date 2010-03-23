@@ -69,8 +69,14 @@ public class HBaseStorageHandler
   }
 
   private String getHBaseTableName(Table tbl) {
-    String tableName = tbl.getSd().getSerdeInfo().getParameters().get(
-      HBaseSerDe.HBASE_TABLE_NAME);
+    // Give preference to TBLPROPERTIES over SERDEPROPERTIES
+    // (really we should only use TBLPROPERTIES, so this is just
+    // for backwards compatibility with the original specs).
+    String tableName = tbl.getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
+    if (tableName == null) {
+      tableName = tbl.getSd().getSerdeInfo().getParameters().get(
+        HBaseSerDe.HBASE_TABLE_NAME);
+    }
     if (tableName == null) {
       tableName = tbl.getTableName();
     }

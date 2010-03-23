@@ -41,7 +41,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public static enum AlterTableTypes {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
-    ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN
+    ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION
   };
 
   AlterTableTypes op;
@@ -63,6 +63,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   String newColComment;
   boolean first;
   String afterCol;
+  boolean expectView;
 
   public AlterTableDesc() {
   }
@@ -120,7 +121,16 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          type of alter op
    */
   public AlterTableDesc(AlterTableTypes alterType) {
+    this(alterType, false);
+  }
+
+  /**
+   * @param alterType
+   *          type of alter op
+   */
+  public AlterTableDesc(AlterTableTypes alterType, boolean expectView) {
     op = alterType;
+    this.expectView = expectView;
   }
 
   /**
@@ -448,4 +458,18 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.afterCol = afterCol;
   }
 
+  /**
+   * @return whether to expect a view being altered
+   */
+  public boolean getExpectView() {
+    return expectView;
+  }
+
+  /**
+   * @param expectView
+   *          set whether to expect a view being altered
+   */
+  public void setExpectView(boolean expectView) {
+    this.expectView = expectView;
+  }
 }

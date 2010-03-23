@@ -4,17 +4,13 @@ POSTHOOK: query: DROP TABLE hbase_table_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE hbase_table_1(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE hbase_table_1(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
@@ -24,21 +20,21 @@ POSTHOOK: type: DESCTABLE
 key	int	from deserializer
 value	string	from deserializer
 	 	 
-Detailed Table Information	Table(tableName:hbase_table_1, dbName:default, owner:jsichi, createTime:1267756519, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_table_1, inputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat, outputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.hbase.HBaseSerDe, parameters:{hbase.table.name=hbase_table_0,serialization.format=1,hbase.columns.mapping=cf:string}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1267756519,storage_handler=org.apache.hadoop.hive.hbase.HBaseStorageHandler}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:hbase_table_1, dbName:default, owner:jsichi, createTime:1269035280, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_table_1, inputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat, outputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.hbase.HBaseSerDe, parameters:{serialization.format=1,hbase.columns.mapping=cf:string}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{hbase.table.name=hbase_table_0,transient_lastDdlTime=1269035280,storage_handler=org.apache.hadoop.hive.hbase.HBaseStorageHandler}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select * from hbase_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-19_322_2377787749146102087/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-00_358_2930240620841842050/10000
 POSTHOOK: query: select * from hbase_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-19_322_2377787749146102087/10000
-PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-00_358_2930240620841842050/10000
+PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *
+POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB hbase_table_1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB hbase_table_1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (% (TOK_TABLE_OR_COL key) 2) 0))))
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -50,35 +46,43 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: string
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat
-                      output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
-                      serde: org.apache.hadoop.hive.hbase.HBaseSerDe
-                      name: hbase_table_1
+            Filter Operator
+              predicate:
+                  expr: ((key % 2) = 0)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: ((key % 2) = 0)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Select Operator
+                    expressions:
+                          expr: UDFToInteger(_col0)
+                          type: int
+                          expr: _col1
+                          type: string
+                    outputColumnNames: _col0, _col1
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
+                      table:
+                          input format: org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat
+                          output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
+                          serde: org.apache.hadoop.hive.hbase.HBaseSerDe
+                          name: hbase_table_1
 
 
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbase_table_1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT *
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table_1
@@ -88,17 +92,13 @@ POSTHOOK: query: DROP TABLE hbase_table_2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string",
-"hbase.table.name" = "hbase_table_0"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbase_table_2
 PREHOOK: query: EXPLAIN 
@@ -198,7 +198,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-28_474_6112992225153930391/10002 
+        file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-06_629_7030239162593413579/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -237,7 +237,7 @@ ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-29_174_8975920582945482917/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-07_673_8894235303094199068/10000
 POSTHOOK: query: SELECT Y.* 
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1) x
@@ -248,27 +248,27 @@ ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-29_174_8975920582945482917/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-07_673_8894235303094199068/10000
 0	val_0
 0	val_0
 0	val_0
 10	val_10
 100	val_100
 100	val_100
-103	val_103
-103	val_103
 104	val_104
 104	val_104
-105	val_105
-11	val_11
-111	val_111
-113	val_113
-113	val_113
 114	val_114
 116	val_116
 118	val_118
 118	val_118
-119	val_119
+12	val_12
+12	val_12
+120	val_120
+120	val_120
+126	val_126
+128	val_128
+128	val_128
+128	val_128
 PREHOOK: query: EXPLAIN 
 SELECT Y.*
 FROM 
@@ -382,7 +382,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-39_652_5426194195818800442/10002 
+        file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-16_880_9199961230368056420/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -420,7 +420,7 @@ ORDER BY key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_2
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-40_196_5786874737964073449/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-17_672_6345535566739909217/10000
 POSTHOOK: query: SELECT Y.*
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
@@ -431,31 +431,22 @@ ORDER BY key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_2
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-40_196_5786874737964073449/10000
-103	val_103
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-17_672_6345535566739909217/10000
 104	val_104
-105	val_105
-111	val_111
-113	val_113
 114	val_114
 116	val_116
 118	val_118
-119	val_119
 PREHOOK: query: DROP TABLE empty_hbase_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE empty_hbase_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE empty_hbase_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:string"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@empty_hbase_table
 PREHOOK: query: DROP TABLE empty_normal_table
@@ -471,49 +462,49 @@ PREHOOK: query: select * from (select count(1) as c from empty_normal_table unio
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@empty_normal_table
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-53_774_4932416505718919705/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-30_055_1946406021397828675/10000
 POSTHOOK: query: select * from (select count(1) as c from empty_normal_table union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@empty_normal_table
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-35-53_774_4932416505718919705/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-30_055_1946406021397828675/10000
 0
 0
 PREHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_normal_table
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-11_247_4483857956143479296/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-50_042_5680510697138513644/10000
 POSTHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_normal_table
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-11_247_4483857956143479296/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-48-50_042_5680510697138513644/10000
 0
-309
+155
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-31_650_7389757943419672684/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-49-09_786_4512530963467426096/10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-31_650_7389757943419672684/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-49-09_786_4512530963467426096/10000
 0
 500
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-52_081_4218645310908641305/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-49-25_808_1089193588207337323/10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-36-52_081_4218645310908641305/10000
-309
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-49-25_808_1089193588207337323/10000
+155
 500
 PREHOOK: query: CREATE TABLE hbase_table_3(key int, value string, count int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -712,38 +703,38 @@ POSTHOOK: Output: default@hbase_table_3
 PREHOOK: query: select count(1) from hbase_table_3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-27_778_7430808467238905099/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-01_188_3927696898547656442/10000
 POSTHOOK: query: select count(1) from hbase_table_3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-27_778_7430808467238905099/10000
-309
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-01_188_3927696898547656442/10000
+155
 PREHOOK: query: select * from hbase_table_3 order by key, value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-35_700_409189601738780567/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-05_328_16296194898070452/10000
 POSTHOOK: query: select * from hbase_table_3 order by key, value limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-35_700_409189601738780567/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-05_328_16296194898070452/10000
 0	val_0	3
 2	val_2	1
 4	val_4	1
-5	val_5	3
 8	val_8	1
+10	val_10	1
 PREHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-41_668_5441634624522241634/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-11_322_7398887165683623890/10000
 POSTHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-41_668_5441634624522241634/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-11_322_7398887165683623890/10000
 0	3
 2	1
 4	1
-5	3
 8	1
+10	1
 PREHOOK: query: DROP TABLE hbase_table_4
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table_4
@@ -774,11 +765,11 @@ POSTHOOK: Output: default@hbase_table_4
 PREHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_4
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-57_178_5676812981426512234/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-23_988_5167848005094793844/10000
 POSTHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_4
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-37-57_178_5676812981426512234/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-23_988_5167848005094793844/10000
 98	val_98	99	100
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_5
@@ -787,27 +778,23 @@ POSTHOOK: query: DROP TABLE hbase_table_5
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_5(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "a:",
-"hbase.table.name" = "hbase_table_4"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "a:")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_4")
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE EXTERNAL TABLE hbase_table_5(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "a:",
-"hbase.table.name" = "hbase_table_4"
-)
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "a:")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_4")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbase_table_5
 PREHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_5
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-38-04_569_1715131384516433665/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-31_199_5870817343406163372/10000
 POSTHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_5
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-38-04_569_1715131384516433665/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-31_199_5870817343406163372/10000
 98	{"b":"val_98","c":"99"}
 100	{"b":"val_100","c":"101"}
 PREHOOK: query: DROP TABLE hbase_table_6
@@ -840,11 +827,11 @@ POSTHOOK: Output: default@hbase_table_6
 PREHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_6
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-38-18_633_3994440627035138481/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-45_033_2381570055437756000/10000
 POSTHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_6
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-04_18-38-18_633_3994440627035138481/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/hbase-handler/scratchdir/hive_2010-03-19_14-50-45_033_2381570055437756000/10000
 98	{"val_98":"98"}
 100	{"val_100":"100"}
 PREHOOK: query: DROP TABLE hbase_table_1

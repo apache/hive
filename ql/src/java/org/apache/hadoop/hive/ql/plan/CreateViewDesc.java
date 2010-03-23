@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -36,24 +37,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String originalText;
   private String expandedText;
   private List<FieldSchema> schema;
+  private Map<String, String> tblProps;
   private String comment;
   private boolean ifNotExists;
-
-  public String getOriginalText() {
-    return originalText;
-  }
-
-  public void setOriginalText(String originalText) {
-    this.originalText = originalText;
-  }
-
-  public String getExpandedText() {
-    return expandedText;
-  }
-
-  public void setExpandedText(String expandedText) {
-    this.expandedText = expandedText;
-  }
 
   /**
    * For serialization only.
@@ -62,10 +48,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   }
   
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, boolean ifNotExists) {
+      String comment, Map<String, String> tblProps, boolean ifNotExists) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
+    this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
   }
 
@@ -116,6 +103,15 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setComment(String comment) {
     this.comment = comment;
+  }
+
+  public void setTblProps(Map<String, String> tblProps) {
+    this.tblProps = tblProps;
+  }
+
+  @Explain(displayName = "table properties")
+  public Map<String, String> getTblProps() {
+    return tblProps;
   }
 
   @Explain(displayName = "if not exists")

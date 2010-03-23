@@ -114,6 +114,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeMetastoreCheck(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_DROPVIEW) {
       analyzeDropTable(ast, true);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_PROPERTIES) {
+      analyzeAlterTableProps(ast, true);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME) {
       analyzeAlterTableRename(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS) {
@@ -127,7 +129,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
       analyzeAlterTableDropParts(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
-      analyzeAlterTableProps(ast);
+      analyzeAlterTableProps(ast, false);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
       analyzeAlterTableSerdeProps(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
@@ -152,11 +154,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropTblDesc), conf));
   }
 
-  private void analyzeAlterTableProps(ASTNode ast) throws SemanticException {
+  private void analyzeAlterTableProps(ASTNode ast, boolean expectView)
+    throws SemanticException {
+
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
         .getChild(0));
-    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDPROPS);
+    AlterTableDesc alterTblDesc =
+      new AlterTableDesc(AlterTableTypes.ADDPROPS, expectView);
     alterTblDesc.setProps(mapProp);
     alterTblDesc.setOldName(tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

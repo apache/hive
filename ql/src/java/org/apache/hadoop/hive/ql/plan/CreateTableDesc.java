@@ -53,7 +53,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   String location;
   String serName;
   String storageHandler;
-  HashMap<String, String> mapProp;
+  Map<String, String> serdeProps;
+  Map<String, String> tblProps;
   boolean ifNotExists;
 
   public CreateTableDesc() {
@@ -66,7 +67,9 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String mapKeyDelim, String lineDelim, String comment, String inputFormat,
       String outputFormat, String location, String serName,
       String storageHandler,
-      Map<String, String> mapProp, boolean ifNotExists) {
+      Map<String, String> serdeProps,
+      Map<String, String> tblProps,
+      boolean ifNotExists) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.bucketCols = new ArrayList<String>(bucketCols);
@@ -85,7 +88,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.partCols = new ArrayList<FieldSchema>(partCols);
     this.serName = serName;
     this.storageHandler = storageHandler;
-    this.mapProp = new HashMap<String, String>(mapProp);
+    this.serdeProps = serdeProps;
+    this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
   }
 
@@ -286,16 +290,32 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
    * @return the serDe properties
    */
   @Explain(displayName = "serde properties")
-  public HashMap<String, String> getMapProp() {
-    return mapProp;
+  public Map<String, String> getSerdeProps() {
+    return serdeProps;
   }
 
   /**
-   * @param mapProp
-   *          the map properties to set
+   * @param serdeProps
+   *          the serde properties to set
    */
-  public void setMapProp(HashMap<String, String> mapProp) {
-    this.mapProp = mapProp;
+  public void setSerdeProps(Map<String, String> serdeProps) {
+    this.serdeProps = serdeProps;
+  }
+
+  /**
+   * @return the table properties
+   */
+  @Explain(displayName = "table properties")
+  public Map<String, String> getTblProps() {
+    return tblProps;
+  }
+
+  /**
+   * @param tblProps
+   *          the table properties to set
+   */
+  public void setTblProps(Map<String, String> tblProps) {
+    this.tblProps = tblProps;
   }
 
 }

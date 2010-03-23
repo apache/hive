@@ -6251,7 +6251,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String location = null;
     String serde = null;
     String storageHandler = null;
-    Map<String, String> mapProp = new HashMap<String, String>();
+    Map<String, String> serdeProps = new HashMap<String, String>();
+    Map<String, String> tblProps = null;
     boolean ifNotExists = false;
     boolean isExt = false;
     ASTNode selectStmt = null;
@@ -6369,7 +6370,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child.getChildCount() == 2) {
           readProps(
             (ASTNode) (child.getChild(1).getChild(0)),
-            mapProp);
+            serdeProps);
         }
         break;
       case HiveParser.TOK_TBLSEQUENCEFILE:
@@ -6392,12 +6393,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLELOCATION:
         location = unescapeSQLString(child.getChild(0).getText());
         break;
+      case HiveParser.TOK_TABLEPROPERTIES:
+        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        break;
       case HiveParser.TOK_STORAGEHANDLER:
         storageHandler = unescapeSQLString(child.getChild(0).getText());
         if (child.getChildCount() == 2) {
           readProps(
             (ASTNode) (child.getChild(1).getChild(0)),
-            mapProp);
+            serdeProps);
         }
         break;
       default:
@@ -6444,7 +6448,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
           collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-          outputFormat, location, serde, storageHandler, mapProp, ifNotExists);
+          outputFormat, location, serde, storageHandler, serdeProps,
+          tblProps, ifNotExists);
 
       validateCreateTable(crtTblDesc);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -6476,7 +6481,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
           collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
-          outputFormat, location, serde, storageHandler, mapProp, ifNotExists);
+          outputFormat, location, serde, storageHandler, serdeProps,
+          tblProps, ifNotExists);
       qb.setTableDesc(crtTblDesc);
 
       return selectStmt;
@@ -6493,6 +6499,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean ifNotExists = false;
     String comment = null;
     ASTNode selectStmt = null;
+    Map<String, String> tblProps = null;
 
     LOG.info("Creating view " + tableName + " position="
         + ast.getCharPositionInLine());
@@ -6512,12 +6519,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
+      case HiveParser.TOK_TABLEPROPERTIES:
+        tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        break;
       default:
         assert false;
       }
     }
 
-    createVwDesc = new CreateViewDesc(tableName, cols, comment, ifNotExists);
+    createVwDesc = new CreateViewDesc(
+      tableName, cols, comment, tblProps, ifNotExists);
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));

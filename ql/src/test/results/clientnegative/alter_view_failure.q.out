@@ -4,12 +4,12 @@ POSTHOOK: query: DROP VIEW xxx3
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/736415439/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-03-22_12-07-35_608_1201726124226717789/10000
 POSTHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/736415439/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-03-22_12-07-35_608_1201726124226717789/10000
 POSTHOOK: Output: default@xxx3
 PREHOOK: query: ALTER TABLE xxx3 REPLACE COLUMNS (xyz int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-FAILED: Error in metadata: Cannot use ALTER TABLE on a view
+FAILED: Error in metadata: Cannot use this form of ALTER TABLE on a view
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

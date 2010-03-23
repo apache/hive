@@ -22,7 +22,9 @@ DROP TABLE table1;
 SELECT * FROM src WHERE key=86;
 CREATE VIEW view1 AS SELECT value FROM src WHERE key=86;
 CREATE VIEW view2 AS SELECT * FROM src;
-CREATE VIEW view3(valoo) AS SELECT upper(value) FROM src WHERE key=86;
+CREATE VIEW view3(valoo) 
+TBLPROPERTIES ("fear" = "factor")
+AS SELECT upper(value) FROM src WHERE key=86;
 SELECT * from view1;
 SELECT * from view2 where key=18;
 SELECT * from view3;
@@ -41,6 +43,9 @@ DESCRIBE EXTENDED view1;
 DESCRIBE view2;
 DESCRIBE EXTENDED view2;
 DESCRIBE view3;
+DESCRIBE EXTENDED view3;
+
+ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser");
 DESCRIBE EXTENDED view3;
 
 CREATE TABLE table1 (key int);

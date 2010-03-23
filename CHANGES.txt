@@ -145,6 +145,9 @@ Trunk -  Unreleased
     HIVE-1246. Map join followde by another map join runs in a single map-only job
     (He Yongqiang via namit)
 
+    HIVE-1220. accept TBLPROPERTIES on CREATE TABLE/VIEW
+    (John Sichi via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
