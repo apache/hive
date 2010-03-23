@@ -267,6 +267,18 @@ public class TestHive extends TestCase {
     return tbl;
   }
 
+  /**
+   * Test basic Hive class interaction, that:
+   * - We can have different Hive objects throughout the lifetime of this thread.
+   */
+  public void testHiveCloseCurrent() throws Throwable {
+    Hive hive1 = Hive.get();
+    Hive.closeCurrent();
+    Hive hive2 = Hive.get();
+    Hive.closeCurrent();
+    assertTrue(hive1 != hive2);
+  }
+
   public void testGetAndDropTables() throws Throwable {
     try {
       String dbName = "db_for_testgettables";

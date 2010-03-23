@@ -285,6 +285,9 @@ Trunk -  Unreleased
     HIVE-1252. Column pruning buf after a filter
     (He Yongqiang via namit)
 
+    HIVE-1261. ql.metadata.Hive#close() should check for null metaStoreClient
+    (bc Wong via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

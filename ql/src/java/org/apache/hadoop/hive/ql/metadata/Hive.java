@@ -160,7 +160,9 @@ public class Hive {
    */
   private void close() {
     LOG.info("Closing current thread's connection to Hive Metastore.");
-    metaStoreClient.close();
+    if (metaStoreClient != null) {
+      metaStoreClient.close();
+    }
   }
 
   /**
