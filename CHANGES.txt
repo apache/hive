@@ -297,6 +297,9 @@ Trunk -  Unreleased
     HIVE-1257. join between hbase and other tables does not work
     (John Sichi via namit)
 
+    HIVE-1273 UDF_Percentile NullPointerException
+    (Zheng Shao via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

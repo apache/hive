@@ -17,7 +17,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-30-57_926_4752964414489468009/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-29_731_4236783179618139554/10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -27,7 +27,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-30-57_926_4752964414489468009/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-29_731_4236783179618139554/10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -87,7 +87,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-02_222_1225909126411093990/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-34_361_7854657244563137261/10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -97,7 +97,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-02_222_1225909126411093990/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-34_361_7854657244563137261/10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -157,7 +157,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-06_237_1106980062235474069/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-38_451_6456445188085972700/10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -167,7 +167,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-06_237_1106980062235474069/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-38_451_6456445188085972700/10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -227,7 +227,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-13_357_1069357782802139112/10000
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-45_662_669810203047990628/10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -237,7 +237,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-28_01-31-13_357_1069357782802139112/10000
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-45_662_669810203047990628/10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -288,3 +288,71 @@ POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/h
 47	470.0	477.0	479.0	[470.0,477.0,478.94,479.0]
 48	480.0	484.0	489.0	[480.0,484.0,489.0,489.0]
 49	490.0	494.5	498.0	[490.0,494.5,498.0,498.0]
+PREHOOK: query: -- test null handling
+SELECT CAST(key AS INT) DIV 10,
+       percentile(NULL, 0.0),
+       percentile(NULL, array(0.0, 0.5, 0.99, 1.0))
+FROM src
+GROUP BY CAST(key AS INT) DIV 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-53_228_1913274328173734747/10000
+POSTHOOK: query: -- test null handling
+SELECT CAST(key AS INT) DIV 10,
+       percentile(NULL, 0.0),
+       percentile(NULL, array(0.0, 0.5, 0.99, 1.0))
+FROM src
+GROUP BY CAST(key AS INT) DIV 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-03-23_16-16-53_228_1913274328173734747/10000
+0	NULL	null
+1	NULL	null
+2	NULL	null
+3	NULL	null
+4	NULL	null
+5	NULL	null
+6	NULL	null
+7	NULL	null
+8	NULL	null
+9	NULL	null
+10	NULL	null
+11	NULL	null
+12	NULL	null
+13	NULL	null
+14	NULL	null
+15	NULL	null
+16	NULL	null
+17	NULL	null
+18	NULL	null
+19	NULL	null
+20	NULL	null
+21	NULL	null
+22	NULL	null
+23	NULL	null
+24	NULL	null
+25	NULL	null
+26	NULL	null
+27	NULL	null
+28	NULL	null
+29	NULL	null
+30	NULL	null
+31	NULL	null
+32	NULL	null
+33	NULL	null
+34	NULL	null
+35	NULL	null
+36	NULL	null
+37	NULL	null
+38	NULL	null
+39	NULL	null
+40	NULL	null
+41	NULL	null
+42	NULL	null
+43	NULL	null
+44	NULL	null
+45	NULL	null
+46	NULL	null
+47	NULL	null
+48	NULL	null
+49	NULL	null

@@ -124,7 +124,7 @@ public class UDAFPercentile extends UDAF {
    */
   public static class PercentileLongEvaluator implements UDAFEvaluator {
 
-    private State state;
+    private final State state;
 
     public PercentileLongEvaluator() {
       state = new State();
@@ -155,8 +155,10 @@ public class UDAFPercentile extends UDAF {
       if (state.percentiles == null) {
         state.percentiles = new ArrayList<DoubleWritable>(other.percentiles);
       }
-      for (Map.Entry<LongWritable, LongWritable> e: other.counts.entrySet()) {
-        increment(state, e.getKey(), e.getValue().get());
+      if (other.counts != null) {
+        for (Map.Entry<LongWritable, LongWritable> e: other.counts.entrySet()) {
+          increment(state, e.getKey(), e.getValue().get());
+        }
       }
       return true;
     }
@@ -201,7 +203,7 @@ public class UDAFPercentile extends UDAF {
    */
   public static class PercentileLongArrayEvaluator implements UDAFEvaluator {
 
-    private State state;
+    private final State state;
 
     public PercentileLongArrayEvaluator() {
       state = new State();
@@ -231,8 +233,10 @@ public class UDAFPercentile extends UDAF {
       if (state.percentiles == null) {
         state.percentiles = new ArrayList<DoubleWritable>(other.percentiles);
       }
-      for (Map.Entry<LongWritable, LongWritable> e: other.counts.entrySet()) {
-        increment(state, e.getKey(), e.getValue().get());
+      if (other.counts != null) {
+        for (Map.Entry<LongWritable, LongWritable> e: other.counts.entrySet()) {
+          increment(state, e.getKey(), e.getValue().get());
+        }
       }
       return true;
     }
