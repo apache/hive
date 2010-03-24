@@ -151,6 +151,9 @@ Trunk -  Unreleased
     HIVE-1258. Disable merge files when bucketing/sorting is being enforced
     (He Yongqiang via namit)
 
+    HIVE-1270. Thread pool size in Thrift metastore server should be
+    configurable (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -51,7 +51,7 @@ public class HiveConf extends Configuration {
   public static final HiveConf.ConfVars[] metaVars = {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
-      HiveConf.ConfVars.METASTOREURIS
+      HiveConf.ConfVars.METASTOREURIS,
       };
 
   /**
@@ -95,6 +95,8 @@ public class HiveConf extends Configuration {
     METASTOREURIS("hive.metastore.uris", ""),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
 
+    METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
+    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", Integer.MAX_VALUE),
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
 

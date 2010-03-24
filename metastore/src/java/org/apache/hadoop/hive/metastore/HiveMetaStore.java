@@ -110,6 +110,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       init();
     }
 
+    public HiveConf getConf() {
+      return hiveConf;
+    }
+    
     private ClassLoader classLoader;
     private AlterHandler alterHandler;
     {
@@ -960,12 +964,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       port = new Integer(args[0]);
     }
     try {
+
+      HMSHandler handler = new HMSHandler("new db based metaserver");
+      HiveConf conf = handler.getConf();
+      
+      // Server will create new threads up to max as necessary. After an idle 
+      // period, it will destory threads to keep the number of threads in the 
+      // pool to min.
+      int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
+      int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
+      
       TServerTransport serverTransport = new TServerSocket(port);
-      Iface handler = new HMSHandler("new db based metaserver");
       FacebookService.Processor processor = new ThriftHiveMetastore.Processor(
           handler);
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      options.minWorkerThreads = 200;
+      options.minWorkerThreads = minWorkerThreads;
+      options.maxWorkerThreads = maxWorkerThreads;
       TServer server = new TThreadPoolServer(processor, serverTransport,
           new TTransportFactory(), new TTransportFactory(),
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);

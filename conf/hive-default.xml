@@ -485,4 +485,15 @@
   <description>Whether sorting is enforced. If true, while inserting into the table, sorting is enforced. </description>
 </property>
 
+<property>
+  <name>hive.metastore.server.min.threads</name>
+  <value>200</value>
+  <description>Minimum number of worker threads in the Thrift server's pool.</description>
+</property>
+
+<property>
+  <name>hive.metastore.server.max.threads</name>
+  <value>100000</value>
+  <description>Maximum number of worker threads in the Thrift server's pool.</description>
+</property>
 </configuration>
