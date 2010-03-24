@@ -309,6 +309,9 @@ Trunk -  Unreleased
     HIVE-1274 Bug in sort-merge join in presence of empry files
     (He Yongqiang via namit)
 
+    HIVE-1279 Temporarily disable TestHBaseCliDriver
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
