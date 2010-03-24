@@ -320,6 +320,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     // detecting failed executions by exceptions thrown by the operator tree
     // ideally hadoop should let us know whether map execution failed or not
     try {
+      inputFileChanged();
       mo.close(abort);
       if (fetchOperators != null) {
         MapredLocalWork localWork = mo.getConf().getMapLocalWork();

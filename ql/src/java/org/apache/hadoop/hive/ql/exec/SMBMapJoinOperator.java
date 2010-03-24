@@ -82,6 +82,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     firstRow = true;
     
     closeCalled = false;
+    
+    this.firstFetchHappened = false;
 
     nextGroupStorage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
     candidateStorage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
@@ -476,8 +478,27 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       return;
     }
     closeCalled = true;
+    
+    if ((this.getExecContext() != null && this.getExecContext().inputFileChanged)
+        || !firstFetchHappened) {
+      //set up the fetch operator for the new input file.
+      for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
+        String alias = entry.getKey();
+        FetchOperator fetchOp = entry.getValue();
+        fetchOp.clearFetchContext();
+        setUpFetchOpContext(fetchOp, alias);
+      }
+      this.getExecContext().inputFileChanged = false;
+      firstFetchHappened = true;
+      for (Byte t : order) {
+        if(t != (byte)posBigTable) {
+          fetchNextGroup(t);            
+        }
+      }
+    }
+    
     joinFinalLeftData();
-    this.firstFetchHappened = false;
+    
     //clean up 
     for (Byte alias : order) {
       if(alias != (byte) posBigTable) {
