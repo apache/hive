@@ -56,7 +56,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean open = false;
   private URI metastoreUris[];
   private final boolean standAloneClient = false;
-  private HiveMetaHookLoader hookLoader;
+  private final HiveMetaHookLoader hookLoader;
 
   // for thrift connects
   private int retries = 5;
@@ -86,7 +86,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
 
     // get the number retries
-    retries = conf.getInt("hive.metastore.connect.retries", 5);
+    retries = HiveConf.getIntVar(conf, HiveConf.ConfVars.METATORETHRIFTRETRIES);
 
     // user wants file store based configuration
     if (conf.getVar(HiveConf.ConfVars.METASTOREURIS) != null) {
@@ -615,6 +615,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.get_partition_by_name(db, tableName, partName);
   }
 
+  public Partition appendPartitionByName(String dbName, String tableName, String partName)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+    return client.append_partition_by_name(dbName, tableName, partName);
+  }
+
+  public boolean dropPartitionByName(String dbName, String tableName, String partName, boolean deleteData)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.drop_partition_by_name(dbName, tableName, partName, deleteData);
+  }
 
   private HiveMetaHook getHook(Table tbl) throws MetaException {
     if (hookLoader == null) {

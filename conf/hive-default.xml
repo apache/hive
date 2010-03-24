@@ -486,6 +486,24 @@
 </property>
 
 <property>
+  <name>hive.metastore.ds.connection.url.hook</name>
+  <value></value>
+  <description>Name of the hook to use for retriving the JDO connection URL. If empty, the value in javax.jdo.option.ConnectionURL is used </description>
+</property>
+
+<property>
+  <name>hive.metastore.ds.retry.attempts</name>
+  <value>1</value>
+  <description>The number of times to retry a metastore call if there were a connection error</description>
+</property>
+
+<property>
+   <name>hive.metastore.ds.retry.interval</name>
+   <value>1000</value>
+   <description>The number of miliseconds between metastore retry attempts</description>
+</property>
+
+<property>
   <name>hive.metastore.server.min.threads</name>
   <value>200</value>
   <description>Minimum number of worker threads in the Thrift server's pool.</description>
@@ -496,4 +514,5 @@
   <value>100000</value>
   <description>Maximum number of worker threads in the Thrift server's pool.</description>
 </property>
+
 </configuration>

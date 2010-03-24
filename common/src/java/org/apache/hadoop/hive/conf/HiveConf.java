@@ -52,6 +52,13 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
+      HiveConf.ConfVars.METATORETHRIFTRETRIES,
+      HiveConf.ConfVars.METASTOREPWD,
+      HiveConf.ConfVars.METASTORECONNECTURLHOOK,
+      HiveConf.ConfVars.METASTORECONNECTURLKEY,
+      HiveConf.ConfVars.METASTOREATTEMPTS,
+      HiveConf.ConfVars.METASTOREINTERVAL,
+      HiveConf.ConfVars.METASTOREFORCERELOADCONF,
       };
 
   /**
@@ -89,11 +96,27 @@ public class HiveConf extends Configuration {
     HADOOPJOBNAME("mapred.job.name", null),
     HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", false),
 
-    // MetaStore stuff.
+    // Metastore stuff. Be sure to update HiveConf.metaVars when you add
+    // something here!
     METASTOREDIRECTORY("hive.metastore.metadb.dir", ""),
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
     METASTOREURIS("hive.metastore.uris", ""),
+    // Number of times to retry a connection to a Thrift metastore server
+    METATORETHRIFTRETRIES("hive.metastore.connect.retries", ""),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
+    // Class name of JDO connection url hook
+    METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", ""),
+    // Name of the connection url in the configuration
+    METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL", ""),
+    // Number of attempts to retry connecting after there is a JDO datastore err
+    METASTOREATTEMPTS("hive.metastore.ds.retry.attempts", 1),
+    // Number of miliseconds to wait between attepting
+    METASTOREINTERVAL("hive.metastore.ds.retry.interval", 1000),
+    // Whether to force reloading of the metastore configuration (including
+    // the connection URL, before the next metastore query that accesses the
+    // datastore. Once reloaded, the  this value is reset to false. Used for
+    // testing only.
+    METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false),
 
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
     METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", Integer.MAX_VALUE),
@@ -263,6 +286,7 @@ public class HiveConf extends Configuration {
       this.defaultBoolVal = defaultBoolVal;
     }
 
+    @Override
     public String toString() {
       return varname;
     }

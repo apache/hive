@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
@@ -70,6 +72,8 @@ import org.apache.hadoop.util.StringUtils;
 public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
+
+  private static Lock pmfPropLock = new ReentrantLock();
   private static final Log LOG = LogFactory.getLog(ObjectStore.class.getName());
 
   private static enum TXN_STATUS {
@@ -90,19 +94,47 @@ public class ObjectStore implements RawStore, Configurable {
     return hiveConf;
   }
 
+  /**
+   * Called whenever this object is instantiated using ReflectionUils, and also
+   * on connection retries. In cases of connection retries, conf will usually
+   * contain modified values.
+   */
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
-    hiveConf = conf;
-    if (isInitialized) {
-      return;
-    } else {
-      initialize();
-    }
-    if (!isInitialized) {
-      throw new RuntimeException(
-          "Unable to create persistence manager. Check dss.log for details");
-    } else {
-      LOG.info("Initialized ObjectStore");
+    // Although an instance of ObjectStore is accessed by one thread, there may
+    // be many threads with ObjectStore instances. So the static variables
+    // pmf and prop need to be protected with locks.
+    pmfPropLock.lock();
+    try {
+      isInitialized = false;
+      hiveConf = conf;
+      Properties propsFromConf = getDataSourceProps(conf);
+      boolean propsChanged = !propsFromConf.equals(prop);
+
+      if (propsChanged) {
+        pmf = null;
+        prop = null;
+      }
+
+      assert(!isActiveTransaction());
+      shutdown();
+      // Always want to re-create pm as we don't know if it were created by the
+      // most recent instance of the pmf
+      pm = null;
+      openTrasactionCalls = 0;
+      currentTransaction = null;
+      transactionStatus = TXN_STATUS.NO_STATE;
+
+      initialize(propsFromConf);
+
+      if (!isInitialized) {
+        throw new RuntimeException(
+        "Unable to create persistence manager. Check dss.log for details");
+      } else {
+        LOG.info("Initialized ObjectStore");
+      }
+    } finally {
+      pmfPropLock.unlock();
     }
   }
 
@@ -115,13 +147,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @SuppressWarnings("nls")
-  private void initialize() {
+  private void initialize(Properties dsProps) {
     LOG.info("ObjectStore, initialize called");
-    initDataSourceProps();
+    prop = dsProps;
     pm = getPersistenceManager();
-    if (pm != null) {
-      isInitialized = true;
-    }
+    isInitialized = pm != null;
     return;
   }
 
@@ -130,13 +160,10 @@ public class ObjectStore implements RawStore, Configurable {
    * in jpox.properties.
    */
   @SuppressWarnings("nls")
-  private void initDataSourceProps() {
-    if (prop != null) {
-      return;
-    }
-    prop = new Properties();
+  private static Properties getDataSourceProps(Configuration conf) {
+    Properties prop = new Properties();
 
-    Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
     while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
       if (e.getKey().contains("datanucleus") || e.getKey().contains("jdo")) {
@@ -156,6 +183,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
     }
+    return prop;
   }
 
   private static PersistenceManagerFactory getPMF() {
@@ -189,7 +217,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * Opens a new one or the one already created Every call of this function must
    * have corresponding commit or rollback function call
-   * 
+   *
    * @return an active transaction
    */
 
@@ -210,7 +238,7 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * if this is the commit of the first open call then an actual commit is
    * called.
-   * 
+   *
    * @return Always returns true
    */
   @SuppressWarnings("nls")

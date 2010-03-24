@@ -26,7 +26,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
@@ -99,8 +97,9 @@ public class Hive {
     Hive db = hiveDB.get();
     if (db != null) {
       for (HiveConf.ConfVars oneVar : HiveConf.metaVars) {
-        String oldVar = db.getConf().getVar(oneVar);
-        String newVar = c.getVar(oneVar);
+        // Since metaVars are all of different types, use string for comparison
+        String oldVar = db.getConf().get(oneVar.varname, "");
+        String newVar = c.get(oneVar.varname, "");
         if (oldVar.compareToIgnoreCase(newVar) != 0) {
           needsRefresh = true;
           break;
