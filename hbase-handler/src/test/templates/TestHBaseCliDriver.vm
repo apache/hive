@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
+import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
@@ -23,10 +24,12 @@ import org.antlr.runtime.tree.*;
 public class $className extends TestCase {
 
   private HBaseQTestUtil qt;
+  private HBaseTestSetup setup;
 
-  public $className(String name) {
+  public $className(String name, HBaseTestSetup setup) {
     super(name);
     qt = null;
+    this.setup = setup;
   }
 
   @Override
@@ -38,7 +41,8 @@ public class $className extends TestCase {
       }
 
       qt = new HBaseQTestUtil(
-        "$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR);
+        "$resultsDir.getCanonicalPath()",
+        "$logDir.getCanonicalPath()", miniMR, setup);
 
 #foreach ($qf in $qfiles)
       qt.addFile("$qf.getCanonicalPath()");
@@ -66,13 +70,14 @@ public class $className extends TestCase {
 
   public static Test suite() {
     TestSuite suite = new TestSuite();
+    HBaseTestSetup setup = new HBaseTestSetup(suite);
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.length() - 2)
   #set ($tname = $fname.substring(0, $eidx))
-    suite.addTest(new $className("testCliDriver_$tname"));
+    suite.addTest(new $className("testCliDriver_$tname", setup));
 #end
-    return suite;
+    return setup;
   }
 
 #foreach ($qf in $qfiles)

@@ -50,11 +50,6 @@
     <path refid="classpath"/>
   </path>
 
-  <target name="test"
-  	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
-    <echo message="HBase test execution is temporarily disabled"/>
-  </target>
-
   <target name="test-jar" depends="compile-test, jar">
     <delete file="${test.build.dir}/test-udfs.jar"/>
     <jar jarfile="${test.build.dir}/test-udfs.jar">

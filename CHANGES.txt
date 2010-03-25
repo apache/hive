@@ -312,6 +312,9 @@ Trunk -  Unreleased
     HIVE-1279 Temporarily disable TestHBaseCliDriver
     (John Sichi via namit)
 
+    HIVE-1275 Fix TestHBaseCliDriver
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
