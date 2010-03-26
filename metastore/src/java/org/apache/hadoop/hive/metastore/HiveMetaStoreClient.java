@@ -631,4 +631,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     return hookLoader.getHook(tbl);
   }
+
+  @Override
+  public List<String> partitionNameToVals(String name) throws MetaException, TException {
+    return client.partition_name_to_vals(name);
+  }
+
+  @Override
+  public Map<String, String> partitionNameToSpec(String name) throws MetaException, TException {
+    return client.partition_name_to_spec(name);
+  }
 }

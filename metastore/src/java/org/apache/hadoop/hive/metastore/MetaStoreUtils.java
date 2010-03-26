@@ -847,7 +847,7 @@ public class MetaStoreUtils {
    */
 
   public static boolean pvalMatches(List<String> partial, List<String> full) {
-    if(partial.size() != full.size()) {
+    if(partial.size() > full.size()) {
       return false;
     }
     Iterator<String> p = partial.iterator();

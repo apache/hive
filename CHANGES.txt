@@ -157,6 +157,9 @@ Trunk -  Unreleased
     HIVE-1270. Thread pool size in Thrift metastore server should be
     configurable (Paul Yang via namit)
 
+    HIVE-1278. Partition name to values conversion conversion method
+    (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

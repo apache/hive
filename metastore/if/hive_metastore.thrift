@@ -212,10 +212,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
                        
-  // get_partition_mp methods allow filtering by a partial partition specification, 
+  // get_partition*_ps methods allow filtering by a partial partition specification, 
   // as needed for dynamic partitions. The values that are not restricted should 
   // be empty strings. Nulls were considered (instead of "") but caused errors in 
-  // generated Python code.
+  // generated Python code. The size of part_vals may be smaller than the
+  // number of partition columns - the unspecified values are considered the same
+  // as "".
   list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name 
   	3:list<string> part_vals, 4:i16 max_parts=-1)
                        throws(1:MetaException o1)
@@ -234,6 +236,14 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // thrown.
   string get_config_value(1:string name, 2:string defaultValue)
                           throws(1:ConfigValSecurityException o1)
+                          
+  // converts a partition name into a partition values array
+  list<string> partition_name_to_vals(1: string part_name)
+                          throws(1: MetaException o1)
+  // converts a partition name into a partition specification (a mapping from
+  // the partition cols to the values)
+  map<string, string> partition_name_to_spec(1: string part_name)
+                          throws(1: MetaException o1)                     
 }
 
 // these should be needed only for backward compatibility with filestore

@@ -162,6 +162,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_config_value\n");
   }
 
+  void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) {
+    // Your implementation goes here
+    printf("partition_name_to_vals\n");
+  }
+
+  void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) {
+    // Your implementation goes here
+    printf("partition_name_to_spec\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

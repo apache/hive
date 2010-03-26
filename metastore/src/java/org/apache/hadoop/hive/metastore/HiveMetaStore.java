@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1615,6 +1616,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       return filteredPartNames;
+    }
+
+    @Override
+    public List<String> partition_name_to_vals(String part_name)
+        throws MetaException, TException {
+      if (part_name.length() == 0) {
+        return new ArrayList<String>();
+      }
+      LinkedHashMap<String, String> map = Warehouse.makeSpecFromName(part_name);
+      List<String> part_vals = new ArrayList<String>();
+      part_vals.addAll(map.values());
+      return part_vals;
+    }
+
+    @Override
+    public Map<String, String> partition_name_to_spec(String part_name) throws MetaException,
+        TException {
+      if (part_name.length() == 0) {
+        return new HashMap<String, String>();
+      }
+      return Warehouse.makeSpecFromName(part_name);
     }
 
   }

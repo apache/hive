@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
@@ -301,10 +302,31 @@ public interface IMetaStoreClient {
    *          name of the configuration property to get the value of
    * @param defaultValue
    *          the value to return if property with the given name doesn't exist
-   * @return
+   * @return value of the specified configuration property
    * @throws TException
    * @throws ConfigValSecurityException
    */
   public String getConfigValue(String name, String defaultValue)
       throws TException, ConfigValSecurityException;
+
+  /**
+   *
+   * @param name
+   *          the partition name e.g. ("ds=2010-03-03/hr=12")
+   * @return a list containing the partition col values, in the same order as the name
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<String> partitionNameToVals(String name)
+      throws MetaException, TException;
+  /**
+   *
+   * @param name
+   *          the partition name e.g. ("ds=2010-03-03/hr=12")
+   * @return a map from the partition col to the value, as listed in the name
+   * @throws MetaException
+   * @throws TException
+   */
+  public Map<String, String> partitionNameToSpec(String name)
+      throws MetaException, TException;
 }

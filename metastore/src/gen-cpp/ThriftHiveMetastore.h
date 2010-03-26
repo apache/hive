@@ -43,6 +43,8 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_partition_names_ps(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) = 0;
   virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
+  virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
+  virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
 };
 
 class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual public facebook::fb303::FacebookServiceNull {
@@ -136,6 +138,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_config_value(std::string& /* _return */, const std::string& /* name */, const std::string& /* defaultValue */) {
+    return;
+  }
+  void partition_name_to_vals(std::vector<std::string> & /* _return */, const std::string& /* part_name */) {
+    return;
+  }
+  void partition_name_to_spec(std::map<std::string, std::string> & /* _return */, const std::string& /* part_name */) {
     return;
   }
 };
@@ -3209,6 +3217,204 @@ class ThriftHiveMetastore_get_config_value_presult {
 
 };
 
+class ThriftHiveMetastore_partition_name_to_vals_args {
+ public:
+
+  ThriftHiveMetastore_partition_name_to_vals_args() : part_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_to_vals_args() throw() {}
+
+  std::string part_name;
+
+  struct __isset {
+    __isset() : part_name(false) {}
+    bool part_name;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_partition_name_to_vals_args & rhs) const
+  {
+    if (!(part_name == rhs.part_name))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_to_vals_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_to_vals_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_vals_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_to_vals_pargs() throw() {}
+
+  const std::string* part_name;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_vals_result {
+ public:
+
+  ThriftHiveMetastore_partition_name_to_vals_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_to_vals_result() throw() {}
+
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_partition_name_to_vals_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_to_vals_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_to_vals_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_vals_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_to_vals_presult() throw() {}
+
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+class ThriftHiveMetastore_partition_name_to_spec_args {
+ public:
+
+  ThriftHiveMetastore_partition_name_to_spec_args() : part_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_to_spec_args() throw() {}
+
+  std::string part_name;
+
+  struct __isset {
+    __isset() : part_name(false) {}
+    bool part_name;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_partition_name_to_spec_args & rhs) const
+  {
+    if (!(part_name == rhs.part_name))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_to_spec_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_to_spec_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_spec_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_to_spec_pargs() throw() {}
+
+  const std::string* part_name;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_spec_result {
+ public:
+
+  ThriftHiveMetastore_partition_name_to_spec_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_partition_name_to_spec_result() throw() {}
+
+  std::map<std::string, std::string>  success;
+  MetaException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_partition_name_to_spec_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_partition_name_to_spec_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_partition_name_to_spec_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_partition_name_to_spec_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_partition_name_to_spec_presult() throw() {}
+
+  std::map<std::string, std::string> * success;
+  MetaException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr<apache::thrift::protocol::TProtocol> prot) :
@@ -3305,6 +3511,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue);
   void send_get_config_value(const std::string& name, const std::string& defaultValue);
   void recv_get_config_value(std::string& _return);
+  void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name);
+  void send_partition_name_to_vals(const std::string& part_name);
+  void recv_partition_name_to_vals(std::vector<std::string> & _return);
+  void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name);
+  void send_partition_name_to_spec(const std::string& part_name);
+  void recv_partition_name_to_spec(std::map<std::string, std::string> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, public facebook::fb303::FacebookServiceProcessor {
@@ -3341,6 +3553,8 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
   void process_get_partition_names_ps(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_alter_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_config_value(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_partition_name_to_vals(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_partition_name_to_spec(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
     facebook::fb303::FacebookServiceProcessor(iface),
@@ -3373,6 +3587,8 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
     processMap_["get_partition_names_ps"] = &ThriftHiveMetastoreProcessor::process_get_partition_names_ps;
     processMap_["alter_partition"] = &ThriftHiveMetastoreProcessor::process_alter_partition;
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
+    processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
+    processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
   }
 
   virtual bool process(boost::shared_ptr<apache::thrift::protocol::TProtocol> piprot, boost::shared_ptr<apache::thrift::protocol::TProtocol> poprot);
@@ -3702,6 +3918,30 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
         return;
       } else {
         ifaces_[i]->get_config_value(_return, name, defaultValue);
+      }
+    }
+  }
+
+  void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->partition_name_to_vals(_return, part_name);
+        return;
+      } else {
+        ifaces_[i]->partition_name_to_vals(_return, part_name);
+      }
+    }
+  }
+
+  void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->partition_name_to_spec(_return, part_name);
+        return;
+      } else {
+        ifaces_[i]->partition_name_to_spec(_return, part_name);
       }
     }
   }

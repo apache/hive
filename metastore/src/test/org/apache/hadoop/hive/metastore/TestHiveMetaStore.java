@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -78,6 +80,33 @@ public class TestHiveMetaStore extends TestCase {
       System.err.println("Unable to close metastore");
       System.err.println(StringUtils.stringifyException(e));
       throw new Exception(e);
+    }
+  }
+
+  public void testNameMethods() {
+    Map<String, String> spec = new LinkedHashMap<String, String>();
+    spec.put("ds", "2008-07-01 14:13:12");
+    spec.put("hr", "14");
+    List<String> vals = new ArrayList<String>();
+    for(String v : spec.values()) {
+      vals.add(v);
+    }
+    String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
+
+    try {
+      List<String> testVals = client.partitionNameToVals(partName);
+      assertTrue("Values from name are incorrect", vals.equals(testVals));
+
+      Map<String, String> testSpec = client.partitionNameToSpec(partName);
+      assertTrue("Spec from name is incorrect", spec.equals(testSpec));
+
+      List<String> emptyVals = client.partitionNameToVals("");
+      assertTrue("Values should be empty", emptyVals.size() == 0);
+
+      Map<String, String> emptySpec =  client.partitionNameToSpec("");
+      assertTrue("Spec should be empty", emptySpec.size() == 0);
+    } catch (Exception e) {
+      assert(false);
     }
   }
 
@@ -193,7 +222,6 @@ public class TestHiveMetaStore extends TestCase {
       // Test partition listing with a partial spec - ds is specified but hr is not
       List<String> partialVals = new ArrayList<String>();
       partialVals.add(vals.get(0));
-      partialVals.add("");
       Set<Partition> parts = new HashSet<Partition>();
       parts.add(part);
       parts.add(part2);
