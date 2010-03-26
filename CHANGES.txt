@@ -318,6 +318,9 @@ Trunk -  Unreleased
     HIVE-1275 Fix TestHBaseCliDriver
     (John Sichi via namit)
 
+    HIVE-1277 Failure if the local file system directory for ${hive.user.scratchdir}
+    does not exist (Arvind Prabhakar via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

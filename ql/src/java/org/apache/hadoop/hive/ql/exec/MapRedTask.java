@@ -82,6 +82,26 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
       File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
 
+      // Check if the scratch directory exists. If not, create it.
+      if (!scratchDir.exists()) {
+        LOG.info("Local scratch directory " + scratchDir.getPath()
+                                + " not found. Attempting to create.");
+        if (!scratchDir.mkdirs()) {
+          // Unable to create this directory - it might have been created due
+          // to another process.
+          if (!scratchDir.exists()) {
+            throw new TaskExecutionException(
+                "Cannot create scratch directory "
+                + "\"" +  scratchDir.getPath() + "\". "
+                + "To configure a different directory, "
+                + "set the configuration "
+                + "\"hive.exec.scratchdir\" "
+                + "in the session, or permanently by modifying the "
+                + "appropriate hive configuration file such as hive-site.xml.");
+          }
+        }
+      }
+
       MapredWork plan = getWork();
 
       File planFile = File.createTempFile("plan", ".xml", scratchDir);
