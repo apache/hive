@@ -64,7 +64,7 @@ STAGE PLANS:
       Alter Table Operator:
         Alter Table
           type: add columns
-          new columns: X double
+          new columns: x double
           old name: TEST3b
 
 
@@ -148,7 +148,7 @@ STAGE PLANS:
       Alter Table Operator:
         Alter Table
           type: replace columns
-          new columns: R1 int, R2 double
+          new columns: r1 int, r2 double
           old name: TEST3c
 
 
@@ -165,7 +165,7 @@ POSTHOOK: type: DESCTABLE
 r1	int	
 r2	double	
 	 	 
-Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1261267074, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1261267075,transient_lastDdlTime=1261267075})	
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1269906076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1269906077,transient_lastDdlTime=1269906077}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: DROP TABLE TEST3a
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE TEST3a

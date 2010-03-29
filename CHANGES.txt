@@ -321,6 +321,9 @@ Trunk -  Unreleased
     HIVE-1277 Failure if the local file system directory for ${hive.user.scratchdir}
     does not exist (Arvind Prabhakar via namit)
 
+    HIVE-1281 Bucketing column names in create table should be case-insensitive
+    (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

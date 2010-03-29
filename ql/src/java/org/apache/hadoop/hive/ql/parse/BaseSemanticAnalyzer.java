@@ -336,18 +336,26 @@ public abstract class BaseSemanticAnalyzer {
     return null;
   }
 
+  protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
+    return getColumns(ast, true);
+  }
+  
   /**
    * Get the list of FieldSchema out of the ASTNode.
    */
-  protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
+  protected List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
 
+      String name = child.getChild(0).getText();
+      if(lowerCase) {
+        name = name.toLowerCase();
+      }
       // child 0 is the name of the column
-      col.setName(unescapeIdentifier(child.getChild(0).getText()));
+      col.setName(unescapeIdentifier(name));
       // child 1 is the type of the column
       ASTNode typeChild = (ASTNode) (child.getChild(1));
       col.setType(getTypeStringFromAST(typeChild));
@@ -366,7 +374,7 @@ public abstract class BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
-      colList.add(unescapeIdentifier(child.getText()));
+      colList.add(unescapeIdentifier(child.getText()).toLowerCase());
     }
     return colList;
   }
@@ -377,10 +385,10 @@ public abstract class BaseSemanticAnalyzer {
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()),
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
             HIVE_COLUMN_ORDER_ASC));
       } else {
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()),
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
             HIVE_COLUMN_ORDER_DESC));
       }
     }

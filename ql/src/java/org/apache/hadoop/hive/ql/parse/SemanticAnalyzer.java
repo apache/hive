@@ -6323,7 +6323,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
       case HiveParser.TOK_TABLEPARTCOLS:
-        partCols = getColumns((ASTNode) child.getChild(0));
+        partCols = getColumns((ASTNode) child.getChild(0), false);
         break;
       case HiveParser.TOK_TABLEBUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
