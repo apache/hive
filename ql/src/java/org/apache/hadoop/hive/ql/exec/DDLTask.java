@@ -1281,7 +1281,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       Deserializer d = SerDeUtils.lookupDeserializer(serdeName);
       if (d != null) {
-        System.out.println("Found class for " + serdeName);
+        LOG.debug("Found class for " + serdeName);
       }
     } catch (SerDeException e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
