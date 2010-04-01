@@ -63,6 +63,9 @@ Trunk -  Unreleased
     HIVE-1219. Robust handling of metastore connection failures
     (Paul Yang via namit)
 
+    HIVE-1272. Add SymlinkTextInputFormat to Hive.
+    (Guanghao Shen via zshao)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
