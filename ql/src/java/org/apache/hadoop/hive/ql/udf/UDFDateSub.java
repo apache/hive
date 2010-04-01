@@ -22,7 +22,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -43,8 +42,7 @@ import org.apache.hadoop.io.Text;
     + "  '2009-29-07'")
 public class UDFDateSub extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance(TimeZone
-      .getTimeZone("UTC"));
+  private final Calendar calendar = Calendar.getInstance();
 
   private Text result = new Text();
 

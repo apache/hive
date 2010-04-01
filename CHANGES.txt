@@ -333,6 +333,9 @@ Trunk -  Unreleased
     HIVE-1286. Remove debug message from stdout in ColumnarSerDe.
     (Yongqiang He via zshao)
 
+    HIVE-1253. Fix Date_sub and Date_add in case of daylight saving.
+    (Bryan Talbot via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
