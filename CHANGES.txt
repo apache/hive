@@ -160,6 +160,9 @@ Trunk -  Unreleased
     HIVE-1278. Partition name to values conversion conversion method
     (Paul Yang via namit)
 
+    HIVE-1276. Remove extra reducesink if it is already followed by a reduce sink
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -177,5 +177,11 @@ public class ReduceSinkDesc implements Serializable {
     return keySerializeInfo.getProperties().getProperty(
         org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER);
   }
+  
+  public void setOrder(String orderStr) {
+    keySerializeInfo.getProperties().setProperty(
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER,
+        orderStr);
+  }
 
 }

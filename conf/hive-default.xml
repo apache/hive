@@ -515,4 +515,10 @@
   <description>Maximum number of worker threads in the Thrift server's pool.</description>
 </property>
 
+<property>
+  <name>hive.optimize.reducededuplication</name>
+  <value>true</value>
+  <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>
+</property>
+
 </configuration>

@@ -219,6 +219,8 @@ public class HiveConf extends Configuration {
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
     HIVEENFORCESORTING("hive.enforce.sorting", false),
     HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
+    
+    HIVESCRIPTOPERATORTRUST("hive.exec.script.trust", false),
 
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
@@ -226,6 +228,7 @@ public class HiveConf extends Configuration {
     HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
+    HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true), 
     ;
 
     public final String varname;
