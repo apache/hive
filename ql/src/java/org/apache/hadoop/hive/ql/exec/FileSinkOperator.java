@@ -118,48 +118,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private void commit(int idx) throws IOException {
     if (isNativeTable) {
       if (!fs.rename(outPaths[idx], finalPaths[idx])) {
-        throw new IOException("Unable to rename output to: " 
+        throw new IOException("Unable to rename output to: "
           + finalPaths[idx]);
       }
     }
     LOG.info("Committed " + outPaths[idx] + " to output file: " + finalPaths[idx]);
   }
 
-  @Override
-  protected void initializeOp(Configuration hconf) throws HiveException {
+  private boolean filesCreated = false;
+  private void openFiles(Configuration hconf) throws HiveException {
+    if (filesCreated)
+      return;
     try {
-      serializer = (Serializer) conf.getTableInfo().getDeserializerClass()
-          .newInstance();
-      serializer.initialize(null, conf.getTableInfo().getProperties());
-      isNativeTable = !conf.getTableInfo().isNonNative();
-
-      JobConf jc;
-      if (hconf instanceof JobConf) {
-        jc = (JobConf) hconf;
-      } else {
-        // test code path
-        jc = new JobConf(hconf, ExecDriver.class);
-      }
-
-      multiFileSpray = conf.isMultiFileSpray();
-      totalFiles = conf.getTotalFiles();
-      numFiles   = conf.getNumFiles();
-
-      if (multiFileSpray) {
-        partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
-        int i = 0;
-        for (ExprNodeDesc e : conf.getPartitionCols()) {
-          partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
-        }
-
-        partitionObjectInspectors = initEvaluators(partitionEval, outputObjInspector);
-        prtner = (HivePartitioner<HiveKey, Object>)ReflectionUtils.newInstance(jc.getPartitionerClass(), null);
-      }
-
-      outWriters = new RecordWriter[numFiles];
-      outPaths   = new Path[numFiles];
-      finalPaths = new Path[numFiles];
-
       String specPath = conf.getDirName();
       Path tmpPath = Utilities.toTempPath(specPath);
       Set<Integer> seenBuckets = new HashSet<Integer>();
@@ -174,6 +144,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       int filesIdx = 0;
       for (int idx = 0; idx < totalFiles; idx++) {
         String taskId = Utilities.getTaskId(hconf);
+
+        if (this.getExecContext() != null && this.getExecContext().getFileId() != -1) {
+          LOG.info("replace taskId from execContext ");
+
+          taskId = Utilities.replaceTaskIdFromFilename(taskId, this.getExecContext().getFileId());
+
+          LOG.info("new taskId: FS " + taskId);
+
+          assert !multiFileSpray;
+          assert totalFiles == 1;
+        }
 
         if (multiFileSpray) {
           key.setHashCode(idx);
@@ -227,8 +208,56 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       if (isNativeTable) {
         autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
-          outPaths[0]);
+                                                                        outPaths[0]);
       }
+    } catch (HiveException e) {
+      throw e;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HiveException(e);
+    }
+
+    filesCreated = true;
+  }
+
+  private Configuration hconf;
+  private JobConf jc;
+
+  @Override
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    try {
+      filesCreated = false;
+      this.hconf = hconf;
+      serializer = (Serializer) conf.getTableInfo().getDeserializerClass()
+          .newInstance();
+      serializer.initialize(null, conf.getTableInfo().getProperties());
+      isNativeTable = !conf.getTableInfo().isNonNative();
+
+      if (hconf instanceof JobConf) {
+        jc = (JobConf) hconf;
+      } else {
+        // test code path
+        jc = new JobConf(hconf, ExecDriver.class);
+      }
+
+      multiFileSpray = conf.isMultiFileSpray();
+      totalFiles = conf.getTotalFiles();
+      numFiles   = conf.getNumFiles();
+
+      if (multiFileSpray) {
+        partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
+        int i = 0;
+        for (ExprNodeDesc e : conf.getPartitionCols()) {
+          partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
+        }
+
+        partitionObjectInspectors = initEvaluators(partitionEval, outputObjInspector);
+        prtner = (HivePartitioner<HiveKey, Object>)ReflectionUtils.newInstance(jc.getPartitionerClass(), null);
+      }
+
+      outWriters = new RecordWriter[numFiles];
+      outPaths   = new Path[numFiles];
+      finalPaths = new Path[numFiles];
 
       int id = conf.getDestTableId();
       if ((id != 0) && (id <= TableIdEnum.values().length)) {
@@ -251,6 +280,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
+    if (!filesCreated)
+      openFiles(hconf);
+
     // Since File Sink is a terminal operator, forward is not called - so,
     // maintain the number of output rows explicitly
     if (counterNameToEnum != null) {
@@ -295,6 +327,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    if (!filesCreated)
+      openFiles(hconf);
 
     if (!abort) {
       for (int idx = 0; idx < numFiles; idx++) {

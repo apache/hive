@@ -67,7 +67,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
  *this transformation does bucket map join optimization.
  */
 public class BucketMapJoinOptimizer implements Transform {
-  
+
   private static final Log LOG = LogFactory.getLog(GroupByOptimizer.class
       .getName());
 
@@ -130,11 +130,11 @@ public class BucketMapJoinOptimizer implements Transform {
       }
     };
   }
-  
+
   class BucketMapjoinOptProc implements NodeProcessor {
-    
+
     protected ParseContext pGraphContext;
-    
+
     public BucketMapjoinOptProc(ParseContext pGraphContext) {
       super();
       this.pGraphContext = pGraphContext;
@@ -148,11 +148,11 @@ public class BucketMapJoinOptimizer implements Transform {
 
       if(context.getListOfRejectedMapjoins().contains(mapJoinOp))
         return null;
-      
+
       QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext().get(mapJoinOp);
       if(joinCxt == null)
         return null;
-      
+
       List<String> joinAliases = new ArrayList<String>();
       String[] srcs = joinCxt.getBaseSrc();
       String[] left = joinCxt.getLeftAliases();
@@ -174,7 +174,7 @@ public class BucketMapJoinOptimizer implements Transform {
           }
         }
       }
-      
+
       MapJoinDesc mjDecs = mapJoinOp.getConf();
       LinkedHashMap<String, Integer> aliasToBucketNumberMapping = new LinkedHashMap<String, Integer>();
       LinkedHashMap<String, List<String>> aliasToBucketFileNamesMapping = new LinkedHashMap<String, List<String>>();
@@ -183,12 +183,12 @@ public class BucketMapJoinOptimizer implements Transform {
       // with only one partition presents in each join source tables.
       Map<String, Operator<? extends Serializable>> topOps = this.pGraphContext.getTopOps();
       Map<TableScanOperator, Table> topToTable = this.pGraphContext.getTopToTable();
-      
+
       // (partition to bucket file names) and (partition to bucket number) for
       // the big table;
       LinkedHashMap<Partition, List<String>> bigTblPartsToBucketFileNames = new LinkedHashMap<Partition, List<String>>();
       LinkedHashMap<Partition, Integer> bigTblPartsToBucketNumber = new LinkedHashMap<Partition, Integer>();
-      
+
       for (int index = 0; index < joinAliases.size(); index++) {
         String alias = joinAliases.get(index);
         TableScanOperator tso = (TableScanOperator) topOps.get(alias);
@@ -208,9 +208,9 @@ public class BucketMapJoinOptimizer implements Transform {
           }
           int partNumber = prunedParts.getConfirmedPartns().size()
               + prunedParts.getUnknownPartns().size();
-          
+
           if (partNumber > 1) {
-            // only allow one partition for small tables 
+            // only allow one partition for small tables
             if(alias != baseBigAlias) {
               return null;
             }
@@ -243,7 +243,7 @@ public class BucketMapJoinOptimizer implements Transform {
             // not contain mappings for the big table. Instead, the mappings are
             // contained in bigTblPartsToBucketFileNames and
             // bigTblPartsToBucketNumber
-            
+
           } else {
             Partition part = null;
             Iterator<Partition> iter = prunedParts.getConfirmedPartns()
@@ -286,7 +286,7 @@ public class BucketMapJoinOptimizer implements Transform {
           aliasToBucketFileNamesMapping.put(alias, fileNames);
         }
       }
-      
+
       // All tables or partitions are bucketed, and their bucket number is
       // stored in 'bucketNumbers', we need to check if the number of buckets in
       // the big table can be divided by no of buckets in small tables.
@@ -307,24 +307,24 @@ public class BucketMapJoinOptimizer implements Transform {
           return null;
         }
       }
-      
+
       MapJoinDesc desc = mapJoinOp.getConf();
-      
-      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping = 
+
+      LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping =
         new LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>>();
-      
-      //sort bucket names for the big table 
+
+      //sort bucket names for the big table
       if(bigTblPartsToBucketNumber.size() > 0) {
         Collection<List<String>> bucketNamesAllParts = bigTblPartsToBucketFileNames.values();
         for(List<String> partBucketNames : bucketNamesAllParts) {
           Collections.sort(partBucketNames);
         }
       } else {
-        Collections.sort(aliasToBucketFileNamesMapping.get(baseBigAlias));        
+        Collections.sort(aliasToBucketFileNamesMapping.get(baseBigAlias));
       }
-      
+
       // go through all small tables and get the mapping from bucket file name
-      // in the big table to bucket file names in small tables. 
+      // in the big table to bucket file names in small tables.
       for (int j = 0; j < joinAliases.size(); j++) {
         String alias = joinAliases.get(j);
         if(alias.equals(baseBigAlias))
@@ -332,7 +332,7 @@ public class BucketMapJoinOptimizer implements Transform {
         Collections.sort(aliasToBucketFileNamesMapping.get(alias));
         LinkedHashMap<String, ArrayList<String>> mapping = new LinkedHashMap<String, ArrayList<String>>();
         aliasBucketFileNameMapping.put(alias, mapping);
-        
+
         // for each bucket file in big table, get the corresponding bucket file
         // name in the small table.
         if (bigTblPartsToBucketNumber.size() > 0) {
@@ -347,14 +347,14 @@ public class BucketMapJoinOptimizer implements Transform {
             List<String> bigTblBucketNameList = bigTblPartToBucketNames.next().getValue();
             fillMapping(baseBigAlias, aliasToBucketNumberMapping,
                 aliasToBucketFileNamesMapping, alias, mapping, bigTblBucketNum,
-                bigTblBucketNameList);
+                bigTblBucketNameList, desc.getBucketFileNameMapping());
           }
         } else {
           List<String> bigTblBucketNameList = aliasToBucketFileNamesMapping.get(baseBigAlias);
           int bigTblBucketNum =  aliasToBucketNumberMapping.get(baseBigAlias);
           fillMapping(baseBigAlias, aliasToBucketNumberMapping,
               aliasToBucketFileNamesMapping, alias, mapping, bigTblBucketNum,
-              bigTblBucketNameList);
+              bigTblBucketNameList, desc.getBucketFileNameMapping());
         }
       }
       desc.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
@@ -366,7 +366,8 @@ public class BucketMapJoinOptimizer implements Transform {
         LinkedHashMap<String, Integer> aliasToBucketNumberMapping,
         LinkedHashMap<String, List<String>> aliasToBucketFileNamesMapping,
         String alias, LinkedHashMap<String, ArrayList<String>> mapping,
-        int bigTblBucketNum, List<String> bigTblBucketNameList) {
+        int bigTblBucketNum, List<String> bigTblBucketNameList,
+        LinkedHashMap<String, Integer> bucketFileNameMapping) {
       for (int index = 0; index < bigTblBucketNameList.size(); index++) {
         String inputBigTBLBucket = bigTblBucketNameList.get(index);
         int smallTblBucketNum = aliasToBucketNumberMapping.get(alias);
@@ -389,6 +390,7 @@ public class BucketMapJoinOptimizer implements Transform {
           }
         }
         mapping.put(inputBigTBLBucket, resultFileNames);
+        bucketFileNameMapping.put(inputBigTBLBucket, index);
       }
     }
 
@@ -423,12 +425,12 @@ public class BucketMapJoinOptimizer implements Transform {
       }
       return fileNames;
     }
-    
+
     private boolean checkBucketColumns(List<String> bucketColumns, MapJoinDesc mjDesc, int index) {
       List<ExprNodeDesc> keys = mjDesc.getKeys().get((byte)index);
       if (keys == null || bucketColumns == null || bucketColumns.size() == 0)
         return false;
-      
+
       //get all join columns from join keys stored in MapJoinDesc
       List<String> joinCols = new ArrayList<String>();
       List<ExprNodeDesc> joinKeys = new ArrayList<ExprNodeDesc>();
@@ -450,30 +452,30 @@ public class BucketMapJoinOptimizer implements Transform {
       }
 
       // to see if the join columns from a table is exactly this same as its
-      // bucket columns 
+      // bucket columns
       if (joinCols.size() == 0 || joinCols.size() != bucketColumns.size()) {
         return false;
       }
-      
+
       for (String col : joinCols) {
         if (!bucketColumns.contains(col))
           return false;
       }
-      
+
       return true;
     }
-    
+
   }
-  
+
   class BucketMapjoinOptProcCtx implements NodeProcessorCtx {
     // we only convert map joins that follows a root table scan in the same
     // mapper. That means there is no reducer between the root table scan and
     // mapjoin.
     Set<MapJoinOperator> listOfRejectedMapjoins = new HashSet<MapJoinOperator>();
-    
+
     public Set<MapJoinOperator> getListOfRejectedMapjoins() {
       return listOfRejectedMapjoins;
     }
-    
+
   }
 }

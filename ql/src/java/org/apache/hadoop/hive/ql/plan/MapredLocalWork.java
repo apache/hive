@@ -119,6 +119,7 @@ public class MapredLocalWork implements Serializable {
     private Class<? extends BucketMatcher> bucketMatcherClass;
 
     private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketBaseFileNameMapping;
+    private LinkedHashMap<String, Integer> bucketFileNameMapping;
 
     public void setMapJoinBigTableAlias(String bigTableAlias) {
       this.mapJoinBigTableAlias = bigTableAlias;
@@ -214,5 +215,15 @@ public class MapredLocalWork implements Serializable {
         LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketBaseFileNameMapping) {
       this.aliasBucketBaseFileNameMapping = aliasBucketBaseFileNameMapping;
     }
+
+    @Explain(displayName = "Alias Bucket Output File Name Mapping", normalExplain = false)
+    public LinkedHashMap<String, Integer> getBucketFileNameMapping() {
+      return bucketFileNameMapping;
+    }
+
+    public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping) {
+      this.bucketFileNameMapping = bucketFileNameMapping;
+    }
+
   }
 }

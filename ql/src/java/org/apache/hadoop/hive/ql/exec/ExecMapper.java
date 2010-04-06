@@ -69,12 +69,14 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private long nextCntr = 1;
   private String lastInputFile = null;
   private MapredLocalWork localWork = null;
-  
+
   private ExecMapperContext execContext = new ExecMapperContext();
-  
+
   public static class ExecMapperContext {
     boolean inputFileChanged = false;
     String currentInputFile;
+    Integer fileId = new Integer(-1);
+
     JobConf jc;
     public boolean isInputFileChanged() {
       return inputFileChanged;
@@ -94,6 +96,14 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     public void setJc(JobConf jc) {
       this.jc = jc;
     }
+
+    public Integer getFileId() {
+      return fileId;
+    }
+    public void setFileId(Integer fileId) {
+      this.fileId = fileId;
+    }
+
   }
 
   @Override
@@ -124,7 +134,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
-      
+
       // initialize map local work
       localWork = mrwork.getMapLocalWork();
       if (localWork == null) {
@@ -171,7 +181,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       mo.setOutputCollector(oc);
       mo.setReporter(rp);
     }
-    
+
     if(inputFileChanged()) {
       if (this.localWork != null
           && (localWork.getInputFileChangeSensitive() || this.lastInputFile == null)) {
@@ -179,7 +189,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
       this.lastInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
     }
-    
+
     try {
       if (mo.getDone()) {
         done = true;
@@ -215,7 +225,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
    * mapper's input file, the work need to clear context and re-initialization
    * after the input file changed. This is first introduced to process bucket
    * map join.
-   * 
+   *
    * @return
    */
   private boolean inputFileChanged() {
@@ -240,12 +250,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
           int fetchOpRows = 0;
           String alias = entry.getKey();
           FetchOperator fetchOp = entry.getValue();
-          
+
           if(inputFileChangeSenstive) {
             fetchOp.clearFetchContext();
             setUpFetchOpContext(fetchOp, alias);
           }
-          
+
           Operator<? extends Serializable> forwardOp = localWork
               .getAliasToWork().get(alias);
 
@@ -283,7 +293,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
     }
   }
-  
+
   private void setUpFetchOpContext(FetchOperator fetchOp, String alias)
       throws Exception {
     String currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
@@ -291,13 +301,14 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
     BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(bucketMatcherCls, null);
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt.getAliasBucketFileNameMapping());
+
     List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
         bucketMatcherCxt.getMapJoinBigTableAlias(),
         alias);
     Iterator<Path> iter = aliasFiles.iterator();
     fetchOp.setupContext(iter, null);
   }
-  
+
 
   private long getNextCntr(long cntr) {
     // A very simple counter to keep track of number of rows processed by the

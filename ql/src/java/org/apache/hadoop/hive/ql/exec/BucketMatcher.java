@@ -25,10 +25,13 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 
 public interface BucketMatcher {
-  
+
   public List<Path> getAliasBucketFiles(String currentInputFile, String refTableAlias, String alias);
-  
+
   public void setAliasBucketFileNameMapping(
       LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping);
 
+  public LinkedHashMap<String, Integer> getBucketFileNameMapping();
+
+  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping);
 }

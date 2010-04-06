@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 /**
  * Map Join operator Descriptor implementation.
- * 
+ *
  */
 @Explain(displayName = "Common Join Operator")
 public class MapJoinDesc extends JoinDesc implements Serializable {
@@ -43,14 +43,16 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private int posBigTable;
 
   private Map<Byte, List<Integer>> retainList;
-  
+
   private transient String bigTableAlias;
-  
+
   private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
+  private LinkedHashMap<String, Integer> bucketFileNameMapping;
 
   public MapJoinDesc() {
+    bucketFileNameMapping = new LinkedHashMap<String, Integer>();
   }
-  
+
   public MapJoinDesc(MapJoinDesc clone) {
     super(clone);
     this.keys = clone.keys;
@@ -60,6 +62,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.retainList = clone.retainList;
     this.bigTableAlias = clone.bigTableAlias;
     this.aliasBucketFileNameMapping = clone.aliasBucketFileNameMapping;
+    this.bucketFileNameMapping = clone.bucketFileNameMapping;
   }
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
@@ -71,6 +74,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
     this.posBigTable = posBigTable;
+    this.bucketFileNameMapping = new LinkedHashMap<String, Integer>();
     initRetainExprList();
   }
 
@@ -179,5 +183,13 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   public void setAliasBucketFileNameMapping(
       LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping) {
     this.aliasBucketFileNameMapping = aliasBucketFileNameMapping;
+  }
+
+  public LinkedHashMap<String, Integer> getBucketFileNameMapping() {
+    return bucketFileNameMapping;
+  }
+
+  public void setBucketFileNameMapping(LinkedHashMap<String, Integer> bucketFileNameMapping) {
+    this.bucketFileNameMapping = bucketFileNameMapping;
   }
 }

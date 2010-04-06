@@ -225,7 +225,7 @@ public final class Utilities {
       }
     }
   }
-  
+
   public static class SetDelegate extends DefaultPersistenceDelegate {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -248,9 +248,9 @@ public final class Utilities {
         out.writeStatement(new Statement(oldInstance, "add", new Object[]{i.next()}));
       }
     }
-    
+
   }
-  
+
   public static class ListDelegate extends DefaultPersistenceDelegate {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -273,9 +273,9 @@ public final class Utilities {
         out.writeStatement(new Statement(oldInstance, "add", new Object[]{i.next()}));
       }
     }
-    
+
   }
-  
+
   public static void setMapRedWork(Configuration job, MapredWork w) {
     try {
       // use the default file system of the job
@@ -355,7 +355,7 @@ public final class Utilities {
         }
     }
   }
-  
+
   /**
    * Serialize the whole query plan.
    */
@@ -372,10 +372,10 @@ public final class Utilities {
     e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
     e.setPersistenceDelegate(Operator.ProgressCounter.class,
         new EnumDelegate());
-    
+
     e.setPersistenceDelegate(org.datanucleus.sco.backed.Map.class, new MapDelegate());
     e.setPersistenceDelegate(org.datanucleus.sco.backed.List.class, new ListDelegate());
-    
+
     e.writeObject(plan);
     e.close();
   }
@@ -390,9 +390,9 @@ public final class Utilities {
     d.close();
     return (ret);
   }
-  
+
   /**
-   * Serialize the mapredWork object to an output stream. DO NOT use this to 
+   * Serialize the mapredWork object to an output stream. DO NOT use this to
    * write to standard output since it closes the output stream.
    * DO USE mapredWork.toXML() instead.
    */
@@ -681,7 +681,7 @@ public final class Utilities {
   /**
    * Convert an output stream to a compressed output stream based on codecs and
    * compression options specified in the Job Configuration.
-   * 
+   *
    * @param jc
    *          Job Configuration
    * @param out
@@ -698,7 +698,7 @@ public final class Utilities {
    * Convert an output stream to a compressed output stream based on codecs
    * codecs in the Job Configuration. Caller specifies directly whether file is
    * compressed or not
-   * 
+   *
    * @param jc
    *          Job Configuration
    * @param out
@@ -723,7 +723,7 @@ public final class Utilities {
   /**
    * Based on compression option and configured output codec - get extension for
    * output file. This is only required for text files - not sequencefiles
-   * 
+   *
    * @param jc
    *          Job Configuration
    * @param isCompressed
@@ -744,7 +744,7 @@ public final class Utilities {
 
   /**
    * Create a sequencefile output stream based on job configuration.
-   * 
+   *
    * @param jc
    *          Job configuration
    * @param fs
@@ -768,7 +768,7 @@ public final class Utilities {
    * Create a sequencefile output stream based on job configuration Uses user
    * supplied compression flag (rather than obtaining it from the Job
    * Configuration).
-   * 
+   *
    * @param jc
    *          Job configuration
    * @param fs
@@ -801,7 +801,7 @@ public final class Utilities {
   /**
    * Create a RCFile output stream based on job configuration Uses user supplied
    * compression flag (rather than obtaining it from the Job Configuration).
-   * 
+   *
    * @param jc
    *          Job configuration
    * @param fs
@@ -903,7 +903,7 @@ public final class Utilities {
    * Rename src to dst, or in the case dst already exists, move files in src to
    * dst. If there is an existing file with the same name, the new file's name
    * will be appended with "_1", "_2", etc.
-   * 
+   *
    * @param fs
    *          the FileSystem where src and dst are on.
    * @param src
@@ -923,7 +923,7 @@ public final class Utilities {
    * Rename src to dst, or in the case dst already exists, move files in src to
    * dst. If there is an existing file with the same name, the new file's name
    * will be appended with "_1", "_2", etc.
-   * 
+   *
    * @param fs
    *          the FileSystem where src and dst are on.
    * @param src
@@ -997,10 +997,25 @@ public final class Utilities {
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
         s.append("0");
     }
-    String newTaskId = s.toString() + strBucketNum; 
-    return filename.replaceAll(taskId, newTaskId);
+    String newTaskId = s.toString() + strBucketNum;
+    String[] spl = filename.split(taskId);
+
+    if ((spl.length == 0) || (spl.length == 1)) {
+      return filename.replaceAll(taskId, newTaskId);
+    }
+
+    StringBuffer snew = new StringBuffer();
+    for (int idx = 0; idx < spl.length-1; idx++) {
+      if (idx > 0) {
+        snew.append(taskId);
+      }
+      snew.append(spl[idx]);
+    }
+    snew.append(newTaskId);
+    snew.append(spl[spl.length-1]);
+    return snew.toString();
   }
-  
+
   /**
    * Remove all temporary files and duplicate (double-committed) files from a
    * given directory.
@@ -1046,7 +1061,7 @@ public final class Utilities {
 
   /**
    * Add new elements to the classpath.
-   * 
+   *
    * @param newPaths
    *          Array of classpath elements
    */
@@ -1079,7 +1094,7 @@ public final class Utilities {
 
   /**
    * remove elements from the classpath.
-   * 
+   *
    * @param pathsToRemove
    *          Array of classpath elements
    */
@@ -1180,7 +1195,7 @@ public final class Utilities {
   /**
    * Gets the default notification interval to send progress updates to the
    * tracker. Useful for operators that may not output data for a while.
-   * 
+   *
    * @param hconf
    * @return the interval in milliseconds
    */

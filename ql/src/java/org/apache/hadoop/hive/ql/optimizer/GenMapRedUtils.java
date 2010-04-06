@@ -272,6 +272,7 @@ public final class GenMapRedUtils {
         BucketMapJoinContext bucketMJCxt = new BucketMapJoinContext();
         localPlan.setBucketMapjoinContext(bucketMJCxt);
         bucketMJCxt.setAliasBucketFileNameMapping(aliasBucketFileNameMapping);
+        bucketMJCxt.setBucketFileNameMapping(currMapJoinOp.getConf().getBucketFileNameMapping());
         localPlan.setInputFileChangeSensitive(true);
         bucketMJCxt.setMapJoinBigTableAlias(currMapJoinOp.getConf().getBigTableAlias());
         bucketMJCxt.setBucketMatcherClass(org.apache.hadoop.hive.ql.exec.DefaultBucketMatcher.class);

@@ -30,7 +30,7 @@ select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on
 insert overwrite table smb_join_results_empty_bigtable
 select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key;
 
-select * from smb_join_results_empty_bigtable order by k1;
+select * from smb_join_results_empty_bigtable order by k1, v1, k2, v2;
 
 explain
 insert overwrite table smb_join_results
@@ -39,7 +39,7 @@ select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on
 insert overwrite table smb_join_results
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key;
 
-select * from smb_join_results order by k1;
+select * from smb_join_results order by k1, v1, k2, v2;
 
 insert overwrite table normal_join_results select * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key;
 
