@@ -132,12 +132,17 @@ public class UDAFPercentile extends UDAF {
 
     public void init() {
       if (state.counts != null) {
+        // We reuse the same hashmap to reduce new object allocation.
+        // This means counts can be empty when there is no input data.
         state.counts.clear();
       }
     }
 
     public boolean iterate(LongWritable o, double percentile) {
       if (state.percentiles == null) {
+        if (percentile < 0.0 || percentile > 1.0) {
+          throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+        }
         state.percentiles = new ArrayList<DoubleWritable>(1);
         state.percentiles.add(new DoubleWritable(percentile));
       }
@@ -167,7 +172,7 @@ public class UDAFPercentile extends UDAF {
 
     public DoubleWritable terminate() {
       // No input data.
-      if (state.counts == null) {
+      if (state.counts == null || state.counts.size() == 0) {
         return null;
       }
 
@@ -211,12 +216,19 @@ public class UDAFPercentile extends UDAF {
 
     public void init() {
       if (state.counts != null) {
+        // We reuse the same hashmap to reduce new object allocation.
+        // This means counts can be empty when there is no input data.
         state.counts.clear();
       }
     }
 
     public boolean iterate(LongWritable o, List<DoubleWritable> percentiles) {
       if (state.percentiles == null) {
+        for (int i = 0; i < percentiles.size(); i++) {
+          if (percentiles.get(i).get() < 0.0 || percentiles.get(i).get() > 1.0) {
+            throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+          }
+        }
         state.percentiles = new ArrayList<DoubleWritable>(percentiles);
       }
       if (o != null) {
@@ -246,7 +258,7 @@ public class UDAFPercentile extends UDAF {
 
     public List<DoubleWritable> terminate() {
       // No input data
-      if (state.counts == null) {
+      if (state.counts == null || state.counts.size() == 0) {
         return null;
       }
 

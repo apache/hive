@@ -336,6 +336,9 @@ Trunk -  Unreleased
     HIVE-1253. Fix Date_sub and Date_add in case of daylight saving.
     (Bryan Talbot via zshao)
 
+    HIVE-1291. Fix UDAFPercentile ndexOutOfBoundsException
+    (Zheng Shao via namit)
+
     HIVE-1290. Sort merge join does not work with bucketizedhiveinputformat.
     (Namit Jain via Ning Zhang)
 

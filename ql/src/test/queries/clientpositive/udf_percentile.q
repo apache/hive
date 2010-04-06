@@ -60,3 +60,11 @@ SELECT CAST(key AS INT) DIV 10,
        percentile(NULL, array(0.0, 0.5, 0.99, 1.0))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
+
+
+-- test empty array handling
+SELECT CAST(key AS INT) DIV 10,
+       percentile(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5),
+       percentile(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), array(0.0, 0.5, 0.99, 1.0))
+FROM src
+GROUP BY CAST(key AS INT) DIV 10;
