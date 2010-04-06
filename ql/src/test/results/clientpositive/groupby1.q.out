@@ -63,7 +63,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        invalidscheme:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1515720962/10002 
+        invalidscheme:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/ql/scratchdir/hive_2010-04-05_18-09-05_667_8338333435711978851/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -128,14 +128,18 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(sub
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_g1
+POSTHOOK: Lineage: dest_g1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest_g1.* FROM dest_g1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1461207051/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/ql/scratchdir/hive_2010-04-05_18-09-14_229_1556124769125603446/10000
 POSTHOOK: query: SELECT dest_g1.* FROM dest_g1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1461207051/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/ql/scratchdir/hive_2010-04-05_18-09-14_229_1556124769125603446/10000
+POSTHOOK: Lineage: dest_g1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
 10	10.0
 100	200.0

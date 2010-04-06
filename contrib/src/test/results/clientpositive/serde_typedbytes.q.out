@@ -88,7 +88,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/zshao/hadoop_hive/trunk/build/contrib/scratchdir/1970906774/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/contrib/scratchdir/hive_2010-04-05_18-25-42_688_7908626219117423181/10000
 
   Stage: Stage-0
     Move Operator
@@ -103,7 +103,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive/trunk/build/contrib/scratchdir/1458788735/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/contrib/scratchdir/hive_2010-04-05_18-25-42_688_7908626219117423181/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -151,14 +151,18 @@ INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive/trunk/build/contrib/scratchdir/141823915/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/contrib/scratchdir/hive_2010-04-05_18-25-49_238_6880226342565911331/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive/trunk/build/contrib/scratchdir/141823915/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_3/build/contrib/scratchdir/hive_2010-04-05_18-25-49_238_6880226342565911331/10000
+POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86
 311	val_311
@@ -664,3 +668,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

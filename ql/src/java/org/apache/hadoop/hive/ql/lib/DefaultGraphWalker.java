@@ -38,7 +38,6 @@ public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
   private final List<Node> toWalk = new ArrayList<Node>();
-  private final Set<Node> seenList = new HashSet<Node>();
   private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
   private final Dispatcher dispatcher;
 

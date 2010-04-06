@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
@@ -45,6 +46,11 @@ public class MoveWork implements Serializable {
    * List of WriteEntities that are passed to the hooks.
    */
   protected HashSet<WriteEntity> outputs;
+
+  /**
+   * List of inserted partitions
+   */
+  protected List<Partition> movedParts;
 
   public MoveWork() {
   }

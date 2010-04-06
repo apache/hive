@@ -58,7 +58,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/215339388/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10000
 
   Stage: Stage-0
     Move Operator
@@ -73,7 +73,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1222374643/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -107,14 +107,18 @@ INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest4_sequencefile
+POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest4_sequencefile
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1578298324/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
 POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1578298324/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
+POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86
 311	val_311

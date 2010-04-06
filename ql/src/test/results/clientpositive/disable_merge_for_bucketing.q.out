@@ -49,9 +49,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/src [src]
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -62,12 +62,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/src
+              location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1269370923
+              transient_lastDdlTime 1270516041
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -78,12 +78,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/src
+                location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1269370923
+                transient_lastDdlTime 1270516041
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -99,7 +99,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/scratchdir/hive_2010-03-23_12-02-03_982_566371038266932645/10000
+              directory: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-21_813_2816895778195265258/10000
               NumFilesPerFileSink: 2
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -111,12 +111,12 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/bucket2_1
+                    location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/bucket2_1
                     name bucket2_1
                     serialization.ddl struct bucket2_1 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1269370923
+                    transient_lastDdlTime 1270516041
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: bucket2_1
               TotalFiles: 2
@@ -126,7 +126,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/scratchdir/hive_2010-03-23_12-02-03_982_566371038266932645/10000
+          source: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-21_813_2816895778195265258/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -137,15 +137,15 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/test/data/warehouse/bucket2_1
+                location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/bucket2_1
                 name bucket2_1
                 serialization.ddl struct bucket2_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1269370923
+                transient_lastDdlTime 1270516041
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucket2_1
-          tmp directory: file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/scratchdir/hive_2010-03-23_12-02-03_982_566371038266932645/10001
+          tmp directory: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-21_813_2816895778195265258/10001
 
 
 PREHOOK: query: insert overwrite table bucket2_1
@@ -158,12 +158,16 @@ select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucket2_1
+POSTHOOK: Lineage: bucket2_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket2_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: bucket2_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket2_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF bucket2_1 (TOK_TABLESAMPLE 1 2) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
 
@@ -221,11 +225,13 @@ STAGE PLANS:
 PREHOOK: query: select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_1
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/scratchdir/hive_2010-03-23_12-02-38_972_2579884827618647110/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-28_295_4764288900823189670/10000
 POSTHOOK: query: select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket2_1
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive_RCFile/build/ql/scratchdir/hive_2010-03-23_12-02-38_972_2579884827618647110/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-28_295_4764288900823189670/10000
+POSTHOOK: Lineage: bucket2_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket2_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0
@@ -478,3 +484,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table bucket2_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@bucket2_1
+POSTHOOK: Lineage: bucket2_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket2_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

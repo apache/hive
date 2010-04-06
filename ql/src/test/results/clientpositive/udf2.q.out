@@ -11,12 +11,14 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE sr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION trim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION rtrim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION ltrim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|'))))
 
@@ -63,9 +65,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1681092465/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-31-50_273_246953170286329237/10000
 POSTHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1681092465/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-31-50_273_246953170286329237/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 |	abc	|	  abc	|	abc  	|

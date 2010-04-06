@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -73,6 +74,10 @@ public class QueryPlan implements Serializable {
    * to the outputs here. 
    */
   private HashSet<WriteEntity> outputs;
+  /**
+   * Lineage information for the query.
+   */
+  protected LineageInfo linfo;
 
   private HashMap<String, String> idToTableNameMap;
 
@@ -94,6 +99,7 @@ public class QueryPlan implements Serializable {
     // Note that inputs and outputs can be changed when the query gets executed
     inputs = sem.getInputs();
     outputs = sem.getOutputs();
+    linfo = sem.getLineageInfo();
     idToTableNameMap = new HashMap<String, String>(sem.getIdToTableNameMap());
 
     queryId = makeQueryId();
@@ -711,4 +717,21 @@ public class QueryPlan implements Serializable {
     this.started = started;
   }
 
+  /**
+   * Gets the lineage information.
+   * 
+   * @return LineageInfo associated with the query.
+   */
+  public LineageInfo getLineageInfo() {
+    return linfo;
+  }
+  
+  /**
+   * Sets the lineage information.
+   * 
+   * @param linfo The LineageInfo structure that is set in the optimization phase.
+   */
+  public void setLineageInfo(LineageInfo linfo) {
+    this.linfo = linfo;
+  }  
 }

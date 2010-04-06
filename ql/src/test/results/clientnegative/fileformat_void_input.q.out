@@ -17,4 +17,6 @@ INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: Error in semantic analysis: line 3:20 Input Format must implement InputFormat dest1

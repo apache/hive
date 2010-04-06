@@ -90,7 +90,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1571190278/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-15-07_068_6853046437347700201/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -130,14 +130,18 @@ POSTHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM T2 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2048970411/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-15-16_045_761099202785601542/10000
 POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2048970411/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-15-16_045_761099202785601542/10000
+POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0
 0	val_0
 0	val_0
@@ -163,8 +167,12 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE T1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE T2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE T2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]

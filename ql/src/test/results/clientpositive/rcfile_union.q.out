@@ -23,20 +23,24 @@ INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@rcfile_uniontable
+POSTHOOK: Lineage: rcfile_uniontable.b SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_uniontable.c SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM (
 SELECT b AS cola FROM rcfile_unionTable
 UNION ALL
 SELECT c AS cola FROM rcfile_unionTable) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_uniontable
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1325887249/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-22-51_306_3234597609952199798/10000
 POSTHOOK: query: SELECT * FROM (
 SELECT b AS cola FROM rcfile_unionTable
 UNION ALL
 SELECT c AS cola FROM rcfile_unionTable) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_uniontable
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1325887249/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-22-51_306_3234597609952199798/10000
+POSTHOOK: Lineage: rcfile_uniontable.b SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_uniontable.c SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_238
 238
 val_86
@@ -62,3 +66,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE rcfile_unionTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@rcfile_uniontable
+POSTHOOK: Lineage: rcfile_uniontable.b SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_uniontable.c SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

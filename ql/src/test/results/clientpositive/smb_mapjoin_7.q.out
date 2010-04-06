@@ -63,6 +63,8 @@ select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@smb_bucket4_2
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table smb_join_results_empty_bigtable
 select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -75,6 +77,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Output: default@smb_join_results_empty_bigtable
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table smb_join_results_empty_bigtable
 select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -87,14 +95,34 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Output: default@smb_join_results_empty_bigtable
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from smb_join_results_empty_bigtable order by k1, v1, k2, v2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results_empty_bigtable
-PREHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-12_819_2480962660545851877/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-48_526_6972277574358054550/10000
 POSTHOOK: query: select * from smb_join_results_empty_bigtable order by k1, v1, k2, v2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results_empty_bigtable
-POSTHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-12_819_2480962660545851877/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-48_526_6972277574358054550/10000
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 NULL	NULL	0	val_0
 NULL	NULL	0	val_0
 NULL	NULL	0	val_0
@@ -603,6 +631,16 @@ POSTHOOK: query: explain
 insert overwrite table smb_join_results
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF smb_bucket4_1 a) (TOK_TABREF smb_bucket4_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB smb_join_results)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -683,14 +721,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Output: default@smb_join_results
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from smb_join_results order by k1, v1, k2, v2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-19_000_3282437314854908032/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-56_214_5633138583101239302/10000
 POSTHOOK: query: select * from smb_join_results order by k1, v1, k2, v2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-19_000_3282437314854908032/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-56_214_5633138583101239302/10000
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 NULL	NULL	0	val_0
 NULL	NULL	0	val_0
 NULL	NULL	0	val_0
@@ -1201,55 +1267,217 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Output: default@normal_join_results
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-25_922_8963899750473921731/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-05_584_7093435845128150848/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-25_922_8963899750473921731/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-05_584_7093435845128150848/10000
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	130091	0	36210398070
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-28_859_756911741105962638/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-09_400_774289249409782973/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-28_859_756911741105962638/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-09_400_774289249409782973/10000
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	130091	0	36210398070
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_empty_bigtable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results_empty_bigtable
-PREHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-31_791_1136562844998184899/10000
+PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-13_031_4148210738549073193/10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_empty_bigtable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results_empty_bigtable
-POSTHOOK: Output: file:/data/users/njain/hive-trunk/build/ql/scratchdir/hive_2010-04-05_18-33-31_791_1136562844998184899/10000
+POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-17-13_031_4148210738549073193/10000
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 0	130091	0	36210398070
 PREHOOK: query: drop table smb_join_results
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table smb_join_results
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@smb_join_results
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table smb_join_results_empty_bigtable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table smb_join_results_empty_bigtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@smb_join_results_empty_bigtable
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table normal_join_results
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table normal_join_results
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@normal_join_results
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table smb_bucket4_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table smb_bucket4_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@smb_bucket4_1
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table smb_bucket4_2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table smb_bucket4_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@smb_bucket4_2
+POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]

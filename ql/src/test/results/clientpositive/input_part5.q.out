@@ -67,7 +67,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1914556139/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-28_547_1265657918980229703/10000
 
   Stage: Stage-0
     Move Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1956159984/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-28_547_1265657918980229703/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -122,14 +122,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1308089545/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-36_369_7129520619490807626/10000
 POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1308089545/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-36_369_7129520619490807626/10000
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -303,3 +311,7 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tmptable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]

@@ -24,6 +24,9 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 'abc', 'xyz', '867
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c2 SIMPLE []
+POSTHOOK: Lineage: dest1.c3 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws(',', dest1.c1, dest1.c2, dest1.c3),
@@ -36,6 +39,9 @@ SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws(NULL, dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c2 SIMPLE []
+POSTHOOK: Lineage: dest1.c3 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION concat_ws (. (TOK_TABLE_OR_COL dest1) c1) (. (TOK_TABLE_OR_COL dest1) c2) (. (TOK_TABLE_OR_COL dest1) c3))) (TOK_SELEXPR (TOK_FUNCTION concat_ws ',' (. (TOK_TABLE_OR_COL dest1) c1) (. (TOK_TABLE_OR_COL dest1) c2) (. (TOK_TABLE_OR_COL dest1) c3))) (TOK_SELEXPR (TOK_FUNCTION concat_ws TOK_NULL (. (TOK_TABLE_OR_COL dest1) c1) (. (TOK_TABLE_OR_COL dest1) c2) (. (TOK_TABLE_OR_COL dest1) c3))) (TOK_SELEXPR (TOK_FUNCTION concat_ws '**' (. (TOK_TABLE_OR_COL dest1) c1) TOK_NULL (. (TOK_TABLE_OR_COL dest1) c3))))))
 
@@ -79,12 +85,15 @@ PREHOOK: query: SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/mnt/vol/devrs003.snc1/jonchang/trunk/build/ql/tmp/2092269896/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-31-41_619_2315642485793983283/10000
 POSTHOOK: query: SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws(',', dest1.c1, dest1.c2, dest1.c3),
        concat_ws(NULL, dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/mnt/vol/devrs003.snc1/jonchang/trunk/build/ql/tmp/2092269896/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-31-41_619_2315642485793983283/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c2 SIMPLE []
+POSTHOOK: Lineage: dest1.c3 SIMPLE []
 xyzabc8675309	abc,xyz,8675309	NULL	abc**8675309

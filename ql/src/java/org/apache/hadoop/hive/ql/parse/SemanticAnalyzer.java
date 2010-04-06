@@ -50,11 +50,11 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -245,13 +245,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb = pctx.getQB();
     groupOpToInputTables = pctx.getGroupOpToInputTables();
     prunedPartitions = pctx.getPrunedPartitions();
+    setLineageInfo(pctx.getLineageInfo());
   }
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, topOps, topSelOps,
-        opParseCtx, joinContext, topToTable, loadTableWork, loadFileWork, ctx,
-        idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer,
-        groupOpToInputTables, prunedPartitions, opToSamplePruner);
+        opParseCtx, joinContext, topToTable, loadTableWork,
+        loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
+        opToSamplePruner);
   }
 
   @SuppressWarnings("nls")
@@ -3143,13 +3145,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBMetaData qbm = qb.getMetaData();
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
-    Table dest_tab; // destination table if any
+    Table dest_tab = null;     // destination table if any
     String queryTmpdir = null; // the intermediate destination directory
     Path dest_path = null; // the final destination directory
     TableDesc table_desc = null;
     int currentTableId = 0;
     boolean isLocal = false;
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
+    LoadTableDesc ltd = null;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -3179,9 +3182,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Create the work for moving the table
       if (!isNonNativeTable) {
-        loadTableWork.add(new LoadTableDesc(queryTmpdir, ctx
+        ltd = new LoadTableDesc(queryTmpdir, ctx
             .getExternalTmpFileURI(dest_path.toUri()), table_desc,
-            new HashMap<String, String>()));
+            new HashMap<String, String>());
+        loadTableWork.add(ltd);
       }
       if (!outputs.add(new WriteEntity(dest_tab))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
@@ -3205,9 +3209,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
-      loadTableWork.add(new LoadTableDesc(queryTmpdir, ctx
+      ltd = new LoadTableDesc(queryTmpdir, ctx
           .getExternalTmpFileURI(dest_path.toUri()), table_desc, dest_part
-          .getSpec()));
+          .getSpec());
+      loadTableWork.add(ltd);
       if (!outputs.add(new WriteEntity(dest_part))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
@@ -3354,6 +3359,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId,
         rsCtx.isMultiFileSpray(), rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols()),
         fsRS, input), inputRR);
+
+
+    if (ltd != null && SessionState.get() != null) {
+      SessionState.get().getLineageState()
+        .mapDirToFop(ltd.getSourceDir(), (FileSinkOperator)output);
+    }
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
         + dest_path + " row schema: " + inputRR.toString());
@@ -4833,8 +4844,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo qbp = qb.getParseInfo();
 
-    TreeSet<String> ks = new TreeSet<String>();
-    ks.addAll(qbp.getClauseNames());
+    TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
 
     // For multi-group by with the same distinct, we ignore all user hints
     // currently. It doesnt matter whether he has asked to do
@@ -5277,7 +5287,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colsEqual, alias, rwsch, qb.getMetaData(), null);
         tableOp = OperatorFactory.getAndMakeChild(new FilterDesc(
             samplePredicate, true, new sampleDesc(ts.getNumerator(), ts
-            .getDenominator(), tabBucketCols, true)), top);
+            .getDenominator(), tabBucketCols, true)),
+            new RowSchema(rwsch.getColumnInfos()), top);
       } else {
         // need to add filter
         // create tableOp to be filterDesc and set as child to 'top'
@@ -5285,7 +5296,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ExprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols,
             colsEqual, alias, rwsch, qb.getMetaData(), null);
         tableOp = OperatorFactory.getAndMakeChild(new FilterDesc(
-            samplePredicate, true), top);
+            samplePredicate, true),
+            new RowSchema(rwsch.getColumnInfos()), top);
       }
     } else {
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
@@ -5316,7 +5328,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tableOp = OperatorFactory
                 .getAndMakeChild(new FilterDesc(samplePred, true,
                 new sampleDesc(tsSample.getNumerator(), tsSample
-                .getDenominator(), tab.getBucketCols(), true)), top);
+                .getDenominator(), tab.getBucketCols(), true)),
+                new RowSchema(rwsch.getColumnInfos()), top);
             LOG.info("No need for sample filter");
           } else {
             // The table is not bucketed, add a dummy filter :: rand()
@@ -5331,7 +5344,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             ExprNodeDesc samplePred = genSamplePredicate(tsSample, null, false,
                 alias, rwsch, qb.getMetaData(), randFunc);
             tableOp = OperatorFactory.getAndMakeChild(new FilterDesc(
-                samplePred, true), top);
+                samplePred, true),
+                new RowSchema(rwsch.getColumnInfos()), top);
           }
         }
       }
@@ -5616,8 +5630,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       new ArrayList<MoveWork>();
       for (LoadTableDesc ltd : loadTableWork) {
-        mvTask.add(TaskFactory.get(new MoveWork(null, null, ltd, null, false),
-            conf));
+        Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+            conf);
+        mvTask.add(tsk);
       }
 
       boolean oneLoadFile = true;
@@ -5950,8 +5965,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
-        topOps, topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
-        loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+        topOps, topSelOps, opParseCtx, joinContext, topToTable,
+        loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner);
 

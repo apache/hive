@@ -11,6 +11,7 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '' WHERE src.key =
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '1' WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -19,12 +20,16 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '1' WHERE src.key 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT avg(c1), sum(c1), count(c1) FROM dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION avg (TOK_TABLE_OR_COL c1))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL c1))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL c1))))))
 
@@ -95,9 +100,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1261922644/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-32-14_481_2350874451333759696/10000
 POSTHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1261922644/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-32-14_481_2350874451333759696/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1.0	1.0	1

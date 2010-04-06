@@ -35,6 +35,8 @@ SELECT key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp1
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE tmp2
 SELECT key, count(1) from src group by key
 PREHOOK: type: QUERY
@@ -45,6 +47,10 @@ SELECT key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp2
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
@@ -55,6 +61,10 @@ INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF tmp1 x) (TOK_TABREF tmp2 y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) cnt)))))
 
@@ -166,7 +176,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/959558219/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-51_782_4316865711705219377/10000
 
   Stage: Stage-0
     Move Operator
@@ -181,7 +191,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1816987590/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-51_782_4316865711705219377/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -221,14 +231,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp2
 POSTHOOK: Input: default@tmp1
 POSTHOOK: Output: default@dest_j1
+POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1839162600/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-56_079_1877087600971898109/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1839162600/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-56_079_1877087600971898109/10000
+POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	3	3
 2	1	1
 4	1	1
@@ -543,3 +567,10 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest_j1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest_j1
+POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

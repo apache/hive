@@ -113,7 +113,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1203564635/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-28_911_1700146549667793404/10000
 
   Stage: Stage-0
     Move Operator
@@ -128,7 +128,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/239786264/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-28_911_1700146549667793404/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -208,12 +208,52 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 'a' LIKE '%a%', 'b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c10 EXPRESSION []
+POSTHOOK: Lineage: dest1.c11 EXPRESSION []
+POSTHOOK: Lineage: dest1.c12 EXPRESSION []
+POSTHOOK: Lineage: dest1.c13 EXPRESSION []
+POSTHOOK: Lineage: dest1.c14 EXPRESSION []
+POSTHOOK: Lineage: dest1.c15 EXPRESSION []
+POSTHOOK: Lineage: dest1.c16 EXPRESSION []
+POSTHOOK: Lineage: dest1.c17 EXPRESSION []
+POSTHOOK: Lineage: dest1.c18 EXPRESSION []
+POSTHOOK: Lineage: dest1.c19 EXPRESSION []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c20 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []
+POSTHOOK: Lineage: dest1.c8 EXPRESSION []
+POSTHOOK: Lineage: dest1.c9 EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1255942668/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-33_495_4581479245160947463/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1255942668/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-33_495_4581479245160947463/10000
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c10 EXPRESSION []
+POSTHOOK: Lineage: dest1.c11 EXPRESSION []
+POSTHOOK: Lineage: dest1.c12 EXPRESSION []
+POSTHOOK: Lineage: dest1.c13 EXPRESSION []
+POSTHOOK: Lineage: dest1.c14 EXPRESSION []
+POSTHOOK: Lineage: dest1.c15 EXPRESSION []
+POSTHOOK: Lineage: dest1.c16 EXPRESSION []
+POSTHOOK: Lineage: dest1.c17 EXPRESSION []
+POSTHOOK: Lineage: dest1.c18 EXPRESSION []
+POSTHOOK: Lineage: dest1.c19 EXPRESSION []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c20 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []
+POSTHOOK: Lineage: dest1.c8 EXPRESSION []
+POSTHOOK: Lineage: dest1.c9 EXPRESSION []
 true	false	true	true	true	false	false	false	true	true	false	true	true	acc	abc	abb	hive	hadoop	AaAbAcA	false

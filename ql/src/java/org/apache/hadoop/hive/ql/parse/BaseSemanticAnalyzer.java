@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -54,14 +55,6 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
-/**
- * BaseSemanticAnalyzer.
- *
- */
-/**
- * BaseSemanticAnalyzer.
- *
- */
 /**
  * BaseSemanticAnalyzer.
  *
@@ -88,6 +81,10 @@ public abstract class BaseSemanticAnalyzer {
    * List of WriteEntities that are passed to the hooks.
    */
   protected HashSet<WriteEntity> outputs;
+  /**
+   * Lineage information for the query.
+   */
+  protected LineageInfo linfo;
 
   protected static final String TEXTFILE_INPUT = TextInputFormat.class
       .getName();
@@ -501,5 +498,23 @@ public abstract class BaseSemanticAnalyzer {
         return tableHandle.toString();
       }
     }
+  }
+
+  /**
+   * Gets the lineage information.
+   *
+   * @return LineageInfo associated with the query.
+   */
+  public LineageInfo getLineageInfo() {
+    return linfo;
+  }
+
+  /**
+   * Sets the lineage information.
+   *
+   * @param linfo The LineageInfo structure that is set in the optimization phase.
+   */
+  public void setLineageInfo(LineageInfo linfo) {
+    this.linfo = linfo;
   }
 }

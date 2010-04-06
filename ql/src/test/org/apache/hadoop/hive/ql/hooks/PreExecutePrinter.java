@@ -32,7 +32,8 @@ public class PreExecutePrinter implements PreExecute {
 
   @Override
   public void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception {
+      Set<WriteEntity> outputs, UserGroupInformation ugi)
+    throws Exception {
 
     LogHelper console = SessionState.getConsole();
 

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
+import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 
 /**
  * Implementation of the optimizer.
@@ -42,6 +43,8 @@ public class Optimizer {
    */
   public void initialize(HiveConf hiveConf) {
     transformations = new ArrayList<Transform>();
+    // Add the transformation that computes the lineage information.
+    transformations.add(new Generator());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
       transformations.add(new ColumnPruner());
     }

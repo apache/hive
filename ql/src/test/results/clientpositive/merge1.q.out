@@ -98,7 +98,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/460591515/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-12_103_8509010210619285541/10000
 
   Stage: Stage-0
     Move Operator
@@ -113,7 +113,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/374923564/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-12_103_8509010210619285541/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -147,14 +147,18 @@ select key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1753710584/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-16_584_5540363340401862209/10000
 POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1753710584/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-16_584_5540363340401862209/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 0	3
 10	1
 100	2
@@ -469,16 +473,22 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_src
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: create table dest1(key string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table dest1(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -487,6 +497,10 @@ POSTHOOK: query: insert overwrite table test_src partition(ds='101') select * fr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src@ds=101
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -495,12 +509,24 @@ POSTHOOK: query: insert overwrite table test_src partition(ds='102') select * fr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_src@ds=102
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain 
 insert overwrite table dest1 select key from test_src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 insert overwrite table dest1 select key from test_src
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF test_src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
 
@@ -539,7 +565,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/197096399/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-26_073_2981993365400111398/10000
 
   Stage: Stage-0
     Move Operator
@@ -554,7 +580,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/357863135/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-26_073_2981993365400111398/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -586,12 +612,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 insert overwrite table dest1 select key from test_src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 insert overwrite table dest1 select key from test_src
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF test_src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
 
@@ -630,7 +670,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1659642363/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-35_067_370016273932178726/10000
 
   Stage: Stage-0
     Move Operator
@@ -645,7 +685,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/502887163/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-35_067_370016273932178726/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -677,13 +717,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table test_src
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table test_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@test_src
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

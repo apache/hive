@@ -31,17 +31,20 @@ public interface PostExecute {
 
   /**
    * The run command that is called just before the execution of the query.
-   * 
+   *
    * @param sess
    *          The session state.
    * @param inputs
    *          The set of input tables and partitions.
    * @param outputs
    *          The set of output tables, partitions, local and hdfs directories.
+   * @param lInfo
+   *           The column level lineage information.
    * @param ugi
    *          The user group security information.
    */
   void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception;
+      Set<WriteEntity> outputs, LineageInfo lInfo,
+      UserGroupInformation ugi) throws Exception;
 
 }

@@ -41,7 +41,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 /**
  * SessionState encapsulates common data associated with a session.
- * 
+ *
  * Also provides support for a thread static session object that can be accessed
  * from any point in the code to interact with the user and to retrieve
  * configuration information
@@ -74,6 +74,20 @@ public class SessionState {
    */
   private String commandType;
 
+  /**
+   * Lineage state.
+   */
+  LineageState ls;
+
+  /**
+   * Get the lineage state stored in this session.
+   *
+   * @return LineageState
+   */
+  public LineageState getLineageState() {
+    return ls;
+  }
+
   public HiveConf getConf() {
     return conf;
   }
@@ -96,7 +110,7 @@ public class SessionState {
 
   public SessionState(HiveConf conf) {
     this.conf = conf;
-
+    ls = new LineageState();
   }
 
   public void setCmd(String cmdString) {
@@ -117,7 +131,7 @@ public class SessionState {
 
   /**
    * Singleton Session object per thread.
-   * 
+   *
    **/
   private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState>();
 
@@ -161,7 +175,7 @@ public class SessionState {
 
   /**
    * get hiveHitsory object which does structured logging.
-   * 
+   *
    * @return The hive history object
    */
   public HiveHistory getHiveHistory() {
@@ -196,11 +210,11 @@ public class SessionState {
    * This class provides helper routines to emit informational and error
    * messages to the user and log4j files while obeying the current session's
    * verbosity levels.
-   * 
+   *
    * NEVER write directly to the SessionStates standard output other than to
    * emit result data DO use printInfo and printError provided by LogHelper to
    * emit non result data strings.
-   * 
+   *
    * It is perfectly acceptable to have global static LogHelper objects (for
    * example - once per module) LogHelper always emits info/error to current
    * session as required.

@@ -49,16 +49,37 @@ SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/161564459/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-45_069_5108835452683223960/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/161564459/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-45_069_5108835452683223960/10000
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 bbc	bcc	NULL	NULL	NULL	bc	abc
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_translate
 POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []

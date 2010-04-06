@@ -54,11 +54,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform1_t1
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1737132015/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-29-51_819_3356279871494035336/10000
 POSTHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transform1_t1
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1737132015/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-29-51_819_3356279871494035336/10000
 PREHOOK: query: drop table transform1_t1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table transform1_t1
@@ -83,12 +83,14 @@ select array(1,2,3) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@transform1_t2
+POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 PREHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF transform1_t2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST '0\0021\0022') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_TABCOLLIST (TOK_TABCOL col (TOK_LIST TOK_INT))))))))
 
@@ -128,14 +130,16 @@ STAGE PLANS:
 PREHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform1_t2
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/389439457/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-29-58_961_100614649774829326/10000
 POSTHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transform1_t2
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/389439457/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-29-58_961_100614649774829326/10000
+POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 [0,1,2]
 PREHOOK: query: drop table transform1_t2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table transform1_t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@transform1_t2
+POSTHOOK: Lineage: transform1_t2.col EXPRESSION []

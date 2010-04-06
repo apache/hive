@@ -84,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-31_606_1651420338045270107/10002 
           Union
             Select Operator
               expressions:
@@ -108,7 +108,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10004 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-31_606_1651420338045270107/10004 
           Union
             Select Operator
               expressions:
@@ -132,7 +132,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10005 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-31_606_1651420338045270107/10005 
           Union
             Select Operator
               expressions:
@@ -164,7 +164,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/48152402/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-31_606_1651420338045270107/10000
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/201780527/10003 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-31_606_1651420338045270107/10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -301,14 +301,18 @@ POSTHOOK: query: insert overwrite table tmptable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s3.null, ]
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1819535514/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-51_233_7277943575493517663/10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1819535514/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-36-51_233_7277943575493517663/10000
+POSTHOOK: Lineage: tmptable.key EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s3.null, ]
 tst1	500
 tst2	500
 tst3	500
@@ -317,3 +321,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tmptable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s3.null, ]

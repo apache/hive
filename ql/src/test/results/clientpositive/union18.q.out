@@ -94,7 +94,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/741093659/10004 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10004 
           Union
             Select Operator
               expressions:
@@ -128,7 +128,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/741093659/10007 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10007 
           Union
             Select Operator
               expressions:
@@ -170,7 +170,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/599903239/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10000
 
   Stage: Stage-0
     Move Operator
@@ -185,7 +185,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/741093659/10005 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10005 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -215,7 +215,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/599903239/10002
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10002
 
   Stage: Stage-1
     Move Operator
@@ -230,7 +230,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/741093659/10006 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-25_776_1522464923677630354/10006 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -294,14 +294,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1342633477/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-44_851_2095736852722337596/10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1342633477/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-44_851_2095736852722337596/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0
@@ -806,11 +816,16 @@ tst1	500
 PREHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1450263550/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-48_466_9015106715428977146/10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/1450263550/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-48_466_9015106715428977146/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -1317,8 +1332,18 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table DEST1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table DEST2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table DEST2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]

@@ -24,13 +24,19 @@ POSTHOOK: query: insert overwrite table insert1 select a.key, a.value from inser
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert2
 POSTHOOK: Output: default@insert1
+POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table insert1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table insert1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@insert1
+POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table insert2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table insert2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@insert2
+POSTHOOK: Lineage: insert1.key SIMPLE [(insert2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: insert1.value SIMPLE [(insert2)a.FieldSchema(name:value, type:string, comment:null), ]

@@ -31,7 +31,7 @@ public interface PreExecute {
 
   /**
    * The run command that is called just before the execution of the query.
-   * 
+   *
    * @param sess
    *          The session state.
    * @param inputs
@@ -41,7 +41,8 @@ public interface PreExecute {
    * @param ugi
    *          The user group security information.
    */
-  void run(SessionState sess, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, UserGroupInformation ugi) throws Exception;
+  public void run(SessionState sess, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, UserGroupInformation ugi)
+    throws Exception;
 
 }

@@ -98,22 +98,26 @@ select count(1) from srcbucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tst_dest32
+POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: select * from tst_dest32
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest32
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1744614026/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-12-44_362_8153903898810014347/10000
 POSTHOOK: query: select * from tst_dest32
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest32
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1744614026/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-12-44_362_8153903898810014347/10000
+POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 1000
 PREHOOK: query: drop table tst_dest32
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tst_dest32
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tst_dest32
+POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: drop table dest32
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest32
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest32
+POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]

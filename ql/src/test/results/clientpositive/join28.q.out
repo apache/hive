@@ -222,7 +222,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-31_248_3138742764068185194/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-15-11_119_8886693013773508618/10000
 
   Stage: Stage-0
     Move Operator
@@ -237,7 +237,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-31_248_3138742764068185194/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-15-11_119_8886693013773508618/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -283,14 +283,18 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@dest_j1
+POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:hr, type:string, comment:null), ]
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-38_314_5886463496780818123/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-15-16_630_6883273602303197437/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/scratchdir/hive_2010-03-15_16-22-38_314_5886463496780818123/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-15-16_630_6883273602303197437/10000
+POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:hr, type:string, comment:null), ]
 128	val_128
 128	val_128
 128	val_128
@@ -403,3 +407,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest_j1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest_j1
+POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:hr, type:string, comment:null), ]

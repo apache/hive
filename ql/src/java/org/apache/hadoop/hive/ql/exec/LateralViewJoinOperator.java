@@ -121,4 +121,9 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
 
   }
 
+  @Override
+  public String getName() {
+    return "LVJ";
+  }
+
 }

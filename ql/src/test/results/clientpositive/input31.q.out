@@ -106,22 +106,26 @@ select count(1) from srcbucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tst_dest31
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: select * from tst_dest31
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest31
-PREHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/305456482/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-14-47_969_5252355882529594546/10000
 POSTHOOK: query: select * from tst_dest31
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest31
-POSTHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/305456482/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-14-47_969_5252355882529594546/10000
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]
 493
 PREHOOK: query: drop table tst_dest31
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tst_dest31
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tst_dest31
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: drop table dest31
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest31
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest31
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]

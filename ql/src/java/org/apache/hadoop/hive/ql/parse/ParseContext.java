@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -48,7 +49,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
  * populated. Note that since the parse context contains the operator tree, it
  * can be easily retrieved by the next optimization step or finally for task
  * generation after the plan has been completely optimized.
- * 
+ *
  **/
 
 public class ParseContext {
@@ -74,6 +75,11 @@ public class ParseContext {
   // reducer
   private Map<GroupByOperator, Set<String>> groupOpToInputTables;
   private Map<String, PrunedPartitionList> prunedPartitions;
+
+  /**
+   * The lineage information.
+   */
+  private LineageInfo lInfo;
 
   // is set to true if the expression only contains partitioning columns and not
   // any other column reference.
@@ -105,6 +111,7 @@ public class ParseContext {
    *          context needed join processing (map join specifically)
    * @param topToTable
    *          the top tables being processed
+   * @param fopToTable the table schemas that are being inserted into
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
@@ -383,7 +390,7 @@ public class ParseContext {
 
   /**
    * Sets the hasNonPartCols flag.
-   * 
+   *
    * @param val
    */
   public void setHasNonPartCols(boolean val) {
@@ -441,6 +448,24 @@ public class ParseContext {
   public void setPrunedPartitions(
       Map<String, PrunedPartitionList> prunedPartitions) {
     this.prunedPartitions = prunedPartitions;
+  }
+
+  /**
+   * Sets the lineage information.
+   *
+   * @param lInfo The lineage information.
+   */
+  public void setLineageInfo(LineageInfo lInfo) {
+    this.lInfo = lInfo;
+  }
+
+  /**
+   * Gets the associated lineage information.
+   *
+   * @return LineageInfo
+   */
+  public LineageInfo getLineageInfo() {
+    return lInfo;
   }
 
   public Map<MapJoinOperator, QBJoinTree> getMapJoinContext() {

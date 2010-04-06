@@ -36,12 +36,14 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE sr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT get_json_object(src_json.json, '$.owner') FROM src_json
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT get_json_object(src_json.json, '$.owner') FROM src_json
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_json)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION get_json_object (. (TOK_TABLE_OR_COL src_json) json) '$.owner')))))
 
@@ -76,72 +78,80 @@ STAGE PLANS:
 PREHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1615998931/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-14_447_588438208114015011/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1615998931/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-14_447_588438208114015011/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 {"store":{"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],"book":[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}],"basket":[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]],"bicycle":{"price":19.95,"color":"red"}},"email":"amy@only_for_json_udf_test.net","owner":"amy"}
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.owner'), get_json_object(src_json.json, '$.store') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/543860321/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-18_096_5433104910168634226/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.owner'), get_json_object(src_json.json, '$.store') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/543860321/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-18_096_5433104910168634226/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 amy	{"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],"book":[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}],"basket":[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]],"bicycle":{"price":19.95,"color":"red"}}
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.bicycle'), get_json_object(src_json.json, '$.store.book') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1327255777/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-21_313_644009047344298458/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.bicycle'), get_json_object(src_json.json, '$.store.book') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1327255777/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-21_313_644009047344298458/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 {"price":19.95,"color":"red"}	[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0]'), get_json_object(src_json.json, '$.store.book[*]') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/563232699/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-24_685_8457778368302883452/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0]'), get_json_object(src_json.json, '$.store.book[*]') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/563232699/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-24_685_8457778368302883452/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 {"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95}	[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0].category'), get_json_object(src_json.json, '$.store.book[*].category'), get_json_object(src_json.json, '$.store.book[*].isbn'), get_json_object(src_json.json, '$.store.book[*].reader') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1253200680/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-27_983_4573769925077927197/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[0].category'), get_json_object(src_json.json, '$.store.book[*].category'), get_json_object(src_json.json, '$.store.book[*].isbn'), get_json_object(src_json.json, '$.store.book[*].reader') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1253200680/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-27_983_4573769925077927197/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 reference	["reference","fiction","fiction"]	["0-553-21311-3","0-395-19395-8"]	[{"name":"bob","age":25},{"name":"jack","age":26}]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[*].reader[0].age'), get_json_object(src_json.json, '$.store.book[*].reader[*].age')  FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1931998473/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-31_316_8337341337637490694/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.book[*].reader[0].age'), get_json_object(src_json.json, '$.store.book[*].reader[*].age')  FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1931998473/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-31_316_8337341337637490694/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 25	[25,26]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.store.basket[0][1]'), get_json_object(src_json.json, '$.store.basket[*]'), get_json_object(src_json.json, '$.store.basket[*][0]'), get_json_object(src_json.json, '$.store.basket[0][*]'), get_json_object(src_json.json, '$.store.basket[*][*]'), get_json_object(src_json.json, '$.store.basket[0][2].b'), get_json_object(src_json.json, '$.store.basket[0][*].b') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1551395780/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-34_666_5810556714267909747/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.store.basket[0][1]'), get_json_object(src_json.json, '$.store.basket[*]'), get_json_object(src_json.json, '$.store.basket[*][0]'), get_json_object(src_json.json, '$.store.basket[0][*]'), get_json_object(src_json.json, '$.store.basket[*][*]'), get_json_object(src_json.json, '$.store.basket[0][2].b'), get_json_object(src_json.json, '$.store.basket[0][*].b') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1551395780/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-34_666_5810556714267909747/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 2	[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]]	1	[1,2,{"b":"y","a":"x"}]	[1,2,{"b":"y","a":"x"},3,4,5,6]	y	["y"]
 PREHOOK: query: SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_json_object(src_json.json, '$..no_recursive'), get_json_object(src_json.json, '$.store.book[10]'), get_json_object(src_json.json, '$.store.book[0].non_exist_key'), get_json_object(src_json.json, '$.store.basket[*].non_exist_key'), get_json_object(src_json.json, '$.store.basket[0][*].non_exist_key') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1199445708/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-38_026_3347642415777976965/10000
 POSTHOOK: query: SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_json_object(src_json.json, '$..no_recursive'), get_json_object(src_json.json, '$.store.book[10]'), get_json_object(src_json.json, '$.store.book[0].non_exist_key'), get_json_object(src_json.json, '$.store.basket[*].non_exist_key'), get_json_object(src_json.json, '$.store.basket[0][*].non_exist_key') FROM src_json
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1199445708/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-37-38_026_3347642415777976965/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL

@@ -11,12 +11,14 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE sr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION from_unixtime 1226446340)) (TOK_SELEXPR (TOK_FUNCTION to_date (TOK_FUNCTION from_unixtime 1226446340))) (TOK_SELEXPR (TOK_FUNCTION day '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION month '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION year '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION day '2008-11-01 15:32:20')) (TOK_SELEXPR (TOK_FUNCTION month '2008-11-01 15:32:20')) (TOK_SELEXPR (TOK_FUNCTION year '2008-11-01 15:32:20')))))
 
@@ -65,11 +67,12 @@ STAGE PLANS:
 PREHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1960950507/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-31-58_898_5011020567611932458/10000
 POSTHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1960950507/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-31-58_898_5011020567611932458/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008
 PREHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
@@ -77,6 +80,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION from_unixtime (TOK_FUNCTION unix_timestamp '2010-01-13 11:57:40' 'yyyy-MM-dd HH:mm:ss') 'MM/dd/yy HH:mm:ss')))))
 
@@ -111,9 +115,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1373998585/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-32-02_458_5386918569512888341/10000
 POSTHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1373998585/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-32-02_458_5386918569512888341/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 01/13/10 11:57:40

@@ -17,14 +17,18 @@ select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@combine1_1
+POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, value from combine1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine1_1
-PREHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-03-12_14-00-56_188_1241439225254397610/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-07-13_390_8320671278851184902/10000
 POSTHOOK: query: select key, value from combine1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine1_1
-POSTHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-03-12_14-00-56_188_1241439225254397610/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-07-13_390_8320671278851184902/10000
+POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86
 311	val_311
@@ -530,3 +534,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table combine1_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@combine1_1
+POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

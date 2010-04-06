@@ -20,14 +20,18 @@ POSTHOOK: query: from src insert overwrite table texternal partition (insertdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@texternal@insertdate=2008-01-01
+POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from texternal where insertdate='2008-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@texternal@insertdate=2008-01-01
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1173088928/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-14-31_283_8182934918703262704/10000
 POSTHOOK: query: select * from texternal where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@texternal@insertdate=2008-01-01
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1173088928/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-14-31_283_8182934918703262704/10000
+POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-01-01
 86	val_86	2008-01-01
 311	val_311	2008-01-01

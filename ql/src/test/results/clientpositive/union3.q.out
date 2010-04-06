@@ -88,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10002 
           Union
             Select Operator
               expressions:
@@ -101,7 +101,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10003 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10003 
           Union
             Select Operator
               expressions:
@@ -114,7 +114,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10005 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10005 
           Union
             Select Operator
               expressions:
@@ -127,7 +127,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10007 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10007 
           Union
             Select Operator
               expressions:
@@ -218,7 +218,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10004 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -280,7 +280,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/2013565127/10006 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-37-51_721_130702566941386493/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -356,14 +356,16 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@union_out
+POSTHOOK: Lineage: union_out.id EXPRESSION []
 PREHOOK: query: select * from union_out cluster by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/63213254/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-38-22_961_8891676490817477492/10000
 POSTHOOK: query: select * from union_out cluster by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/63213254/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-38-22_961_8891676490817477492/10000
+POSTHOOK: Lineage: union_out.id EXPRESSION []
 1
 2
 3

@@ -61,7 +61,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1740584016/10000
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-17-07_393_2718672217539809970/10000
 
   Stage: Stage-0
     Move Operator
@@ -76,7 +76,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/249629882/10002 
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-17-07_393_2718672217539809970/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -112,14 +112,20 @@ INSERT OVERWRITE TABLE dest1 SELECT size(src_thrift.lint), size(src_thrift.lints
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.lint_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.lintstring_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.mstringstring_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/662681223/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-17-12_826_697390232727734110/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/662681223/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-17-12_826_697390232727734110/10000
+POSTHOOK: Lineage: dest1.lint_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.lintstring_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.mstringstring_size EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
 3	1	1
 3	1	1
 3	1	1

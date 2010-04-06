@@ -104,12 +104,22 @@ min(CAST('' AS INT)), max(CAST('' AS INT))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/675266909/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-30-25_319_6045119930597103250/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/675266909/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-30-25_319_6045119930597103250/10000
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
 0	NULL	NULL	NULL	NULL

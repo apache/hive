@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -151,7 +153,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         }
 
+        // Create a data container
+        DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
+          dc = new DataContainer(table.getTTable());
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
               .getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()));
           if (work.getOutputs() != null) {
@@ -164,9 +169,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               new Path(tbd.getTmpDir()));
           Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
               false);
+          dc = new DataContainer(table.getTTable(), partn.getTPartition());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(partn));
           }
+        }
+
+        if (SessionState.get() != null) {
+          SessionState.get().getLineageState()
+            .setLineage(tbd.getSourceDir(), dc, table.getCols());
         }
       }
 

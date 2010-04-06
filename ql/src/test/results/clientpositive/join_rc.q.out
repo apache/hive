@@ -24,6 +24,8 @@ POSTHOOK: query: insert overwrite table join_rc1 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@join_rc1
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table join_rc2 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -32,6 +34,10 @@ POSTHOOK: query: insert overwrite table join_rc2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@join_rc2
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
@@ -40,6 +46,10 @@ POSTHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF join_rc1) (TOK_TABREF join_rc2) (= (. (TOK_TABLE_OR_COL join_rc1) key) (. (TOK_TABLE_OR_COL join_rc2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL join_rc1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL join_rc2) value)))))
 
@@ -114,13 +124,17 @@ FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_rc2
 PREHOOK: Input: default@join_rc1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-47_640_1441550174396831657/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-17-33_792_8150215655631569138/10000
 POSTHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_rc2
 POSTHOOK: Input: default@join_rc1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-47_640_1441550174396831657/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-17-33_792_8150215655631569138/10000
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0
@@ -1154,8 +1168,16 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table join_rc1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@join_rc1
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table join_rc2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table join_rc2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@join_rc2
+POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: join_rc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

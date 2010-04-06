@@ -29,14 +29,16 @@ POSTHOOK: query: insert overwrite table alter3 partition (pCol1='test_part', pco
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3_src
 POSTHOOK: Output: default@alter3@pcol1=test_part/pcol2=test_part
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1483627653/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-02-27_255_2797634165100554902/10000
 POSTHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1483627653/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-02-27_255_2797634165100554902/10000
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
 3	test_part	test_part
@@ -49,32 +51,36 @@ POSTHOOK: query: alter table alter3 rename to alter3_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@alter3
 POSTHOOK: Output: default@alter3_renamed
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: describe extended alter3_renamed
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 col1	string	
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:njain, createTime:1253779705, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=njain,last_modified_time=1253779709})	
+Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:athusoo, createTime:1270515740, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=athusoo,last_modified_time=1270515748,transient_lastDdlTime=1270515748}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 col1	string	
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:1270515747, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1270515747})	
 PREHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/250127671/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-02-28_356_3656682742332568668/10000
 POSTHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/250127671/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-02-28_356_3656682742332568668/10000
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
 3	test_part	test_part
@@ -86,12 +92,15 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table alter3_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@alter3_src
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: drop table alter3
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table alter3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: drop table alter3_renamed
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table alter3_renamed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@alter3_renamed
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]

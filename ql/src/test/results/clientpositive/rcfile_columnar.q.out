@@ -27,20 +27,26 @@ INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@columntable
+POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe columnTable
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe columnTable
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key	string	from deserializer
 value	string	from deserializer
 PREHOOK: query: SELECT columnTable.* FROM columnTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/673584985/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-39_201_8408576030937070945/10000
 POSTHOOK: query: SELECT columnTable.* FROM columnTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/673584985/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-39_201_8408576030937070945/10000
+POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86
 311	val_311
@@ -56,3 +62,5 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE columnTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@columntable
+POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

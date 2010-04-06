@@ -101,14 +101,24 @@ INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.ls
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@input_columnarserde
+POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 PREHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/1940999347/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-41_460_8307039355218827807/10000
 POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/1940999347/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-41_460_8307039355218827807/10000
+POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -123,11 +133,16 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/534165813/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-45_834_5356308050640112043/10000
 POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/534165813/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-45_834_5356308050640112043/10000
+POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -144,3 +159,8 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table input_columnarserde
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@input_columnarserde
+POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]

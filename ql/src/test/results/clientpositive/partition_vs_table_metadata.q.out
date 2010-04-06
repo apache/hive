@@ -15,12 +15,16 @@ POSTHOOK: query: insert overwrite table partition_vs_table partition(ds='100') s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_vs_table@ds=100
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_vs_table add columns (newcol string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: query: alter table partition_vs_table add columns (newcol string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partition_vs_table
 POSTHOOK: Output: default@partition_vs_table
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_vs_table partition(ds='101') select key, value, key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -29,18 +33,28 @@ POSTHOOK: query: insert overwrite table partition_vs_table partition(ds='101') s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_vs_table@ds=101
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).newcol SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, value, newcol from partition_vs_table
 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_vs_table@ds=100
 PREHOOK: Input: default@partition_vs_table@ds=101
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1273555868/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-19_287_8020563381793175788/10000
 POSTHOOK: query: select key, value, newcol from partition_vs_table
 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_vs_table@ds=100
 POSTHOOK: Input: default@partition_vs_table@ds=101
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1273555868/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-19_287_8020563381793175788/10000
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).newcol SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	NULL
 0	val_0	NULL
 0	val_0	NULL
@@ -1046,3 +1060,8 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table partition_vs_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@partition_vs_table
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).newcol SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

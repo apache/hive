@@ -268,14 +268,26 @@ INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src3.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c6 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1490522994/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-17-07_518_5772529591765100751/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1490522994/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-17-07_518_5772529591765100751/10000
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src3.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c6 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 11	val_11	NULL	NULL	NULL	NULL
 12	val_12	NULL	NULL	NULL	NULL
 12	val_12	NULL	NULL	NULL	NULL

@@ -43,7 +43,7 @@ public class QBParseInfo {
   private final HashMap<String, ASTNode> aliasToSrc;
   private final HashMap<String, ASTNode> nameToDest;
   private final HashMap<String, TableSample> nameToSample;
-  private final HashMap<String, ASTNode> destToSelExpr;
+  private final Map<String, ASTNode> destToSelExpr;
   private final HashMap<String, ASTNode> destToWhereExpr;
   private final HashMap<String, ASTNode> destToGroupby;
   /**
@@ -83,7 +83,7 @@ public class QBParseInfo {
     aliasToSrc = new HashMap<String, ASTNode>();
     nameToDest = new HashMap<String, ASTNode>();
     nameToSample = new HashMap<String, TableSample>();
-    destToSelExpr = new HashMap<String, ASTNode>();
+    destToSelExpr = new LinkedHashMap<String, ASTNode>();
     destToWhereExpr = new HashMap<String, ASTNode>();
     destToGroupby = new HashMap<String, ASTNode>();
     destToClusterby = new HashMap<String, ASTNode>();

@@ -21,14 +21,16 @@ select * from
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_sp
+POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 PREHOOK: query: select * from dest_sp x order by x.cnt limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_sp
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/333670274/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-15-40_207_9006053612393059372/10000
 POSTHOOK: query: select * from dest_sp x order by x.cnt limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_sp
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/333670274/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-15-40_207_9006053612393059372/10000
+POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 0
 500
 PREHOOK: query: drop table dest_sp
@@ -36,3 +38,4 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest_sp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest_sp
+POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]

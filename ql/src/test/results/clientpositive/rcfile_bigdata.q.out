@@ -27,23 +27,31 @@ INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@columntable_bigdata
+POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe columnTable_Bigdata
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe columnTable_Bigdata
 POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 key	string	from deserializer
 value	string	from deserializer
 PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable_bigdata
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/438172653/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-24-35_314_4030817414359065552/10000
 POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable_bigdata
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/438172653/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-24-35_314_4030817414359065552/10000
+POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 5005500
 PREHOOK: query: DROP TABLE columnTable_Bigdata
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE columnTable_Bigdata
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@columntable_bigdata
+POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

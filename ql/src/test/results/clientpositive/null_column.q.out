@@ -23,11 +23,11 @@ POSTHOOK: Output: default@temp_null
 PREHOOK: query: select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1637717703/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-54_474_2629680803115819917/10000
 POSTHOOK: query: select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1637717703/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-54_474_2629680803115819917/10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -47,14 +47,18 @@ POSTHOOK: query: insert overwrite table tt select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: default@tt
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: select * from tt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974669501/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-02_665_3393915782175145634/10000
 POSTHOOK: query: select * from tt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974669501/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-02_665_3393915782175145634/10000
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -66,6 +70,8 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tt_b
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: insert overwrite table tt_b select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
@@ -74,14 +80,22 @@ POSTHOOK: query: insert overwrite table tt_b select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: default@tt_b
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from tt_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt_b
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1955123010/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-07_280_1348812180159016570/10000
 POSTHOOK: query: select * from tt_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt_b
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1955123010/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-07_280_1348812180159016570/10000
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -96,6 +110,10 @@ POSTHOOK: query: insert overwrite directory "../build/ql/test/data/warehouse/nul
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: ../build/ql/test/data/warehouse/null_columns.out
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
 \N\N
 \N\N
 \N\N
@@ -107,13 +125,25 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tt
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: drop table tt_b
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tt_b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tt_b
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: drop table temp_null
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table temp_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@temp_null
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []

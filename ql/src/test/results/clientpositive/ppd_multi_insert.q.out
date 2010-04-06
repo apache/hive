@@ -243,14 +243,24 @@ POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
 POSTHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_902_6905591894666460215/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_508_4738071529393947065/10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_902_6905591894666460215/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_508_4738071529393947065/10000
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0
 0	val_0
 0	val_0
@@ -402,11 +412,16 @@ POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/sc
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_936_9202557721170644347/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_557_935780475427392042/10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_936_9202557721170644347/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_557_935780475427392042/10000
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 100	val_100
 100	val_100
 100	val_100
@@ -621,11 +636,16 @@ POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/sc
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_968_153693361750093127/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_654_6607833934992134433/10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-34-41_968_153693361750093127/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-23-53_654_6607833934992134433/10000
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12
@@ -1300,13 +1320,28 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE mi1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@mi1
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DROP TABLE mi2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE mi2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@mi2
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DROP TABLE mi3
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE mi3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@mi3
+POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mi2.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

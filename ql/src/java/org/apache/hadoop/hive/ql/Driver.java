@@ -162,7 +162,7 @@ public class Driver implements CommandProcessor {
       List<FieldSchema> lst = sem.getResultSchema();
       schema = new Schema(lst, null);
     } else if (sem.getFetchTask() != null) {
-      FetchTask ft = (FetchTask) sem.getFetchTask();
+      FetchTask ft = sem.getFetchTask();
       TableDesc td = ft.getTblDesc();
       // partitioned tables don't have tableDesc set on the FetchTask. Instead
       // they have a list of PartitionDesc objects, each with a table desc.
@@ -294,7 +294,7 @@ public class Driver implements CommandProcessor {
 
     try {
       ctx = new Context(conf);
-      
+
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
       tree = ParseUtils.findRootNonNullToken(tree);
@@ -317,25 +317,25 @@ public class Driver implements CommandProcessor {
       schema = getSchema(sem, conf);
 
       // Serialize the query plan
-      //   get temp file name and remove file: 
+      //   get temp file name and remove file:
       String queryPlanFileName = ctx.getLocalScratchDir() + Path.SEPARATOR_CHAR
           + "queryplan.xml";
       LOG.info("query plan = " + queryPlanFileName);
       queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
-      
-      //   serialize the queryPlan 
+
+      //   serialize the queryPlan
       FileOutputStream fos = new FileOutputStream(queryPlanFileName);
       Utilities.serializeQueryPlan(plan, fos);
       fos.close();
-      
-      //   deserialize the queryPlan 
+
+      //   deserialize the queryPlan
       FileInputStream fis = new FileInputStream(queryPlanFileName);
       QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
       fis.close();
-      
+
       // Use the deserialized plan
       plan = newPlan;
-      
+
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
@@ -540,6 +540,7 @@ public class Driver implements CommandProcessor {
       // Get all the post execution hooks and execute them.
       for (PostExecute peh : getPostExecHooks()) {
         peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
+            (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo() : null),
             UnixUserGroupInformation.readFromConf(conf,
                 UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
@@ -676,7 +677,7 @@ public class Driver implements CommandProcessor {
 
   public boolean getResults(ArrayList<String> res) throws IOException {
     if (plan != null && plan.getFetchTask() != null) {
-      FetchTask ft = (FetchTask) plan.getFetchTask();
+      FetchTask ft = plan.getFetchTask();
       ft.setMaxRows(maxRows);
       return ft.fetch(res);
     }

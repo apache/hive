@@ -11,12 +11,14 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE sr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
 SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, ~1 FROM dest1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, ~1 FROM dest1
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION round 1.0)) (TOK_SELEXPR (TOK_FUNCTION round 1.5)) (TOK_SELEXPR (TOK_FUNCTION round (- 1.5))) (TOK_SELEXPR (TOK_FUNCTION floor 1.0)) (TOK_SELEXPR (TOK_FUNCTION floor 1.5)) (TOK_SELEXPR (TOK_FUNCTION floor (- 1.5))) (TOK_SELEXPR (TOK_FUNCTION sqrt 1.0)) (TOK_SELEXPR (TOK_FUNCTION sqrt (- 1.0))) (TOK_SELEXPR (TOK_FUNCTION sqrt 0.0)) (TOK_SELEXPR (TOK_FUNCTION ceil 1.0)) (TOK_SELEXPR (TOK_FUNCTION ceil 1.5)) (TOK_SELEXPR (TOK_FUNCTION ceil (- 1.5))) (TOK_SELEXPR (TOK_FUNCTION ceiling 1.0)) (TOK_SELEXPR (TOK_FUNCTION rand 3)) (TOK_SELEXPR (+ 3)) (TOK_SELEXPR (- 3)) (TOK_SELEXPR (+ 1 (+ 2))) (TOK_SELEXPR (+ 1 (- 2))) (TOK_SELEXPR (~ 1)))))
 
@@ -87,9 +89,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, ~1 FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/532969237/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-39_282_8676256173864976232/10000
 POSTHOOK: query: SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, ~1 FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/532969237/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-35-39_282_8676256173864976232/10000
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1	2	-2	1	1	-2	1.0	NULL	0.0	1	2	-1	1	0.731057369148862	3	-3	3	-1	-2

@@ -11,14 +11,18 @@ POSTHOOK: query: INSERT OVERWRITE TABLE src1_rc SELECT * FROM src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@src1_rc
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM src1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rc
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1917284691/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-45_304_3014831283453834869/10000
 POSTHOOK: query: SELECT * FROM src1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rc
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1917284691/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-45_304_3014831283453834869/10000
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 	
 311	val_311
@@ -49,11 +53,15 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE src1_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@src1_rc
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1_rc
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -84,6 +92,8 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 POSTHOOK: type: QUERY
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) c2)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src1) key) 20))))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) c4)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src2) key) 15) (< (. (TOK_TABLE_OR_COL src2) key) 25))))) b) (= (. (TOK_TABLE_OR_COL a) c1) (. (TOK_TABLE_OR_COL b) c3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c1) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c2) c2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c3) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c4) c4)))) c)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1_rc)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c3)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c4)))))
 
@@ -253,14 +263,26 @@ INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_rc
+POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_rc
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1230860778/10000
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-51_035_1392258075462361596/10000
 POSTHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_rc
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/1230860778/10000
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-51_035_1392258075462361596/10000
+POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18
@@ -275,3 +297,9 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE dest1_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@dest1_rc
+POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_rc.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
