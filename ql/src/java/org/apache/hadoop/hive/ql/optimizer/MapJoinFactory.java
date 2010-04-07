@@ -126,8 +126,8 @@ public final class MapJoinFactory {
       AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       GenMRProcContext opProcCtx = (GenMRProcContext) procCtx;
 
-      MapredWork cplan = GenMapRedUtils.getMapRedWork();
       ParseContext parseCtx = opProcCtx.getParseCtx();
+      MapredWork cplan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
       Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
           .getConf());
       Task<? extends Serializable> currTask = opProcCtx.getCurrTask();
@@ -211,7 +211,7 @@ public final class MapJoinFactory {
         ctx.setMapJoinCtx(mapJoin, mjCtx);
       }
 
-      MapredWork mjPlan = GenMapRedUtils.getMapRedWork();
+      MapredWork mjPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
       Task<? extends Serializable> mjTask = TaskFactory.get(mjPlan, parseCtx
           .getConf());
 

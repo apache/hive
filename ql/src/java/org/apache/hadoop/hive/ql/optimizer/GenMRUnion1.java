@@ -65,9 +65,9 @@ public class GenMRUnion1 implements NodeProcessor {
    * all the sub-queries are map-only, dont do anything. However, if there is a
    * mapjoin followed by the union, merge at the union Otherwise, insert a
    * FileSink on top of all the sub-queries.
-   * 
+   *
    * This can be optimized later on.
-   * 
+   *
    * @param nd
    *          the file sink operator encountered
    * @param opProcCtx
@@ -132,7 +132,7 @@ public class GenMRUnion1 implements NodeProcessor {
     // union is encountered for the first time
     if (uCtxTask == null) {
       uCtxTask = new GenMRUnionCtx();
-      uPlan = GenMapRedUtils.getMapRedWork();
+      uPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);

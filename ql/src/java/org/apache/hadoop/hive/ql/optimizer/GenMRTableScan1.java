@@ -42,7 +42,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
   /**
    * Table Sink encountered.
-   * 
+   *
    * @param nd
    *          the table sink operator encountered
    * @param opProcCtx
@@ -57,8 +57,9 @@ public class GenMRTableScan1 implements NodeProcessor {
         .getMapCurrCtx();
 
     // create a dummy task
-    Task<? extends Serializable> currTask = TaskFactory.get(GenMapRedUtils
-        .getMapRedWork(), parseCtx.getConf());
+    Task<? extends Serializable> currTask =
+      TaskFactory.get(GenMapRedUtils.getMapRedWork(parseCtx.getConf()),
+                      parseCtx.getConf());
     Operator<? extends Serializable> currTopOp = op;
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(currTopOp);

@@ -26,6 +26,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Queue;
+import java.util.LinkedList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +50,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-
 
 /**
  * CombineHiveInputFormat is a parameterized InputFormat which looks at the path
@@ -239,37 +240,50 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     for (Path path : paths) {
       LOG.info("CombineHiveInputSplit creating pool for " + path);
 
-      // The following code should be removed, once
-      // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
-      // Hadoop does not handle non-splitable files correctly for CombineFileInputFormat,
-      // so don't use CombineFileInputFormat for non-splittable files
-      FileSystem inpFs = path.getFileSystem(job);
-
-      FileStatus fStats = inpFs.getFileStatus(path);
-      Path tstPath = path;
-
-      // If path is a directory
-      if (fStats.isDir()) {
-        FileStatus[] fStatus = inpFs.listStatus(path);
-        if (fStatus.length > 0) {
-          tstPath = fStatus[0].getPath();
-        }
-      }
-
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, path);
-
-      // Use HiveInputFormat if any of the paths is not splittable
-      Class inputFormatClass = part.getInputFileFormatClass();
-      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-
       TableDesc tableDesc = part.getTableDesc();
       if ((tableDesc != null) && tableDesc.isNonNative()) {
         return super.getSplits(job, numSplits);
       }
 
-      if ((inputFormat instanceof TextInputFormat) &&
-          ((new CompressionCodecFactory(job)).getCodec(tstPath) != null)) {
-        return super.getSplits(job, numSplits);
+      // Use HiveInputFormat if any of the paths is not splittable
+      Class inputFormatClass = part.getInputFileFormatClass();
+      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+
+      // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
+      // we use a configuration variable for the same
+      if (this.mrwork != null && this.mrwork.getHadoopSupportsSplittable()) {
+        // The following code should be removed, once
+        // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
+        // Hadoop does not handle non-splittable files correctly for CombineFileInputFormat,
+        // so don't use CombineFileInputFormat for non-splittable files
+        FileSystem inpFs = path.getFileSystem(job);
+
+        if (inputFormat instanceof TextInputFormat) {
+          Queue<Path> dirs = new LinkedList<Path>();
+          FileStatus fStats = inpFs.getFileStatus(path);
+
+          // If path is a directory
+          if (fStats.isDir()) {
+            dirs.offer(path);
+          }
+          else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
+            return super.getSplits(job, numSplits);
+          }
+
+          while (dirs.peek() != null) {
+            Path tstPath = dirs.remove();
+            FileStatus[] fStatus = inpFs.listStatus(tstPath);
+            for (int idx = 0; idx < fStatus.length; idx++) {
+              if (fStatus[idx].isDir()) {
+                dirs.offer(fStatus[idx].getPath());
+              }
+              else if ((new CompressionCodecFactory(job)).getCodec(fStatus[idx].getPath()) != null) {
+                return super.getSplits(job, numSplits);
+              }
+            }
+          }
+        }
       }
 
       if (inputFormat instanceof SymlinkTextInputFormat) {

@@ -53,6 +53,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * PlanUtils.
@@ -72,11 +73,16 @@ public final class PlanUtils {
 
   @SuppressWarnings("nls")
   public static MapredWork getMapRedWork() {
-    return new MapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
+    try {
+      return new MapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
         new LinkedHashMap<String, PartitionDesc>(),
         new LinkedHashMap<String, Operator<? extends Serializable>>(),
         new TableDesc(), new ArrayList<TableDesc>(), null, Integer.valueOf(1),
-        null);
+        null, Hive.get().getConf().getBoolVar(
+          HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
+    } catch (HiveException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   /**
@@ -389,7 +395,7 @@ public final class PlanUtils {
 
   /**
    * Create the reduce sink descriptor.
-   * 
+   *
    * @param keyCols
    *          The columns to be stored in the key
    * @param valueCols
@@ -441,7 +447,7 @@ public final class PlanUtils {
 
   /**
    * Create the reduce sink descriptor.
-   * 
+   *
    * @param keyCols
    *          The columns to be stored in the key
    * @param valueCols

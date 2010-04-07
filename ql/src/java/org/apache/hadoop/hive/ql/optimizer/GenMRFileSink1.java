@@ -77,7 +77,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
   /**
    * File Sink Operator encountered.
-   * 
+   *
    * @param nd
    *          the file sink operator encountered
    * @param opProcCtx
@@ -158,8 +158,8 @@ public class GenMRFileSink1 implements NodeProcessor {
         new ArrayList<ExprNodeDesc>(), valueCols, outputColumns, false, -1, -1,
         -1);
     OperatorFactory.getAndMakeChild(rsDesc, fsRS, ts_op);
-    MapredWork cplan = GenMapRedUtils.getMapRedWork();
     ParseContext parseCtx = ctx.getParseCtx();
+    MapredWork cplan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
 
     Task<? extends Serializable> mergeTask = TaskFactory.get(cplan, parseCtx
         .getConf());

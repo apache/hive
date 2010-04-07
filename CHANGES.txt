@@ -345,6 +345,9 @@ Trunk -  Unreleased
     HIVE-1290. Sort merge join does not work with bucketizedhiveinputformat.
     (Namit Jain via Ning Zhang)
 
+    HIVE-1280. Add option to CombineHiveInputFormat for non-splittable inputs.
+    (Namit Jain via zshao)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

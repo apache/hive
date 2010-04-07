@@ -61,6 +61,8 @@ public class MapredWork implements Serializable {
   private Integer minSplitSize;
 
   private boolean needsTagging;
+  private boolean hadoopSupportsSplittable;
+
   private MapredLocalWork mapLocalWork;
   private String inputformat;
 
@@ -75,7 +77,8 @@ public class MapredWork implements Serializable {
       final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork,
       final TableDesc keyDesc, List<TableDesc> tagToValueDesc,
       final Operator<?> reducer, final Integer numReduceTasks,
-      final MapredLocalWork mapLocalWork) {
+      final MapredLocalWork mapLocalWork,
+      final boolean hadoopSupportsSplittable) {
     this.command = command;
     this.pathToAliases = pathToAliases;
     this.pathToPartitionInfo = pathToPartitionInfo;
@@ -86,6 +89,7 @@ public class MapredWork implements Serializable {
     this.numReduceTasks = numReduceTasks;
     this.mapLocalWork = mapLocalWork;
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
+    this.hadoopSupportsSplittable = hadoopSupportsSplittable;
   }
 
   public String getCommand() {
@@ -194,7 +198,7 @@ public class MapredWork implements Serializable {
   /**
    * If the number of reducers is -1, the runtime will automatically figure it
    * out by input data size.
-   * 
+   *
    * The number of reducers will be a positive number only in case the target
    * table is bucketed into N buckets (through CREATE TABLE). This feature is
    * not supported yet, so the number of reducers will always be -1 for now.
@@ -292,6 +296,14 @@ public class MapredWork implements Serializable {
 
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
+  }
+
+  public boolean getHadoopSupportsSplittable() {
+    return hadoopSupportsSplittable;
+  }
+
+  public void setHadoopSupportsSplittable(boolean hadoopSupportsSplittable) {
+    this.hadoopSupportsSplittable = hadoopSupportsSplittable;
   }
 
   public Integer getMinSplitSize() {

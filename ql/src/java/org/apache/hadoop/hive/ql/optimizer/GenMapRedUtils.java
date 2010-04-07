@@ -471,8 +471,8 @@ public final class GenMapRedUtils {
   public static void splitPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx)
       throws SemanticException {
     // Generate a new task
-    MapredWork cplan = getMapRedWork();
     ParseContext parseCtx = opProcCtx.getParseCtx();
+    MapredWork cplan = getMapRedWork(parseCtx.getConf());
     Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
         .getConf());
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
@@ -736,14 +736,15 @@ public final class GenMapRedUtils {
    *
    * @return the new plan
    */
-  public static MapredWork getMapRedWork() {
+  public static MapredWork getMapRedWork(HiveConf conf) {
     MapredWork work = new MapredWork();
     work.setPathToAliases(new LinkedHashMap<String, ArrayList<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    work
-        .setAliasToWork(new LinkedHashMap<String, Operator<? extends Serializable>>());
+    work.setAliasToWork(new LinkedHashMap<String, Operator<? extends Serializable>>());
     work.setTagToValueDesc(new ArrayList<TableDesc>());
     work.setReducer(null);
+    work.setHadoopSupportsSplittable(
+      conf.getBoolVar(HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
     return work;
   }
 
@@ -913,7 +914,7 @@ public final class GenMapRedUtils {
     // union is encountered for the first time
     if (uCtxTask == null) {
       uCtxTask = new GenMRUnionCtx();
-      uPlan = GenMapRedUtils.getMapRedWork();
+      uPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);
