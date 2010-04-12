@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import java.util.Properties;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -44,11 +47,15 @@ public class SetProcessor implements CommandProcessor {
   private void dumpOptions(Properties p) {
     SessionState ss = SessionState.get();
 
-    ss.out.println("silent=" + (ss.getIsSilent() ? "on" : "off"));
+    SortedMap<String, String> sortedMap = new TreeMap<String, String>();
+    sortedMap.put("silent", (ss.getIsSilent() ? "on" : "off"));
     for (Object one : p.keySet()) {
       String oneProp = (String) one;
       String oneValue = p.getProperty(oneProp);
-      ss.out.println(oneProp + "=" + oneValue);
+      sortedMap.put(oneProp, oneValue);
+    }
+    for (Map.Entry<String, String> entries : sortedMap.entrySet()) {
+      ss.out.println(entries.getKey() + "=" + entries.getValue());
     }
   }
 

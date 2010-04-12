@@ -169,6 +169,9 @@ Trunk -  Unreleased
     HIVE-1276. Remove extra reducesink if it is already followed by a reduce sink
     (He Yongqiang via namit)
 
+    HIVE-1296. CLI set and set -v commands should dump properties in
+    alphabetical order (John Sichi via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
