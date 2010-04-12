@@ -1,0 +1,17 @@
+PREHOOK: query: SELECT explode(col) AS myCol FROM 
+    (SELECT array(1,2,3) AS col FROM src LIMIT 1 
+     UNION ALL
+     SELECT IF(false, array(1,2,3), NULL) AS col FROM src LIMIT 1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/task2/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_15-57-57_440_1997210643218047348/10000
+POSTHOOK: query: SELECT explode(col) AS myCol FROM 
+    (SELECT array(1,2,3) AS col FROM src LIMIT 1 
+     UNION ALL
+     SELECT IF(false, array(1,2,3), NULL) AS col FROM src LIMIT 1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/task2/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_15-57-57_440_1997210643218047348/10000
+1
+2
+3

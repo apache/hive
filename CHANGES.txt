@@ -348,6 +348,9 @@ Trunk -  Unreleased
     HIVE-1280. Add option to CombineHiveInputFormat for non-splittable inputs.
     (Namit Jain via zshao)
 
+    HIVE-1011. GenericUDTFExplode() throws NPE when given nulls
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

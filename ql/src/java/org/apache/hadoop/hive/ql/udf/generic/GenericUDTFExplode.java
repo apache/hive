@@ -62,12 +62,14 @@ public class GenericUDTFExplode extends GenericUDTF {
         fieldOIs);
   }
 
-  private Object[] forwardObj = new Object[1];
+  private final Object[] forwardObj = new Object[1];
 
   @Override
   public void process(Object[] o) throws HiveException {
-
     List<?> list = listOI.getList(o[0]);
+    if(list == null) {
+      return;
+    }
     for (Object r : list) {
       forwardObj[0] = r;
       forward(forwardObj);
