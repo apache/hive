@@ -32,52 +32,88 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@symlink_text_input_format
-PREHOOK: query: EXPLAIN SELECT * FROM symlink_text_input_format
+PREHOOK: query: EXPLAIN SELECT * FROM symlink_text_input_format order by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT * FROM symlink_text_input_format
+POSTHOOK: query: EXPLAIN SELECT * FROM symlink_text_input_format order by key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF symlink_text_input_format)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF symlink_text_input_format)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
+  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        symlink_text_input_format 
+          TableScan
+            alias: symlink_text_input_format
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                sort order: ++
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: SELECT * FROM symlink_text_input_format
+PREHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-55_412_372868623647124211/10000
-POSTHOOK: query: SELECT * FROM symlink_text_input_format
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-50_024_8543560563248210858/10000
+POSTHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-55_412_372868623647124211/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-50_024_8543560563248210858/10000
 1	11
 2	12
-3	13
-7	17
-8	18
-8	28
 2	12
-4	14
-6	16
-7	17
 2	22
 3	13
+3	13
+4	14
 4	14
 5	15
+6	16
+7	17
+7	17
 8	18
 8	18
-PREHOOK: query: EXPLAIN SELECT value FROM symlink_text_input_format
+8	18
+8	28
+PREHOOK: query: EXPLAIN SELECT value FROM symlink_text_input_format order by value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT value FROM symlink_text_input_format
+POSTHOOK: query: EXPLAIN SELECT value FROM symlink_text_input_format order by value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF symlink_text_input_format)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF symlink_text_input_format)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -95,42 +131,53 @@ STAGE PLANS:
                     expr: value
                     type: string
               outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: SELECT value FROM symlink_text_input_format
+PREHOOK: query: SELECT value FROM symlink_text_input_format order by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-55_939_1571446349980486687/10000
-POSTHOOK: query: SELECT value FROM symlink_text_input_format
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-54_036_4918019810802046490/10000
+POSTHOOK: query: SELECT value FROM symlink_text_input_format order by value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-55_939_1571446349980486687/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-54_036_4918019810802046490/10000
 11
 12
-13
-17
-18
-28
 12
-14
-16
-17
-22
 13
+13
+14
 14
 15
+16
+17
+17
 18
 18
+18
+22
+28
 PREHOOK: query: EXPLAIN SELECT count(1) FROM symlink_text_input_format
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT count(1) FROM symlink_text_input_format
@@ -189,11 +236,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(1) FROM symlink_text_input_format
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-59_427_4904352844938482139/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-57_782_3642968004654844824/10000
 POSTHOOK: query: SELECT count(1) FROM symlink_text_input_format
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/guanghao/w1/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-03-31_16-09-59_427_4904352844938482139/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-57_782_3642968004654844824/10000
 16
 PREHOOK: query: DROP TABLE symlink_text_input_format
 PREHOOK: type: DROPTABLE

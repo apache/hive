@@ -354,6 +354,9 @@ Trunk -  Unreleased
     HIVE-1011. GenericUDTFExplode() throws NPE when given nulls
     (Paul Yang via namit)
 
+    HIVE-1298. unit test symlink_text_input_format.q needs ORDER BY for
+    determinism (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
