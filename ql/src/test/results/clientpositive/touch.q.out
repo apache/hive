@@ -1,0 +1,18 @@
+PREHOOK: query: ALTER TABLE src TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: query: ALTER TABLE src TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src
+PREHOOK: query: ALTER TABLE srcpart TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: query: ALTER TABLE srcpart TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: default@srcpart
+PREHOOK: query: ALTER TABLE srcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: query: ALTER TABLE srcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart@ds=2008-04-08/hr=12

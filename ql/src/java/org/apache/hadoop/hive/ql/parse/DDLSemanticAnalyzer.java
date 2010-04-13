@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TouchDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -118,6 +119,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableProps(ast, true);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME) {
       analyzeAlterTableRename(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_TOUCH) {
+      analyzeAlterTableTouch(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS) {
       analyzeAlterTableModifyCols(ast, AlterTableTypes.ADDCOLS);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS) {
@@ -574,6 +577,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           currentLocation, ifNotExists);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           addPartitionDesc), conf));
+    }
+  }
+
+
+  /**
+   * Rewrite the metadata for one or more partitions in a table. Useful when
+   * an external process modifies files on HDFS and you want the pre/post
+   * hooks to be fired for the specified partition.
+   *
+   * @param ast
+   *          The parsed command tree.
+   * @throws SemanticException
+   *           Parsin failed
+   */
+  private void analyzeAlterTableTouch(CommonTree ast)
+      throws SemanticException {
+
+    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    // partition name to value
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+
+    if (partSpecs.size() == 0) {
+      TouchDesc touchDesc = new TouchDesc(
+          MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, null);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+          touchDesc), conf));
+    } else {
+      for (Map<String, String> partSpec : partSpecs) {
+        TouchDesc touchDesc = new TouchDesc(
+            MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, partSpec);
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+            touchDesc), conf));
+      }
     }
   }
 

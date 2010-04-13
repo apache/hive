@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -43,6 +42,7 @@ public class DDLWork implements Serializable {
   private ShowPartitionsDesc showPartsDesc;
   private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
+  private TouchDesc touchDesc;
   private MsckDesc msckDesc;
   private ShowTableStatusDesc showTblStatusDesc;
 
@@ -176,6 +176,17 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.addPartitionDesc = addPartitionDesc;
+  }
+
+  /**
+   * @param touchDesc
+   *          information about the table/partitions that we want to touch
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      TouchDesc touchDesc) {
+    this(inputs, outputs);
+
+    this.touchDesc = touchDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -369,6 +380,21 @@ public class DDLWork implements Serializable {
    */
   public void setAddPartitionDesc(AddPartitionDesc addPartitionDesc) {
     this.addPartitionDesc = addPartitionDesc;
+  }
+
+  /**
+   * @return information about the table/partitionss we want to touch.
+   */
+  public TouchDesc getTouchDesc() {
+    return touchDesc;
+  }
+
+  /**
+   * @param touchDesc
+   *          information about the table/partitions we want to touch.
+   */
+  public void setTouchDesc(TouchDesc touchDesc) {
+    this.touchDesc = touchDesc;
   }
 
   /**

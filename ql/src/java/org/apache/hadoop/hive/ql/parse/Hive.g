@@ -94,6 +94,7 @@ TOK_ALTERTABLE_RENAMECOL;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
+TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_FILEFORMAT;
@@ -279,6 +280,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
+    | alterStatementSuffixTouch
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
     | alterStatementSuffixFileFormat
@@ -324,6 +326,13 @@ alterStatementSuffixAddPartitions
 @after { msgs.pop(); }
     : Identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
     -> ^(TOK_ALTERTABLE_ADDPARTS Identifier ifNotExists? (partitionSpec partitionLocation?)+)
+    ;
+
+alterStatementSuffixTouch
+@init { msgs.push("touch statement"); }
+@after { msgs.pop(); }
+    : Identifier KW_TOUCH (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_TOUCH Identifier (partitionSpec)*)
     ;
 
 partitionLocation
@@ -1606,6 +1615,7 @@ KW_RECORDREADER: 'RECORDREADER';
 KW_RECORDWRITER: 'RECORDWRITER';
 KW_SEMI: 'SEMI';
 KW_LATERAL: 'LATERAL';
+KW_TOUCH: 'TOUCH';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

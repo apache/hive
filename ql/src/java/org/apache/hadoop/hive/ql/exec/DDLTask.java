@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.plan.TouchDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -148,6 +149,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
       }
+
+      TouchDesc touchDesc = work.getTouchDesc();
+      if (touchDesc != null) {
+        return touch(db, touchDesc);
+      }
+
 
       MsckDesc msckDesc = work.getMsckDesc();
       if (msckDesc != null) {
@@ -238,6 +245,49 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         .getPartition(tbl, addPartitionDesc.getPartSpec(), false);
     work.getOutputs().add(new WriteEntity(part));
 
+    return 0;
+  }
+
+  /**
+   * Rewrite the partition's metadata and force the pre/post execute hooks to
+   * be fired.
+   *
+   * @param db
+   * @param touchDesc
+   * @return
+   * @throws HiveException
+   */
+  private int touch(Hive db, TouchDesc touchDesc)
+      throws HiveException {
+
+    String dbName = touchDesc.getDbName();
+    String tblName = touchDesc.getTableName();
+
+    Table tbl = db.getTable(dbName, tblName);
+
+    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.TOUCH);
+
+    if (touchDesc.getPartSpec() == null) {
+      try {
+        db.alterTable(tblName, tbl);
+      } catch (InvalidOperationException e) {
+        throw new HiveException("Uable to update table");
+      }
+      work.getInputs().add(new ReadEntity(tbl));
+      work.getOutputs().add(new WriteEntity(tbl));
+    } else {
+      Partition part = db.getPartition(tbl, touchDesc.getPartSpec(), false);
+      if (part == null) {
+        throw new HiveException("Specified partition does not exist");
+      }
+      try {
+        db.alterPartition(tblName, part);
+      } catch (InvalidOperationException e) {
+        throw new HiveException(e);
+      }
+      work.getInputs().add(new ReadEntity(part));
+      work.getOutputs().add(new WriteEntity(part));
+    }
     return 0;
   }
 
