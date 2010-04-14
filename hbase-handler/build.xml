@@ -74,7 +74,14 @@
               resultsDirectory="${hbase-handler.test.results.dir}" className="TestHBaseCliDriver"
               logFile="${test.log.dir}/testhbaseclidrivergen.log"
               logDirectory="${test.log.dir}/hbase-handler"/>
-
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.hbase.test.template.dir}" template="TestHBaseCliDriver.vm" 
+              queryDirectory="${hbase-handler.test.query.dir}" 
+              queryFile="hbase_bulk.m"
+              clusterMode="miniMR"
+              resultsDirectory="${hbase-handler.test.results.dir}" className="TestHBaseMinimrCliDriver"
+              logFile="${test.log.dir}/testhbaseminimrclidrivergen.log"
+              logDirectory="${test.log.dir}/hbase-handler"/>
   </target>
 
   <!-- override target jar because tests need to add hbase-handler jars,

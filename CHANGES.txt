@@ -72,6 +72,9 @@ Trunk -  Unreleased
     HIVE-1300. alter table touch partition
     (Paul Yang via namit)
 
+    HIVE-1295. facilitate HBase bulk loads from Hive
+    (John Sichi via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

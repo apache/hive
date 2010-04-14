@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.Progressable;
 
 /**
- * HiveHBaseTableOutputFormat implements TableOutputFormat for HBase tables.
+ * HiveHBaseTableOutputFormat implements HiveOutputFormat for HBase tables.
  */
 public class HiveHBaseTableOutputFormat extends 
     TableOutputFormat implements

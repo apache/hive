@@ -218,8 +218,8 @@
     <pathelement location="${build.dir.hive}/cli/classes"/>
     <pathelement location="${build.dir.hive}/shims/classes"/>
     <pathelement location="${build.dir.hive}/hwi/classes"/>
-    <fileset dir="${basedir}" includes="lib/*.jar"/>
     <path refid="common-classpath"/>
+    <fileset dir="${basedir}" includes="lib/*.jar"/>
   </path>
 
   <target name="create-dirs">
