@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,8 +44,8 @@ import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -142,7 +142,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   public CommonJoinOperator() {
   }
-  
+
   public CommonJoinOperator(CommonJoinOperator<T> clone) {
     this.joinEmitInterval = clone.joinEmitInterval;
     this.joinCacheSize = clone.joinCacheSize;
@@ -155,9 +155,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.operatorId = clone.operatorId;
     this.storage = clone.storage;
     this.condn = clone.condn;
-    
+
     this.setSchema(clone.getSchema());
-    
+
     this.alias = clone.alias;
     this.beginTime = clone.beginTime;
     this.inputRows = clone.inputRows;
@@ -793,7 +793,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   /**
    * Forward a record of join results.
-   * 
+   *
    * @throws HiveException
    */
   @Override
@@ -880,7 +880,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   /**
    * All done.
-   * 
+   *
    */
   @Override
   public void closeOp(boolean abort) throws HiveException {

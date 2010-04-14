@@ -46,21 +46,21 @@ import org.apache.hadoop.util.StringUtils;
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
  * instances.
- * 
+ *
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  */
 public final class ObjectInspectorUtils {
 
   protected final static Log LOG = LogFactory.getLog(ObjectInspectorUtils.class.getName());
-  
+
   /**
    * This enum controls how we copy primitive objects.
-   * 
+   *
    * DEFAULT means choosing the most efficient way between JAVA and WRITABLE.
    * JAVA means converting all primitive objects to java primitive objects.
    * WRITABLE means converting all primitive objects to writable objects.
-   * 
+   *
    */
   public enum ObjectInspectorCopyOption {
     DEFAULT, JAVA, WRITABLE
@@ -68,7 +68,7 @@ public final class ObjectInspectorUtils {
 
   /**
    * Get the corresponding standard ObjectInspector for an ObjectInspector.
-   * 
+   *
    * The returned ObjectInspector can be used to inspect the standard object.
    */
   public static ObjectInspector getStandardObjectInspector(ObjectInspector oi) {
@@ -140,6 +140,31 @@ public final class ObjectInspectorUtils {
     }
     }
     return result;
+  }
+
+  /**
+   * Copy specified fields in the input row to the output array of standard objects.
+   * @param result output list of standard objects.
+   * @param row input row.
+   * @param startCol starting column number from the input row.
+   * @param numCols number of columns to copy.
+   * @param soi Object inspector for the to-be-copied columns.
+   */
+  public static void partialCopyToStandardObject(List<Object> result, Object row, int startCol,
+      int numCols, StructObjectInspector soi,
+      ObjectInspectorCopyOption objectInspectorOption) {
+
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    int i = 0, j = 0;
+    for (StructField f : fields) {
+      if (i++ >= startCol) {
+        result.add(copyToStandardObject(soi.getStructFieldData(row, f),
+            f.getFieldObjectInspector(), objectInspectorOption));
+        if (j == numCols) {
+          break;
+        }
+      }
+    }
   }
 
   /**
@@ -424,7 +449,7 @@ public final class ObjectInspectorUtils {
       return false;
     }
   }
-  
+
   /**
    * Compare two objects with their respective ObjectInspectors.
    */
@@ -576,7 +601,7 @@ public final class ObjectInspectorUtils {
   }
 
   /**
-   * Get the type name of the Java class. 
+   * Get the type name of the Java class.
    */
   public static String getTypeNameFromJavaClass(Type t) {
     try {
@@ -588,7 +613,7 @@ public final class ObjectInspectorUtils {
       return "unknown";
     }
   }
-  
+
   private ObjectInspectorUtils() {
     // prevent instantiation
   }

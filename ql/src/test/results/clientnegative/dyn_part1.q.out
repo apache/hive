@@ -1,0 +1,10 @@
+PREHOOK: query: drop table dynamic_partition
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dynamic_partition
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dynamic_partition
+FAILED: Error in semantic analysis: Partition column in the partition specification does not exist

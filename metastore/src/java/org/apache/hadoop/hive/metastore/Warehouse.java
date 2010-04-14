@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -77,10 +77,10 @@ public class Warehouse {
    * System URI always contains the canonical DNS name of the Namenode.
    * Subsequently, operations on paths with raw ip addresses cause an exception
    * since they don't match the file system URI.
-   * 
+   *
    * This routine solves this problem by replacing the scheme and authority of a
    * path with the scheme and authority of the FileSystem that it maps to.
-   * 
+   *
    * @param path
    *          Path to be canonicalized
    * @return Path with canonical scheme and authority
@@ -162,6 +162,7 @@ public class Warehouse {
     return false;
   }
 
+  /*
   // NOTE: This is for generating the internal path name for partitions. Users
   // should always use the MetaStore API to get the path name for a partition.
   // Users should not directly take partition values and turn it into a path
@@ -186,43 +187,23 @@ public class Warehouse {
   static boolean needsEscaping(char c) {
     return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
   }
+  */
 
   static String escapePathName(String path) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < path.length(); i++) {
-      char c = path.charAt(i);
-      if (needsEscaping(c)) {
-        sb.append('%');
-        sb.append(String.format("%1$02X", (int) c));
-      } else {
-        sb.append(c);
-      }
-    }
-    return sb.toString();
+    return FileUtils.escapePathName(path);
   }
 
   static String unescapePathName(String path) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < path.length(); i++) {
-      char c = path.charAt(i);
-      if (c == '%' && i + 2 < path.length()) {
-        int code = -1;
-        try {
-          code = Integer.valueOf(path.substring(i + 1, i + 3), 16);
-        } catch (Exception e) {
-          code = -1;
-        }
-        if (code >= 0) {
-          sb.append((char) code);
-          i += 2;
-          continue;
-        }
-      }
-      sb.append(c);
-    }
-    return sb.toString();
+    return FileUtils.unescapePathName(path);
   }
 
+  /**
+   * Given a partition specification, return the path corresponding to the
+   * partition spec. By default, the specification does not include dynamic partitions.
+   * @param spec
+   * @return string representation of the partition specification.
+   * @throws MetaException
+   */
   public static String makePartName(Map<String, String> spec)
       throws MetaException {
     StringBuilder suffixBuf = new StringBuilder();
@@ -238,43 +219,60 @@ public class Warehouse {
     return suffixBuf.toString();
   }
 
+  /**
+   * Given a dynamic partition specification, return the path corresponding to the
+   * static part of partition specification. This is basically a copy of makePartName
+   * but we get rid of MetaException since it is not serializable.
+   * @param spec
+   * @return string representation of the static part of the partition specification.
+   */
+  public static String makeDynamicPartName(Map<String, String> spec) {
+    StringBuilder suffixBuf = new StringBuilder();
+    for (Entry<String, String> e : spec.entrySet()) {
+      if (e.getValue() != null && e.getValue().length() > 0) {
+        suffixBuf.append(escapePathName(e.getKey()));
+        suffixBuf.append('=');
+        suffixBuf.append(escapePathName(e.getValue()));
+        suffixBuf.append(Path.SEPARATOR);
+      } else { // stop once we see a dynamic partition
+        break;
+      }
+    }
+    return suffixBuf.toString();
+  }
+
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
 
   public static LinkedHashMap<String, String> makeSpecFromName(String name)
       throws MetaException {
-    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
     if (name == null || name.isEmpty()) {
       throw new MetaException("Partition name is invalid. " + name);
     }
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    makeSpecFromName(partSpec, new Path(name));
+    return partSpec;
+  }
+
+  public static void makeSpecFromName(Map<String, String> partSpec, Path currPath) {
     List<String[]> kvs = new ArrayList<String[]>();
-    Path currPath = new Path(name);
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
       if (m.matches()) {
         String k = unescapePathName(m.group(1));
         String v = unescapePathName(m.group(2));
-
-        if (partSpec.containsKey(k)) {
-          throw new MetaException("Partition name is invalid. Key " + k
-              + " defined at two levels");
-        }
         String[] kv = new String[2];
         kv[0] = k;
         kv[1] = v;
         kvs.add(kv);
-      } else {
-        throw new MetaException("Partition name is invalid. " + name);
       }
       currPath = currPath.getParent();
     } while (currPath != null && !currPath.getName().isEmpty());
 
-    // reverse the list since we checked the part from leaf dir to table's base
-    // dir
+    // reverse the list since we checked the part from leaf dir to table's base dir
     for (int i = kvs.size(); i > 0; i--) {
       partSpec.put(kvs.get(i - 1)[0], kvs.get(i - 1)[1]);
     }
-    return partSpec;
   }
 
   public Path getPartitionPath(String dbName, String tableName,
@@ -307,16 +305,10 @@ public class Warehouse {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
       throw new MetaException("Invalid partition key & values");
     }
-    StringBuilder name = new StringBuilder();
-    for (int i = 0; i < partCols.size(); i++) {
-      if (i > 0) {
-        name.append(Path.SEPARATOR);
-      }
-      name.append(escapePathName((partCols.get(i)).getName().toLowerCase()));
-      name.append('=');
-      name.append(escapePathName(vals.get(i)));
+    List<String> colNames = new ArrayList<String>();
+    for (FieldSchema col: partCols) {
+      colNames.add(col.getName());
     }
-    return name.toString();
+    return FileUtils.makePartName(colNames, vals);
   }
-
 }

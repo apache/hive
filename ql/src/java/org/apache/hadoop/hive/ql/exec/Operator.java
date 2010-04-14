@@ -68,7 +68,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * run-time while extracting the operator specific counts.
    */
   protected HashMap<String, ProgressCounter> counterNameToEnum;
-  
+
   private transient ExecMapperContext execContext;
 
   private static int seqId;
@@ -111,7 +111,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Create an operator with a reporter.
-   * 
+   *
    * @param reporter
    *          Used to report progress of certain operators.
    */
@@ -272,7 +272,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * checks whether all parent operators are initialized or not.
-   * 
+   *
    * @return true if there are no parents or all parents are initialized. false
    *         otherwise
    */
@@ -287,11 +287,11 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
     return true;
   }
-  
+
   /**
    * Initializes operators only if all parents have been initialized. Calls
    * operator specific initializer which then initializes child ops.
-   * 
+   *
    * @param hconf
    * @param inputOIs
    *          input object inspector array indexes by tag id. null value is
@@ -343,14 +343,14 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
-    
+
     //pass the exec context to child operators
     passExecContext(this.execContext);
-    
+
     initializeOp(hconf);
     LOG.info("Initialization Done " + id + " " + getName());
   }
-  
+
   public void initializeLocalWork(Configuration hconf) throws HiveException {
     if (childOperators != null) {
       for (int i =0; i<childOperators.size();i++) {
@@ -359,7 +359,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       }
     }
   }
-  
+
   /**
    * Operator specific initialization.
    */
@@ -386,9 +386,9 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       }
     }
   }
-  
+
   /**
-   * Pass the execContext reference to every child operator 
+   * Pass the execContext reference to every child operator
    */
   public void passExecContext(ExecMapperContext execContext) {
     this.setExecContext(execContext);
@@ -402,7 +402,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Collects all the parent's output object inspectors and calls actual
    * initialization method.
-   * 
+   *
    * @param hconf
    * @param inputOI
    *          OI of the row that this parent will pass to this op
@@ -425,10 +425,10 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     // call the actual operator initialization function
     initialize(hconf, null);
   }
-  
+
   /**
    * Process the row.
-   * 
+   *
    * @param row
    *          The object representing the row.
    * @param tag
@@ -440,7 +440,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Process the row.
-   * 
+   *
    * @param row
    *          The object representing the row.
    * @param tag
@@ -565,20 +565,20 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Unlike other operator interfaces which are called from map or reduce task,
    * jobClose is called from the jobclient side once the job has completed.
-   * 
+   *
    * @param conf
    *          Configuration with with which job was submitted
    * @param success
    *          whether the job was completed successfully or not
    */
-  public void jobClose(Configuration conf, boolean success)
+  public void jobClose(Configuration conf, boolean success, JobCloseFeedBack feedBack)
       throws HiveException {
     if (childOperators == null) {
       return;
     }
 
     for (Operator<? extends Serializable> op : childOperators) {
-      op.jobClose(conf, success);
+      op.jobClose(conf, success, feedBack);
     }
   }
 
@@ -596,7 +596,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Replace one child with another at the same position. The parent of the
    * child is not changed
-   * 
+   *
    * @param child
    *          the old child
    * @param newChild
@@ -630,7 +630,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Replace one parent with another at the same position. Chilren of the new
    * parent are not updated
-   * 
+   *
    * @param parent
    *          the old parent
    * @param newParent
@@ -734,7 +734,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Implements the getName function for the Node Interface.
-   * 
+   *
    * @return the name of the operator
    */
   public String getName() {
@@ -744,7 +744,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Returns a map of output column name to input expression map Note that
    * currently it returns only key columns for ReduceSink and GroupBy operators.
-   * 
+   *
    * @return null if the operator doesn't change columns
    */
   public Map<String, ExprNodeDesc> getColumnExprMap() {
@@ -933,7 +933,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * this is called in operators in map or reduce tasks.
-   * 
+   *
    * @param name
    * @param amount
    */
@@ -978,7 +978,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * called in ExecDriver.progress periodically.
-   * 
+   *
    * @param ctrs
    *          counters from the running job
    */
@@ -1011,7 +1011,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Recursively check this operator and its descendants to see if the fatal
    * error counter is set to non-zero.
-   * 
+   *
    * @param ctrs
    */
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
@@ -1049,7 +1049,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
 
   /**
    * Get the fatal error message based on counter's code.
-   * 
+   *
    * @param errMsg
    *          error message should be appended to this output parameter.
    * @param counterValue
@@ -1129,7 +1129,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   /**
    * Should be overridden to return the type of the specific operator among the
    * types in OperatorType.
-   * 
+   *
    * @return OperatorType.* or -1 if not overridden
    */
   public int getType() {

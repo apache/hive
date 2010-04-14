@@ -19,7 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * LoadTableDesc.
@@ -30,29 +31,47 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   private static final long serialVersionUID = 1L;
   private boolean replace;
   private String tmpDir;
+  private DynamicPartitionCtx dpCtx;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
-  private HashMap<String, String> partitionSpec;
+  private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
   public LoadTableDesc() {
   }
 
   public LoadTableDesc(final String sourceDir, final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
-      final HashMap<String, String> partitionSpec, final boolean replace) {
-
+      final Map<String, String> partitionSpec, final boolean replace) {
     super(sourceDir);
-    this.tmpDir = tmpDir;
-    this.table = table;
-    this.partitionSpec = partitionSpec;
-    this.replace = replace;
+    init(sourceDir, tmpDir, table, partitionSpec, replace);
   }
 
   public LoadTableDesc(final String sourceDir, final String tmpDir,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
-      final HashMap<String, String> partitionSpec) {
+      final Map<String, String> partitionSpec) {
     this(sourceDir, tmpDir, table, partitionSpec, true);
+  }
+
+  public LoadTableDesc(final String sourceDir, final String tmpDir,
+      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final DynamicPartitionCtx dpCtx) {
+    super(sourceDir);
+    this.dpCtx = dpCtx;
+    if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
+      init(sourceDir, tmpDir, table, dpCtx.getPartSpec(), true);
+    } else {
+      init(sourceDir, tmpDir, table, new LinkedHashMap<String, String>(), true);
+    }
+  }
+
+  private void init(final String sourceDir, final String tmpDir,
+      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final Map<String, String> partitionSpec, final boolean replace) {
+    this.tmpDir = tmpDir;
+    this.table = table;
+    this.partitionSpec = partitionSpec;
+    this.replace = replace;
   }
 
   @Explain(displayName = "tmp directory", normalExplain = false)
@@ -74,11 +93,11 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   }
 
   @Explain(displayName = "partition")
-  public HashMap<String, String> getPartitionSpec() {
+  public Map<String, String> getPartitionSpec() {
     return partitionSpec;
   }
 
-  public void setPartitionSpec(final HashMap<String, String> partitionSpec) {
+  public void setPartitionSpec(final Map<String, String> partitionSpec) {
     this.partitionSpec = partitionSpec;
   }
 
@@ -89,5 +108,13 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   public void setReplace(boolean replace) {
     this.replace = replace;
+  }
+
+  public DynamicPartitionCtx getDPCtx() {
+    return dpCtx;
+  }
+
+  public void setDPCtx(final DynamicPartitionCtx dpCtx) {
+    this.dpCtx = dpCtx;
   }
 }

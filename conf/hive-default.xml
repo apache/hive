@@ -521,4 +521,34 @@
   <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>
 </property>
 
+<property>
+  <name>hive.exec.dynamic.partition</name>
+  <value>false</value>
+  <description>Whether or not to allow dynamic partitions in DML/DDL.</description>
+</property>
+
+<property>
+  <name>hive.exec.dynamic.partition.mode</name>
+  <value>strict</value>
+  <description>In strict mode, the user must specify at least one static partition in case the user accidentally overwrites all partitions.</description>
+</property>
+
+<property>
+  <name>hive.exec.max.dynamic.partitions</name>
+  <value>1000</value>
+  <description>Maximum number of dynamic partitions allowed to be created in total.</description>
+</property>
+
+<property>
+  <name>hive.exec.max.dynamic.partitions.pernode</name>
+  <value>100</value>
+  <description>Maximum number of dynamic partitions allowed to be created in each mapper/reducer node.</description>
+</property>
+
+<property>
+  <name>hive.default.partition.name</name>
+  <value>__HIVE_DEFAULT_PARTITION__</value>
+  <description>The default partition name in case the dynamic partition column value is null/empty string or anyother values that cannot be escaped. This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). The user has to be aware that the dynamic partition value should not contain this value to avoid confusions.</description>
+</property>
+
 </configuration>

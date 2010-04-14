@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -67,7 +67,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
       final TableDesc keyTblDesc, final Map<Byte, List<ExprNodeDesc>> values,
-      final List<TableDesc> valueTblDescs, ArrayList<String> outputColumnNames,
+      final List<TableDesc> valueTblDescs, List<String> outputColumnNames,
       final int posBigTable, final JoinCondDesc[] conds) {
     super(values, outputColumnNames, conds);
     this.keys = keys;

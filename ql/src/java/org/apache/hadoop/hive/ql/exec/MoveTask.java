@@ -23,6 +23,9 @@ import java.io.Serializable;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,12 +33,13 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -113,12 +117,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // Next we do this for tables and partitions
       LoadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
-        String mesg = "Loading data to table "
-            + tbd.getTable().getTableName()
-            + ((tbd.getPartitionSpec().size() > 0) ? " partition "
-            + tbd.getPartitionSpec().toString() : "");
+        StringBuilder mesg = new StringBuilder("Loading data to table ")
+            .append( tbd.getTable().getTableName());
+        if (tbd.getPartitionSpec().size() > 0) {
+          mesg.append(" partition (");
+          Map<String, String> partSpec = tbd.getPartitionSpec();
+          for (String key: partSpec.keySet()) {
+            mesg.append(key).append('=').append(partSpec.get(key)).append(", ");
+          }
+          mesg.setLength(mesg.length()-2);
+          mesg.append(')');
+        }
         String mesg_detail = " from " + tbd.getSourceDir();
-        console.printInfo(mesg, mesg_detail);
+        console.printInfo(mesg.toString(), mesg_detail);
         Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd
             .getTable().getTableName());
 
@@ -145,7 +156,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVECHECKFILEFORMAT)) {
             // Check if the file format of the file matches that of the table.
-            boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+            boolean flag = HiveFileFormatUtils.checkInputFormat(
+                fs, conf, tbd.getTable().getInputFileFormatClass(), files);
             if (!flag) {
               throw new HiveException(
                   "Wrong file format. Please check the file's format.");
@@ -164,20 +176,62 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
-          db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable()
-              .getTableName(), tbd.getPartitionSpec(), tbd.getReplace(),
-              new Path(tbd.getTmpDir()));
-          Partition partn = db.getPartition(table, tbd.getPartitionSpec(),
-              false);
-          dc = new DataContainer(table.getTTable(), partn.getTPartition());
-          if (work.getOutputs() != null) {
-            work.getOutputs().add(new WriteEntity(partn));
-          }
-        }
+          // deal with dynamic partitions
+          DynamicPartitionCtx dpCtx = tbd.getDPCtx();
+          if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
+            // load the list of DP partitions and return the list of partition specs
+            ArrayList<LinkedHashMap<String, String>> dp =
+              db.loadDynamicPartitions(
+                  new Path(tbd.getSourceDir()),
+                  tbd.getTable().getTableName(),
+                	tbd.getPartitionSpec(),
+                	tbd.getReplace(),
+                	new Path(tbd.getTmpDir()),
+                	dpCtx.getNumDPCols());
+            // for each partition spec, get the partition
+            // and put it to WriteEntity for post-exec hook
+            for (LinkedHashMap<String, String> partSpec: dp) {
+              Partition partn = db.getPartition(table, partSpec, false);
 
-        if (SessionState.get() != null) {
-          SessionState.get().getLineageState()
-            .setLineage(tbd.getSourceDir(), dc, table.getCols());
+              WriteEntity enty = new WriteEntity(partn);
+              if (work.getOutputs() != null) {
+                work.getOutputs().add(enty);
+              }
+              // Need to update the queryPlan's output as well so that post-exec hook get executed.
+              // This is only needed for dynamic partitioning since for SP the the WriteEntity is
+              // constructed at compile time and the queryPlan already contains that.
+              // For DP, WriteEntity creation is deferred at this stage so we need to update
+              // queryPlan here.
+              if (queryPlan.getOutputs() == null) {
+                queryPlan.setOutputs(new HashSet<WriteEntity>());
+              }
+              queryPlan.getOutputs().add(enty);
+
+              // update columnar lineage for each partition
+              dc = new DataContainer(table.getTTable(), partn.getTPartition());
+
+              if (SessionState.get() != null) {
+                SessionState.get().getLineageState().setLineage(tbd.getSourceDir(), dc,
+                    table.getCols());
+              }
+
+              console.printInfo("\tLoading partition " + partSpec);
+            }
+            dc = null; // reset data container to prevent it being added again.
+          } else { // static partitions
+            db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
+                tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()));
+          	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
+          	dc = new DataContainer(table.getTTable(), partn.getTPartition());
+          	// add this partition to post-execution hook
+          	if (work.getOutputs() != null) {
+          	  work.getOutputs().add(new WriteEntity(partn));
+          	}
+         }
+        }
+        if (SessionState.get() != null && dc != null) {
+          SessionState.get().getLineageState().setLineage(tbd.getSourceDir(), dc,
+              table.getCols());
         }
       }
 

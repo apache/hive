@@ -75,6 +75,9 @@ Trunk -  Unreleased
     HIVE-1295. facilitate HBase bulk loads from Hive
     (John Sichi via namit)
 
+    HIVE-1002. multi-partition inserts
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

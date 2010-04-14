@@ -38,13 +38,15 @@ public class FileSinkDesc implements Serializable {
   private int     totalFiles;
   private ArrayList<ExprNodeDesc> partitionCols;
   private int     numFiles;
+  private DynamicPartitionCtx dpCtx;
 
   public FileSinkDesc() {
   }
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
-      final int numFiles, final int totalFiles, final ArrayList<ExprNodeDesc> partitionCols) {
+      final int numFiles, final int totalFiles, final ArrayList<ExprNodeDesc> partitionCols,
+      final DynamicPartitionCtx dpCtx) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -54,6 +56,7 @@ public class FileSinkDesc implements Serializable {
     this.numFiles = numFiles;
     this.totalFiles = totalFiles;
     this.partitionCols = partitionCols;
+    this.dpCtx = dpCtx;
   }
 
   public FileSinkDesc(final String dirName, final TableDesc tableInfo,
@@ -178,5 +181,13 @@ public class FileSinkDesc implements Serializable {
    */
   public void setNumFiles(int numFiles) {
     this.numFiles = numFiles;
+  }
+
+  public void setDynPartCtx(DynamicPartitionCtx dpc) {
+    this.dpCtx = dpc;
+  }
+
+  public DynamicPartitionCtx getDynPartCtx() {
+    return this.dpCtx;
   }
 }

@@ -20,30 +20,20 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
-import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.util.ReflectionUtils;
 
 
 public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends CommonJoinOperator<T> implements
@@ -67,7 +57,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   transient int mapJoinRowsKey; // rows for a given key
 
   protected transient RowContainer<ArrayList<Object>> emptyList = null;
-  
+
   transient int numMapRowsRead;
 
   private static final transient String[] FATAL_ERR_MSG = {
@@ -78,7 +68,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient boolean firstRow;
   transient int heartbeatInterval;
-  
+
   public AbstractMapJoinOperator() {
   }
 
@@ -138,7 +128,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): "
         + FATAL_ERR_MSG[(int) counterCode]);
   }
-  
+
   protected void reportProgress() {
     // Send some status periodically
     numMapRowsRead++;

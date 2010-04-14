@@ -137,6 +137,15 @@ public enum ErrorMsg {
   VIEW_COL_MISMATCH("The number of columns produced by the SELECT clause does not match the "
       + "number of column names specified by CREATE VIEW"),
   DML_AGAINST_VIEW("A view cannot be used as target table for LOAD or INSERT"),
+  PARTITION_DYN_STA_ORDER("Dynamic partition cannot be the parent of a static partition"),
+  DYNAMIC_PARTITION_DISABLED("Dynamic partition is disabled. Either enable it by setting "
+      + "hive.exec.dynamic.partition=true or specify partition column values"),
+  DYNAMIC_PARTITION_STRICT_MODE("Dynamic partition strict mode requires at least one "
+      + "static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict"),
+  DYNAMIC_PARTITION_MERGE("Dynamic partition does not support merging mapfiles/mapredfiles yet."
+      + "Please set hive.merge.mapfiles and hive.merge.mapredfiles to false or use static "
+      +	"partitions"),
+  NONEXISTPARTCOL("Partition column in the partition specification does not exist"),
   UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
       + "STRING instead."),
   CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
@@ -168,7 +177,7 @@ public enum ErrorMsg {
    * is not found or <code>ErrorMsg</code> has no <code>SQLState</code>, returns
    * the <code>SQLState</code> bound to the <code>GENERIC_ERROR</code>
    * <code>ErrorMsg</code>.
-   * 
+   *
    * @param mesg
    *          An error message string
    * @return SQLState

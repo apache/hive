@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,10 +69,10 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
-  
+
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
-  
+
   /**
    * ReadEntitites that are passed to the hooks.
    */
@@ -336,7 +336,7 @@ public abstract class BaseSemanticAnalyzer {
   protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
     return getColumns(ast, true);
   }
-  
+
   /**
    * Get the list of FieldSchema out of the ASTNode.
    */
@@ -437,14 +437,16 @@ public abstract class BaseSemanticAnalyzer {
   public static class tableSpec {
     public String tableName;
     public Table tableHandle;
-    public HashMap<String, String> partSpec;
+    public Map<String, String> partSpec; // has to use LinkedHashMap to enforce order
     public Partition partHandle;
+    public int numDynParts; // number of dynamic partition columns
 
     public tableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
 
       assert (ast.getToken().getType() == HiveParser.TOK_TAB);
       int childIndex = 0;
+      numDynParts = 0;
 
       try {
         // get table metadata
@@ -468,26 +470,61 @@ public abstract class BaseSemanticAnalyzer {
       if (ast.getChildCount() == 2) {
         childIndex = 1;
         ASTNode partspec = (ASTNode) ast.getChild(1);
-        partSpec = new LinkedHashMap<String, String>();
+        // partSpec is a mapping from partition column name to its value.
+        partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-          String val = stripQuotes(partspec_val.getChild(1).getText());
-          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText()
-              .toLowerCase()), val);
-        }
-        try {
-          // In case the partition already exists, we need to get the partition
-          // data from the metastore
-          partHandle = db.getPartition(tableHandle, partSpec, false);
-          if (partHandle == null) {
-            // this doesn't create partition. partition is created in MoveTask
-            partHandle = new Partition(tableHandle, partSpec, null);
+          String val = null;
+          if (partspec_val.getChildCount() < 2) { // DP in the form of T partition (ds, hr)
+            ++numDynParts;
+          } else { // in the form of T partition (ds="2010-03-03")
+            val = stripQuotes(partspec_val.getChild(1).getText());
           }
-        } catch (HiveException e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast
-              .getChild(childIndex)));
+          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase()), val);
+        }
+        // check if the partition spec is valid
+        if (numDynParts > 0) {
+          List<FieldSchema> parts = tableHandle.getPartitionKeys();
+          int numStaPart = parts.size() - numDynParts;
+          if (numStaPart == 0 &&
+              conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
+            throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
+          }
+        	for (FieldSchema fs: parts) {
+        	  if (partSpec.get(fs.getName().toLowerCase()) == null) {
+        	    if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
+        	      throw new SemanticException(
+        	          ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
+        	    }
+        	    break;
+          	} else {
+          	  --numStaPart;
+          	}
+        	}
+          partHandle = null;
+        } else {
+          try {
+            // In case the partition already exists, we need to get the partition
+          	// data from the metastore
+            partHandle = db.getPartition(tableHandle, partSpec, false);
+	          if (partHandle == null) {
+	            // this doesn't create partition. partition is created in MoveTask
+  	          partHandle = new Partition(tableHandle, partSpec, null);
+	          }
+        	} catch (HiveException e) {
+         		throw new SemanticException(
+         		    ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
+        	}
         }
       }
+    }
+
+    public Map<String, String> getPartSpec() {
+      return this.partSpec;
+    }
+
+    public void setPartSpec(Map<String, String> partSpec) {
+      this.partSpec = partSpec;
     }
 
     @Override

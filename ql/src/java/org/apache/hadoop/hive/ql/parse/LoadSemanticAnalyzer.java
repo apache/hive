@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
@@ -227,10 +228,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // create final load/move work
 
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
+    Map<String, String> partSpec = ts.getPartSpec();
+    if (partSpec == null) {
+      partSpec = new LinkedHashMap<String, String>();
+    }
     LoadTableDesc loadTableWork = new LoadTableDesc(fromURI.toString(),
-        loadTmpPath, Utilities.getTableDesc(ts.tableHandle),
-        (ts.partSpec != null) ? ts.partSpec : new HashMap<String, String>(),
-        isOverWrite);
+        loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
 
     if (rTask != null) {
       rTask.addDependentTask(TaskFactory.get(new MoveWork(getInputs(),

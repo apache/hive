@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -537,7 +537,7 @@ public class Hive {
    *          The temporary directory.
    */
   public void loadPartition(Path loadPath, String tableName,
-      AbstractMap<String, String> partSpec, boolean replace, Path tmpDirPath)
+      Map<String, String> partSpec, boolean replace, Path tmpDirPath)
       throws HiveException {
     Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     try {
@@ -558,8 +558,8 @@ public class Hive {
         // extrapolated from
         // the table's location (even if the table is marked external)
         fs = FileSystem.get(tbl.getDataLocation(), getConf());
-        partPath = new Path(tbl.getDataLocation().getPath(), Warehouse
-            .makePartName(partSpec));
+        partPath = new Path(tbl.getDataLocation().getPath(),
+            Warehouse.makePartName(partSpec));
       } else {
         // Partition exists already. Get the path from the partition. This will
         // get the default path for Hive created partitions or the external path
@@ -585,6 +585,62 @@ public class Hive {
       throw new HiveException(e);
     }
 
+  }
+
+  /**
+   * Given a source directory name of the load path, load all dynamically generated partitions
+   * into the specified table and return a list of strings that represent the dynamic partition
+   * paths.
+   * @param loadPath
+   * @param tableName
+   * @param partSpec
+   * @param replace
+   * @param tmpDirPath
+   * @param numSp: number of static partitions in the partition spec
+   * @return
+   * @throws HiveException
+   */
+  public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
+      String tableName, Map<String, String> partSpec, boolean replace,
+      Path tmpDirPath, int numDP)
+      throws HiveException {
+
+    try {
+      ArrayList<LinkedHashMap<String, String>> fullPartSpecs =
+        new ArrayList<LinkedHashMap<String, String>>();
+
+      FileSystem fs = loadPath.getFileSystem(conf);
+      FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDP, fs);
+
+      if (status.length > conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)) {
+        throw new HiveException("Number of dynamic partitions created is " + status.length
+            + ", which is more than "
+            + conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)
+            +". To solve this try to set " + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+            + " to at least " + status.length + '.');
+      }
+
+      // for each dynamically created DP directory, construct a full partition spec
+      // and load the partition based on that
+      for (int i= 0; i < status.length; ++i) {
+        // get the dynamically created directory
+        Path partPath = status[i].getPath();
+        assert fs.getFileStatus(partPath).isDir():
+          "partitions " + partPath + " is not a directory !";
+
+        // generate a full partition specification
+        LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
+        Warehouse.makeSpecFromName(fullPartSpec, partPath);
+      	fullPartSpecs.add(fullPartSpec);
+
+        // finally load the partition -- move the file to the final table address
+      	loadPartition(partPath, tableName, fullPartSpec, replace, tmpDirPath);
+      	LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
+    	}
+      return fullPartSpecs;
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
@@ -687,11 +743,14 @@ public class Hive {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
-      if (val == null || val.length() == 0) {
+      // enable dynamic partitioning
+      if (val == null && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)
+          || val.length() == 0) {
         throw new HiveException("get partition: Value for key "
             + field.getName() + " is null or empty");
+      } else if (val != null){
+        pvals.add(val);
       }
-      pvals.add(val);
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
@@ -700,7 +759,6 @@ public class Hive {
         LOG.debug("creating partition for table " + tbl.getTableName()
             + " with partition spec : " + partSpec);
         tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
-        ;
       }
       if (tpart == null) {
         return null;
@@ -845,8 +903,8 @@ public class Hive {
             continue;
           }
           if (item.isDir()) {
-            throw new HiveException("checkPaths: " + src.toString()
-                + " has nested directory" + item.toString());
+            throw new HiveException("checkPaths: " + src.getPath()
+                + " has nested directory" + item.getPath());
           }
           Path tmpDest = new Path(destf, item.getPath().getName());
           if (!replace && fs.exists(tmpDest)) {

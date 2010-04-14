@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * Join operator Descriptor implementation.
- * 
+ *
  */
 @Explain(displayName = "Join Operator")
 public class JoinDesc implements Serializable {
@@ -49,7 +49,7 @@ public class JoinDesc implements Serializable {
   private Map<Byte, List<ExprNodeDesc>> exprs;
 
   // used for create joinOutputObjectInspector
-  protected java.util.ArrayList<java.lang.String> outputColumnNames;
+  protected List<String> outputColumnNames;
 
   // key:column output name, value:tag
   private transient Map<String, Byte> reversedExprs;
@@ -66,7 +66,7 @@ public class JoinDesc implements Serializable {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      ArrayList<String> outputColumnNames, final boolean noOuterJoin,
+      List<String> outputColumnNames, final boolean noOuterJoin,
       final JoinCondDesc[] conds) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
@@ -80,12 +80,12 @@ public class JoinDesc implements Serializable {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      ArrayList<String> outputColumnNames) {
+      List<String> outputColumnNames) {
     this(exprs, outputColumnNames, true, null);
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
-      ArrayList<String> outputColumnNames, final JoinCondDesc[] conds) {
+      List<String> outputColumnNames, final JoinCondDesc[] conds) {
     this(exprs, outputColumnNames, false, conds);
   }
 
@@ -150,12 +150,12 @@ public class JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "outputColumnNames")
-  public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
+  public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
 
   public void setOutputColumnNames(
-      java.util.ArrayList<java.lang.String> outputColumnNames) {
+      List<String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
   }
 
@@ -191,7 +191,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * The order in which tables should be processed when joining.
-   * 
+   *
    * @return Array of tags
    */
   public Byte[] getTagOrder() {
@@ -200,7 +200,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * The order in which tables should be processed when joining.
-   * 
+   *
    * @param tagOrder
    *          Array of tags
    */
@@ -215,7 +215,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * set to handle skew join in this join op.
-   * 
+   *
    * @param handleSkewJoin
    */
   public void setHandleSkewJoin(boolean handleSkewJoin) {
@@ -231,7 +231,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * set the mapping from tbl to dir for big keys.
-   * 
+   *
    * @param bigKeysDirMap
    */
   public void setBigKeysDirMap(Map<Byte, String> bigKeysDirMap) {
@@ -247,7 +247,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * set the mapping from tbl to dir for small keys.
-   * 
+   *
    * @param bigKeysDirMap
    */
   public void setSmallKeysDirMap(Map<Byte, Map<Byte, String>> smallKeysDirMap) {
@@ -264,7 +264,7 @@ public class JoinDesc implements Serializable {
 
   /**
    * set skew key definition.
-   * 
+   *
    * @param skewKeyDefinition
    */
   public void setSkewKeyDefinition(int skewKeyDefinition) {

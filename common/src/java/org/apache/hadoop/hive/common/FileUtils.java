@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.BitSet;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -33,11 +35,11 @@ public final class FileUtils {
   /**
    * Variant of Path.makeQualified that qualifies the input path against the
    * default file system indicated by the configuration
-   * 
+   *
    * This does not require a FileSystem handle in most cases - only requires the
    * Filesystem URI. This saves the cost of opening the Filesystem - which can
    * involve RPCs - as well as cause errors
-   * 
+   *
    * @param path
    *          path to be fully qualified
    * @param conf
@@ -80,4 +82,89 @@ public final class FileUtils {
   private FileUtils() {
     // prevent instantiation
   }
+
+
+  public static String makePartName(List<String> partCols,
+      List<String> vals) {
+
+    StringBuilder name = new StringBuilder();
+    for (int i = 0; i < partCols.size(); i++) {
+      if (i > 0) {
+        name.append(Path.SEPARATOR);
+      }
+      name.append(escapePathName((partCols.get(i)).toLowerCase()));
+      name.append('=');
+      name.append(escapePathName(vals.get(i)));
+    }
+    return name.toString();
+  }
+
+  // NOTE: This is for generating the internal path name for partitions. Users
+  // should always use the MetaStore API to get the path name for a partition.
+  // Users should not directly take partition values and turn it into a path
+  // name by themselves, because the logic below may change in the future.
+  //
+  // In the future, it's OK to add new chars to the escape list, and old data
+  // won't be corrupt, because the full path name in metastore is stored.
+  // In that case, Hive will continue to read the old data, but when it creates
+  // new partitions, it will use new names.
+  static BitSet charToEscape = new BitSet(128);
+  static {
+    for (char c = 0; c < ' '; c++) {
+      charToEscape.set(c);
+    }
+    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':', '=', '?',
+        '\\', '\u007F' };
+    for (char c : clist) {
+      charToEscape.set(c);
+    }
+  }
+
+  static boolean needsEscaping(char c) {
+    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
+  }
+
+  public static String escapePathName(String path) {
+
+    // __HIVE_DEFAULT_NULL__ is the system default value for null and empty string. We should
+    // TODO: we should allow user to specify default partition or HDFS file location.
+    if (path == null || path.length() == 0) {
+      return "__HIVE_DEFAULT_PARTITION__";
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < path.length(); i++) {
+      char c = path.charAt(i);
+      if (needsEscaping(c)) {
+        sb.append('%');
+        sb.append(String.format("%1$02X", (int) c));
+      } else {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String unescapePathName(String path) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < path.length(); i++) {
+      char c = path.charAt(i);
+      if (c == '%' && i + 2 < path.length()) {
+        int code = -1;
+        try {
+          code = Integer.valueOf(path.substring(i + 1, i + 3), 16);
+        } catch (Exception e) {
+          code = -1;
+        }
+        if (code >= 0) {
+          sb.append((char) code);
+          i += 2;
+          continue;
+        }
+      }
+      sb.append(c);
+    }
+    return sb.toString();
+  }
+
 }

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class MoveWork implements Serializable {
   private LoadFileDesc loadFileWork;
 
   private boolean checkFileFormat;
+  ArrayList<String> dpSpecPaths; // dynamic partition specified paths -- the root of DP columns
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -67,6 +69,14 @@ public class MoveWork implements Serializable {
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
+  }
+
+  public void setDPSpecPaths(ArrayList<String> dpsp) {
+    dpSpecPaths = dpsp;
+  }
+
+  public ArrayList<String> getDPSpecPaths() {
+    return dpSpecPaths;
   }
 
   @Explain(displayName = "tables")

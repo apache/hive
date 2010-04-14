@@ -28,9 +28,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -40,7 +40,7 @@ import org.apache.hadoop.util.StringUtils;
 
 /**
  * ExplainTask implementation.
- * 
+ *
  **/
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -111,6 +111,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       } else if (ent.getValue() instanceof Serializable) {
         out.println();
         outputPlan((Serializable) ent.getValue(), out, extended, indent + 2);
+      } else {
+        out.println();
       }
     }
   }
@@ -156,7 +158,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return true;
     }
 
-    if (val.getClass().isPrimitive()) {
+    if (val != null && val.getClass().isPrimitive()) {
       return true;
     }
 
@@ -370,7 +372,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       List<Task<? extends Serializable>> rootTasks, int indent) throws Exception {
     out.print(indentString(indent));
     out.println("STAGE PLANS:");
-    HashSet<Task<? extends Serializable>> displayedSet = 
+    HashSet<Task<? extends Serializable>> displayedSet =
       new HashSet<Task<? extends Serializable>>();
     for (Task<? extends Serializable> rootTask : rootTasks) {
       outputPlan(rootTask, out, work.getExtended(), displayedSet, indent + 2);

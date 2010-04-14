@@ -1391,7 +1391,7 @@ partitionSpec
 
 partitionVal
     :
-    Identifier EQUAL constant -> ^(TOK_PARTVAL Identifier constant)
+    Identifier (EQUAL constant)? -> ^(TOK_PARTVAL Identifier constant?)
     ;
 
 sysFuncNames

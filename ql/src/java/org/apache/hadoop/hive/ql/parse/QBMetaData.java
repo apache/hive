@@ -19,15 +19,17 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 
 /**
  * Implementation of the metadata information related to a query block.
- * 
+ *
  **/
 
 public class QBMetaData {
@@ -44,6 +46,8 @@ public class QBMetaData {
   private final HashMap<String, Partition> nameToDestPartition;
   private final HashMap<String, String> nameToDestFile;
   private final HashMap<String, Integer> nameToDestType;
+  private final HashMap<String, Map<String, String>> aliasToPartSpec;
+  private final HashMap<String, DynamicPartitionCtx> aliasToDPCtx;
 
   @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(QBMetaData.class.getName());
@@ -54,6 +58,8 @@ public class QBMetaData {
     nameToDestPartition = new HashMap<String, Partition>();
     nameToDestFile = new HashMap<String, String>();
     nameToDestType = new HashMap<String, Integer>();
+    aliasToPartSpec = new HashMap<String, Map<String, String>>();
+    aliasToDPCtx  = new HashMap<String, DynamicPartitionCtx>();
   }
 
   // All getXXX needs toLowerCase() because they are directly called from
@@ -108,5 +114,22 @@ public class QBMetaData {
 
   public Table getSrcForAlias(String alias) {
     return aliasToTable.get(alias.toLowerCase());
+  }
+
+  public Map<String, String> getPartSpecForAlias(String alias) {
+    return aliasToPartSpec.get(alias);
+  }
+
+  public void setPartSpecForAlias(String alias, Map<String, String> partSpec) {
+    aliasToPartSpec.put(alias, partSpec);
+
+  }
+
+  public void setDPCtx(String alias, DynamicPartitionCtx dpCtx) {
+    aliasToDPCtx.put(alias, dpCtx);
+  }
+
+  public DynamicPartitionCtx getDPCtx(String alias) {
+    return aliasToDPCtx.get(alias);
   }
 }

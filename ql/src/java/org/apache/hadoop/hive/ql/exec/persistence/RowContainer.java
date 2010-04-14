@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -50,27 +50,30 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Simple persistent container for rows.
- * 
+ *
  * This container interface only accepts adding or appending new rows and
  * iterating through the rows in the order of their insertions.
- * 
+ *
  * The iterator interface is a lightweight first()/next() API rather than the
  * Java Iterator interface. This way we do not need to create an Iterator object
  * every time we want to start a new iteration. Below is simple example of how
- * to convert a typical Java's Iterator code to the LW iterator iterface.
- * 
- * Itereator itr = rowContainer.iterator(); while (itr.hasNext()) { v =
- * itr.next(); // do anything with v }
- * 
+ * to convert a typical Java's Iterator code to the LW iterator interface.
+ *
+ * Iterator itr = rowContainer.iterator();
+ * while (itr.hasNext()) {
+ *   v = itr.next(); // do anything with v
+ * }
+ *
  * can be rewritten to:
- * 
- * for ( v = rowContainer.first(); v != null; v = rowContainer.next()) { // do
- * anything with v }
- * 
+ *
+ * for ( v = rowContainer.first(); v != null; v = rowContainer.next()) {
+ *   // do anything with v
+ * }
+ *
  * Once the first is called, it will not be able to write again. So there can
  * not be any writes after read. It can be read multiple times, but it does not
  * support multiple reader interleaving reading.
- * 
+ *
  */
 public class RowContainer<Row extends List<Object>> {
 
@@ -82,7 +85,7 @@ public class RowContainer<Row extends List<Object>> {
   private Row[] currentWriteBlock; // the last block that add() should append to
   private Row[] currentReadBlock; // the current block where the cursor is in
   // since currentReadBlock may assigned to currentWriteBlock, we need to store
-  // orginal read block
+  // original read block
   private Row[] firstReadBlockPointer;
   private int blockSize; // number of objects in the block before it is spilled
   // to disk
@@ -201,7 +204,7 @@ public class RowContainer<Row extends List<Object>> {
       } else {
         if (inputSplits == null) {
           if (this.inputFormat == null) {
-            inputFormat = (InputFormat<WritableComparable, Writable>)ReflectionUtils
+            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils
                 .newInstance(tblDesc.getInputFileFormatClass(),
                 jobCloneUsingLocalFs);
           }
@@ -355,7 +358,7 @@ public class RowContainer<Row extends List<Object>> {
 
   /**
    * Get the number of elements in the RowContainer.
-   * 
+   *
    * @return number of elements in the RowContainer
    */
   public int size() {

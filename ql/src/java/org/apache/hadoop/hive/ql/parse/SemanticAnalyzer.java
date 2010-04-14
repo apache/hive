@@ -31,9 +31,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
@@ -97,7 +98,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -116,6 +117,7 @@ import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -136,12 +138,11 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -149,9 +150,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -779,15 +780,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 .getMsg(ast, "The class is " + outputFormatClass.toString()));
           }
 
-          if (ts.partSpec == null) {
+          // tableSpec ts is got from the query (user specified),
+          // which means the user didn't specify partitions in their query,
+          // but whether the table itself is partitioned is not know.
+          if (ts.partHandle == null) {
             // This is a table
             qb.getMetaData().setDestForAlias(name, ts.tableHandle);
+            // has dynamic as well as static partitions
+            if (ts.partSpec != null && ts.partSpec.size() > 0) {
+              qb.getMetaData().setPartSpecForAlias(name, ts.partSpec);
+            }
           } else {
             // This is a partition
             qb.getMetaData().setDestForAlias(name, ts.partHandle);
           }
           break;
         }
+
         case HiveParser.TOK_LOCAL_DIR:
         case HiveParser.TOK_DIR: {
           // This is a dfs file
@@ -3152,25 +3161,65 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int currentTableId = 0;
     boolean isLocal = false;
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
+    DynamicPartitionCtx dpCtx = null;
     LoadTableDesc ltd = null;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
+      Map<String, String> partSpec = qbm.getPartSpecForAlias(dest);
+      dest_path = dest_tab.getPath();
 
       // check for partition
       List<FieldSchema> parts = dest_tab.getPartitionKeys();
-      if (parts != null && parts.size() > 0) {
-        throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+      if (parts != null && parts.size() > 0) { // table is partitioned
+        if (partSpec== null || partSpec.size() == 0) { // user did NOT specify partition
+          throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+        }
+        dpCtx = qbm.getDPCtx(dest);
+        if (dpCtx == null) {
+          validatePartSpec(dest_tab, partSpec);
+          dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
+              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+        	qbm.setDPCtx(dest, dpCtx);
+      	}
+
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
+          // TODO: we should support merge files for dynamically generated partitions later
+          if (dpCtx.getNumDPCols() > 0 &&
+              (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES) ||
+               HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES))) {
+            HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
+            HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
+          }
+          // turn on hive.task.progress to update # of partitions created to the JT
+          HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS, true);
+
+        } else { // QBMetaData.DEST_PARTITION capture the all-SP case
+          throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg());
+        }
+        if (dpCtx.getSPPath() != null) {
+          dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
+      	}
+        if ((dest_tab.getNumBuckets() > 0) &&
+            (conf.getBoolVar(HiveConf.ConfVars.HIVEENFORCEBUCKETING))) {
+          dpCtx.setNumBuckets(dest_tab.getNumBuckets());
+        }
       }
-      dest_path = dest_tab.getPath();
+
       boolean isNonNativeTable = dest_tab.isNonNative();
       if (isNonNativeTable) {
         queryTmpdir = dest_path.toUri().getPath();
       } else {
         queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       }
+      if (dpCtx != null) {
+        // set the root of the temporay path where dynamic partition columns will populate
+        dpCtx.setRootPath(queryTmpdir);
+      }
+      // this table_desc does not contain the partitioning columns
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -3181,13 +3230,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       destTableId++;
 
       // Create the work for moving the table
+      // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
-        ltd = new LoadTableDesc(queryTmpdir, ctx
-            .getExternalTmpFileURI(dest_path.toUri()), table_desc,
-            new HashMap<String, String>());
+        ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
+            table_desc, dpCtx);
         loadTableWork.add(ltd);
       }
-      if (!outputs.add(new WriteEntity(dest_tab))) {
+
+      // Here only register the whole table for post-exec hook if no DP present
+      // in the case of DP, we will register WriteEntity in MoveTask when the
+      // list of dynamically created partitions are known.
+      if ((dpCtx == null || dpCtx.getNumDPCols() == 0) &&
+          !outputs.add(new WriteEntity(dest_tab))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName()));
       }
@@ -3333,7 +3387,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + dest_type);
     }
 
-    input = genConversionSelectOperator(dest, qb, input, table_desc);
+    input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
     inputRR = opParseCtx.get(input).getRR();
 
     ArrayList<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
@@ -3354,11 +3408,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowSchema fsRS = new RowSchema(vecCol);
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new FileSinkDesc(queryTmpdir, table_desc, conf
-        .getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId,
-        rsCtx.isMultiFileSpray(), rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols()),
-        fsRS, input), inputRR);
+    Operator output = putOpInsertMap(
+        OperatorFactory.getAndMakeChild(
+            new FileSinkDesc(
+                queryTmpdir,
+                table_desc,
+                conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT),
+		            currentTableId,
+  		          rsCtx.isMultiFileSpray(),
+    		        rsCtx.getNumFiles(),
+      		      rsCtx.getTotalFiles(),
+                rsCtx.getPartnCols(),
+                dpCtx),
+            fsRS, input), inputRR);
 
 
     if (ltd != null && SessionState.get() != null) {
@@ -3372,12 +3434,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  private void validatePartSpec(Table tbl, Map<String, String> partSpec)
+      throws SemanticException {
+    List<FieldSchema> parts = tbl.getPartitionKeys();
+    Set<String> partCols = new HashSet<String>(parts.size());
+    for (FieldSchema col: parts) {
+      partCols.add(col.getName());
+    }
+    for (String col: partSpec.keySet()) {
+      if (!partCols.contains(col)) {
+        throw new SemanticException(ErrorMsg.NONEXISTPARTCOL.getMsg());
+      }
+    }
+  }
+
   /**
    * Generate the conversion SelectOperator that converts the columns into the
    * types that are expected by the table_desc.
    */
   Operator genConversionSelectOperator(String dest, QB qb, Operator input,
-      TableDesc table_desc) throws SemanticException {
+      TableDesc table_desc, DynamicPartitionCtx dpCtx) throws SemanticException {
     StructObjectInspector oi = null;
     try {
       Deserializer deserializer = table_desc.getDeserializerClass()
@@ -3390,13 +3466,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Check column number
     List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
+    boolean dynPart = HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING);
     ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
         .getColumnInfos();
     if (tableFields.size() != rowFields.size()) {
-      String reason = "Table " + dest + " has " + tableFields.size()
-          + " columns but query has " + rowFields.size() + " columns.";
-      throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
-          qb.getParseInfo().getDestForClause(dest), reason));
+      if (!dynPart || dpCtx == null ||
+          tableFields.size() + dpCtx.getNumDPCols() != rowFields.size()) {
+        String reason = "Table " + dest + " has " + tableFields.size()
+       	   + " columns but query has " + rowFields.size() + " columns.";
+      	throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+       	   qb.getParseInfo().getDestForClause(dest), reason));
+      } else {
+        // create the mapping from input ExprNode to dest table DP column
+        dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
+      }
     }
 
     // Check column types
@@ -3405,13 +3488,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ExprNodeDesc> expressions = new ArrayList<ExprNodeDesc>(
         columnNumber);
     // MetadataTypedColumnsetSerDe does not need type conversions because it
-    // does
-    // the conversion to String by itself.
+    // does the conversion to String by itself.
     boolean isMetaDataSerDe = table_desc.getDeserializerClass().equals(
         MetadataTypedColumnsetSerDe.class);
     boolean isLazySimpleSerDe = table_desc.getDeserializerClass().equals(
         LazySimpleSerDe.class);
     if (!isMetaDataSerDe) {
+
+      // here only deals with non-partition columns. We deal with partition columns next
       for (int i = 0; i < columnNumber; i++) {
         ObjectInspector tableFieldOI = tableFields.get(i)
             .getFieldObjectInspector();
@@ -3445,6 +3529,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         expressions.add(column);
       }
+    }
+
+    // deal with dynamic partition columns: convert ExprNodeDesc type to String??
+    if (dynPart && dpCtx != null && dpCtx.getNumDPCols() > 0) {
+      // DP columns starts with tableFields.size()
+      for (int i = tableFields.size(); i < rowFields.size(); ++i ) {
+        TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
+        ExprNodeDesc column = new ExprNodeColumnDesc(
+            rowFieldTypeInfo, rowFields.get(i).getInternalName(), "", false);
+        expressions.add(column);
+      }
+      // converted = true; // [TODO]: should we check & convert type to String and set it to true?
     }
 
     if (converted) {
@@ -6321,9 +6417,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (cols.size() != 0) {
           throw new SemanticException(ErrorMsg.CTAS_COLLST_COEXISTENCE.getMsg());
         }
-        // TODO: support partition for CTAS?
         if (partCols.size() != 0 || bucketCols.size() != 0) {
-          throw new SemanticException(ErrorMsg.CTAS_PARCOL_COEXISTENCE.getMsg());
+          boolean dynPart = HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING);
+          if (dynPart == false) {
+            throw new SemanticException(ErrorMsg.CTAS_PARCOL_COEXISTENCE.getMsg());
+          } else {
+            // TODO: support dynamic partition for CTAS
+            throw new SemanticException(ErrorMsg.CTAS_PARCOL_COEXISTENCE.getMsg());
+          }
         }
         if (isExt) {
           throw new SemanticException(ErrorMsg.CTAS_EXTTBL_COEXISTENCE.getMsg());

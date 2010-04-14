@@ -60,10 +60,10 @@ public class WriteEntity implements Serializable {
 
   /**
    * This is derived from t and p, but we need to serialize this field to make sure
-   * WriteEntity.hashCode() does not need to recursively read into t and p. 
+   * WriteEntity.hashCode() does not need to recursively read into t and p.
    */
   private String name;
-  
+
   public String getName() {
     return name;
   }
@@ -109,10 +109,10 @@ public class WriteEntity implements Serializable {
    */
   public WriteEntity() {
   }
-  
+
   /**
    * Constructor for a table.
-   * 
+   *
    * @param t
    *          Table that is written to.
    */
@@ -126,7 +126,7 @@ public class WriteEntity implements Serializable {
 
   /**
    * Constructor for a partition.
-   * 
+   *
    * @param p
    *          Partition that is written to.
    */
@@ -140,7 +140,7 @@ public class WriteEntity implements Serializable {
 
   /**
    * Constructor for a file.
-   * 
+   *
    * @param d
    *          The name of the directory that is being written to.
    * @param islocal
@@ -205,7 +205,7 @@ public class WriteEntity implements Serializable {
   public String toString() {
     return name;
   }
-  
+
   private String computeName() {
     switch (typ) {
     case TABLE:

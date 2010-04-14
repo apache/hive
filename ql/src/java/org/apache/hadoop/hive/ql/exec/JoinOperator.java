@@ -130,7 +130,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
 
   /**
    * All done.
-   * 
+   *
    */
   @Override
   public void closeOp(boolean abort) throws HiveException {
@@ -141,20 +141,21 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   @Override
-  public void jobClose(Configuration hconf, boolean success) throws HiveException {
+  public void jobClose(Configuration hconf, boolean success, JobCloseFeedBack feedBack)
+      throws HiveException {
     int numAliases = conf.getExprs().size();
     if (conf.getHandleSkewJoin()) {
       try {
         for (int i = 0; i < numAliases; i++) {
           String specPath = conf.getBigKeysDirMap().get((byte) i);
-          FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
+          mvFileToFinalPath(specPath, hconf, success, LOG);
           for (int j = 0; j < numAliases; j++) {
             if (j == i) {
               continue;
             }
             specPath = getConf().getSmallKeysDirMap().get((byte) i).get(
                 (byte) j);
-            FileSinkOperator.mvFileToFinalPath(specPath, hconf, success, LOG);
+            mvFileToFinalPath(specPath, hconf, success, LOG);
           }
         }
 
@@ -177,7 +178,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         throw new HiveException(e);
       }
     }
-    super.jobClose(hconf, success);
+    super.jobClose(hconf, success, feedBack);
   }
 
   private void moveUpFiles(String specPath, Configuration hconf, Log log)
@@ -197,8 +198,45 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   /**
+   * This is a similar implementation of FileSinkOperator.moveFileToFinalPath.
+   * @param specPath
+   * @param hconf
+   * @param success
+   * @param log
+   * @param dpCtx
+   * @throws IOException
+   * @throws HiveException
+   */
+  private void  mvFileToFinalPath(String specPath, Configuration hconf,
+      boolean success, Log log) throws IOException, HiveException {
+
+    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    Path tmpPath = Utilities.toTempPath(specPath);
+    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
+        + ".intermediate");
+    Path finalPath = new Path(specPath);
+    ArrayList<String> emptyBuckets = null;
+    if (success) {
+      if (fs.exists(tmpPath)) {
+        // Step1: rename tmp output folder to intermediate path. After this
+        // point, updates from speculative tasks still writing to tmpPath
+        // will not appear in finalPath.
+        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.rename(fs, tmpPath, intermediatePath);
+        // Step2: remove any tmp file or double-committed output files
+        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
+        // Step3: move to the file destination
+        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
+        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+      }
+    } else {
+      fs.delete(tmpPath, true);
+    }
+  }
+
+  /**
    * Forward a record of join results.
-   * 
+   *
    * @throws HiveException
    */
   @Override

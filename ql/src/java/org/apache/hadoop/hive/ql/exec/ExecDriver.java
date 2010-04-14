@@ -721,16 +721,27 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       }
     }
 
+    // get the list of Dynamic partition paths
+    ArrayList<String> dpPaths = new ArrayList<String>();
     try {
       if (rj != null) {
+        JobCloseFeedBack feedBack = new JobCloseFeedBack();
         if (work.getAliasToWork() != null) {
           for (Operator<? extends Serializable> op : work.getAliasToWork()
               .values()) {
-            op.jobClose(job, success);
+            op.jobClose(job, success, feedBack);
+            ArrayList<Object> dirs = feedBack.get(JobCloseFeedBack.FeedBackType.DYNAMIC_PARTITIONS);
+            if (dirs != null) {
+              for (Object o: dirs) {
+                if (o instanceof String) {
+                  dpPaths.add((String)o);
+                }
+              }
+            }
           }
         }
         if (work.getReducer() != null) {
-          work.getReducer().jobClose(job, success);
+          work.getReducer().jobClose(job, success, feedBack);
         }
       }
     } catch (Exception e) {

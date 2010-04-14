@@ -84,6 +84,11 @@ public class HiveConf extends Configuration {
     EXECPARALLEL("hive.exec.parallel", false), // parallel query launching
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),
     HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", true),
+    DYNAMICPARTITIONING("hive.exec.dynamic.partition", false),
+    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict"),
+    DYNAMICPARTITIONMAXPARTS("hive.exec.max.dynamic.partitions", 1000),
+    DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
+    DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),

@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -77,12 +76,13 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.SequenceFile;
@@ -213,6 +213,7 @@ public final class Utilities {
     protected boolean mutatesTo(Object oldInstance, Object newInstance) {
       return false;
     }
+    @Override
     protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
       java.util.Collection oldO = (java.util.Collection)oldInstance;
       java.util.Collection newO = (java.util.Collection)newInstance;
@@ -237,6 +238,7 @@ public final class Utilities {
     protected boolean mutatesTo(Object oldInstance, Object newInstance) {
       return false;
     }
+    @Override
     protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
       java.util.Collection oldO = (java.util.Collection)oldInstance;
       java.util.Collection newO = (java.util.Collection)newInstance;
@@ -262,6 +264,7 @@ public final class Utilities {
     protected boolean mutatesTo(Object oldInstance, Object newInstance) {
       return false;
     }
+    @Override
     protected void initialize(Class<?> type, Object oldInstance, Object newInstance, Encoder out) {
       java.util.Collection oldO = (java.util.Collection)oldInstance;
       java.util.Collection newO = (java.util.Collection)newInstance;
@@ -339,6 +342,7 @@ public final class Utilities {
   }
 
   public static   class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
+    @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
       return new Expression(oldInstance,
                             oldInstance.getClass(),
@@ -346,6 +350,7 @@ public final class Utilities {
                             null);
     }
 
+    @Override
     protected void initialize(Class type, Object oldInstance, Object newInstance,
                               Encoder out) {
       Iterator ite = ((Collection) oldInstance).iterator();
@@ -712,8 +717,7 @@ public final class Utilities {
     if (isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat
           .getOutputCompressorClass(jc, DefaultCodec.class);
-      CompressionCodec codec = (CompressionCodec) ReflectionUtils.newInstance(
-          codecClass, jc);
+      CompressionCodec codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
       return codec.createOutputStream(out);
     } else {
       return (out);
@@ -736,8 +740,7 @@ public final class Utilities {
     } else {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat
           .getOutputCompressorClass(jc, DefaultCodec.class);
-      CompressionCodec codec = (CompressionCodec) ReflectionUtils.newInstance(
-          codecClass, jc);
+      CompressionCodec codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
       return codec.getDefaultExtension();
     }
   }
@@ -967,20 +970,30 @@ public final class Utilities {
   private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*_([0-9]*)_[0-9](\\..*)?$");
 
   /**
+   * Local job name looks like "job_local_1_map_0000", where 1 is job ID and 0000 is task ID.
+   */
+  private static Pattern fileNameLocalTaskIdRegex = Pattern.compile(".*local.*_([0-9]*)$");
+
+  /**
    * Get the task id from the filename. E.g., get "000000" out of
    * "24931_r_000000_0" or "24931_r_000000_0.gz"
    */
   public static String getTaskIdFromFilename(String filename) {
+    String taskId = filename;
     Matcher m = fileNameTaskIdRegex.matcher(filename);
     if (!m.matches()) {
-      LOG.warn("Unable to get task id from file name: " + filename
-          + ". Using full filename as task id.");
-      return filename;
+      Matcher m2 = fileNameLocalTaskIdRegex.matcher(filename);
+      if (!m2.matches()) {
+        LOG.warn("Unable to get task id from file name: " + filename
+            + ". Using full filename as task id.");
+      } else {
+        taskId = m2.group(1);
+      }
     } else {
-      String taskId = m.group(1);
-      LOG.debug("TaskId for " + filename + " = " + taskId);
-      return taskId;
+      taskId = m.group(1);
     }
+    LOG.debug("TaskId for " + filename + " = " + taskId);
+    return taskId;
   }
 
   /**
@@ -990,6 +1003,11 @@ public final class Utilities {
    */
   public static String replaceTaskIdFromFilename(String filename, int bucketNum) {
     String taskId = getTaskIdFromFilename(filename);
+    String newTaskId = replaceTaskId(taskId, bucketNum);
+    return replaceTaskIdFromFilename(filename, taskId, newTaskId);
+  }
+
+  public static String replaceTaskId(String taskId, int bucketNum) {
     String strBucketNum = String.valueOf(bucketNum);
     int bucketNumLen = strBucketNum.length();
     int taskIdLen = taskId.length();
@@ -997,17 +1015,30 @@ public final class Utilities {
     for (int i = 0; i < taskIdLen - bucketNumLen; i++) {
         s.append("0");
     }
-    String newTaskId = s.toString() + strBucketNum;
-    String[] spl = filename.split(taskId);
+    return s.toString() + strBucketNum;
+  }
+
+  /**
+   * Replace the oldTaskId appearing in the filename by the newTaskId.
+   * The string oldTaskId could appear multiple times, we should only replace the last one.
+   * @param filename
+   * @param oldTaskId
+   * @param newTaskId
+   * @return
+   */
+  public static String replaceTaskIdFromFilename(String filename,
+      String oldTaskId, String newTaskId) {
+
+    String[] spl = filename.split(oldTaskId);
 
     if ((spl.length == 0) || (spl.length == 1)) {
-      return filename.replaceAll(taskId, newTaskId);
+      return filename.replaceAll(oldTaskId, newTaskId);
     }
 
     StringBuffer snew = new StringBuffer();
     for (int idx = 0; idx < spl.length-1; idx++) {
       if (idx > 0) {
-        snew.append(taskId);
+        snew.append(oldTaskId);
       }
       snew.append(spl[idx]);
     }
@@ -1017,21 +1048,88 @@ public final class Utilities {
   }
 
   /**
+   * Get all file status from a root path and recursively go deep into certain levels.
+   * @param path the root path
+   * @param level the depth of directory should explore
+   * @param fs the file system
+   * @return array of FileStatus
+   * @throws IOException
+   */
+  public static FileStatus[] getFileStatusRecurse(Path path, int level,
+      FileSystem fs) throws IOException {
+
+    // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
+    StringBuilder sb = new StringBuilder(path.toUri().getPath());
+    for (int i = 0; i < level; ++i) {
+      sb.append(Path.SEPARATOR).append("*");
+    }
+    Path pathPattern = new Path(path, sb.toString());
+    return fs.globStatus(pathPattern);
+  }
+
+  /**
    * Remove all temporary files and duplicate (double-committed) files from a
    * given directory.
+   * @return a list of path names corresponding to should-be-created empty buckets.
    */
-  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path)
+  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path) throws IOException {
+    removeTempOrDuplicateFiles(fs, path, null);
+  }
+
+  /**
+   * Remove all temporary files and duplicate (double-committed) files from a
+   * given directory.
+   * @return a list of path names corresponding to should-be-created empty buckets.
+   */
+  public static ArrayList<String> removeTempOrDuplicateFiles(FileSystem fs, Path path, DynamicPartitionCtx dpCtx)
       throws IOException {
     if (path == null) {
-      return;
+      return null;
     }
 
-    FileStatus[] items = fs.listStatus(path);
-    if (items == null) {
-      return;
+    ArrayList<String> result = new ArrayList<String>();
+    if (dpCtx != null) {
+      FileStatus parts[] = getFileStatusRecurse(path, dpCtx.getNumDPCols(), fs);
+      HashMap<String, FileStatus> taskIDToFile = null;
+
+      for (int i = 0; i < parts.length; ++i) {
+        assert parts[i].isDir(): "dynamic partition " + parts[i].getPath() + " is not a direcgtory";
+        FileStatus[] items = fs.listStatus(parts[i].getPath());
+        taskIDToFile = removeTempOrDuplicateFiles(items, fs);
+        // if the table is bucketed and enforce bucketing, we should check and generate all buckets
+        if (dpCtx.getNumBuckets() > 0 && taskIDToFile != null) {
+          // refresh the file list
+          items = fs.listStatus(parts[i].getPath());
+          // get the missing buckets and generate empty buckets
+          String taskID1 = taskIDToFile.keySet().iterator().next();
+          Path bucketPath = taskIDToFile.values().iterator().next().getPath();
+          for (int j = 0; j < dpCtx.getNumBuckets(); ++j ) {
+            String taskID2 = replaceTaskId(taskID1, j);
+            if (!taskIDToFile.containsKey(taskID2)) {
+              // create empty bucket, file name should be derived from taskID2
+              String path2 = replaceTaskIdFromFilename(bucketPath.toUri().getPath().toString(), j);
+              result.add(path2);
+            }
+          }
+        }
+      }
+    } else {
+      FileStatus[] items = fs.listStatus(path);
+      removeTempOrDuplicateFiles(items, fs);
+    }
+    return result;
+ }
+
+  public static HashMap<String, FileStatus> removeTempOrDuplicateFiles(
+      FileStatus[] items, FileSystem fs)
+      throws IOException {
+
+    if (items == null || fs == null) {
+      return null;
     }
 
     HashMap<String, FileStatus> taskIdToFile = new HashMap<String, FileStatus>();
+
     for (FileStatus one : items) {
       if (isTempPath(one)) {
         if (!fs.delete(one.getPath(), true)) {
@@ -1053,6 +1151,7 @@ public final class Utilities {
         }
       }
     }
+    return taskIdToFile;
   }
 
   public static String getNameMessage(Exception e) {
@@ -1230,4 +1329,5 @@ public final class Utilities {
       job.set(entry.getKey(), entry.getValue());
     }
   }
+
 }
