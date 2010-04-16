@@ -8,3 +8,12 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <
 POSTHOOK: type: DESCFUNCTION
 a < b - Returns TRUE if a is less than b
+PREHOOK: query: SELECT true<false, false<true, false<false, true<true FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-35-43_830_5934618930589343927/10000
+POSTHOOK: query: SELECT true<false, false<true, false<false, true<true FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-35-43_830_5934618930589343927/10000
+false	true	false	false

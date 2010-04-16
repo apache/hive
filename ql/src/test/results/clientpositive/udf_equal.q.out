@@ -20,3 +20,12 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ==
 POSTHOOK: type: DESCFUNCTION
 a == b - Returns TRUE if a equals b and false otherwise
 Synonyms: =
+PREHOOK: query: SELECT true=false, false=true, false=false, true=true FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_14-02-03_248_2636646596000796300/10000
+POSTHOOK: query: SELECT true=false, false=true, false=false, true=true FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_14-02-03_248_2636646596000796300/10000
+false	false	true	true

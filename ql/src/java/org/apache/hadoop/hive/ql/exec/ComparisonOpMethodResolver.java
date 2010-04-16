@@ -50,13 +50,13 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.hadoop.hive.ql.exec.UDFMethodResolver#getEvalMethod(java.util
    * .List)
    */
   @Override
-  public Method getEvalMethod(List<TypeInfo> argTypeInfos) throws AmbiguousMethodException {
+  public Method getEvalMethod(List<TypeInfo> argTypeInfos) throws UDFArgumentException {
     assert (argTypeInfos.size() == 2);
 
     List<TypeInfo> pTypeInfos = null;
@@ -65,6 +65,11 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
       pTypeInfos = new ArrayList<TypeInfo>();
       pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
       pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+    } else if (argTypeInfos.get(0).equals(TypeInfoFactory.booleanTypeInfo) &&
+               argTypeInfos.get(1).equals(TypeInfoFactory.booleanTypeInfo)) {
+      pTypeInfos = new ArrayList<TypeInfo>();
+      pTypeInfos.add(TypeInfoFactory.intTypeInfo);
+      pTypeInfos.add(TypeInfoFactory.intTypeInfo);
     } else if (argTypeInfos.get(0) == argTypeInfos.get(1)) {
       pTypeInfos = argTypeInfos;
     } else {
@@ -75,9 +80,12 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
 
     Method udfMethod = null;
 
+    List<Method> evaluateMethods = new ArrayList<Method>();
+
     for (Method m : Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals("evaluate")) {
 
+        evaluateMethods.add(m);
         List<TypeInfo> acceptedTypeInfos = TypeInfoUtils.getParameterTypeInfos(
             m, pTypeInfos.size());
         if (acceptedTypeInfos == null) {
@@ -104,6 +112,11 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
         }
       }
     }
+
+    if (udfMethod == null) {
+      throw new NoMatchingMethodException(udfClass, argTypeInfos, evaluateMethods);
+    }
+
     return udfMethod;
   }
 

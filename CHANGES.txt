@@ -369,6 +369,9 @@ Trunk -  Unreleased
     HIVE-1311. Bug in use of parameter hadoop supports splittable.
     (Namit Jain via zshao)
 
+    HIVE-1308. Bug in boolean datatypes comparison
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
