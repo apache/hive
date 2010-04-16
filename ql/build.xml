@@ -48,7 +48,6 @@
     <pathelement location="${common.jar}"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
-    <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
     <path refid="classpath"/>
   </path>
 

@@ -372,6 +372,9 @@ Trunk -  Unreleased
     HIVE-1308. Bug in boolean datatypes comparison
     (Paul Yang via namit)
 
+    HIVE-1312. hive trunk does not compile with 0.17 any more
+    (John Sichi via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

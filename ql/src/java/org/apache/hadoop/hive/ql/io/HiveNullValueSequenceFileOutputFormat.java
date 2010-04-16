@@ -66,7 +66,10 @@ public class HiveNullValueSequenceFileOutputFormat
           keyWritable.set(text.getBytes(), 0, text.getLength());
         } else {
           BytesWritable bw = (BytesWritable) r;
-          keyWritable.set(bw.getBytes(), 0, bw.getLength());
+          // Once we drop support for old Hadoop versions, change these
+          // to getBytes() and getLength() to fix the deprecation warnings.
+          // Not worth a shim.
+          keyWritable.set(bw.get(), 0, bw.getSize());
         }
         keyWritable.setHashCode(r.hashCode());
         outStream.append(keyWritable, NULL_WRITABLE);
