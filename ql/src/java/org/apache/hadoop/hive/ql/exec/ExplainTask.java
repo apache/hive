@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.DriverContext;
+
 
 /**
  * ExplainTask implementation.
@@ -50,7 +52,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
 
     try {
       Path resFile = new Path(work.getResFile());

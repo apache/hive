@@ -56,7 +56,7 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
     CreateFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
     if (createFunctionDesc != null) {
       return createFunction(createFunctionDesc);

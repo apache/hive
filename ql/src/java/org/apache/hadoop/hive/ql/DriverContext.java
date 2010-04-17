@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 /**
@@ -35,8 +36,16 @@ public class DriverContext {
   // how many jobs have been started
   int curJobNo;
 
-  public DriverContext(Queue<Task<? extends Serializable>> runnable) {
+  Context ctx;
+
+  public DriverContext() {
+    this.runnable = null;
+    this.ctx = null;
+  }
+
+  public DriverContext(Queue<Task<? extends Serializable>> runnable, Context ctx) {
     this.runnable = runnable;
+    this.ctx = ctx;
   }
 
   public Queue<Task<? extends Serializable>> getRunnable() {
@@ -45,7 +54,7 @@ public class DriverContext {
 
   /**
    * Checks if a task can be launched.
-   * 
+   *
    * @param tsk
    *          the task to be checked
    * @return true if the task is launchable, false otherwise
@@ -66,8 +75,11 @@ public class DriverContext {
     return curJobNo;
   }
 
+  public Context getCtx() {
+    return ctx;
+  }
+
   public void incCurJobNo(int amount) {
     this.curJobNo = this.curJobNo + amount;
   }
-
 }

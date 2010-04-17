@@ -87,7 +87,7 @@ public class TestPlan extends TestCase {
       // store into configuration
       JobConf job = new JobConf(TestPlan.class);
       job.set("fs.default.name", "file:///");
-      Utilities.setMapRedWork(job, mrwork);
+      Utilities.setMapRedWork(job, mrwork,"/tmp/" + System.getProperty("user.name") + "/hive");
       MapredWork mrwork2 = Utilities.getMapRedWork(job);
       Utilities.clearMapRedWork(job);
 

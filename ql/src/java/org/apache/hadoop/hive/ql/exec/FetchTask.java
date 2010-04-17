@@ -77,7 +77,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
     assert false;
     return 0;
   }

@@ -487,7 +487,7 @@ public class Driver implements CommandProcessor {
       Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
       Map<TaskResult, TaskRunner> running = new HashMap<TaskResult, TaskRunner>();
 
-      DriverContext driverCxt = new DriverContext(runnable);
+      DriverContext driverCxt = new DriverContext(runnable, ctx);
 
       // Add root Tasks to runnable
 
@@ -731,7 +731,9 @@ public class Driver implements CommandProcessor {
 
   public int close() {
     try {
-      ctx.clear();
+      if (ctx != null) {
+        ctx.clear();
+      }
     } catch (Exception e) {
       console.printError("FAILED: Hive Internal Error: " + Utilities.getNameMessage(e) + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));

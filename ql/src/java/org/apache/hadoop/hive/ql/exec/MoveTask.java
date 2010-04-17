@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -59,7 +60,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
 
     try {
       // Do any hive related operations like moving tables and files

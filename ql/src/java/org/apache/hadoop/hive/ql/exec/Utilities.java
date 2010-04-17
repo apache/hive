@@ -279,12 +279,11 @@ public final class Utilities {
 
   }
 
-  public static void setMapRedWork(Configuration job, MapredWork w) {
+  public static void setMapRedWork(Configuration job, MapredWork w, String hiveScratchDir) {
     try {
       // use the default file system of the job
       FileSystem fs = FileSystem.get(job);
-      Path planPath = new Path(HiveConf.getVar(job,
-          HiveConf.ConfVars.SCRATCHDIR), "plan." + randGen.nextInt());
+      Path planPath = new Path(hiveScratchDir, "plan." + randGen.nextInt());
       FSDataOutputStream out = fs.create(planPath);
       serializeMapRedWork(w, out);
       HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toString());

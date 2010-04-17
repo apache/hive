@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.ql.DriverContext;
 
 /**
  * Alternate implementation (to ExecDriver) of spawning a mapreduce task that
@@ -52,7 +53,7 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
 
     try {
       // enable assertion
@@ -80,7 +81,13 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
       }
       // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
-      File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
+      String hiveScratchDir;
+      if (driverContext.getCtx() != null && driverContext.getCtx().getQueryPath() != null)
+        hiveScratchDir = driverContext.getCtx().getQueryPath().toString();
+      else
+        hiveScratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR);
+
+      File scratchDir = new File(hiveScratchDir);
 
       // Check if the scratch directory exists. If not, create it.
       if (!scratchDir.exists()) {

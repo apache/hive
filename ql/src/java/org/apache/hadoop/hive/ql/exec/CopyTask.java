@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.DriverContext;
 
 /**
  * CopyTask implementation.
@@ -41,7 +42,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
     FileSystem dstFs = null;
     Path toPath = null;
     try {

@@ -181,6 +181,9 @@ Trunk -  Unreleased
     HIVE-1296. CLI set and set -v commands should dump properties in
     alphabetical order (John Sichi via Ning Zhang)
 
+    HIVE-1306. cleanup the JobScratchDir
+    (Namit Jain via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

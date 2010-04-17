@@ -94,7 +94,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   /**
    * This method is called in the Driver on every task. It updates counters and
    * calls execute(), which is overridden in each task
-   * 
+   *
    * @return return value of execute()
    */
   public int executeTask() {
@@ -104,7 +104,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
       if (ss != null) {
         ss.getHiveHistory().logPlanProgress(queryPlan);
       }
-      int retval = execute();
+      int retval = execute(driverContext);
       this.setDone();
       if (ss != null) {
         ss.getHiveHistory().logPlanProgress(queryPlan);
@@ -118,15 +118,15 @@ public abstract class Task<T extends Serializable> implements Serializable,
   /**
    * This method is overridden in each Task. TODO execute should return a
    * TaskHandle.
-   * 
+   *
    * @return status of executing the task
    */
-  protected abstract int execute();
+  protected abstract int execute(DriverContext driverContext);
 
   /**
    * Update the progress of the task within taskHandle and also dump the
    * progress information to the history file.
-   * 
+   *
    * @param taskHandle
    *          task handle returned by execute
    * @throws IOException
@@ -164,7 +164,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   /**
    * Add a dependent task on the current task. Return if the dependency already
    * existed or is this a new one
-   * 
+   *
    * @return true if the task got added false if it already existed
    */
   public boolean addDependentTask(Task<? extends Serializable> dependent) {
@@ -187,7 +187,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
 
   /**
    * Remove the dependent task.
-   * 
+   *
    * @param dependent
    *          the task to remove
    */
@@ -284,7 +284,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   /**
    * Should be overridden to return the type of the specific task among the
    * types in TaskType.
-   * 
+   *
    * @return TaskTypeType.* or -1 if not overridden
    */
   public int getType() {

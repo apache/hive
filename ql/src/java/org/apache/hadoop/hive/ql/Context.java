@@ -64,6 +64,10 @@ public class Context {
   // "/tmp/"+System.getProperty("user.name")+"/hive"
   private Path MRScratchDir;
 
+  // all query specific directories are created as sub-directories of queryPath
+  private Path queryPath;
+
+
   // allScratchDirs contains all scratch directories including
   // localScratchDir and MRScratchDir.
   // The external scratch dirs will be also based on hive.exec.scratchdir.
@@ -82,18 +86,19 @@ public class Context {
 
   /**
    * Create a Context with a given executionId.  ExecutionId, together with
-   * user name and conf, will determine the temporary directory locations. 
+   * user name and conf, will determine the temporary directory locations.
    */
   public Context(HiveConf conf, String executionId) throws IOException {
     this.conf = conf;
     this.executionId = executionId;
     Path tmpPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
     scratchPath = tmpPath.toUri().getPath();
+    queryPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR), executionId);
   }
 
   /**
    * Set the context on whether the current query is an explain query.
-   * 
+   *
    * @param value
    *          true if the query is an explain query, false if not
    */
@@ -103,7 +108,7 @@ public class Context {
 
   /**
    * Find out whether the current query is an explain query.
-   * 
+   *
    * @return true if the query is an explain query, false if not
    */
   public boolean getExplain() {
@@ -114,14 +119,13 @@ public class Context {
    * Make a tmp directory for MR intermediate data If URI/Scheme are not
    * supplied - those implied by the default filesystem will be used (which will
    * typically correspond to hdfs instance on hadoop cluster).
-   * 
+   *
    * @param mkdir  if true, will make the directory. Will throw IOException if that fails.
    */
-  private static Path makeMRScratchDir(HiveConf conf, String executionId, boolean mkdir)
+  private Path makeMRScratchDir(HiveConf conf, boolean mkdir)
       throws IOException {
 
-    Path dir = FileUtils.makeQualified(
-        new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR), executionId), conf);
+    Path dir = FileUtils.makeQualified(queryPath, conf);
 
     if (mkdir) {
       FileSystem fs = dir.getFileSystem(conf);
@@ -136,11 +140,10 @@ public class Context {
    * Make a tmp directory on specified URI Currently will use the same path as
    * implied by SCRATCHDIR config variable.
    */
-  private static Path makeExternalScratchDir(HiveConf conf, String executionId,
-      boolean mkdir, URI extURI) throws IOException {
+  private Path makeExternalScratchDir(HiveConf conf, boolean mkdir, URI extURI)
+    throws IOException {
 
-    Path dir = new Path(extURI.getScheme(), extURI.getAuthority(),
-        conf.getVar(HiveConf.ConfVars.SCRATCHDIR) + Path.SEPARATOR + executionId);
+    Path dir = new Path(extURI.getScheme(), extURI.getAuthority(), queryPath.toString());
 
     if (mkdir) {
       FileSystem fs = dir.getFileSystem(conf);
@@ -153,7 +156,7 @@ public class Context {
 
   /**
    * Make a tmp directory for local file system.
-   * 
+   *
    * @param mkdir  if true, will make the directory. Will throw IOException if that fails.
    */
   private static Path makeLocalScratchDir(HiveConf conf, String executionId, boolean mkdir)
@@ -181,7 +184,7 @@ public class Context {
       String fileSystem = extURI.getScheme() + ":" + extURI.getAuthority();
       Path dir = externalScratchDirs.get(fileSystem);
       if (dir == null) {
-        dir = makeExternalScratchDir(conf, executionId, !explain, extURI);
+        dir = makeExternalScratchDir(conf, !explain, extURI);
         externalScratchDirs.put(fileSystem, dir);
       }
       return dir.toString();
@@ -196,7 +199,7 @@ public class Context {
   public String getMRScratchDir() {
     try {
       if (MRScratchDir == null) {
-        MRScratchDir = makeMRScratchDir(conf, executionId, !explain);
+        MRScratchDir = makeMRScratchDir(conf, !explain);
       }
       return MRScratchDir.toString();
     } catch (IOException e) {
@@ -264,7 +267,7 @@ public class Context {
   /**
    * Check if path is tmp path. the assumption is that all uri's relative to
    * scratchdir are temporary.
-   * 
+   *
    * @return true if a uri is a temporary uri for map-reduce intermediate data,
    *         false otherwise
    */
@@ -274,7 +277,7 @@ public class Context {
 
   /**
    * Get a path to store map-reduce intermediate data in.
-   * 
+   *
    * @return next available path for map-red intermediate data
    */
   public String getMRTmpFileURI() {
@@ -283,7 +286,7 @@ public class Context {
 
   /**
    * Get a tmp path on local host to store intermediate data.
-   * 
+   *
    * @return next available tmp path on local fs
    */
   public String getLocalTmpFileURI() {
@@ -292,7 +295,7 @@ public class Context {
 
   /**
    * Get a path to store tmp data destined for external URI.
-   * 
+   *
    * @param extURI
    *          external URI to which the tmp data has to be eventually moved
    * @return next available tmp path on the file system corresponding extURI
@@ -429,7 +432,7 @@ public class Context {
    * activities; for example, when we encounter a reference to a view, we switch
    * to a new stream for parsing the stored view definition from the catalog,
    * but we don't clobber the top-level stream in the context.
-   * 
+   *
    * @param tokenRewriteStream
    *          the stream being used
    */
@@ -451,7 +454,7 @@ public class Context {
    * Generate a unique executionId.  An executionId, together with user name and
    * the configuration, will determine the temporary locations of all intermediate
    * files.
-   * 
+   *
    * In the future, users can use the executionId to resume a query.
    */
   public static String generateExecutionId() {
@@ -462,4 +465,11 @@ public class Context {
     return executionId;
   }
 
+  public Path getQueryPath() {
+    return queryPath;
+  }
+
+  public void setQueryPath(Path queryPath) {
+    this.queryPath = queryPath;
+  }
 }

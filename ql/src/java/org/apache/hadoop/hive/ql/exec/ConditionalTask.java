@@ -76,7 +76,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   }
 
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;
     for (Task<? extends Serializable> tsk : getListTasks()) {
@@ -86,7 +86,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
             + Utilities.randGen.nextInt())
             + ", job is filtered out (removed at runtime).");
         if(tsk.isMapRedTask()) {
-          driverContext.incCurJobNo(1);          
+          driverContext.incCurJobNo(1);
         }
         if (tsk.getChildTasks() != null) {
           for (Task<? extends Serializable> child : tsk.getChildTasks()) {
@@ -186,7 +186,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
    * Add a dependent task on the current conditional task. The task will not be
    * a direct child of conditional task. Actually it will be added as child task
    * of associated tasks.
-   * 
+   *
    * @return true if the task got added false if it already existed
    */
   @Override

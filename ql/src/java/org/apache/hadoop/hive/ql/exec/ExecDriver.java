@@ -509,7 +509,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    * Execute a query plan using Hadoop.
    */
   @Override
-  public int execute() {
+  public int execute(DriverContext driverContext) {
 
     success = true;
 
@@ -528,7 +528,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       throw new RuntimeException("Plan invalid, Reason: " + invalidReason);
     }
 
-    String hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
+    String hiveScratchDir;
+    if (driverContext.getCtx() != null && driverContext.getCtx().getQueryPath() != null)
+      hiveScratchDir = driverContext.getCtx().getQueryPath().toString();
+    else
+      hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
+
     String jobScratchDirStr = hiveScratchDir + File.separator
         + Utilities.randGen.nextInt();
     Path jobScratchDir = new Path(jobScratchDirStr);
@@ -647,7 +652,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     try {
       addInputPaths(job, work, emptyScratchDirStr);
 
-      Utilities.setMapRedWork(job, work);
+      Utilities.setMapRedWork(job, work, hiveScratchDir);
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs
@@ -1044,7 +1049,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     MapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
 
-    int ret = ed.execute();
+    int ret = ed.execute(new DriverContext());
     if (ret != 0) {
       System.out.println("Job Failed");
       System.exit(2);
