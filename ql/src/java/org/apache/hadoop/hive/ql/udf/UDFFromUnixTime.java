@@ -69,6 +69,21 @@ public class UDFFromUnixTime extends UDF {
 
     return eval(unixtime.get(), format);
   }
+  
+  /**
+   * Convert UnixTime to a string format.
+   * 
+   * @param unixtime
+   *          The number of seconds from 1970-01-01 00:00:00
+   * @return a String in default format specified.
+   */
+  public Text evaluate(LongWritable unixtime) {
+    if (unixtime == null) {
+      return null;
+    }
+
+    return eval(unixtime.get(), defaultFormat);
+  }
 
   /**
    * Convert UnixTime to a string format.

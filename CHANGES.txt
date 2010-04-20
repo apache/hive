@@ -378,6 +378,9 @@ Trunk -  Unreleased
     HIVE-1312. hive trunk does not compile with 0.17 any more
     (John Sichi via Ning Zhang)
 
+    HIVE-1260. from_unixtime should accept bigints
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
