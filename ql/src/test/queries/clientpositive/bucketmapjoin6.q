@@ -7,6 +7,7 @@ create table tmp2 (a string, b string) clustered by (a) sorted by (a) into 10 bu
 
 set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
+set hive.exec.reducers.max=1;
 
 
 insert overwrite table tmp1 select * from src where key < 50;
@@ -25,7 +26,7 @@ insert overwrite table tmp3
   select /*+ MAPJOIN(l) */ i.a, i.b, l.b
   from tmp1 i join tmp2 l ON i.a = l.a;
 
-select * from tmp3;
+select * from tmp3 order by a, b, c;
 
 drop table tmp1;
 drop table tmp2;

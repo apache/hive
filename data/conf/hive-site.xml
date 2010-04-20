@@ -16,6 +16,14 @@
   <description>A base for other temporary directories.</description>
 </property>
 
+<!--
+<property>
+  <name>hive.exec.reducers.max</name>
+  <value>1</value>
+  <description>maximum number of reducers</description>
+</property>
+-->
+
 <property>
   <name>hive.exec.scratchdir</name>
   <value>${build.dir}/scratchdir</value>

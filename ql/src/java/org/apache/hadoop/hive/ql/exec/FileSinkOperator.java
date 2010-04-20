@@ -316,7 +316,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       	// Create all the files - this is required because empty files need to be created for
       	// empty buckets
-      	createBucketFiles(fsp);
+      	// createBucketFiles(fsp);
       	valToPaths.put("", fsp); // special entry for non-DP case
       }
 

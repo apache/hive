@@ -76,14 +76,14 @@ POSTHOOK: Lineage: tmp2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, 
 POSTHOOK: Lineage: tmp3.a SIMPLE [(tmp1)i.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp3.b SIMPLE [(tmp1)i.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comment:null), ]
-PREHOOK: query: select * from tmp3
+PREHOOK: query: select * from tmp3 order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-17_519_5426148572496063749/10000
-POSTHOOK: query: select * from tmp3
+PREHOOK: Output: file:/data/users/nzhang/work/999/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-20_11-17-38_126_6207291158988738744/10000
+POSTHOOK: query: select * from tmp3 order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-04-06_13-16-17_519_5426148572496063749/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/999/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-20_11-17-38_126_6207291158988738744/10000
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -381,6 +381,9 @@ Trunk -  Unreleased
     HIVE-1260. from_unixtime should accept bigints
     (Ning Zhang via namit)
 
+    HIVE-1315. Bug in sort-merge join
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
