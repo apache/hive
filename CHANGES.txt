@@ -384,6 +384,9 @@ Trunk -  Unreleased
     HIVE-1315. Bug in sort-merge join
     (Ning Zhang via namit)
 
+    HIVE-1316. Increase hive client side memory
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
