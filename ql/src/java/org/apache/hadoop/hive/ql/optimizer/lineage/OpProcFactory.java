@@ -393,8 +393,10 @@ public class OpProcFactory {
       ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
       int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
-        lCtx.getIndex().mergeDependency(op, ci,
-            lCtx.getIndex().getDependency(inpOp, inp_cols.get(cnt++)));
+        Dependency inp_dep = lCtx.getIndex().getDependency(inpOp, inp_cols.get(cnt++));
+        if (inp_dep != null) {
+          lCtx.getIndex().mergeDependency(op, ci, inp_dep);
+        }
       }
       return null;
     }

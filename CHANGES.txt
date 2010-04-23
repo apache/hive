@@ -387,6 +387,9 @@ Trunk -  Unreleased
     HIVE-1316. Increase hive client side memory
     (Ning Zhang via namit)
 
+    HIVE-1320. NPE with lineage in a query of union all on joins
+    (Ashish Thusoo via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
