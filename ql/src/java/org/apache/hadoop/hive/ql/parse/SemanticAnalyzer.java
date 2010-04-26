@@ -3469,17 +3469,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean dynPart = HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING);
     ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
         .getColumnInfos();
-    if (tableFields.size() != rowFields.size()) {
-      if (!dynPart || dpCtx == null ||
-          tableFields.size() + dpCtx.getNumDPCols() != rowFields.size()) {
-        String reason = "Table " + dest + " has " + tableFields.size()
-       	   + " columns but query has " + rowFields.size() + " columns.";
-      	throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
-       	   qb.getParseInfo().getDestForClause(dest), reason));
-      } else {
-        // create the mapping from input ExprNode to dest table DP column
-        dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
-      }
+    int inColumnCnt = rowFields.size();
+    int outColumnCnt = tableFields.size();
+    if (dynPart && dpCtx != null) {
+        outColumnCnt += dpCtx.getNumDPCols();
+    }
+
+    if (inColumnCnt != outColumnCnt) {
+      String reason = "Table " + dest + " has " + outColumnCnt
+          + " columns, but query has " + inColumnCnt + " columns.";
+      throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
+          qb.getParseInfo().getDestForClause(dest), reason));
+    } else if (dynPart && dpCtx != null){
+      // create the mapping from input ExprNode to dest table DP column
+      dpCtx.mapInputToDP(rowFields.subList(tableFields.size(), rowFields.size()));
     }
 
     // Check column types
