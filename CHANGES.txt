@@ -390,6 +390,9 @@ Trunk -  Unreleased
     HIVE-1320. NPE with lineage in a query of union all on joins
     (Ashish Thusoo via Ning Zhang)
 
+    HIVE-1321. bugs with temp directories, trailing blank fields in HBase bulk load
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

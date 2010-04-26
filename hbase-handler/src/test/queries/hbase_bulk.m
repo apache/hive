@@ -38,8 +38,12 @@ set total.order.partitioner.natural.order=false;
 set total.order.partitioner.path=/tmp/hbpartition.lst;
 
 -- this should produce three files in /tmp/hbsort/cf
+-- include some trailing blanks and nulls to make sure we handle them correctly
 insert overwrite table hbsort
-select distinct value, key, key+1
+select distinct value,
+  case when key=103 then cast(null as string) else key end,
+  case when key=103 then ''
+       else cast(key+1 as string) end
 from src
 cluster by value;
 

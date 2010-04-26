@@ -55,7 +55,7 @@ import org.apache.hadoop.util.Progressable;
  * loading.  Until HBASE-1861 is implemented, it can only be used
  * for loading a table with a single column family.
  */
-public class HiveHFileOutputFormat extends 
+public class HiveHFileOutputFormat extends
     HFileOutputFormat implements
     HiveOutputFormat<ImmutableBytesWritable, KeyValue> {
 
@@ -74,7 +74,7 @@ public class HiveHFileOutputFormat extends
       throw new IOException(ex);
     }
   }
-  
+
   @Override
   public RecordWriter getHiveRecordWriter(
     final JobConf jc, final Path finalOutPath,
@@ -98,13 +98,14 @@ public class HiveHFileOutputFormat extends
     setOutputPath(job, finalOutPath);
 
     // Create the HFile writer
-    org.apache.hadoop.mapreduce.TaskAttemptContext tac =
+    final org.apache.hadoop.mapreduce.TaskAttemptContext tac =
       new TaskAttemptContext(job.getConfiguration(), new TaskAttemptID()) {
         @Override
         public void progress() {
           progressable.progress();
         }
       };
+    final Path outputdir = FileOutputFormat.getOutputPath(tac);
     final org.apache.hadoop.mapreduce.RecordWriter<
       ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);
 
@@ -126,7 +127,7 @@ public class HiveHFileOutputFormat extends
     }
 
     return new RecordWriter() {
-      
+
       @Override
       public void close(boolean abort) throws IOException {
         try {
@@ -138,10 +139,22 @@ public class HiveHFileOutputFormat extends
           // to the location specified by the user.  There should
           // actually only be one (each reducer produces one HFile),
           // but we don't know what its name is.
-          Path outputdir = FileOutputFormat.getOutputPath(job);
           FileSystem fs = outputdir.getFileSystem(jc);
           fs.mkdirs(columnFamilyPath);
-          Path srcDir = new Path(outputdir, columnFamilyName);
+          Path srcDir = outputdir;
+          for (;;) {
+            FileStatus [] files = fs.listStatus(srcDir);
+            if ((files == null) || (files.length == 0)) {
+              throw new IOException("No files found in " + srcDir);
+            }
+            if (files.length != 1) {
+              throw new IOException("Multiple files found in " + srcDir);
+            }
+            srcDir = files[0].getPath();
+            if (srcDir.getName().equals(columnFamilyName)) {
+              break;
+            }
+          }
           for (FileStatus regionFile : fs.listStatus(srcDir)) {
             fs.rename(
               regionFile.getPath(),
@@ -163,14 +176,25 @@ public class HiveHFileOutputFormat extends
         // Decompose the incoming text row into fields.
         String s = ((Text) w).toString();
         String [] fields = s.split("\u0001");
-        assert(fields.length == (columnMap.size() + 1));
+        assert(fields.length <= (columnMap.size() + 1));
         // First field is the row key.
         byte [] rowKeyBytes = Bytes.toBytes(fields[0]);
         // Remaining fields are cells addressed by column name within row.
         for (Map.Entry<byte [], Integer> entry : columnMap.entrySet()) {
           byte [] columnNameBytes = entry.getKey();
           int iColumn = entry.getValue();
-          byte [] valBytes = Bytes.toBytes(fields[iColumn]);
+          String val;
+          if (iColumn >= fields.length) {
+            // trailing blank field
+            val = "";
+          } else {
+            val = fields[iColumn];
+            if ("\\N".equals(val)) {
+              // omit nulls
+              continue;
+            }
+          }
+          byte [] valBytes = Bytes.toBytes(val);
           KeyValue kv = new KeyValue(
             rowKeyBytes,
             columnFamilyNameBytes,
