@@ -397,6 +397,9 @@ Trunk -  Unreleased
     columns + dynamic partition columns does not equal to the number of select columns
     (Ning Zhang via namit)
 
+    HIVE-1326. RowContainer uses hard-coded /tmp path for temporary files
+    (Michael Klatt via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

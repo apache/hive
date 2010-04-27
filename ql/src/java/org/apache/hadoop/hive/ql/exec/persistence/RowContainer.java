@@ -295,9 +295,8 @@ public class RowContainer<Row extends List<Object>> {
         }
 
         while (true) {
-          String parentId = "hive-rowcontainer" + Utilities.randGen.nextInt();
-          parentFile = new File("/tmp/" + parentId);
-          boolean success = parentFile.mkdir();
+          parentFile = File.createTempFile("hive-rowcontainer", "");
+          boolean success = parentFile.delete() && parentFile.mkdir();
           if (success) {
             break;
           }
