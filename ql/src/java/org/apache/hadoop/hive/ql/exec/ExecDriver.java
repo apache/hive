@@ -290,6 +290,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
           return true;
         }
       }
+      if (work.getReducer() != null) {
+        if (work.getReducer().checkFatalErrors(ctrs, errMsg)) {
+          return true;
+        }
+      }
       return false;
     } catch (IOException e) {
       // this exception can be tolerated
@@ -529,10 +534,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
 
     String hiveScratchDir;
-    if (driverContext.getCtx() != null && driverContext.getCtx().getQueryPath() != null)
+    if (driverContext.getCtx() != null && driverContext.getCtx().getQueryPath() != null) {
       hiveScratchDir = driverContext.getCtx().getQueryPath().toString();
-    else
+    } else {
       hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
+    }
 
     String jobScratchDirStr = hiveScratchDir + File.separator
         + Utilities.randGen.nextInt();

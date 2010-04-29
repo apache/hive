@@ -400,6 +400,9 @@ Trunk -  Unreleased
     HIVE-1326. RowContainer uses hard-coded /tmp path for temporary files
     (Michael Klatt via Ning Zhang)
 
+    HIVE-1330. Fatal error check omitted for reducer-side operators
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
