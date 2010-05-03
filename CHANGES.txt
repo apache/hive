@@ -403,6 +403,10 @@ Trunk -  Unreleased
     HIVE-1330. Fatal error check omitted for reducer-side operators
     (Ning Zhang via namit)
 
+    HIVE-1331. select * does not work if different partitions contain
+    differnet format
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

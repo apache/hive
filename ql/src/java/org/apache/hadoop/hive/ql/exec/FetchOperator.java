@@ -266,12 +266,16 @@ public class FetchOperator implements Serializable {
       job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils
           .escapeString(currPath.toString()));
 
-      TableDesc tmp = currTbl;
-      if (tmp == null) {
-        tmp = currPart.getTableDesc();
+      PartitionDesc tmp;
+      if (currTbl == null) {
+        tmp = currPart;
       }
+      else {
+        tmp = new PartitionDesc(currTbl, null);
+      }
+
       inputFormat = getInputFormatFromCache(tmp.getInputFileFormatClass(), job);
-      Utilities.copyTableJobPropertiesToConf(tmp, job);
+      Utilities.copyTableJobPropertiesToConf(tmp.getTableDesc(), job);
       inputSplits = inputFormat.getSplits(job, 1);
       splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
