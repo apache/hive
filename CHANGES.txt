@@ -413,6 +413,9 @@ Trunk -  Unreleased
     HIVE-1328. make mapred.input.dir.recursive work for select *
     (John Sichi via namit)
 
+    HIVE-1338. Fix bin/ext/jar.sh to work with hadoop 0.20 and above
+    (Zheng Shao via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

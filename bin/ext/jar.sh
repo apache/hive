@@ -33,7 +33,12 @@ jar () {
     exit 3
   fi
 
-  exec $HADOOP jar $AUX_JARS_CMD_LINE $RUNJAR $RUNCLASS $HIVE_OPTS "$@"
+  if [ $minor_ver -lt 20 ]; then
+    exec $HADOOP jar $AUX_JARS_CMD_LINE $RUNJAR $RUNCLASS $HIVE_OPTS "$@"
+  else
+    # hadoop 20 or newer - skip the aux_jars option and hiveconf
+    exec $HADOOP jar $RUNJAR $RUNCLASS $HIVE_OPTS "$@"
+  fi
 }
 
 jar_help () {
