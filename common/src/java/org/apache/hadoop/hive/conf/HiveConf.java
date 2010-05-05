@@ -96,6 +96,7 @@ public class HiveConf extends Configuration {
     HADOOPFS("fs.default.name", "file:///"),
     HADOOPMAPFILENAME("map.input.file", null),
     HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
+    HADOOPMAPREDINPUTDIRRECURSIVE("mapred.input.dir.recursive", false),
     HADOOPJT("mapred.job.tracker", "local"),
     HADOOPNUMREDUCERS("mapred.reduce.tasks", 1),
     HADOOPJOBNAME("mapred.job.name", null),

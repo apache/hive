@@ -410,6 +410,9 @@ Trunk -  Unreleased
     HIVE-1329. alter table to external does not change table_type to external
     (John Sichi via namit)
 
+    HIVE-1328. make mapred.input.dir.recursive work for select *
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

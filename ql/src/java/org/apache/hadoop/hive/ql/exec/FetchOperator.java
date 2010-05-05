@@ -34,6 +34,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -202,7 +204,7 @@ public class FetchOperator implements Serializable {
           if (isNativeTable) {
             FileSystem fs = currPath.getFileSystem(job);
             if (fs.exists(currPath)) {
-              FileStatus[] fStats = fs.listStatus(currPath);
+              FileStatus[] fStats = listStatusUnderPath(fs, currPath);
               for (FileStatus fStat : fStats) {
                 if (fStat.getLen() > 0) {
                   tblDataDone = true;
@@ -237,7 +239,7 @@ public class FetchOperator implements Serializable {
         prt = iterPartDesc.next();
       FileSystem fs = nxt.getFileSystem(job);
       if (fs.exists(nxt)) {
-        FileStatus[] fStats = fs.listStatus(nxt);
+        FileStatus[] fStats = listStatusUnderPath(fs, nxt);
         for (FileStatus fStat : fStats) {
           if (fStat.getLen() > 0) {
             currPath = nxt;
@@ -394,5 +396,31 @@ public class FetchOperator implements Serializable {
       throw new HiveException("Failed with exception " + e.getMessage()
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
+  }
+
+  /**
+   * Lists status for all files under a given path.  Whether or not
+   * this is recursive depends on the setting of
+   * job configuration parameter mapred.input.dir.recursive.
+   *
+   * @param fs file system
+   *
+   * @param p path in file system
+   *
+   * @return list of file status entries
+   */
+  private FileStatus[] listStatusUnderPath(FileSystem fs, Path p)
+  throws IOException {
+    HiveConf hiveConf = new HiveConf(job, FetchOperator.class);
+    boolean recursive = 
+      hiveConf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
+    if (!recursive) {
+      return fs.listStatus(p);
+    }
+    List<FileStatus> results = new ArrayList<FileStatus>();
+    for (FileStatus stat : fs.listStatus(p)) {
+      FileUtils.listStatusRecursively(fs, stat, results);
+    }
+    return results.toArray(new FileStatus[results.size()]);
   }
 }

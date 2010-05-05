@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -167,4 +169,26 @@ public final class FileUtils {
     return sb.toString();
   }
 
+  /**
+   * Recursively lists status for all files starting from a particular
+   * directory (or individual file as base case).
+   *
+   * @param fs file system
+   *
+   * @param fileStatus starting point in file system
+   *
+   * @param results receives enumeration of all files found
+   */
+  public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
+    List<FileStatus> results)
+    throws IOException {
+
+    if (fileStatus.isDir()) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath())) {
+        listStatusRecursively(fs, stat, results);
+      }
+    } else {
+      results.add(fileStatus);
+    }
+  }
 }

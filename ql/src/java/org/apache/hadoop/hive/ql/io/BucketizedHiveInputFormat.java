@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -104,24 +105,6 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
         reporter);
   }
 
-  protected FileStatus[] listStatus(FileSystem fs, FileStatus fileStatus)
-      throws IOException {
-    ArrayList<FileStatus> result = new ArrayList<FileStatus>();
-
-    if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath())) {
-        for (FileStatus retStat : listStatus(fs, stat)) {
-          result.add(retStat);
-        }
-      }
-    } else {
-      result.add(fileStatus);
-    }
-
-    return result.toArray(new FileStatus[result.size()]);
-
-  }
-
   protected FileStatus[] listStatus(JobConf job, Path path) throws IOException {
     ArrayList<FileStatus> result = new ArrayList<FileStatus>();
     List<IOException> errors = new ArrayList<IOException>();
@@ -134,9 +117,7 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
       errors.add(new IOException("Input Pattern " + path + " matches 0 files"));
     } else {
       for (FileStatus globStat : matches) {
-        for (FileStatus retStat : listStatus(fs, globStat)) {
-          result.add(retStat);
-        }
+        FileUtils.listStatusRecursively(fs, globStat, result);
       }
     }
 
