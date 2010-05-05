@@ -407,6 +407,9 @@ Trunk -  Unreleased
     differnet format
     (Namit Jain via Ning Zhang)
 
+    HIVE-1329. alter table to external does not change table_type to external
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -6,6 +6,11 @@ describe extended alter1;
 alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3');
 describe extended alter1;
 
+alter table alter1 set tblproperties ('EXTERNAL'='TRUE');
+describe extended alter1;
+alter table alter1 set tblproperties ('EXTERNAL'='FALSE');
+describe extended alter1;
+
 alter table alter1 set serdeproperties('s1'='9');
 describe extended alter1;
 alter table alter1 set serdeproperties('s1'='10', 's2' ='20');

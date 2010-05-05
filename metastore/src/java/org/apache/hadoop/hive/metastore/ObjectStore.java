@@ -641,12 +641,28 @@ public class ObjectStore implements RawStore, Configurable {
       throw new InvalidObjectException("Database " + tbl.getDbName()
           + " doesn't exsit.");
     }
+
+    // If the table has property EXTERNAL set, update table type
+    // accordingly
+    String tableType = tbl.getTableType();
+    boolean isExternal = "TRUE".equals(tbl.getParameters().get("EXTERNAL"));
+    if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
+      if (isExternal) {
+        tableType = TableType.EXTERNAL_TABLE.toString();
+      }
+    }
+    if (TableType.EXTERNAL_TABLE.toString().equals(tableType)) {
+      if (!isExternal) {
+        tableType = TableType.MANAGED_TABLE.toString();
+      }
+    }
+
     return new MTable(tbl.getTableName().toLowerCase(), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
             .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(),
-        tbl.getTableType());
+        tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -940,6 +956,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
+      oldt.setTableType(newt.getTableType());
 
       // commit the changes
       success = commitTransaction();
