@@ -416,6 +416,9 @@ Trunk -  Unreleased
     HIVE-1338. Fix bin/ext/jar.sh to work with hadoop 0.20 and above
     (Zheng Shao via Ning Zhang)
 
+    HIVE-1317. CombineHiveInputFormat throws exception when partition name contains special characters to URI
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

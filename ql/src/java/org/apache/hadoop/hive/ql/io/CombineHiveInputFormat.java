@@ -22,12 +22,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.LinkedList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,9 +36,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
 import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -50,6 +48,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
+
+
+
 
 /**
  * CombineHiveInputFormat is a parameterized InputFormat which looks at the path
@@ -234,8 +235,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
     ArrayList<InputSplit> result = new ArrayList<InputSplit>();
 
-    // combine splits only from same tables. Do not combine splits from multiple
-    // tables.
+    // combine splits only from same tables and same partitions. Do not combine splits from multiple
+    // tables or multiple partitions.
     Path[] paths = combine.getInputPathsShim(job);
     for (Path path : paths) {
       LOG.info("CombineHiveInputSplit creating pool for " + path);
@@ -292,7 +293,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       combine.createPool(job, new CombineFilter(path));
     }
-
     InputSplitShim[] iss = combine.getSplits(job, 1);
     for (InputSplitShim is : iss) {
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is);
@@ -337,27 +337,42 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
   protected static PartitionDesc getPartitionDescFromPath(
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir) throws IOException {
-    try {
-      // Take only the path part of the URI.
 
-      // The format of the keys in pathToPartitionInfo sometimes contains a port
-      // and sometimes doesn't, so we just compare paths.
-      URI dirUri = new URI(dir.toUri().getPath());
-      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo
-             .entrySet()) {
-        URI pathOfPartition = new URI(entry.getKey());
-        pathOfPartition = new URI(pathOfPartition.getPath());
+    // We first do exact match, and then do prefix matching. The latter is due to input dir
+    // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
+    String dirPath = dir.toUri().getPath();
+    PartitionDesc part = pathToPartitionInfo.get(dir.toString());
+    if (part == null) {
+      LOG.warn("exact match not found, try ripping input path's theme and authority");
+      part = pathToPartitionInfo.get(dirPath);
+    }
+    if (part == null) {
 
-        if (!pathOfPartition.relativize(dirUri).equals(dirUri)) {
-          return entry.getValue();
+      LOG.warn("still does not found just the path part: " + dirPath + " in pathToPartitionInfo."
+          + " Will try prefix matching");
+      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo.entrySet()) {
+        String keyPath = entry.getKey();
+        String dirStr = dir.toString();
+        // keyPath could start with hdfs:// or not, so we need to match both cases.
+        if (dirStr.startsWith(keyPath)) {
+          part = entry.getValue();
+          break;
+        } else {
+          Path p = new Path(entry.getKey());
+          String newP = p.toUri().getPath().toString();
+          if (dirStr.startsWith(newP)) {
+            part = entry.getValue();
+            break;
+          }
         }
       }
-    } catch (URISyntaxException e2) {
-      LOG.info("getPartitionDescFromPath ", e2);
     }
-
-    throw new IOException("cannot find dir = " + dir.toString()
+    if (part != null) {
+      return part;
+    } else {
+      throw new IOException("cannot find dir = " + dir.toString()
                           + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
+    }
   }
 
   static class CombineFilter implements PathFilter {
@@ -365,7 +380,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // store a path prefix in this TestFilter
     public CombineFilter(Path p) {
-      pString = p.toString() + File.separator;
+      // we need to keep the path part only because the Hadoop CombineFileInputFormat will
+      // pass the path part only to accept().
+      pString = p.toUri().getPath().toString() + File.separator;
     }
 
     // returns true if the specified path matches the prefix stored

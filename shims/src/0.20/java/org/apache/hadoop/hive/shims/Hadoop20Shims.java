@@ -76,7 +76,7 @@ public class Hadoop20Shims implements HadoopShims {
    *
    */
   public class MiniDFSShim implements HadoopShims.MiniDFSShim {
-    private MiniDFSCluster cluster;
+    private final MiniDFSCluster cluster;
 
     public MiniDFSShim(MiniDFSCluster cluster) {
       this.cluster = cluster;
@@ -258,18 +258,11 @@ public class Hadoop20Shims implements HadoopShims {
       implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
     public Path[] getInputPathsShim(JobConf conf) {
-      Path[] paths;
       try {
-        paths = FileInputFormat.getInputPaths(conf);
+        return FileInputFormat.getInputPaths(conf);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-      Path[] newPaths = new Path[paths.length];
-      // remove file:
-      for (int pos = 0; pos < paths.length; pos++) {
-        newPaths[pos] = new Path(paths[pos].toUri().getPath());
-      }
-      return newPaths;
     }
 
     @Override
