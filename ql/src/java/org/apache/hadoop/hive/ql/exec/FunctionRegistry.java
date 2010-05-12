@@ -145,6 +145,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFField;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
@@ -304,6 +305,7 @@ public final class FunctionRegistry {
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
 
     registerGenericUDF("if", GenericUDFIf.class);
+    registerGenericUDF("in", GenericUDFIn.class);
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod

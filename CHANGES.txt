@@ -78,6 +78,9 @@ Trunk -  Unreleased
     HIVE-1002. multi-partition inserts
     (Ning Zhang via namit)
 
+    HIVE-801. Add support for row-wise IN
+    (Paul Yang via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

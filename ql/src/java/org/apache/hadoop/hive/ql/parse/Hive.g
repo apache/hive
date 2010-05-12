@@ -1166,7 +1166,6 @@ function
       (expression (COMMA expression)*)?
     RPAREN -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
                           -> ^(TOK_FUNCTIONDI functionName (expression+)?)
-
     ;
 
 functionName
@@ -1336,9 +1335,18 @@ precedenceEqualOperator
 
 precedenceEqualExpression
     :
-    precedenceBitwiseOrExpression (precedenceEqualOperator^ precedenceBitwiseOrExpression)*
+    precedenceBitwiseOrExpression ( (precedenceEqualOperator^ precedenceBitwiseOrExpression) | (inOperator^ expressions) )*
     ;
 
+inOperator
+    :
+    KW_IN -> ^(TOK_FUNCTION KW_IN)
+    ;
+
+expressions
+    :
+    LPAREN expression (COMMA expression)* RPAREN -> expression*
+    ;
 
 precedenceNotOperator
     :
@@ -1432,6 +1440,7 @@ sysFuncNames
     | BITWISEXOR
     | KW_RLIKE
     | KW_REGEXP
+    | KW_IN
     ;
 
 descFuncNames
