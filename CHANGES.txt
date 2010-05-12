@@ -425,6 +425,9 @@ Trunk -  Unreleased
     HIVE-1341. Filter Operator Column Pruning should preserve the column order
     (Ning Zhang via namit)
 
+    HIVE-1116. Bug in renames for tables created with 'create table like'
+    (John Sichi via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

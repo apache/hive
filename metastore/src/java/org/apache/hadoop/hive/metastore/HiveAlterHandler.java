@@ -101,19 +101,14 @@ public class HiveAlterHandler implements AlterHandler {
             "partition keys can not be changed.");
       }
 
-      if (rename // if this alter is a rename
-          && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0 // and
-                                                                                    // user
-                                                                                    // didn't
-                                                                                    // change
-                                                                                    // the
-                                                                                    // default
-                                                                                    // location
-          || StringUtils.isEmpty(newt.getSd().getLocation())) // or new location
-                                                              // is empty
-          && !oldt.getParameters().containsKey("EXTERNAL")) { // and table is
-                                                              // not an external
-                                                              // table
+      // if this alter is a rename, and user didn't change the
+      // default location (or new location is empty), and table is
+      // not an external table, that means user is asking metastore
+      // to move data to new location corresponding to the new name
+      if (rename
+          && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
+            || StringUtils.isEmpty(newt.getSd().getLocation()))
+          && !MetaStoreUtils.isExternalTable(oldt)) {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
