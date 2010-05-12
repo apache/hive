@@ -428,6 +428,9 @@ Trunk -  Unreleased
     HIVE-1116. Bug in renames for tables created with 'create table like'
     (John Sichi via namit)
 
+    HIVE-1322. Cached FileSystem can lead to persistant IOExceptions
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

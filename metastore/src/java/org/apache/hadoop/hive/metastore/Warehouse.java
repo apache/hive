@@ -61,7 +61,7 @@ public class Warehouse {
   }
 
   /**
-   * Helper function to convert IOException to MetaException
+   * Helper functions to convert IOException to MetaException
    */
   public FileSystem getFs(Path f) throws MetaException {
     try {
@@ -71,6 +71,17 @@ public class Warehouse {
     }
     return null;
   }
+
+  public static void closeFs(FileSystem fs) throws MetaException {
+    try {
+      if (fs != null) {
+        fs.close();
+      }
+    } catch (IOException e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+  }
+
 
   /**
    * Hadoop File System reverse lookups paths with raw ip addresses The File
@@ -118,11 +129,13 @@ public class Warehouse {
   }
 
   public boolean mkdirs(Path f) throws MetaException {
+    FileSystem fs = null;
     try {
-      FileSystem fs = getFs(f);
+      fs = getFs(f);
       LOG.debug("Creating directory if it doesn't exist: " + f);
       return (fs.mkdirs(f) || fs.getFileStatus(f).isDir());
     } catch (IOException e) {
+      closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return false;
@@ -130,8 +143,9 @@ public class Warehouse {
 
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     LOG.info("deleting  " + f);
+    FileSystem fs = null;
     try {
-      FileSystem fs = getFs(f);
+      fs = getFs(f);
       if (!fs.exists(f)) {
         return false;
       }
@@ -157,6 +171,7 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return true; // ok even if there is not data
     } catch (IOException e) {
+      closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return false;
@@ -286,8 +301,9 @@ public class Warehouse {
   }
 
   public boolean isDir(Path f) throws MetaException {
+    FileSystem fs = null;
     try {
-      FileSystem fs = getFs(f);
+      fs = getFs(f);
       FileStatus fstatus = fs.getFileStatus(f);
       if (!fstatus.isDir()) {
         return false;
@@ -295,6 +311,7 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
+      closeFs(fs);
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return true;

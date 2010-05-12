@@ -138,6 +138,8 @@ public class HiveAlterHandler implements AlterHandler {
                 + " already exists : " + destPath);
           }
         } catch (IOException e) {
+          Warehouse.closeFs(srcFs);
+          Warehouse.closeFs(destFs);
           throw new InvalidOperationException("Unable to access new location "
               + destPath + " for table " + newt.getDbName() + "."
               + newt.getTableName());
