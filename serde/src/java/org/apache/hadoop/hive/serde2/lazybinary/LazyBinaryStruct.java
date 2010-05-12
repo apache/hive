@@ -26,17 +26,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.RecordInfo;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] ->
  * |-----|---------|--- ... ---|-----|---------|
- * 
+ *
  * Section A is one null-byte, corresponding to eight struct fields in Section
  * B. Each bit indicates whether the corresponding field is null (0) or not null
  * (1). Each field is a LazyBinaryObject.
- * 
+ *
  * Following B, there is another section A and B. This pattern repeats until the
  * all struct fields are serialized.
  */
@@ -102,8 +103,8 @@ public class LazyBinaryStruct extends
     if (fields == null) {
       fields = new LazyBinaryObject[fieldRefs.size()];
       for (int i = 0; i < fields.length; i++) {
-        fields[i] = LazyBinaryFactory.createLazyBinaryObject(fieldRefs.get(i)
-            .getFieldObjectInspector());
+        ObjectInspector insp = fieldRefs.get(i).getFieldObjectInspector() ;
+        fields[i] = insp == null? null: LazyBinaryFactory.createLazyBinaryObject(insp);
       }
       fieldInited = new boolean[fields.length];
       fieldIsNull = new boolean[fields.length];
@@ -171,13 +172,13 @@ public class LazyBinaryStruct extends
 
   /**
    * Get one field out of the struct.
-   * 
+   *
    * If the field is a primitive field, return the actual object. Otherwise
    * return the LazyObject. This is because PrimitiveObjectInspector does not
    * have control over the object used by the user - the user simply directly
    * use the Object instead of going through Object
    * PrimitiveObjectInspector.get(Object).
-   * 
+   *
    * @param fieldID
    *          The field ID
    * @return The field as a LazyObject
@@ -192,7 +193,7 @@ public class LazyBinaryStruct extends
   /**
    * Get the field out of the row without checking parsed. This is called by
    * both getField and getFieldsAsList.
-   * 
+   *
    * @param fieldID
    *          The id of the field starting from 0.
    * @return The value of the field
@@ -214,7 +215,7 @@ public class LazyBinaryStruct extends
 
   /**
    * Get the values of the fields as an ArrayList.
-   * 
+   *
    * @return The values of the fields as an ArrayList.
    */
   public ArrayList<Object> getFieldsAsList() {

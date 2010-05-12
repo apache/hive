@@ -23,11 +23,11 @@ POSTHOOK: Output: default@temp_null
 PREHOOK: query: select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-54_474_2629680803115819917/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-46_460_130526701412066561/10000
 POSTHOOK: query: select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-19-54_474_2629680803115819917/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-46_460_130526701412066561/10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -52,11 +52,11 @@ POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: select * from tt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-02_665_3393915782175145634/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-54_210_4646908468388375810/10000
 POSTHOOK: query: select * from tt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-02_665_3393915782175145634/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-54_210_4646908468388375810/10000
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 NULL	NULL
@@ -87,11 +87,11 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from tt_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt_b
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-07_280_1348812180159016570/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-58_088_4831793622839318296/10000
 POSTHOOK: query: select * from tt_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt_b
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-20-07_280_1348812180159016570/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-11-58_088_4831793622839318296/10000
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
@@ -120,11 +120,59 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 \N\N
 \N\N
 \N\N
+PREHOOK: query: drop table temp_null2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table temp_null2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
+PREHOOK: query: create table temp_null2 (key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table temp_null2 (key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@temp_null2
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
+PREHOOK: query: insert overwrite table temp_null2 partition(ds='2010-04-01') select '1',NULL from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@temp_null2@ds=2010-04-01
+POSTHOOK: query: insert overwrite table temp_null2 partition(ds='2010-04-01') select '1',NULL from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@temp_null2@ds=2010-04-01
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
+PREHOOK: query: select * from temp_null2 where ds is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null2@ds=2010-04-01
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-12-05_597_2273874996761576508/10000
+POSTHOOK: query: select * from temp_null2 where ds is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null2@ds=2010-04-01
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_12-12-05_597_2273874996761576508/10000
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
+1	NULL	2010-04-01
 PREHOOK: query: drop table tt
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tt
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
@@ -134,6 +182,8 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tt_b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@tt_b
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
@@ -143,6 +193,19 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table temp_null
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@temp_null
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
+POSTHOOK: Lineage: tt.a EXPRESSION []
+POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt_b.a EXPRESSION []
+POSTHOOK: Lineage: tt_b.b EXPRESSION []
+PREHOOK: query: drop table temp_null2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table temp_null2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@temp_null2
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []

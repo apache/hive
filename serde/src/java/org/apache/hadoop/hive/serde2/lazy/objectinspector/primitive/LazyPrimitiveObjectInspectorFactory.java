@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 /**
  * LazyPrimitiveObjectInspectorFactory is the primary way to create new
  * ObjectInspector instances.
- * 
+ *
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
- * 
+ *
  * The reason of having caches here is that ObjectInspector is because
  * ObjectInspectors do not have an internal state - so ObjectInspectors with the
  * same construction parameters should result in exactly the same
@@ -92,6 +92,7 @@ public final class LazyPrimitiveObjectInspectorFactory {
     case STRING:
       return getLazyStringObjectInspector(escaped, escapeChar);
     case VOID:
+      return LAZY_VOID_OBJECT_INSPECTOR;
     default:
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);

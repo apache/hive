@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableIntObject
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableVoidObjectInspector;
 
 /**
  * LazyBinaryFactory.
@@ -61,6 +62,8 @@ public final class LazyBinaryFactory {
       return new LazyBinaryDouble((WritableDoubleObjectInspector) oi);
     case STRING:
       return new LazyBinaryString((WritableStringObjectInspector) oi);
+    case VOID: // for NULL
+      return new LazyBinaryVoid((WritableVoidObjectInspector) oi);
     default:
       throw new RuntimeException("Internal error: no LazyBinaryObject for " + p);
     }

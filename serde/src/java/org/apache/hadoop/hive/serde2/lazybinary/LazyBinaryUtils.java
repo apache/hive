@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -41,10 +43,12 @@ import org.apache.hadoop.io.WritableUtils;
  */
 public final class LazyBinaryUtils {
 
+  private static Log LOG = LogFactory.getLog(LazyBinaryUtils.class.getName());
+
   /**
    * Convert the byte array to an int starting from the given offset. Refer to
    * code by aeden on DZone Snippets:
-   * 
+   *
    * @param b
    *          the byte array
    * @param offset
@@ -62,7 +66,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Convert the byte array to a long starting from the given offset.
-   * 
+   *
    * @param b
    *          the byte array
    * @param offset
@@ -80,7 +84,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Convert the byte array to a short starting from the given offset.
-   * 
+   *
    * @param b
    *          the byte array
    * @param offset
@@ -98,7 +102,7 @@ public final class LazyBinaryUtils {
    * Record is the unit that data is serialized in. A record includes two parts.
    * The first part stores the size of the element and the second part stores
    * the real element. size element record -> |----|-------------------------|
-   * 
+   *
    * A RecordInfo stores two information of a record, the size of the "size"
    * part which is the element offset and the size of the element part which is
    * element size.
@@ -111,6 +115,11 @@ public final class LazyBinaryUtils {
 
     public byte elementOffset;
     public int elementSize;
+
+    @Override
+    public String toString() {
+      return "(" + elementOffset + ", " + elementSize + ")";
+    }
   }
 
   static VInt vInt = new LazyBinaryUtils.VInt();
@@ -118,13 +127,13 @@ public final class LazyBinaryUtils {
   /**
    * Check a particular field and set its size and offset in bytes based on the
    * field type and the bytes arrays.
-   * 
+   *
    * For void, boolean, byte, short, int, long, float and double, there is no
    * offset and the size is fixed. For string, map, list, struct, the first four
    * bytes are used to store the size. So the offset is 4 and the size is
    * computed by concating the first four bytes together. The first four bytes
    * are defined with respect to the offset in the bytes arrays.
-   * 
+   *
    * @param objectInspector
    *          object inspector of the field
    * @param bytes
@@ -143,6 +152,9 @@ public final class LazyBinaryUtils {
           .getPrimitiveCategory();
       switch (primitiveCategory) {
       case VOID:
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = 0;
+        break;
       case BOOLEAN:
       case BYTE:
         recordInfo.elementOffset = 0;
@@ -207,7 +219,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Reads a zero-compressed encoded long from a byte array and returns it.
-   * 
+   *
    * @param bytes
    *          the byte array
    * @param offset
@@ -246,7 +258,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Reads a zero-compressed encoded int from a byte array and returns it.
-   * 
+   *
    * @param bytes
    *          the byte array
    * @param offset
@@ -272,7 +284,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Writes a zero-compressed encoded int to a byte array.
-   * 
+   *
    * @param byteStream
    *          the byte array/stream
    * @param i
@@ -284,7 +296,7 @@ public final class LazyBinaryUtils {
 
   /**
    * Write a zero-compressed encoded long to a byte array.
-   * 
+   *
    * @param byteStream
    *          the byte array/stream
    * @param l
@@ -324,7 +336,7 @@ public final class LazyBinaryUtils {
   /**
    * Returns the lazy binary object inspector that can be used to inspect an
    * lazy binary object of that typeInfo
-   * 
+   *
    * For primitive types, we use the standard writable object inspector.
    */
   public static ObjectInspector getLazyBinaryObjectInspectorFromTypeInfo(

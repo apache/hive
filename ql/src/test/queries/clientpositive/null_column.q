@@ -18,6 +18,12 @@ select * from tt_b;
 insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null;
 dfs -cat ../build/ql/test/data/warehouse/null_columns.out/*;
 
+drop table temp_null2;
+create table temp_null2 (key string, value string) partitioned by (ds string);
+insert overwrite table temp_null2 partition(ds='2010-04-01') select '1',NULL from src limit 1;
+select * from temp_null2 where ds is not null;
+
 drop table tt;
 drop table tt_b;
 drop table temp_null;
+drop table temp_null2;

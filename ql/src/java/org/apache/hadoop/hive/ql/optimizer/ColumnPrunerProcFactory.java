@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -64,7 +67,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
  * Factory for generating the different node processors used by ColumnPruner.
  */
 public final class ColumnPrunerProcFactory {
-
+  protected static final Log LOG = LogFactory.getLog(ColumnPrunerProcFactory.class.getName());
   private ColumnPrunerProcFactory() {
     // prevent instantiation
   }
@@ -502,16 +505,16 @@ public final class ColumnPrunerProcFactory {
       Operator<? extends Serializable> op,
       List<String> cols)
       throws SemanticException {
-    ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
-    ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
-    RowResolver rr = cppCtx.getOpToParseCtxMap().get(op).getRR();
-    for (int i = 0; i < cols.size(); i++) {
-      String internalName = cols.get(i);
-      String[] nm = rr.reverseLookup(internalName);
-      ColumnInfo col = rr.get(nm[0], nm[1]);
-      rs.add(col);
-    }
-    if (op.getSchema() != null) {
+    // the pruning needs to preserve the order of columns in the input schema
+    RowSchema inputSchema = op.getSchema();
+    if (inputSchema != null) {
+      ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
+      ArrayList<ColumnInfo> inputCols = inputSchema.getSignature();
+    	for (ColumnInfo i: inputCols) {
+        if (cols.contains(i.getInternalName())) {
+          rs.add(i);
+        }
+    	}
       op.getSchema().setSignature(rs);
     }
   }
