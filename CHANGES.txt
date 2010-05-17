@@ -431,6 +431,9 @@ Trunk -  Unreleased
     HIVE-1322. Cached FileSystem can lead to persistant IOExceptions
     (Paul Yang via namit)
 
+    HIVE-1345. TypedBytesSerDe fails to create table with multiple columns.
+    (Arvind Prabhakar via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

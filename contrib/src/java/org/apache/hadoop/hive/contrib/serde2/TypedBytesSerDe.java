@@ -65,7 +65,7 @@ import org.apache.hadoop.io.Writable;
 
 /**
  * TypedBytesSerDe uses typed bytes to serialize/deserialize.
- * 
+ *
  * More info on the typedbytes stuff that Dumbo uses.
  * http://issues.apache.org/jira/browse/HADOOP-1722 A fast python decoder for
  * this, which is apparently 25% faster than the python version is available at
@@ -107,11 +107,12 @@ public class TypedBytesSerDe implements SerDe {
     String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
 
     columnNames = Arrays.asList(columnNameProperty.split(","));
-    columnTypes = new ArrayList<TypeInfo>();
-    List<String> columnTypeProps = Arrays.asList(columnTypeProperty.split(","));
-
-    for (String colType : columnTypeProps) {
-      columnTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(colType));
+    columnTypes = null;
+    if (columnTypeProperty.length() == 0) {
+      columnTypes = new ArrayList<TypeInfo>();
+    } else {
+      columnTypes = TypeInfoUtils
+          .getTypeInfosFromTypeString(columnTypeProperty);
     }
 
     assert columnNames.size() == columnTypes.size();
