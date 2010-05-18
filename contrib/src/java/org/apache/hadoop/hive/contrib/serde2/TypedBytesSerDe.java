@@ -60,6 +60,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -185,7 +186,12 @@ public class TypedBytesSerDe implements SerDe {
       Object reuse) throws IOException {
 
     // read the type
-    in.readType();
+    Class<? extends Writable> writableType = in.readType();
+    if (writableType != null &&
+        writableType.isAssignableFrom(NullWritable.class)) {
+      // indicates that the recorded value is null
+      return null;
+    }
 
     switch (type.getCategory()) {
     case PRIMITIVE: {

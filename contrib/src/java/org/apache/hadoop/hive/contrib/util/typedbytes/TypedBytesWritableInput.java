@@ -35,6 +35,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SortedMapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.VIntWritable;
@@ -46,7 +47,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Provides functionality for reading typed bytes as Writable objects.
- * 
+ *
  * @see TypedBytesInput
  */
 public class TypedBytesWritableInput implements Configurable {
@@ -72,7 +73,7 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link TypedBytesInput}.
-   * 
+   *
    * @param in
    *          typed bytes input object
    * @return typed bytes writable input corresponding to the supplied
@@ -87,7 +88,7 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link DataInput}.
-   * 
+   *
    * @param in
    *          data input object
    * @return typed bytes writable input corresponding to the supplied
@@ -140,6 +141,8 @@ public class TypedBytesWritableInput implements Configurable {
       return readWritable();
     case ENDOFRECORD:
       return null;
+    case NULL:
+      return NullWritable.get();
     default:
       throw new RuntimeException("unknown type");
     }
@@ -181,6 +184,8 @@ public class TypedBytesWritableInput implements Configurable {
       return Writable.class;
     case ENDOFRECORD:
       return null;
+    case NULL:
+      return NullWritable.class;
     default:
       throw new RuntimeException("unknown type");
     }

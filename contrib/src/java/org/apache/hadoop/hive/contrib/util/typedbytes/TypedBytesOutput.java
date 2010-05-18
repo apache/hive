@@ -52,7 +52,7 @@ public class TypedBytesOutput {
 
   /**
    * Get a thread-local typed bytes output for the supplied {@link DataOutput}.
-   * 
+   *
    * @param out
    *          data output object
    * @return typed bytes output corresponding to the supplied {@link DataOutput}
@@ -71,7 +71,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a Java object as a typed bytes sequence.
-   * 
+   *
    * @param obj
    *          the object to be written
    * @throws IOException
@@ -106,7 +106,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a raw sequence of typed bytes.
-   * 
+   *
    * @param bytes
    *          the bytes to be written
    * @throws IOException
@@ -117,7 +117,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a raw sequence of typed bytes.
-   * 
+   *
    * @param bytes
    *          the bytes to be written
    * @param offset
@@ -132,7 +132,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a bytes array as a typed bytes sequence, using a given typecode.
-   * 
+   *
    * @param bytes
    *          the bytes array to be written
    * @param code
@@ -147,7 +147,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a bytes array as a typed bytes sequence.
-   * 
+   *
    * @param bytes
    *          the bytes array to be written
    * @throws IOException
@@ -158,7 +158,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a byte as a typed bytes sequence.
-   * 
+   *
    * @param b
    *          the byte to be written
    * @throws IOException
@@ -170,7 +170,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a boolean as a typed bytes sequence.
-   * 
+   *
    * @param b
    *          the boolean to be written
    * @throws IOException
@@ -182,7 +182,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes an integer as a typed bytes sequence.
-   * 
+   *
    * @param i
    *          the integer to be written
    * @throws IOException
@@ -194,7 +194,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a long as a typed bytes sequence.
-   * 
+   *
    * @param l
    *          the long to be written
    * @throws IOException
@@ -206,7 +206,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a float as a typed bytes sequence.
-   * 
+   *
    * @param f
    *          the float to be written
    * @throws IOException
@@ -218,7 +218,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a double as a typed bytes sequence.
-   * 
+   *
    * @param d
    *          the double to be written
    * @throws IOException
@@ -230,7 +230,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a short as a typed bytes sequence.
-   * 
+   *
    * @param s
    *          the short to be written
    * @throws IOException
@@ -242,7 +242,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a string as a typed bytes sequence.
-   * 
+   *
    * @param s
    *          the string to be written
    * @throws IOException
@@ -254,7 +254,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a vector as a typed bytes sequence.
-   * 
+   *
    * @param vector
    *          the vector to be written
    * @throws IOException
@@ -268,7 +268,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a vector header.
-   * 
+   *
    * @param length
    *          the number of elements in the vector
    * @throws IOException
@@ -280,7 +280,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a list as a typed bytes sequence.
-   * 
+   *
    * @param list
    *          the list to be written
    * @throws IOException
@@ -295,7 +295,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a list header.
-   * 
+   *
    * @throws IOException
    */
   public void writeListHeader() throws IOException {
@@ -304,7 +304,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a list footer.
-   * 
+   *
    * @throws IOException
    */
   public void writeListFooter() throws IOException {
@@ -313,7 +313,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a map as a typed bytes sequence.
-   * 
+   *
    * @param map
    *          the map to be written
    * @throws IOException
@@ -330,7 +330,7 @@ public class TypedBytesOutput {
 
   /**
    * Writes a map header.
-   * 
+   *
    * @param length
    *          the number of key-value pairs in the map
    * @throws IOException
@@ -344,4 +344,12 @@ public class TypedBytesOutput {
     out.write(Type.ENDOFRECORD.code);
   }
 
+  /**
+   * Writes a <tt>NULL</tt> type marker to the output.
+   *
+   * @throws IOException
+   */
+  public void writeNull() throws IOException {
+    out.write(Type.NULL.code);
+  }
 }

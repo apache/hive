@@ -25,7 +25,7 @@ public enum Type {
 
   // codes for supported types (< 50):
   BYTES(0), BYTE(1), BOOL(2), INT(3), LONG(4), FLOAT(5), DOUBLE(6), STRING(7), VECTOR(
-      8), LIST(9), MAP(10), SHORT(11),
+      8), LIST(9), MAP(10), SHORT(11), NULL(12),
 
   // application-specific codes (50-200):
   WRITABLE(50),

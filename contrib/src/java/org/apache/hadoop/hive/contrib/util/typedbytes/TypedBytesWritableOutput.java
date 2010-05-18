@@ -35,6 +35,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SortedMapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.VIntWritable;
@@ -46,7 +47,7 @@ import org.apache.hadoop.record.Record;
 
 /**
  * Provides functionality for writing Writable objects as typed bytes.
- * 
+ *
  * @see TypedBytesOutput
  */
 public class TypedBytesWritableOutput {
@@ -70,7 +71,7 @@ public class TypedBytesWritableOutput {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link TypedBytesOutput}.
-   * 
+   *
    * @param out
    *          typed bytes output object
    * @return typed bytes writable output corresponding to the supplied
@@ -85,7 +86,7 @@ public class TypedBytesWritableOutput {
   /**
    * Get a thread-local typed bytes writable output for the supplied
    * {@link DataOutput}.
-   * 
+   *
    * @param out
    *          data output object
    * @return typed bytes writable output corresponding to the supplied
@@ -139,6 +140,8 @@ public class TypedBytesWritableOutput {
       writeSortedMap((SortedMapWritable) w);
     } else if (w instanceof Record) {
       writeRecord((Record) w);
+    } else if (w instanceof NullWritable || w == null) {
+      writeNull();
     } else {
       writeWritable(w); // last resort
     }
@@ -219,6 +222,10 @@ public class TypedBytesWritableOutput {
 
   public void writeRecord(Record r) throws IOException {
     r.serialize(TypedBytesRecordOutput.get(out));
+  }
+
+  public void writeNull() throws IOException {
+    out.writeNull();
   }
 
   public void writeWritable(Writable w) throws IOException {
