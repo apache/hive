@@ -73,6 +73,7 @@ import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
@@ -315,10 +316,23 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     long maxReportInterval = 60 * 1000; // One minute
     boolean fatal = false;
     StringBuilder errMsg = new StringBuilder();
+    long pullInterval = HiveConf.getLongVar(job,
+                                        HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL);
+    boolean initializing = true;
     while (!rj.isComplete()) {
       try {
-        Thread.sleep(1000);
+        Thread.sleep(pullInterval);
       } catch (InterruptedException e) {
+      }
+      
+      if (initializing &&
+          ShimLoader.getHadoopShims().isJobPreparing(rj)) {
+        // No reason to poll untill the job is initialized
+        continue;
+      } else {
+        // By now the job is initialized so no reason to do
+        // rj.getJobState() again and we do not want to do an extra RPC call
+        initializing = false;
       }
       th.setRunningJob(jc.getJob(rj.getJobID()));
 

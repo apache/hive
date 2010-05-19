@@ -32,6 +32,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 
 /**
@@ -49,6 +50,12 @@ public interface HadoopShims {
    * command line interpretation.
    */
   boolean usesJobShell();
+  
+  /**
+   * Return true if the job has not switched to RUNNING state yet
+   * and is still in PREP state
+   */
+  boolean isJobPreparing(RunningJob job) throws IOException;
 
   /**
    * Calls fs.deleteOnExit(path) if such a function exists.

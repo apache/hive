@@ -31,8 +31,10 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
@@ -57,6 +59,9 @@ public class Hadoop20Shims implements HadoopShims {
     // gone in 0.18+
   }
 
+  public boolean isJobPreparing(RunningJob job) throws IOException {
+    return job.getJobState() == JobStatus.PREP;
+  }
   /**
    * Workaround for hadoop-17 - jobclient only looks at commandlineconfig.
    */

@@ -26,6 +26,7 @@ import org.apache.hadoop.dfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 
 import java.io.IOException;
@@ -43,6 +44,13 @@ public class Hadoop17Shims implements HadoopShims {
     return false;
   }
 
+  /**
+   * No way to get this information in hadoop 17
+   */
+  public boolean isJobPreparing(RunningJob job) throws IOException {
+    return false;
+  }
+  
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
     throws IOException {
     fmt.validateInput(conf);

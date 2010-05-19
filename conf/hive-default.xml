@@ -474,6 +474,12 @@
 </property>
 
 <property>
+  <name>hive.exec.counters.pull.interval</name>
+  <value>1000</value>
+  <description>The interval with which to poll the JobTracker for the counters the running job. The smaller it is the more load there will be on the jobtracker, the higher it is the less granular the caught will be.</description>
+</property>
+
+<property>
   <name>hive.enforce.bucketing</name>
   <value>false</value>
   <description>Whether bucketing is enforced. If true, while inserting into the table, bucketing is enforced. </description>

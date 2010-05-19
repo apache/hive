@@ -30,6 +30,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
 
@@ -40,6 +41,7 @@ import org.apache.hadoop.mapred.MultiFileInputFormat;
 import org.apache.hadoop.mapred.MultiFileSplit;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.RunningJob;
 
 /**
  * Implemention of shims against Hadoop 0.19.0.
@@ -58,6 +60,10 @@ public class Hadoop19Shims implements HadoopShims {
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
     throws IOException {
     // gone in 0.18+
+  }
+  
+  public boolean isJobPreparing(RunningJob job) throws IOException {
+    return job.getJobState() == JobStatus.PREP;
   }
 
   /**

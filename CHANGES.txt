@@ -187,6 +187,9 @@ Trunk -  Unreleased
     HIVE-1306. cleanup the JobScratchDir
     (Namit Jain via Ning Zhang)
 
+    HIVE-1349. Do not pull counters of non initialized jobs.
+    (Dmytro Molkov via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

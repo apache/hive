@@ -26,6 +26,7 @@ import org.apache.hadoop.dfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
@@ -49,6 +50,10 @@ public class Hadoop18Shims implements HadoopShims {
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
     throws IOException {
     // gone in 0.18+
+  }
+
+  public boolean isJobPreparing(RunningJob job) throws IOException {
+    return false;
   }
 
   /**
