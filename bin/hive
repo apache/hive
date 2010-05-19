@@ -131,6 +131,10 @@ for i in "$bin"/ext/*.sh ; do
   . $i
 done
 
+for i in "$bin"/ext/util/*.sh ; do
+  . $i
+done
+
 SERVICE=""
 HELP=""
 while [ $# -gt 0 ]; do
@@ -138,6 +142,10 @@ while [ $# -gt 0 ]; do
     --service)
       shift
       SERVICE=$1
+      shift
+      ;;
+    --rcfilecat)
+      SERVICE=rcfilecat
       shift
       ;;
     --help)
