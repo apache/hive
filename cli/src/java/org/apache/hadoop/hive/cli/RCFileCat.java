@@ -34,6 +34,9 @@ import org.apache.hadoop.util.ToolRunner;
 public class RCFileCat implements Tool{
   
   Configuration conf = null;
+  
+  private static String TAB ="\t";
+  private static String NEWLINE ="\r\n";
 
   @Override
   public int run(String[] args) throws Exception {
@@ -82,7 +85,12 @@ public class RCFileCat implements Tool{
         BytesRefWritable v = value.get(i);
         txt.set(v.getData(), v.getStart(), v.getLength());
         System.out.print(txt.toString());
+        if (i < value.size() - 1) {
+          // do not put the TAB for the last column
+          System.out.print(RCFileCat.TAB);          
+        }
       }
+      System.out.print(RCFileCat.NEWLINE);
     }
     return 0;
   }

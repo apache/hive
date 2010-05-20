@@ -442,6 +442,8 @@ Trunk -  Unreleased
 
     HIVE-1029. Null support for TypedBytesSerDe (Arvind Prabhakar via namit)
 
+    HIVE-1352. Bug in rcfilecat (He Yongqiang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
