@@ -29,6 +29,7 @@ select key, value from (
 
 show partitions nzhang_part14;
 
-select * from nzhang_part14 where value <> 'a';
+select * from nzhang_part14 where value <> 'a'
+order by key, value;
 
 drop table nzhang_part14;
