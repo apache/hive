@@ -447,6 +447,9 @@ Trunk -  Unreleased
     HIVE-1353. load_dyn_part*.q need ORDER BY for determinism
     (John Sichi via Ning Zhang)
 
+    HIVE-1354. partition level properties honored if it exists
+    (namit via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

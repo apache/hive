@@ -567,16 +567,15 @@ public class Hive {
         partPath = part.getPath()[0];
         fs = partPath.getFileSystem(getConf());
       }
+
       if (replace) {
         Hive.replaceFiles(loadPath, partPath, fs, tmpDirPath);
       } else {
         Hive.copyFiles(loadPath, partPath, fs);
       }
 
-      if (part == null) {
-        // create the partition if it didn't exist before
-        part = getPartition(tbl, partSpec, true);
-      }
+      // recreate the partition if it existed before
+      part = getPartition(tbl, partSpec, true);
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -755,10 +754,21 @@ public class Hive {
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
       tpart = getMSC().getPartition(tbl.getDbName(), tbl.getTableName(), pvals);
-      if (tpart == null && forceCreate) {
-        LOG.debug("creating partition for table " + tbl.getTableName()
-            + " with partition spec : " + partSpec);
-        tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+      if (forceCreate) {
+        if (tpart == null) {
+          LOG.debug("creating partition for table " + tbl.getTableName()
+                    + " with partition spec : " + partSpec);
+          tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+        }
+        else {
+          LOG.debug("altering partition for table " + tbl.getTableName()
+                    + " with partition spec : " + partSpec);
+
+          tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
+          tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
+          tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+          alterPartition(tbl.getTableName(), new Partition(tbl, tpart));
+        }
       }
       if (tpart == null) {
         return null;

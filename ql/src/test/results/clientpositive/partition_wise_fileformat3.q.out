@@ -1,0 +1,215 @@
+PREHOOK: query: drop table partition_test_partitioned
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table partition_test_partitioned
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@partition_test_partitioned
+PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+PREHOOK: type: null
+POSTHOOK: query: alter table partition_test_partitioned set fileformat rcfile
+POSTHOOK: type: null
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned@dt=101
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+tableName:partition_test_partitioned
+owner:njain
+location:file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:370
+maxFileSize:370
+minFileSize:370
+lastAccessTime:0
+lastUpdateTime:1274314890000
+
+PREHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
+PREHOOK: type: null
+POSTHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
+POSTHOOK: type: null
+POSTHOOK: Input: default@partition_test_partitioned
+POSTHOOK: Output: default@partition_test_partitioned
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=102) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned@dt=102
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=102) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned@dt=102
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+tableName:partition_test_partitioned
+owner:njain
+location:file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:888
+maxFileSize:888
+minFileSize:888
+lastAccessTime:0
+lastUpdateTime:1274314895000
+
+PREHOOK: query: select key from partition_test_partitioned where dt=102
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned@dt=102
+PREHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-05-19_17-21-36_438_6571635211032352917/10000
+POSTHOOK: query: select key from partition_test_partitioned where dt=102
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned@dt=102
+POSTHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-05-19_17-21-36_438_6571635211032352917/10000
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_test_partitioned@dt=101
+POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt=101) select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_test_partitioned@dt=101
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+tableName:partition_test_partitioned
+owner:njain
+location:file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string dt}
+totalNumberFiles:1
+totalFileSize:888
+maxFileSize:888
+minFileSize:888
+lastAccessTime:0
+lastUpdateTime:1274314904000
+
+PREHOOK: query: select key from partition_test_partitioned where dt=101
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partition_test_partitioned@dt=101
+PREHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-05-19_17-21-45_060_1172142624101768381/10000
+POSTHOOK: query: select key from partition_test_partitioned where dt=101
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partition_test_partitioned@dt=101
+POSTHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/scratchdir/hive_2010-05-19_17-21-45_060_1172142624101768381/10000
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+238
+
+311
+
+
+
+255
+278
+98
+
+
+
+401
+150
+273
+224
+369
+66
+128
+213
+146
+406
+
+
+
+PREHOOK: query: drop table partition_test_partitioned
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table partition_test_partitioned
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@partition_test_partitioned
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
