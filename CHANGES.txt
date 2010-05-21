@@ -450,6 +450,9 @@ Trunk -  Unreleased
     HIVE-1354. partition level properties honored if it exists
     (namit via He Yongqiang)
 
+    HIVE-1357. optimize CombineHiveInputFormat to cache inputFormat
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -72,7 +72,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   public static class CombineHiveInputSplit implements InputSplitShim {
 
-    String inputFormatClassName;
+    static String inputFormatClassName = null;
     InputSplitShim inputSplitShim;
 
     public CombineHiveInputSplit() throws IOException {
@@ -87,25 +87,18 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public CombineHiveInputSplit(JobConf job, InputSplitShim inputSplitShim)
         throws IOException {
       this.inputSplitShim = inputSplitShim;
-      if (job != null) {
+
+      // get the inputFormatClassName only once because it will be the same
+      // for all input files within the same input split.
+      if (job != null && inputFormatClassName == null) {
         Map<String, PartitionDesc> pathToPartitionInfo = Utilities
             .getMapRedWork(job).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
-        for (int i = 0; i < ipaths.length; i++) {
-          PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
-
-          // create a new InputFormat instance if this is the first time to see
-          // this class
-          if (i == 0) {
-            inputFormatClassName = part.getInputFileFormatClass().getName();
-          } else {
-            assert inputFormatClassName.equals(part.getInputFileFormatClass()
-                .getName());
-          }
-        }
+        PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[0]);
+        inputFormatClassName = part.getInputFileFormatClass().getName();
       }
     }
 
