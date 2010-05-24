@@ -207,6 +207,8 @@
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
+    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"  excludes="*hadoop*.jar" 
+	erroronmissingdir="false" />
   </path>
 
   <path id="classpath">

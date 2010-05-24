@@ -29,7 +29,7 @@
     </exec>
   </target>
 
-  <target name="core-compile" depends="init, model-compile">
+  <target name="core-compile" depends="init, model-compile,ivy-retrieve">
     <echo message="Compiling: "/>
     <javac
      encoding="${build.encoding}"

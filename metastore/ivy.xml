@@ -3,6 +3,22 @@
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency> 
+        </dependency>
+	<dependency org="commons-dbcp" name="commons-dbcp" rev="1.2.2">
+          <exclude module="commons-pool" />
+        </dependency>
+        <dependency org="commons-pool" name="commons-pool" rev="1.2">
+          <exclude module="commons-collections" />
+          <exclude module="xerces" />
+          <exclude module="xml-apis" />
+        </dependency>
+        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="1.0.2">
+          <exclude module="proxool" />
+          <exclude module="c3p0" />
+          <exclude module="datanucleus-core" />
+          <exclude module="datanucleus-rdbms" />
+          <exclude module="commons-collections" />
+          <exclude module="commons-pool" />
+        </dependency>
     </dependencies>
 </ivy-module>

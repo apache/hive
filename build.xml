@@ -115,6 +115,8 @@
     <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
+    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar" 
+	excludes="*hadoop*.jar" erroronmissingdir="false"/>
   </path>
 
   <path id="classpath">
@@ -297,6 +299,9 @@
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
       <fileset file="${build.dir.hive}/contrib/hive-hbase_handler-${version}.jar"/>
+      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/commons-dbcp-*.jar"/>
+      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/commons-pool-*.jar"/>
+      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/datanucleus-connectionpool-*.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>

@@ -97,6 +97,12 @@
 </property>
 
 <property>
+  <name>datanucleus.connectionPoolingType</name>
+  <value>DBCP</value>
+  <description>Uses a DBCP connection pool for JDBC metastore</description>
+</property>
+
+<property>
   <name>javax.jdo.option.DetachAllOnCommit</name>
   <value>true</value>
   <description>detaches all objects from session so that they can be used after transaction is committed</description>
