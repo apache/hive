@@ -453,6 +453,9 @@ Trunk -  Unreleased
     HIVE-1357. optimize CombineHiveInputFormat to cache inputFormat
     (Ning Zhang via namit)
 
+    HIVE-1350. hive.query.id is not unique
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

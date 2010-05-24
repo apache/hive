@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,13 +66,13 @@ public class QueryPlan implements Serializable {
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
-  
+
   private HashSet<ReadEntity> inputs;
   /**
    * Note: outputs are not all determined at compile time.
    * Some of the tasks can change the outputs at run time, because only at run
-   * time, we know what are the changes.  These tasks should keep a reference 
-   * to the outputs here. 
+   * time, we know what are the changes.  These tasks should keep a reference
+   * to the outputs here.
    */
   private HashSet<WriteEntity> outputs;
   /**
@@ -128,13 +129,15 @@ public class QueryPlan implements Serializable {
         + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%5$02d", gc
         .get(Calendar.YEAR), gc.get(Calendar.MONTH) + 1, gc
         .get(Calendar.DAY_OF_MONTH), gc.get(Calendar.HOUR_OF_DAY), gc
-        .get(Calendar.MINUTE), gc.get(Calendar.SECOND));
+        .get(Calendar.MINUTE), gc.get(Calendar.SECOND))
+        + "_"
+        + UUID.randomUUID().toString();
   }
 
   /**
    * generate the operator graph and operator list for the given task based on
    * the operators corresponding to that task.
-   * 
+   *
    * @param task
    *          api.Task which needs its operator graph populated
    * @param topOps
@@ -182,7 +185,7 @@ public class QueryPlan implements Serializable {
   /**
    * Populate api.QueryPlan from exec structures. This includes constructing the
    * dependency graphs of stages and operators.
-   * 
+   *
    * @throws IOException
    */
   private void populateQueryPlan() throws IOException {
@@ -719,19 +722,19 @@ public class QueryPlan implements Serializable {
 
   /**
    * Gets the lineage information.
-   * 
+   *
    * @return LineageInfo associated with the query.
    */
   public LineageInfo getLineageInfo() {
     return linfo;
   }
-  
+
   /**
    * Sets the lineage information.
-   * 
+   *
    * @param linfo The LineageInfo structure that is set in the optimization phase.
    */
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
-  }  
+  }
 }
