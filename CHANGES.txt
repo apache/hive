@@ -459,6 +459,10 @@ Trunk -  Unreleased
     HIVE-1335 DataNucleus should use connection pooling
     (Edward Capriolo via namit)
 
+    HIVE-1366. inputFileFormat error if the merge job takes a different input
+    file format than the default output file format 
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
