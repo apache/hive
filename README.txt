@@ -158,7 +158,7 @@ Metadata is in an embedded Derby database whose location is determined by the
 hive configuration variable named javax.jdo.option.ConnectionURL. By default
 (see conf/hive-default.xml) - this location is ./metastore_db
 
-Right now - in the default configuration, this metadata can only be seen by
+Right now, in the default configuration, this metadata can only be seen by
 one user at a time.
 
 Metastore can be stored in any database that is supported by JPOX. The
@@ -168,7 +168,7 @@ Refer to JDO (or JPOX) documentation for more details on supported databases.
 The database schema is defined in JDO metadata annotations file package.jdo
 at src/contrib/hive/metastore/src/model.
 
-In the future - the metastore itself can be a standalone server.
+In the future, the metastore itself can be a standalone server.
 
 
 DML Operations
