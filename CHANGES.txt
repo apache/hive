@@ -460,8 +460,11 @@ Trunk -  Unreleased
     (Edward Capriolo via namit)
 
     HIVE-1366. inputFileFormat error if the merge job takes a different input
-    file format than the default output file format 
+    file format than the default output file format
     (Namit Jain via Ning Zhang)
+
+    HIVE-1365. Bug in sort-merge join
+    (He Yongqiang via namit)
 
 Release 0.5.0 -  Unreleased
 

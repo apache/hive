@@ -230,34 +230,31 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       allFetchOpDone = allFetchOpDone();
     }
 
-    if (allFetchOpDone
-        && this.candidateStorage.get((byte) this.posBigTable).size() > 0) {
-      // if all fetch operator for small tables are done and there are data left
-      // in big table
+    while (!allFetchOpDone) {
+      List<Byte> ret = joinOneGroup();
+      if (ret == null || ret.size() == 0) {
+        break;
+      }
+      reportProgress();
+      allFetchOpDone = allFetchOpDone();
+    }
+
+    boolean dataInCache = true;
+    while (dataInCache) {
       for (byte t : order) {
-        if(this.foundNextKeyGroup.get(t) && this.nextKeyWritables.get(t) != null) {
+        if (this.foundNextKeyGroup.get(t)
+            && this.nextKeyWritables.get(t) != null) {
           promoteNextGroupToCandidate(t);
         }
       }
       joinOneGroup();
-    } else {
-      while (!allFetchOpDone) {
-        List<Byte> ret = joinOneGroup();
-        if (ret == null || ret.size() == 0) {
+      dataInCache = false;
+      for (byte r : order) {
+        if (this.candidateStorage.get(r).size() > 0) {
+          dataInCache = true;
           break;
         }
-
-        reportProgress();
-
-        allFetchOpDone = allFetchOpDone();
       }
-      //one final table left
-      for (byte t : order) {
-        if(this.foundNextKeyGroup.get(t) && this.nextKeyWritables.get(t) != null) {
-          promoteNextGroupToCandidate(t);
-        }
-      }
-      joinOneGroup();
     }
   }
 
