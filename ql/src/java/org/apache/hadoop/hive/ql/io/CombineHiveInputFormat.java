@@ -72,7 +72,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   public static class CombineHiveInputSplit implements InputSplitShim {
 
-    static String inputFormatClassName = null;
+    String inputFormatClassName;
     InputSplitShim inputSplitShim;
 
     public CombineHiveInputSplit() throws IOException {
@@ -87,18 +87,17 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public CombineHiveInputSplit(JobConf job, InputSplitShim inputSplitShim)
         throws IOException {
       this.inputSplitShim = inputSplitShim;
-
-      // get the inputFormatClassName only once because it will be the same
-      // for all input files within the same input split.
-      if (job != null && inputFormatClassName == null) {
+      if (job != null) {
         Map<String, PartitionDesc> pathToPartitionInfo = Utilities
             .getMapRedWork(job).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
-        PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[0]);
-        inputFormatClassName = part.getInputFileFormatClass().getName();
+        if (ipaths.length > 0) {
+          PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[0]);
+          inputFormatClassName = part.getInputFileFormatClass().getName();
+        }
       }
     }
 
@@ -336,13 +335,13 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     String dirPath = dir.toUri().getPath();
     PartitionDesc part = pathToPartitionInfo.get(dir.toString());
     if (part == null) {
-      LOG.warn("exact match not found, try ripping input path's theme and authority");
+      //      LOG.warn("exact match not found, try ripping input path's theme and authority");
       part = pathToPartitionInfo.get(dirPath);
     }
     if (part == null) {
 
-      LOG.warn("still does not found just the path part: " + dirPath + " in pathToPartitionInfo."
-          + " Will try prefix matching");
+      //      LOG.warn("still does not found just the path part: " + dirPath + " in pathToPartitionInfo."
+      //          + " Will try prefix matching");
       for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo.entrySet()) {
         String keyPath = entry.getKey();
         String dirStr = dir.toString();
