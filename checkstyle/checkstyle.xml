@@ -50,6 +50,9 @@
 
 <module name="Checker">
 
+  <!-- setting the default severity to warning -->
+  <property name="severity" value="warning"/>
+
   <!-- Checks that a package.html file exists for each package.     -->
   <module name="JavadocPackage"/>
 

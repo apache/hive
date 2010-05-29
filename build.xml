@@ -530,6 +530,7 @@
   		failOnViolation="false">
       <fileset dir="${hive.root}">
         <exclude name="build/**"/>
+        <exclude name="ant/**"/>
         <include name="**/*.java"/>
       </fileset>
       <formatter type="plain" toFile="${checkstyle.build.dir}/checkstyle-errors.txt"/>

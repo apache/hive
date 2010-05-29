@@ -336,7 +336,7 @@ FUTURE FEATURES
 * Table statistics for query optimization.
 
 Developing Hive using Eclipse
-------------------------
+-----------------------------
 1. Follow the 3 steps in "Downloading and building" section above
 
 2. Generate test files for eclipse:
@@ -355,6 +355,20 @@ Developing Hive using Eclipse
 
 4. Run the CLI or a set of test cases by right clicking on one of the
    *.launch configurations and selection Run or Debug.
+
+Enabling Checkstyle Plugin in Eclipse
+-------------------------------------
+1. Follow the steps in "Developing Hive using Eclipse" to import
+   Hive project in your Eclipse workbench.
+
+2. If you do not have Checkstyle plugin for eclipse, install it
+   before proceeding to next step. For more information refer to
+   http://eclipse-cs.sourceforge.net/.
+
+3. In the package navigator, select the hive project, right-click
+   and select Checkstyle > Activate Checkstyle. This will cause
+   the checkstyle plugin to activate and analyze the project sources.
+ 
 
 Development Tips
 ------------------------

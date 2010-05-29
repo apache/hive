@@ -193,6 +193,10 @@ Trunk -  Unreleased
     HIVE-1349. Do not pull counters of non initialized jobs.
     (Dmytro Molkov via Ning Zhang)
 
+    HIVE-1198. When checkstyle is activated for Hive in Eclipse environment, 
+    it shows all checkstyle problems as errors.
+    (Arvind Prabhakar via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
