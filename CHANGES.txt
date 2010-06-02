@@ -473,6 +473,10 @@ Trunk -  Unreleased
     HIVE-1371. Bug in rcfilecat
     (He Yongqiang via namit)
 
+    HIVE-1377. getPartitionDescFromPath() in CombineHiveInputFormat should
+    handle matching by path	
+    (Paul Yang via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -36,9 +36,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
 import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -350,9 +350,27 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           part = entry.getValue();
           break;
         } else {
-          Path p = new Path(entry.getKey());
+          Path p = new Path(keyPath);
           String newP = p.toUri().getPath().toString();
           if (dirStr.startsWith(newP)) {
+            part = entry.getValue();
+            break;
+          }
+          // This case handles the situation where dir is a fully qualified
+          // subdirectory of a path in pathToPartitionInfo. e.g.
+          // dir = hdfs://host:9000/user/warehouse/tableName/abc
+          // pathToPartitionInfo = {/user/warehouse/tableName : myPart}
+          // In such a case, just compare the path components.
+
+          // This could result in aliasing if we have a case where
+          // two entries in pathToPartitionInfo differ only by scheme
+          // or authority, but this problem exists anyway in the above checks.
+
+          // This check was precipitated by changes that allow recursive dirs
+          // in the input path, and an upcoming change to CombineFileInputFormat
+          // where the paths in splits no longer have the scheme and authority
+          // stripped out.
+          if (dirPath.startsWith(newP)) {
             part = entry.getValue();
             break;
           }
