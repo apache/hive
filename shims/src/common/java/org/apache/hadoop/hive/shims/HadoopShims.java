@@ -50,7 +50,7 @@ public interface HadoopShims {
    * command line interpretation.
    */
   boolean usesJobShell();
-  
+
   /**
    * Return true if the job has not switched to RUNNING state yet
    * and is still in PREP state
@@ -126,10 +126,20 @@ public interface HadoopShims {
   /**
    * getTaskJobIDs returns an array of String with two elements. The first
    * element is a string representing the task id and the second is a string
-   * representing the job id. This is necessary as TaskID and TaskAttemptID 
+   * representing the job id. This is necessary as TaskID and TaskAttemptID
    * are not supported in Haddop 0.17
    */
   String[] getTaskJobIDs(TaskCompletionEvent t);
+
+  /**
+   * Hive uses side effect files exclusively for it's output. It also manages
+   * the setup/cleanup/commit of output from the hive client. As a result it does
+   * not need support for the same inside the MR framework
+   *
+   * This routine sets the appropriate options to set the output format and any
+   * options related to bypass setup/cleanup/commit support in the MR framework
+   */
+  void setNullOutputFormat(JobConf conf);
 
   /**
    * InputSplitShim.

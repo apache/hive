@@ -69,7 +69,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -324,7 +323,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         Thread.sleep(pullInterval);
       } catch (InterruptedException e) {
       }
-      
+
       if (initializing &&
           ShimLoader.getHadoopShims().isJobPreparing(rj)) {
         // No reason to poll untill the job is initialized
@@ -554,9 +553,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
     }
 
-    String jobScratchDirStr = hiveScratchDir + File.separator
-        + Utilities.randGen.nextInt();
-    Path jobScratchDir = new Path(jobScratchDirStr);
     String emptyScratchDirStr = null;
     Path emptyScratchDir = null;
 
@@ -580,7 +576,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       }
     }
 
-    FileOutputFormat.setOutputPath(job, jobScratchDir);
+    ShimLoader.getHadoopShims().setNullOutputFormat(job);
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
@@ -735,9 +731,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     } finally {
       Utilities.clearMapRedWork(job);
       try {
-        FileSystem fs = jobScratchDir.getFileSystem(job);
-        fs.delete(jobScratchDir, true);
-        fs.delete(emptyScratchDir, true);
+        emptyScratchDir.getFileSystem(job).delete(emptyScratchDir, true);
         if (returnVal != 0 && rj != null) {
           rj.killJob();
         }

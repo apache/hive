@@ -39,6 +39,10 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
+import org.apache.hadoop.mapred.OutputCommitter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
 /**
  * Implemention of shims against Hadoop 0.20.0.
@@ -332,5 +336,26 @@ public class Hadoop20Shims implements HadoopShims {
 
   public void setFloatConf(Configuration conf, String varName, float val) {
     conf.setFloat(varName, val);
+  }
+
+  public static class NullOutputCommitter extends OutputCommitter {
+    public void setupJob(JobContext jobContext) { }
+    public void cleanupJob(JobContext jobContext) { }
+
+    public void setupTask(TaskAttemptContext taskContext) { }
+    public boolean needsTaskCommit(TaskAttemptContext taskContext) {
+      return false;
+    }
+    public void commitTask(TaskAttemptContext taskContext) { }
+    public void abortTask(TaskAttemptContext taskContext) { }
+  }
+
+  public void setNullOutputFormat(JobConf conf) {
+    conf.setOutputFormat(NullOutputFormat.class);
+    conf.setOutputCommitter(Hadoop20Shims.NullOutputCommitter.class);
+
+    // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
   }
 }

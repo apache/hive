@@ -28,6 +28,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
 import java.io.IOException;
 
@@ -50,7 +51,7 @@ public class Hadoop17Shims implements HadoopShims {
   public boolean isJobPreparing(RunningJob job) throws IOException {
     return false;
   }
-  
+
   public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
     throws IOException {
     fmt.validateInput(conf);
@@ -100,7 +101,7 @@ public class Hadoop17Shims implements HadoopShims {
   public int compareText(Text a, Text b) {
     return a.compareTo(b);
   }
-  
+
   @Override
   public long getAccessTime(FileStatus file) {
     return -1;
@@ -113,7 +114,7 @@ public class Hadoop17Shims implements HadoopShims {
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
   }
-  
+
   @Override
   public String [] getTaskJobIDs(TaskCompletionEvent t) {
     return null;
@@ -121,5 +122,9 @@ public class Hadoop17Shims implements HadoopShims {
 
   public void setFloatConf(Configuration conf, String varName, float val) {
     conf.set(varName, Float.toString(val));
+  }
+
+  public void setNullOutputFormat(JobConf conf) {
+    conf.setOutputFormat(NullOutputFormat.class);
   }
 }

@@ -33,6 +33,10 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
+import org.apache.hadoop.mapred.OutputCommitter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -61,7 +65,7 @@ public class Hadoop19Shims implements HadoopShims {
     throws IOException {
     // gone in 0.18+
   }
-  
+
   public boolean isJobPreparing(RunningJob job) throws IOException {
     return job.getJobState() == JobStatus.PREP;
   }
@@ -129,8 +133,8 @@ public class Hadoop19Shims implements HadoopShims {
 
   /**
    * MultiFileShim code here
-   * 
-   * 
+   *
+   *
    */
   public abstract static class CombineFileInputFormatShim<K, V> extends
       MultiFileInputFormat<K, V> implements
@@ -139,7 +143,7 @@ public class Hadoop19Shims implements HadoopShims {
     /**
      * gets the input paths from static method in parent class. Same code in the
      * hadoop20shim, adapted for @link{MultiFileInputFormat}
-     * 
+     *
      * @param conf
      * @return Path[] of all files to be processed.
      */
@@ -161,7 +165,7 @@ public class Hadoop19Shims implements HadoopShims {
 
     /**
      * Not supported by MultiFileInputFormat so it doesn't do anything
-     * 
+     *
      * @param conf
      * @param filters
      */
@@ -213,7 +217,7 @@ public class Hadoop19Shims implements HadoopShims {
     /**
      * tries to guesstimate the optimal number of splits. We just calculate the
      * total size of the job and divide it by the block size.
-     * 
+     *
      * @param job
      * @param numSplits
      * @return
@@ -372,7 +376,7 @@ public class Hadoop19Shims implements HadoopShims {
 
   /**
    * InputSplitShim
-   * 
+   *
    */
   public static class InputSplitShim // extends MultiFileSplit
       implements HadoopShims.InputSplitShim {
@@ -390,7 +394,7 @@ public class Hadoop19Shims implements HadoopShims {
 
     /**
      * It encapsulate a set of files
-     * 
+     *
      * @param job
      * @param old
      * @throws IOException
@@ -479,5 +483,27 @@ public class Hadoop19Shims implements HadoopShims {
 
   public void setFloatConf(Configuration conf, String varName, float val) {
     conf.set(varName, Float.toString(val));
+  }
+
+  public static class NullOutputCommitter extends OutputCommitter {
+    public void setupJob(JobContext jobContext) { }
+    public void cleanupJob(JobContext jobContext) { }
+
+    public void setupTask(TaskAttemptContext taskContext) { }
+    public boolean needsTaskCommit(TaskAttemptContext taskContext) {
+      return false;
+    }
+    public void commitTask(TaskAttemptContext taskContext) { }
+    public void abortTask(TaskAttemptContext taskContext) { }
+  }
+
+  public void setNullOutputFormat(JobConf conf) {
+    conf.setOutputFormat(NullOutputFormat.class);
+    conf.setOutputCommitter(Hadoop19Shims.NullOutputCommitter.class);
+
+
+    // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
   }
 }

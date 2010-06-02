@@ -30,6 +30,7 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.lib.NullOutputFormat;
 
 import java.io.IOException;
 
@@ -104,11 +105,11 @@ public class Hadoop18Shims implements HadoopShims {
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
     return null;
   }
-  
+
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
   }
-  
+
   String [] ret = new String[2];
   @Override
   public String [] getTaskJobIDs(TaskCompletionEvent t) {
@@ -117,7 +118,7 @@ public class Hadoop18Shims implements HadoopShims {
     ret[1] = tid.getJobID().toString();
     return ret;
   }
-  
+
   @Override
   public long getAccessTime(FileStatus file) {
     return -1;
@@ -125,5 +126,9 @@ public class Hadoop18Shims implements HadoopShims {
 
   public void setFloatConf(Configuration conf, String varName, float val) {
     conf.set(varName, Float.toString(val));
+  }
+
+  public void setNullOutputFormat(JobConf conf) {
+    conf.setOutputFormat(NullOutputFormat.class);
   }
 }

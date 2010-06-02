@@ -193,9 +193,12 @@ Trunk -  Unreleased
     HIVE-1349. Do not pull counters of non initialized jobs.
     (Dmytro Molkov via Ning Zhang)
 
-    HIVE-1198. When checkstyle is activated for Hive in Eclipse environment, 
+    HIVE-1198. When checkstyle is activated for Hive in Eclipse environment,
     it shows all checkstyle problems as errors.
     (Arvind Prabhakar via Ning Zhang)
+
+    HIVE-1355. Hive should use NullOutputFormat for hadoop jobs
+    (Joydeep Sen Sarma via namit)
 
   OPTIMIZATIONS
 
@@ -474,7 +477,7 @@ Trunk -  Unreleased
     (He Yongqiang via namit)
 
     HIVE-1377. getPartitionDescFromPath() in CombineHiveInputFormat should
-    handle matching by path	
+    handle matching by path
     (Paul Yang via Ning Zhang)
 
 Release 0.5.0 -  Unreleased
