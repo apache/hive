@@ -115,12 +115,24 @@ DROP TABLE hbase_table_6;
 CREATE TABLE hbase_table_6(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
-"hbase.columns.mapping" = "cf:"
+"hbase.columns.mapping" = ":key,cf:"
 );
 INSERT OVERWRITE TABLE hbase_table_6 SELECT key, map(value, key) FROM src
 WHERE key=98 OR key=100;
 
 SELECT * FROM hbase_table_6 ORDER BY key;
+
+DROP TABLE hbase_table_7;
+CREATE TABLE hbase_table_7(value map<string,string>, key int) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "cf:,:key"
+);
+INSERT OVERWRITE TABLE hbase_table_7 
+SELECT map(value, key, upper(value), key+1), key FROM src
+WHERE key=98 OR key=100;
+
+SELECT * FROM hbase_table_7 ORDER BY key;
 
 DROP TABLE hbase_table_1;
 DROP TABLE hbase_table_2;
@@ -128,5 +140,6 @@ DROP TABLE hbase_table_3;
 DROP TABLE hbase_table_4;
 DROP TABLE hbase_table_5;
 DROP TABLE hbase_table_6;
+DROP TABLE hbase_table_7;
 DROP TABLE empty_hbase_table;
 DROP TABLE empty_normal_table;

@@ -145,7 +145,7 @@ public class TestLazyHBaseObject extends TestCase {
     Text nullSequence = new Text("\\N");
         
     List<String> hbaseColumnNames = 
-      Arrays.asList(new String[]{"cfa:a", "cfa:b", "cfb:c", "cfb:d"});
+      Arrays.asList(new String[]{":key", "cfa:a", "cfa:b", "cfb:c", "cfb:d"});
         
     ObjectInspector oi = LazyFactory.createLazyStructInspector(fieldNames,
       fieldTypeInfos, new byte[] {' ', ':', '='},
@@ -223,7 +223,7 @@ public class TestLazyHBaseObject extends TestCase {
     Text nullSequence = new Text("\\N");
         
     List<String> hbaseColumnNames = 
-      Arrays.asList(new String[]{"cfa:a", "cfa:b", "cfb:", "cfc:d"});
+      Arrays.asList(new String[]{":key", "cfa:a", "cfa:b", "cfb:", "cfc:d"});
         
     ObjectInspector oi = LazyFactory.createLazyStructInspector(
       fieldNames,

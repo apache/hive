@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -133,8 +134,17 @@ public class HBaseStorageHandler
       if (hbaseColumnStr == null) {
         throw new MetaException("No hbase.columns.mapping defined in Serde.");
       }
-      String [] hbaseColumns = hbaseColumnStr.split(",");
+      List<String> hbaseColumns =
+        HBaseSerDe.parseColumnMapping(hbaseColumnStr);
+      int iKeyFirst = hbaseColumns.indexOf(HBaseSerDe.HBASE_KEY_COL);
+      int iKeyLast = hbaseColumns.lastIndexOf(HBaseSerDe.HBASE_KEY_COL);
+      if (iKeyFirst != iKeyLast) {
+        throw new MetaException("Multiple key columns defined in hbase.columns.mapping.");
+      }
       for (String hbaseColumn : hbaseColumns) {
+        if (HBaseSerDe.isSpecialColumn(hbaseColumn)) {
+          continue;
+        }
         int idx = hbaseColumn.indexOf(":");
         if (idx < 0) {
           throw new MetaException(

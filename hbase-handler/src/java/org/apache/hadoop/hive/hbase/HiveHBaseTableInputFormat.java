@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -70,51 +71,40 @@ public class HiveHBaseTableInputFormat<K extends ImmutableBytesWritable, V exten
         new HBaseConfiguration(job),
         Bytes.toBytes(hbaseTableName)));
     
-    // because the hbase key is mapped to the first column in its hive table,
-    // we add the "_key" before the columnMapping that we can use the
-    // hive column id to find the exact hbase column one-for-one.
-    String columnMapping = "_key," + hbaseSplit.getColumnsMapping();
-    String[] columns = columnMapping.split(",");   
+    String columnMapping = hbaseSplit.getColumnsMapping();
+    List<String> columns = HBaseSerDe.parseColumnMapping(columnMapping);
     List<Integer> readColIDs =
       ColumnProjectionUtils.getReadColumnIDs(job);
  
-    if (columns.length < readColIDs.size()) {
+    if (columns.size() < readColIDs.size()) {
       throw new IOException(
         "Cannot read more columns than the given table contains.");
     }
-    
-    byte [][] scanColumns;
-    if (readColIDs.size() == 0) {
-      scanColumns = new byte[columns.length - 1][];
-      for (int i=0; i < columns.length - 1; i++) {
-        scanColumns[i] = Bytes.toBytes(columns[i + 1]);
-      }
-    } else {
-      Collections.sort(readColIDs);
-      
-      if (readColIDs.get(0) == 0) {
-        // sql like "select key from hbasetable;"
-        // As HBase can not scan a hbase table while just getting its keys,
-        // so we will scan out the second column of the hive table
-        // but ignore it.
-        if (readColIDs.size() == 1) {
-          scanColumns = new byte[1][];
-          scanColumns[0] = Bytes.toBytes(columns[1]);
-        } else {
-          scanColumns = new byte[readColIDs.size() - 1][];
-          for (int i=0; i<scanColumns.length; i++) {
-            scanColumns[i] = Bytes.toBytes(columns[readColIDs.get(i + 1)]);
-          }
+
+    List<byte []> scanColumns = new ArrayList<byte []>();
+    boolean addAll = (readColIDs.size() == 0);
+    if (!addAll) {
+      for (int iColumn : readColIDs) {
+        String column = columns.get(iColumn);
+        if (HBaseSerDe.isSpecialColumn(column)) {
+          continue;
         }
-      } else {
-        scanColumns = new byte[readColIDs.size()][];
-        for (int i=0; i<scanColumns.length; i++) {
-          scanColumns[i] = Bytes.toBytes(columns[readColIDs.get(i)]);
+        scanColumns.add(Bytes.toBytes(column));
+      }
+    }
+    if (scanColumns.isEmpty()) {
+      for (String column : columns) {
+        if (HBaseSerDe.isSpecialColumn(column)) {
+          continue;
+        }
+        scanColumns.add(Bytes.toBytes(column));
+        if (!addAll) {
+          break;
         }
       }
     }
     
-    hbaseInputFormat.setScanColumns(scanColumns);
+    hbaseInputFormat.setScanColumns(scanColumns.toArray(new byte[0][]));
     
     return (RecordReader<K, V>)
       hbaseInputFormat.getRecordReader(hbaseSplit.getSplit(), job, reporter);
@@ -131,14 +121,19 @@ public class HiveHBaseTableInputFormat<K extends ImmutableBytesWritable, V exten
     if (hbaseSchemaMapping == null) {
       throw new IOException("hbase.columns.mapping required for HBase Table.");
     }
-    
-    String [] columns = hbaseSchemaMapping.split(",");
-    byte [][] inputColumns = new byte[columns.length][];
-    for (int i=0; i < columns.length; i++) {
-      inputColumns[i] = Bytes.toBytes(columns[i]);
+
+    // REVIEW:  are we supposed to be applying the getReadColumnIDs
+    // same as in getRecordReader?
+    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseSchemaMapping);
+    List<byte []> inputColumns = new ArrayList<byte []>();
+    for (String column : columns) {
+      if (HBaseSerDe.isSpecialColumn(column)) {
+        continue;
+      }
+      inputColumns.add(Bytes.toBytes(column));
     }
     
-    hbaseInputFormat.setScanColumns(inputColumns);
+    hbaseInputFormat.setScanColumns(inputColumns.toArray(new byte[0][]));
     
     InputSplit[] splits = hbaseInputFormat.getSplits(
       job, numSplits <= 0 ? 1 : numSplits);

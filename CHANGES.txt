@@ -203,6 +203,9 @@ Trunk -  Unreleased
     HIVE-1372. New algorithm for variance() UDAF
     (Mayank Lahiri via jvs)
 
+    HIVE-1228. allow HBase key column to be anywhere in Hive table
+    (John Sichi via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

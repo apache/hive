@@ -71,16 +71,14 @@ public class LazyHBaseRow extends LazyStruct {
         ((StructObjectInspector)getInspector()).getAllStructFieldRefs();
       setFields(new LazyObject[fieldRefs.size()]);
       for (int i = 0; i < getFields().length; i++) {
-        if (i > 0) {
-          String hbaseColumn = hbaseColumns.get(i - 1);
-          if (hbaseColumn.endsWith(":")) {
-            // a column family
-            getFields()[i] = 
-              new LazyHBaseCellMap(
-                (LazyMapObjectInspector)
-                fieldRefs.get(i).getFieldObjectInspector());
-            continue;
-          }
+        String hbaseColumn = hbaseColumns.get(i);
+        if (hbaseColumn.endsWith(":")) {
+          // a column family
+          getFields()[i] = 
+            new LazyHBaseCellMap(
+              (LazyMapObjectInspector)
+              fieldRefs.get(i).getFieldObjectInspector());
+          continue;
         }
         
         getFields()[i] = LazyFactory.createLazyObject(
@@ -122,14 +120,13 @@ public class LazyHBaseRow extends LazyStruct {
     if (!getFieldInited()[fieldID]) {
       getFieldInited()[fieldID] = true;
       
-      ByteArrayRef ref = new ByteArrayRef();
+      ByteArrayRef ref = null;
       
-      if (fieldID == 0) {
-        // the key
+      String columnName = hbaseColumns.get(fieldID);
+      if (columnName.equals(HBaseSerDe.HBASE_KEY_COL)) {
+        ref = new ByteArrayRef();
         ref.setData(rowResult.getRow());
-        getFields()[fieldID].init(ref, 0, ref.getData().length);
       } else {
-        String columnName = hbaseColumns.get(fieldID - 1);
         if (columnName.endsWith(":")) {
           // it is a column family
           ((LazyHBaseCellMap) getFields()[fieldID]).init(
@@ -137,12 +134,15 @@ public class LazyHBaseRow extends LazyStruct {
         } else {
           // it is a column
           if (rowResult.containsKey(columnName)) {
+            ref = new ByteArrayRef();
             ref.setData(rowResult.get(columnName).getValue());
-            getFields()[fieldID].init(ref, 0, ref.getData().length);
           } else {
             return null;
           }
         }
+      }
+      if (ref != null) {
+        getFields()[fieldID].init(ref, 0, ref.getData().length);
       }
     }
     return getFields()[fieldID].getObject();
