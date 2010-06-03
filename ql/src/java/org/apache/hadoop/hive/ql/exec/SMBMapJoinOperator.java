@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
+import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -139,7 +139,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
           .get(entry.getKey());
       // All the operators need to be initialized before process
       forwardOp.setExecContext(this.getExecContext());
-      forwardOp.initialize(this.getExecContext().jc, new ObjectInspector[] {entry.getValue()
+      forwardOp.initialize(this.getExecContext().getJc(), new ObjectInspector[] {entry.getValue()
           .getOutputObjectInspector()});
       l4j.info("fetchoperator for " + entry.getKey() + " initialized");
     }
@@ -148,20 +148,21 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   @Override
   public void processOp(Object row, int tag) throws HiveException {
 
-    if (this.getExecContext().inputFileChanged) {
-      if(firstFetchHappened) {
-        //we need to first join and flush out data left by the previous file.
-        joinFinalLeftData();
+    if (tag == posBigTable) {
+      if (this.getExecContext().inputFileChanged()) {
+        if (firstFetchHappened) {
+          // we need to first join and flush out data left by the previous file.
+          joinFinalLeftData();
+        }
+        // set up the fetch operator for the new input file.
+        for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
+          String alias = entry.getKey();
+          FetchOperator fetchOp = entry.getValue();
+          fetchOp.clearFetchContext();
+          setUpFetchOpContext(fetchOp, alias);
+        }
+        firstFetchHappened = false;
       }
-      //set up the fetch operator for the new input file.
-      for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-        String alias = entry.getKey();
-        FetchOperator fetchOp = entry.getValue();
-        fetchOp.clearFetchContext();
-        setUpFetchOpContext(fetchOp, alias);
-      }
-      this.getExecContext().inputFileChanged = false;
-      firstFetchHappened = false;
     }
 
     if (!firstFetchHappened) {
@@ -423,7 +424,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   private void setUpFetchOpContext(FetchOperator fetchOp, String alias) {
-    String currentInputFile = this.getExecContext().currentInputFile;
+    String currentInputFile = this.getExecContext().getCurrentInputFile();
     BucketMapJoinContext bucketMatcherCxt = this.localWork
         .getBucketMapjoinContext();
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt
@@ -479,7 +480,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
     closeCalled = true;
 
-    if ((this.getExecContext() != null && this.getExecContext().inputFileChanged)
+    if ((this.getExecContext() != null && this.getExecContext().inputFileChanged())
         || !firstFetchHappened) {
       //set up the fetch operator for the new input file.
       for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
@@ -488,7 +489,6 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         fetchOp.clearFetchContext();
         setUpFetchOpContext(fetchOp, alias);
       }
-      this.getExecContext().inputFileChanged = false;
       firstFetchHappened = true;
       for (Byte t : order) {
         if(t != (byte)posBigTable) {
@@ -519,6 +519,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
   }
 
+  @Override
   protected boolean allInitializedParentsAreClosed() {
     return true;
   }

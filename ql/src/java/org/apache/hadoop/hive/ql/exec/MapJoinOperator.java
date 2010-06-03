@@ -160,6 +160,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
+    
+    if (tag == posBigTable) {
+      this.getExecContext().processInputFileChangeForLocalWork();
+    }
+    
     try {
       // get alias
       alias = (byte) tag;

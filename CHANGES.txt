@@ -208,6 +208,9 @@ Trunk -  Unreleased
 
   OPTIMIZATIONS
 
+    HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
+    (Ning Zhang via namit)
+
   BUG FIXES
 
     HIVE-1047. Merge tasks in GenMRUnion1
