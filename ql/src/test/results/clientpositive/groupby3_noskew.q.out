@@ -185,7 +185,7 @@ POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-130091.0	260.182	256.10355987055016	98.0	0.0	142.92680950752379	143.06995106518903	20428.072875999995	20469.010897795586
+130091.0	260.182	256.10355987055016	98.0	0.0	142.92680950752379	143.06995106518903	20428.07287599999	20469.010897795582
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE dest1

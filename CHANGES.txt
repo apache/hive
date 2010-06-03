@@ -200,6 +200,9 @@ Trunk -  Unreleased
     HIVE-1355. Hive should use NullOutputFormat for hadoop jobs
     (Joydeep Sen Sarma via namit)
 
+    HIVE-1372. New algorithm for variance() UDAF
+    (Mayank Lahiri via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

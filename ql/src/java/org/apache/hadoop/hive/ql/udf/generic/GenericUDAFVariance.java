@@ -81,16 +81,20 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
   }
 
   /**
-   * Evaluate the variance using the following modification of the formula from
-   * The Art of Computer Programming, vol. 2, p. 232:
+   * Evaluate the variance using the algorithm described by Chan, Golub, and LeVeque in
+   * "Algorithms for computing the sample variance: analysis and recommendations"
+   * The American Statistician, 37 (1983) pp. 242--247.
    * 
-   * variance = variance1 + variance2 + n*alpha^2 + m*betha^2
+   * variance = variance1 + variance2 + n/(m*(m+n)) * pow(((m/n)*t1 - t2),2)
    * 
    * where: - variance is sum[x-avg^2] (this is actually n times the variance)
    * and is updated at every step. - n is the count of elements in chunk1 - m is
-   * the count of elements in chunk2 - alpha = avg-a - betha = avg-b - avg is
-   * the the average of all elements from both chunks - a is the average of
-   * elements in chunk1 - b is the average of elements in chunk2
+   * the count of elements in chunk2 - t1 = sum of elements in chunk1, t2 = 
+   * sum of elements in chunk2.
+   *
+   * This algorithm was proven to be numerically stable by J.L. Barlow in
+   * "Error analysis of a pairwise summation algorithm to compute sample variance"
+   * Numer. Math, 58 (1991) pp. 583--590
    * 
    */
   public static class GenericUDAFVarianceEvaluator extends GenericUDAFEvaluator {
@@ -197,20 +201,12 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
         StdAgg myagg = (StdAgg) agg;
         try {
           double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
-
-          if (myagg.count != 0) { // if count==0 => the variance is going to be
-            // 0
-            // after 1 iteration
-            double alpha = (myagg.sum + v) / (myagg.count + 1) - myagg.sum
-                / myagg.count;
-            double betha = (myagg.sum + v) / (myagg.count + 1) - v;
-
-            // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
-            // => variance += n*alpha^2 + betha^2
-            myagg.variance += myagg.count * alpha * alpha + betha * betha;
-          }
           myagg.count++;
           myagg.sum += v;
+          if(myagg.count > 1) {
+            double t = myagg.count*v - myagg.sum;
+            myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+          }
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
@@ -257,16 +253,11 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
           double a = myagg.sum;
           double b = sumFieldOI.get(partialSum);
 
-          double alpha = (a + b) / (n + m) - a / n;
-          double betha = (a + b) / (n + m) - b / m;
-
-          // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
-          myagg.variance += sumFieldOI.get(partialVariance)
-              + (n * alpha * alpha + m * betha * betha);
           myagg.count += m;
           myagg.sum += b;
+          double t = (m/(double)n)*a - b;
+          myagg.variance += sumFieldOI.get(partialVariance) + ((n/(double)m)/((double)n+m)) * t * t;
         }
-
       }
     }
 
