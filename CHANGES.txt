@@ -489,6 +489,10 @@ Trunk -  Unreleased
     handle matching by path
     (Paul Yang via Ning Zhang)
 
+    HIVE-1388. combinehiveinputformat does not work if files are of different
+    types
+    (Namit Jain via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
