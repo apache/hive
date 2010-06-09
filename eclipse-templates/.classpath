@@ -51,5 +51,9 @@
 	<classpathentry kind="src" path="shims/src/common/java"/>
     <classpathentry kind="src" path="hwi/src/java"/>
 	<classpathentry kind="src" path="hwi/src/test"/>
+    <classpathentry kind="lib" path="build/dist/lib/commons-collections-3.2.1.jar"/>
+    <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-1.2.2.jar"/>
+    <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-1.0.2.jar"/>
+    <classpathentry kind="lib" path="build/dist/lib/commons-pool-1.2.jar"/>
     <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>
