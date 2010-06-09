@@ -46,6 +46,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, "ALTERTABLE_ADDPARTS");
     commandType.put(HiveParser.TOK_ALTERTABLE_TOUCH, "ALTERTABLE_TOUCH");
+    commandType.put(HiveParser.TOK_ALTERTABLE_ARCHIVE, "ALTERTABLE_ARCHIVE");
+    commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, "ALTERTABLE_UNARCHIVE");
     commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, "ALTERTABLE_PROPERTIES");
     commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, "ALTERTABLE_SERIALIZER");
     commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, "ALTERTABLE_SERDEPROPERTIES");
@@ -98,6 +100,8 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_FILEFORMAT:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_ALTERTABLE_TOUCH:
+      case HiveParser.TOK_ALTERTABLE_ARCHIVE:
+      case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATEFUNCTION:
       case HiveParser.TOK_DROPFUNCTION:

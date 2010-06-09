@@ -3253,6 +3253,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_tab = dest_part.getTable();
 
       dest_path = dest_part.getPath()[0];
+      if ("har".equalsIgnoreCase(dest_path.toUri().getScheme())) {
+        throw new SemanticException(ErrorMsg.OVERWRITE_ARCHIVED_PART
+            .getMsg());
+      }
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 

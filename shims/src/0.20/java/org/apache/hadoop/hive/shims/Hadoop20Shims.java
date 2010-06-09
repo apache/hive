@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.shims;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.io.DataOutput;
-import java.io.DataInput;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -29,23 +31,25 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
-import org.apache.hadoop.mapred.OutputCommitter;
-import org.apache.hadoop.mapred.TaskAttemptContext;
-import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.tools.HadoopArchives;
+import org.apache.hadoop.util.ToolRunner;
 
 /**
  * Implemention of shims against Hadoop 0.20.0.
@@ -377,15 +381,50 @@ public class Hadoop20Shims implements HadoopShims {
     conf.setFloat(varName, val);
   }
 
+  @Override
+  public int createHadoopArchive(Configuration conf, Path sourceDir, Path destDir,
+      String archiveName) throws Exception {
+
+    HadoopArchives har = new HadoopArchives(conf);
+    List<String> args = new ArrayList<String>();
+
+    if (conf.get("hive.archive.har.parentdir.settable") == null) {
+      throw new RuntimeException("hive.archive.har.parentdir.settable is not set");
+    }
+    boolean parentSettable =
+      conf.getBoolean("hive.archive.har.parentdir.settable", false);
+
+    if (parentSettable) {
+      args.add("-archiveName");
+      args.add(archiveName);
+      args.add("-p");
+      args.add(sourceDir.toString());
+      args.add(destDir.toString());
+    } else {
+      args.add("-archiveName");
+      args.add(archiveName);
+      args.add(sourceDir.toString());
+      args.add(destDir.toString());
+    }
+
+    return ToolRunner.run(har, args.toArray(new String[0]));
+  }
+
   public static class NullOutputCommitter extends OutputCommitter {
+    @Override
     public void setupJob(JobContext jobContext) { }
+    @Override
     public void cleanupJob(JobContext jobContext) { }
 
+    @Override
     public void setupTask(TaskAttemptContext taskContext) { }
+    @Override
     public boolean needsTaskCommit(TaskAttemptContext taskContext) {
       return false;
     }
+    @Override
     public void commitTask(TaskAttemptContext taskContext) { }
+    @Override
     public void abortTask(TaskAttemptContext taskContext) { }
   }
 

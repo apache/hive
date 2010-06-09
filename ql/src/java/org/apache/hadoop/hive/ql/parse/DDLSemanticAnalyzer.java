@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -32,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -40,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
@@ -51,7 +56,6 @@ import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TouchDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -64,6 +68,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.DDLSemanticAnalyzer");
   public static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
+
+  public static final Set<String> reservedPartitionValues = new HashSet<String>();
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, Constants.BOOLEAN_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TINYINT, Constants.TINYINT_TYPE_NAME);
@@ -89,6 +95,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
+    // Partition can't have this name
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
+    // Partition value can't end in this suffix
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
   }
 
   @Override
@@ -121,6 +133,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableRename(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_TOUCH) {
       analyzeAlterTableTouch(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ARCHIVE) {
+      analyzeAlterTableArchive(ast, false);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UNARCHIVE) {
+      analyzeAlterTableArchive(ast, true);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS) {
       analyzeAlterTableModifyCols(ast, AlterTableTypes.ADDCOLS);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS) {
@@ -551,6 +567,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_PARTSPEC:
         if (currentPart != null) {
+          validatePartitionValues(currentPart);
           AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
               MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, currentPart,
               currentLocation, ifNotExists);
@@ -572,6 +589,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // add the last one
     if (currentPart != null) {
+      validatePartitionValues(currentPart);
       AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
           MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, currentPart,
           currentLocation, ifNotExists);
@@ -599,18 +617,48 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
 
     if (partSpecs.size() == 0) {
-      TouchDesc touchDesc = new TouchDesc(
-          MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, null);
+      AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
+          MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, null,
+          AlterTableDesc.AlterTableTypes.TOUCH);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           touchDesc), conf));
     } else {
       for (Map<String, String> partSpec : partSpecs) {
-        TouchDesc touchDesc = new TouchDesc(
-            MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, partSpec);
+        AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
+            MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, partSpec,
+            AlterTableDesc.AlterTableTypes.TOUCH);
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             touchDesc), conf));
       }
     }
+  }
+
+  private void analyzeAlterTableArchive(CommonTree ast, boolean isUnArchive)
+      throws SemanticException {
+
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVEARCHIVEENABLED)) {
+      throw new SemanticException(ErrorMsg.ARCHIVE_METHODS_DISABLED.getMsg());
+
+    }
+    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    // partition name to value
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    if (partSpecs.size() > 1 ) {
+      throw new SemanticException(isUnArchive ?
+          ErrorMsg.UNARCHIVE_ON_MULI_PARTS.getMsg() :
+          ErrorMsg.ARCHIVE_ON_MULI_PARTS.getMsg());
+    }
+    if (partSpecs.size() == 0) {
+      throw new SemanticException(ErrorMsg.ARCHIVE_ON_TABLE.getMsg());
+    }
+
+    Map<String,String> partSpec = partSpecs.get(0);
+      AlterTableSimpleDesc archiveDesc = new AlterTableSimpleDesc(
+          MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, partSpec,
+          (isUnArchive ? AlterTableTypes.UNARCHIVE : AlterTableTypes.ARCHIVE));
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+          archiveDesc), conf));
+
   }
 
   /**
@@ -666,5 +714,26 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return partSpecs;
+  }
+
+  /**
+   * Certain partition values are are used by hive. e.g. the default partition
+   * in dynamic partitioning and the intermediate partition values used in the
+   * archiving process. Naturally, prohibit the user from creating partitions
+   * with these reserved values. The check that this function is more
+   * restrictive than the actual limitation, but it's simpler. Should be okay
+   * since the reserved names are fairly long and uncommon.
+   */
+  private void validatePartitionValues(Map<String, String> partSpec)
+      throws SemanticException {
+
+    for (Entry<String, String> e : partSpec.entrySet()) {
+      for (String s : reservedPartitionValues) {
+        if (e.getValue().contains(s)) {
+          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+              "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
+        }
+      }
+    }
   }
 }

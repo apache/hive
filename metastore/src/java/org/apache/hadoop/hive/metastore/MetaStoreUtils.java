@@ -834,6 +834,26 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
   }
 
+  public static boolean isArchived(
+      org.apache.hadoop.hive.metastore.api.Partition part) {
+    Map<String, String> params = part.getParameters();
+    if ("true".equalsIgnoreCase(params.get(Constants.IS_ARCHIVED))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static Path getOriginalLocation(
+      org.apache.hadoop.hive.metastore.api.Partition part) {
+    Map<String, String> params = part.getParameters();
+    assert(isArchived(part));
+    String originalLocation = params.get(Constants.ORIGINAL_LOCATION);
+    assert( originalLocation != null);
+
+    return new Path(originalLocation);
+  }
+
   public static boolean isNonNativeTable(Table table) {
     if (table == null) {
       return false;

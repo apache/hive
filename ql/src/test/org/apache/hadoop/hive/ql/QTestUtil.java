@@ -29,8 +29,10 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,6 +82,7 @@ public class QTestUtil {
   private final String outDir;
   private final String logDir;
   private final TreeMap<String, String> qMap;
+  private final Set<String> qSkipSet;
   private final LinkedList<String> srcTables;
 
   private ParseDriver pd;
@@ -173,6 +176,7 @@ public class QTestUtil {
     conf = new HiveConf(Driver.class);
     this.miniMr = miniMr;
     qMap = new TreeMap<String, String>();
+    qSkipSet = new HashSet<String>();
 
     if (miniMr) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
@@ -230,12 +234,44 @@ public class QTestUtil {
     DataInputStream dis = new DataInputStream(bis);
     StringBuilder qsb = new StringBuilder();
 
+    // Look for a hint to not run a test on some Hadoop versions
+    Pattern pattern = Pattern.compile("-- EXCLUDE_HADOOP_MAJOR_VERSIONS(.*)");
+
+
     // Read the entire query
+    boolean excludeQuery = false;
+    String hadoopVer = ShimLoader.getMajorVersion();
     while (dis.available() != 0) {
-      qsb.append(dis.readLine() + "\n");
+      String line = dis.readLine();
+
+      // While we are reading the lines, detect whether this query wants to be
+      // excluded from running because the Hadoop version is incorrect
+      Matcher matcher = pattern.matcher(line);
+      if (matcher.find()) {
+        String group = matcher.group();
+        int start = group.indexOf('(');
+        int end = group.indexOf(')');
+        assert end > start;
+        // versions might be something like '0.17, 0.19'
+        String versions = group.substring(start+1, end);
+
+        Set<String> excludedVersionSet = new HashSet<String>();
+        for (String s : versions.split("\\,")) {
+          s = s.trim();
+          excludedVersionSet.add(s);
+        }
+        if (excludedVersionSet.contains(hadoopVer)) {
+          excludeQuery = true;
+        }
+      }
+      qsb.append(line + "\n");
     }
     qMap.put(qf.getName(), qsb.toString());
-    
+    if(excludeQuery) {
+      System.out.println("Due to the Hadoop Version ("+ hadoopVer + "), " +
+          "adding query " + qf.getName() + " to the set of tests to skip");
+      qSkipSet.add(qf.getName());
+     }
     dis.close();
   }
 
@@ -504,6 +540,10 @@ public class QTestUtil {
     return cliDriver.processLine(qMap.get(tname));
   }
 
+  public boolean shouldBeSkipped(String tname) {
+    return qSkipSet.contains(tname);
+  }
+
   public void convertSequenceFileToTextFile() throws Exception {
     // Create an instance of hive in order to create the tables
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
@@ -745,6 +785,7 @@ public class QTestUtil {
 
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
+    assert(qMap.containsKey(tname));
 
     cmdArray = new String[] {
         "diff", "-a",
@@ -816,7 +857,7 @@ public class QTestUtil {
 
   /**
    * QTRunner: Runnable class for running a a single query file.
-   * 
+   *
    **/
   public static class QTRunner implements Runnable {
     private final QTestUtil qt;
@@ -845,7 +886,7 @@ public class QTestUtil {
   /**
    * executes a set of query files either in sequence or in parallel. Uses
    * QTestUtil to do so
-   * 
+   *
    * @param qfiles
    *          array of input query files containing arbitrary number of hive
    *          queries
@@ -855,7 +896,7 @@ public class QTestUtil {
    * @param mt
    *          whether to run in multithreaded mode or not
    * @return true if all the query files were executed successfully, else false
-   * 
+   *
    *         In multithreaded mode each query file is run in a separate thread.
    *         the caller has to arrange that different query files do not collide
    *         (in terms of destination tables)
@@ -923,7 +964,7 @@ public class QTestUtil {
     }
     return (!failed);
   }
-  
+
   public static void outputTestFailureHelpMessage() {
     System.err.println("See build/ql/tmp/hive.log, "
         + "or try \"ant test ... -Dtest.silent=false\" to get more logs.");

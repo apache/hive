@@ -97,7 +97,7 @@ public abstract class ShimLoader {
    * This is simply the first two components of the version number
    * (e.g "0.18" or "0.20")
    */
-  private static String getMajorVersion() {
+  public static String getMajorVersion() {
     String vers = VersionInfo.getVersion();
 
     String[] parts = vers.split("\\.");

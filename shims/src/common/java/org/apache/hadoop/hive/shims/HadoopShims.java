@@ -131,6 +131,8 @@ public interface HadoopShims {
    */
   String[] getTaskJobIDs(TaskCompletionEvent t);
 
+  int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
+      String archiveName) throws Exception;
   /**
    * Hive uses side effect files exclusively for it's output. It also manages
    * the setup/cleanup/commit of output from the hive client. As a result it does

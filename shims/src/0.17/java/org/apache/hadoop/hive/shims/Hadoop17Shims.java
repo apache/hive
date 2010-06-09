@@ -127,4 +127,11 @@ public class Hadoop17Shims implements HadoopShims {
   public void setNullOutputFormat(JobConf conf) {
     conf.setOutputFormat(NullOutputFormat.class);
   }
+  
+  @Override
+  public int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
+      String archiveName) throws Exception {
+    throw new RuntimeException("Not implemented in this Hadoop version");
+  }
+
 }

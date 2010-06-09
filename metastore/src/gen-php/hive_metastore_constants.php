@@ -10,6 +10,10 @@ $GLOBALS['hive_metastore_CONSTANTS'] = array();
 
 $GLOBALS['hive_metastore_CONSTANTS']['DDL_TIME'] = "transient_lastDdlTime";
 
+$GLOBALS['hive_metastore_CONSTANTS']['IS_ARCHIVED'] = "is_archived";
+
+$GLOBALS['hive_metastore_CONSTANTS']['ORIGINAL_LOCATION'] = "original_location";
+
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = "columns";
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMN_TYPES'] = "columns.types";

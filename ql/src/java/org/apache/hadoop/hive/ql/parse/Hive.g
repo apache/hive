@@ -95,6 +95,8 @@ TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_TOUCH;
+TOK_ALTERTABLE_ARCHIVE;
+TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_FILEFORMAT;
@@ -281,6 +283,8 @@ alterTableStatementSuffix
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
     | alterStatementSuffixTouch
+    | alterStatementSuffixArchive
+    | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
     | alterStatementSuffixFileFormat
@@ -333,6 +337,20 @@ alterStatementSuffixTouch
 @after { msgs.pop(); }
     : Identifier KW_TOUCH (partitionSpec)*
     -> ^(TOK_ALTERTABLE_TOUCH Identifier (partitionSpec)*)
+    ;
+
+alterStatementSuffixArchive
+@init { msgs.push("archive statement"); }
+@after { msgs.pop(); }
+    : Identifier KW_ARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_ARCHIVE Identifier (partitionSpec)*)
+    ;
+
+alterStatementSuffixUnArchive
+@init { msgs.push("unarchive statement"); }
+@after { msgs.pop(); }
+    : Identifier KW_UNARCHIVE (partitionSpec)*
+    -> ^(TOK_ALTERTABLE_UNARCHIVE Identifier (partitionSpec)*)
     ;
 
 partitionLocation
@@ -1625,6 +1643,8 @@ KW_RECORDWRITER: 'RECORDWRITER';
 KW_SEMI: 'SEMI';
 KW_LATERAL: 'LATERAL';
 KW_TOUCH: 'TOUCH';
+KW_ARCHIVE: 'ARCHIVE';
+KW_UNARCHIVE: 'UNARCHIVE';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

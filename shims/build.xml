@@ -18,8 +18,8 @@
 -->
 
 
-<!-- 
-Before you can run these subtargets directly, you need 
+<!--
+Before you can run these subtargets directly, you need
 to call at top-level: ant deploy-contrib compile-core-test
 -->
 <project name="shims" default="jar">
@@ -27,6 +27,7 @@ to call at top-level: ant deploy-contrib compile-core-test
 
   <path id="classpath">
     <pathelement location="${hadoop.jar}"/>
+    <pathelement location="${hadoop.tools.jar}"/>
     <pathelement location="${hadoop.test.jar}"/>
     <fileset dir="${hadoop.root}/lib">
       <include name="**/*.jar" />

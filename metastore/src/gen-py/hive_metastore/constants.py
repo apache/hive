@@ -9,6 +9,10 @@ from ttypes import *
 
 DDL_TIME = "transient_lastDdlTime"
 
+IS_ARCHIVED = "is_archived"
+
+ORIGINAL_LOCATION = "original_location"
+
 META_TABLE_COLUMNS = "columns"
 
 META_TABLE_COLUMN_TYPES = "columns.types"

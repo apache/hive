@@ -12,6 +12,10 @@ const hive_metastoreConstants g_hive_metastore_constants;
 hive_metastoreConstants::hive_metastoreConstants() {
   DDL_TIME = "transient_lastDdlTime";
 
+  IS_ARCHIVED = "is_archived";
+
+  ORIGINAL_LOCATION = "original_location";
+
   META_TABLE_COLUMNS = "columns";
 
   META_TABLE_COLUMN_TYPES = "columns.types";

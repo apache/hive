@@ -203,6 +203,7 @@
   <!-- the normal classpath -->
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
+    <pathelement location="${hadoop.tools.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>

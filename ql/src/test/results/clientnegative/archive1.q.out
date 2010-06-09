@@ -1,0 +1,33 @@
+PREHOOK: query: -- Tests trying to archive a partition twice.
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+CREATE TABLE srcpart_archived LIKE srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Tests trying to archive a partition twice.
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+CREATE TABLE srcpart_archived LIKE srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_archived
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_archived PARTITION (ds='2008-04-08', hr='12')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_archived PARTITION (ds='2008-04-08', hr='12')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+FAILED: Error in metadata: Specified partition is already archived
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

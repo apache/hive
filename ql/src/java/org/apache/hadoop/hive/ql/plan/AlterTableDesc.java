@@ -42,7 +42,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public static enum AlterTableTypes {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
-    TOUCH
+    TOUCH, ARCHIVE, UNARCHIVE,
   };
 
   AlterTableTypes op;

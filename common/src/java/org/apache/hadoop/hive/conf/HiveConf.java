@@ -124,9 +124,17 @@ public class HiveConf extends Configuration {
     // datastore. Once reloaded, the  this value is reset to false. Used for
     // testing only.
     METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false),
-
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
     METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", Integer.MAX_VALUE),
+    // Intermediate dir suffixes used for archiving. Not important what they
+    // are, as long as collisions are avoided
+    METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",
+        "_INTERMEDIATE_ORIGINAL"),
+    METASTORE_INT_ARCHIVED("hive.metastore.archive.intermediate.archived",
+        "_INTERMEDIATE_ARCHIVED"),
+    METASTORE_INT_EXTRACTED("hive.metastore.archive.intermediate.extracted",
+        "_INTERMEDIATE_EXTRACTED"),
+
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
 
@@ -238,6 +246,10 @@ public class HiveConf extends Configuration {
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
+
+    // For har files
+    HIVEARCHIVEENABLED("hive.archive.enabled", false),
+    HIVEHARPARENTDIRSETTABLE("hive.archive.har.parentdir.settable", false),
     ;
 
     public final String varname;

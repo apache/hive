@@ -485,6 +485,12 @@ public class Hadoop19Shims implements HadoopShims {
     conf.set(varName, Float.toString(val));
   }
 
+  @Override
+  public int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
+      String archiveName) throws Exception {
+    throw new RuntimeException("Not implemented in this Hadoop version");
+  }
+
   public static class NullOutputCommitter extends OutputCommitter {
     public void setupJob(JobContext jobContext) { }
     public void cleanupJob(JobContext jobContext) { }

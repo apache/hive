@@ -563,4 +563,24 @@
   <description>The default partition name in case the dynamic partition column value is null/empty string or anyother values that cannot be escaped. This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). The user has to be aware that the dynamic partition value should not contain this value to avoid confusions.</description>
 </property>
 
+<property>
+  <name>fs.har.impl</name>
+  <value>org.apache.hadoop.hive.shims.HiveHarFileSystem</value>
+  <description>The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop vers less than 0.20</description>
+</property>
+
+<property>
+  <name>hive.archive.enabled</name>
+  <value>false</value>
+  <description>Whether archiving operations are permitted</description>
+</property>
+
+<property>
+  <name>hive.archive.har.parentdir.settable</name>
+  <value>false</value>
+  <description>In new Hadoop versions, the parent directory must be set while 
+  creating a HAR. Because this functionality is hard to detect with just version 
+  numbers, this conf var needs to be set manually.</description>
+</property>
+
 </configuration>

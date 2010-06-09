@@ -1075,12 +1075,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Path partPath = null;
       Table tbl = null;
+      Partition part = null;
+      boolean isArchived = false;
+      Path archiveParentDir = null;
+
       try {
         ms.openTransaction();
-        Partition part = get_partition(db_name, tbl_name, part_vals);
+        part = get_partition(db_name, tbl_name, part_vals);
+
         if (part == null) {
           throw new NoSuchObjectException("Partition doesn't exist. "
               + part_vals);
+        }
+
+        isArchived = MetaStoreUtils.isArchived(part);
+        if (isArchived) {
+          archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
         }
         if (part.getSd() == null || part.getSd().getLocation() == null) {
           throw new MetaException("Partition metadata is corrupted");
@@ -1094,9 +1104,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && (partPath != null)) {
+        } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
           if (tbl != null && !isExternal(tbl)) {
-            wh.deleteDir(partPath, true);
+            // Archived partitions have har:/to_har_file as their location.
+            // The original directory was saved in params
+            if (isArchived) {
+              assert(archiveParentDir != null);
+              wh.deleteDir(archiveParentDir, true);
+            } else {
+              assert(partPath != null);
+              wh.deleteDir(partPath, true);
+            }
             // ok even if the data is not deleted
           }
         }

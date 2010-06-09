@@ -1,0 +1,195 @@
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-31_915_8404207959149265563/10000
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-31_915_8404207959149265563/10000
+48479881068
+PREHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-39_278_6500531861845897423/10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-39_278_6500531861845897423/10000
+48479881068
+PREHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_UNARCHIVE
+POSTHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_UNARCHIVE
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-45_152_7929745238260502728/10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-45_152_7929745238260502728/10000
+48479881068
+PREHOOK: query: CREATE TABLE harbucket(key INT) 
+PARTITIONED by (ds STRING)
+CLUSTERED BY (key) INTO 10 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE harbucket(key INT) 
+PARTITIONED by (ds STRING)
+CLUSTERED BY (key) INTO 10 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@harbucket
+PREHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@harbucket@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@harbucket@ds=1
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@harbucket@ds=1
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-55_224_4935516234179357829/10000
+POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@harbucket@ds=1
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-02-55_224_4935516234179357829/10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+0
+0
+0
+10
+20
+30
+PREHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@harbucket@ds=1
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-01_089_7613007639376060720/10000
+POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@harbucket@ds=1
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-01_089_7613007639376060720/10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+0
+0
+0
+10
+20
+30
+PREHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_UNARCHIVE
+POSTHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_UNARCHIVE
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@harbucket@ds=1
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-05_256_2444261282224863204/10000
+POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@harbucket@ds=1
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-05_256_2444261282224863204/10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+0
+0
+0
+10
+20
+30
+PREHOOK: query: DROP TABLE harbucket
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE harbucket
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@harbucket
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE old_name(key INT) 
+PARTITIONED by (ds STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE old_name(key INT) 
+PARTITIONED by (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@old_name
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@old_name@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@old_name@ds=1
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE old_name ARCHIVE PARTITION (ds='1')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: query: ALTER TABLE old_name ARCHIVE PARTITION (ds='1')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@old_name@ds=1
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-14_435_1169638822418513482/10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@old_name@ds=1
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-14_435_1169638822418513482/10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+48656137
+PREHOOK: query: ALTER TABLE old_name RENAME TO new_name
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: ALTER TABLE old_name RENAME TO new_name
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@old_name
+POSTHOOK: Output: default@new_name
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@new_name@ds=1
+PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-19_685_3074346646787769085/10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@new_name@ds=1
+POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-08_15-03-19_685_3074346646787769085/10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+NULL
+PREHOOK: query: DROP TABLE new_name
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE new_name
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@new_name
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

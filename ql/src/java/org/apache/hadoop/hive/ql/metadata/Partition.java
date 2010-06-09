@@ -51,7 +51,7 @@ import org.apache.thrift.transport.TMemoryBuffer;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table.
- * 
+ *
  * Please note that the ql code should always go through methods of this class to access the
  * metadata, instead of directly accessing org.apache.hadoop.hive.metastore.api.Partition.
  * This helps to isolate the metastore code and the ql code.
@@ -72,7 +72,7 @@ public class Partition implements Serializable {
   private Class<? extends HiveOutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private URI uri;
-  
+
   /**
    * @return The values of the partition
    * @see org.apache.hadoop.hive.metastore.api.Partition#getValues()
@@ -82,17 +82,17 @@ public class Partition implements Serializable {
   }
 
   /**
-   * Used only for serialization. 
+   * Used only for serialization.
    */
   public Partition() {
   }
-  
+
   /**
    * create an empty partition.
    * SemanticAnalyzer code requires that an empty partition when the table is not partitioned.
    */
   public Partition(Table tbl) throws HiveException {
-    org.apache.hadoop.hive.metastore.api.Partition tPart = 
+    org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
     tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
     initialize(tbl, tPart);
@@ -105,7 +105,7 @@ public class Partition implements Serializable {
 
   /**
    * Create partition object with the given info.
-   * 
+   *
    * @param tbl
    *          Table the partition will be in.
    * @param partSpec
@@ -158,7 +158,7 @@ public class Partition implements Serializable {
 
   /**
    * Initializes this object with the given variables
-   * 
+   *
    * @param table
    *          Table the partition belongs to
    * @param tPartition
@@ -265,7 +265,7 @@ public class Partition implements Serializable {
         clsName = tPartition.getSd().getInputFormat();
       }
       if (clsName == null) {
-        clsName = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName(); 
+        clsName = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
       }
       try {
         inputFormatClass = ((Class<? extends InputFormat>) Class.forName(clsName, true,
@@ -285,10 +285,10 @@ public class Partition implements Serializable {
         clsName = tPartition.getSd().getOutputFormat();
       }
       if (clsName == null) {
-        clsName = HiveSequenceFileOutputFormat.class.getName(); 
+        clsName = HiveSequenceFileOutputFormat.class.getName();
       }
       try {
-        Class<?> c = (Class<? extends HiveOutputFormat>)(Class.forName(clsName, true,
+        Class<?> c = (Class.forName(clsName, true,
             JavaUtils.getClassLoader()));
         // Replace FileOutputFormat for backward compatibility
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
@@ -312,7 +312,7 @@ public class Partition implements Serializable {
     /*
      * TODO: Keeping this code around for later use when we will support
      * sampling on tables which are not created with CLUSTERED INTO clause
-     * 
+     *
      * // read from table meta data int numBuckets = this.table.getNumBuckets();
      * if (numBuckets == -1) { // table meta data does not have bucket
      * information // check if file system has multiple buckets(files) in this
@@ -344,7 +344,9 @@ public class Partition implements Serializable {
   @SuppressWarnings("nls")
   public Path getBucketPath(int bucketNum) {
     try {
-      FileSystem fs = FileSystem.get(table.getDataLocation(), Hive.get()
+      // Previously, this got the filesystem of the Table, which could be
+      // different from the filesystem of the partition.
+      FileSystem fs = FileSystem.get(getPartitionPath().toUri(), Hive.get()
           .getConf());
       String pathPattern = getPartitionPath().toString();
       if (getBucketCount() > 0) {
@@ -445,7 +447,7 @@ public class Partition implements Serializable {
   public org.apache.hadoop.hive.metastore.api.Partition getTPartition() {
     return tPartition;
   }
-  
+
   /**
    * Should be only used by serialization.
    */
@@ -462,5 +464,11 @@ public class Partition implements Serializable {
     return tPartition.getSd().getCols();
   }
 
-  
+  public String getLocation() {
+    return tPartition.getSd().getLocation();
+  }
+
+  public void setLocation(String location) {
+    tPartition.getSd().setLocation(location);
+  }
 }

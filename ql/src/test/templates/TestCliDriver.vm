@@ -84,6 +84,10 @@ public class $className extends TestCase {
 
       qt.addFile("$qf.getCanonicalPath()");
 
+      if (qt.shouldBeSkipped("$fname")) {
+        return;
+      }
+      
       qt.cliInit("$fname");
       int ecode = qt.executeClient("$fname");
       if (ecode != 0) {

@@ -42,7 +42,7 @@ public class DDLWork implements Serializable {
   private ShowPartitionsDesc showPartsDesc;
   private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
-  private TouchDesc touchDesc;
+  private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
   private ShowTableStatusDesc showTblStatusDesc;
 
@@ -183,10 +183,10 @@ public class DDLWork implements Serializable {
    *          information about the table/partitions that we want to touch
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      TouchDesc touchDesc) {
+      AlterTableSimpleDesc simpleDesc) {
     this(inputs, outputs);
 
-    this.touchDesc = touchDesc;
+    this.alterTblSimpleDesc = simpleDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -383,18 +383,18 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return information about the table/partitionss we want to touch.
+   * @return information about the table/partitions we want to alter.
    */
-  public TouchDesc getTouchDesc() {
-    return touchDesc;
+  public AlterTableSimpleDesc getAlterTblSimpleDesc() {
+    return alterTblSimpleDesc;
   }
 
   /**
-   * @param touchDesc
-   *          information about the table/partitions we want to touch.
+   * @param desc
+   *          information about the table/partitions we want to alter.
    */
-  public void setTouchDesc(TouchDesc touchDesc) {
-    this.touchDesc = touchDesc;
+  public void setAlterTblSimpleDesc(AlterTableSimpleDesc desc) {
+    this.alterTblSimpleDesc = desc;
   }
 
   /**

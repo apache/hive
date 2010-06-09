@@ -246,6 +246,15 @@ service ThriftHiveMetastore extends fb303.FacebookService
                           throws(1: MetaException o1)                     
 }
 
+// For storing info about archived partitions in parameters
+
+// Whether the partition is archived
+const string IS_ARCHIVED = "is_archived",
+// The original location of the partition, before archiving. After archiving,
+// this directory will contain the archive. When the partition
+// is dropped, this directory will be deleted
+const string ORIGINAL_LOCATION = "original_location",
+
 // these should be needed only for backward compatibility with filestore
 const string META_TABLE_COLUMNS   = "columns",
 const string META_TABLE_COLUMN_TYPES   = "columns.types",
@@ -260,4 +269,6 @@ const string META_TABLE_PARTITION_COLUMNS = "partition_columns",
 const string FILE_INPUT_FORMAT    = "file.inputformat",
 const string FILE_OUTPUT_FORMAT   = "file.outputformat",
 const string META_TABLE_STORAGE   = "storage_handler",
+
+
 

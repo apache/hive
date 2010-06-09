@@ -15,6 +15,8 @@ class hive_metastoreConstants {
   hive_metastoreConstants();
 
   std::string DDL_TIME;
+  std::string IS_ARCHIVED;
+  std::string ORIGINAL_LOCATION;
   std::string META_TABLE_COLUMNS;
   std::string META_TABLE_COLUMN_TYPES;
   std::string BUCKET_FIELD_NAME;

@@ -149,7 +149,16 @@ public enum ErrorMsg {
   UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
       + "STRING instead."),
   CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
-  LOAD_INTO_NON_NATIVE("A non-native table cannot be used as target for LOAD");
+  LOAD_INTO_NON_NATIVE("A non-native table cannot be used as target for LOAD"),
+  OVERWRITE_ARCHIVED_PART("Cannot overwrite an archived partition. " +
+      "Unarchive before running this command."),
+  ARCHIVE_METHODS_DISABLED("Archiving methods are currently disabled. " +
+      "Please see the Hive wiki for more information about enabling archiving."),
+  ARCHIVE_ON_MULI_PARTS("ARCHIVE can only be run on a single partition"),
+  UNARCHIVE_ON_MULI_PARTS("ARCHIVE can only be run on a single partition"),
+  ARCHIVE_ON_TABLE("ARCHIVE can only be run on partitions"),
+  RESERVED_PART_VAL("Partition value contains a reserved substring"),
+      ;
 
   private String mesg;
   private String sqlState;
