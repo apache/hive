@@ -505,6 +505,9 @@ Trunk -  Unreleased
     HIVE-1407. Add hadoop-*-tools.jar to eclipse classpath
     (Carl Steinbach via Ning Zhang)
 
+    HIVE-1409. Use the tableSpec if partitions is not present
+    (Paul Yang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

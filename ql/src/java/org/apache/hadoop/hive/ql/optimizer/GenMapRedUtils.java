@@ -540,12 +540,7 @@ public final class GenMapRedUtils {
     parts.addAll(partsList.getUnknownPartns());
     PartitionDesc aliasPartnDesc = null;
     try {
-      if (parts.isEmpty()) {
-        if (!partsList.getDeniedPartns().isEmpty()) {
-          aliasPartnDesc = Utilities.getPartitionDesc(partsList
-              .getDeniedPartns().iterator().next());
-        }
-      } else {
+      if (!parts.isEmpty()) {
         aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
       }
     } catch (HiveException e) {
