@@ -3,6 +3,7 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-test.jar"/>
+	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-tools.jar"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@SERVLETAPIJAR@"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYJAR@"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>

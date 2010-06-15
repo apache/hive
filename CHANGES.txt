@@ -499,6 +499,9 @@ Trunk -  Unreleased
     HIVE-1373. Missing connection pool plugin in Eclipse classpath.
     (Vinithra via athusoo)
 
+    HIVE-1407. Add hadoop-*-tools.jar to eclipse classpath
+    (Carl Steinbach via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
