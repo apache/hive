@@ -102,9 +102,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [f, m]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [f, m]
       Path -> Partition:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,13 +117,13 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask
               name filter_join_breaktask
               partition_columns ds
               serialization.ddl struct filter_join_breaktask { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1270516061
+              transient_lastDdlTime 1276212172
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -134,13 +134,13 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask
                 name filter_join_breaktask
                 partition_columns ds
                 serialization.ddl struct filter_join_breaktask { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1270516061
+                transient_lastDdlTime 1276212172
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: filter_join_breaktask
             name: filter_join_breaktask
@@ -171,7 +171,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-46_959_4055362695656574819/10002
+                  directory: file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -226,10 +226,50 @@ STAGE PLANS:
                         type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-46_959_4055362695656574819/10002 [$INTNAME]
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [g]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [g]
+        file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002 [$INTNAME]
       Path -> Partition:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-46_959_4055362695656574819/10002 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+          Partition
+            base file name: ds=2008-04-08
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2008-04-08
+            properties:
+              bucket_count -1
+              columns key,value
+              columns.types int:string
+              file.inputformat org.apache.hadoop.mapred.TextInputFormat
+              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask
+              name filter_join_breaktask
+              partition_columns ds
+              serialization.ddl struct filter_join_breaktask { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1276212172
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,value
+                columns.types int:string
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask
+                name filter_join_breaktask
+                partition_columns ds
+                serialization.ddl struct filter_join_breaktask { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1276212172
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: filter_join_breaktask
+            name: filter_join_breaktask
+        file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002 
           Partition
             base file name: 10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -245,46 +285,6 @@ STAGE PLANS:
                 columns _col0,_col4
                 columns.types int,string
                 escape.delim \
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
-          Partition
-            base file name: ds=2008-04-08
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            partition values:
-              ds 2008-04-08
-            properties:
-              bucket_count -1
-              columns key,value
-              columns.types int:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask
-              name filter_join_breaktask
-              partition_columns ds
-              serialization.ddl struct filter_join_breaktask { i32 key, string value}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1270516061
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,value
-                columns.types int:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/test/data/warehouse/filter_join_breaktask
-                name filter_join_breaktask
-                partition_columns ds
-                serialization.ddl struct filter_join_breaktask { i32 key, string value}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1270516061
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: filter_join_breaktask
-            name: filter_join_breaktask
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -304,7 +304,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-46_959_4055362695656574819/10001
+              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-06-10_16-22-55_084_1486227885854106344/10001
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -326,13 +326,13 @@ FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-47_676_7695840532447756618/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-06-10_16-22-55_434_9085757094579036575/10000
 POSTHOOK: query: SELECT f.key, g.value 
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-47_676_7695840532447756618/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-06-10_16-22-55_434_9085757094579036575/10000
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 146	val_146

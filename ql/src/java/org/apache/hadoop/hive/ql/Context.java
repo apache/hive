@@ -51,26 +51,27 @@ public class Context {
   private int resDirFilesNum;
   boolean initialized;
 
+  // all query specific directories are created as sub-directories of queryPath
+  // this applies to all non-local (ie. hdfs) file system tmp folders
+  private Path queryScratchPath;
+
+
   // Path without a file system
-  // hive.exec.scratchdir: default: "/tmp/"+System.getProperty("user.name")+"/hive"
-  // Used for creating temporary path on external file systems
-  private String scratchPath;
-  // Path on the local file system
+  // Used for creating temporary directory on local file system
+  private String localScratchPath;
+
+
+  // Fully Qualified path on the local file system
   // System.getProperty("java.io.tmpdir") + Path.SEPARATOR
   // + System.getProperty("user.name") + Path.SEPARATOR + executionId
   private Path localScratchDir;
+
   // On the default FileSystem (usually HDFS):
   // also based on hive.exec.scratchdir which by default is
   // "/tmp/"+System.getProperty("user.name")+"/hive"
   private Path MRScratchDir;
 
-  // all query specific directories are created as sub-directories of queryPath
-  private Path queryPath;
-
-
-  // allScratchDirs contains all scratch directories including
-  // localScratchDir and MRScratchDir.
-  // The external scratch dirs will be also based on hive.exec.scratchdir.
+  // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, Path> externalScratchDirs = new HashMap<String, Path>();
 
   private HiveConf conf;
@@ -91,9 +92,12 @@ public class Context {
   public Context(HiveConf conf, String executionId) throws IOException {
     this.conf = conf;
     this.executionId = executionId;
-    Path tmpPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
-    scratchPath = tmpPath.toUri().getPath();
-    queryPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR), executionId);
+
+    localScratchPath = System.getProperty("java.io.tmpdir")
+      + Path.SEPARATOR + System.getProperty("user.name") + Path.SEPARATOR
+      + executionId;
+
+    queryScratchPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR), executionId);
   }
 
   /**
@@ -125,7 +129,7 @@ public class Context {
   private Path makeMRScratchDir(HiveConf conf, boolean mkdir)
       throws IOException {
 
-    Path dir = FileUtils.makeQualified(queryPath, conf);
+    Path dir = FileUtils.makeQualified(queryScratchPath, conf);
 
     if (mkdir) {
       FileSystem fs = dir.getFileSystem(conf);
@@ -143,7 +147,8 @@ public class Context {
   private Path makeExternalScratchDir(HiveConf conf, boolean mkdir, URI extURI)
     throws IOException {
 
-    Path dir = new Path(extURI.getScheme(), extURI.getAuthority(), queryPath.toString());
+    Path dir = new Path(extURI.getScheme(), extURI.getAuthority(),
+                        queryScratchPath.toUri().getPath());
 
     if (mkdir) {
       FileSystem fs = dir.getFileSystem(conf);
@@ -159,13 +164,11 @@ public class Context {
    *
    * @param mkdir  if true, will make the directory. Will throw IOException if that fails.
    */
-  private static Path makeLocalScratchDir(HiveConf conf, String executionId, boolean mkdir)
+  private Path makeLocalScratchDir(boolean mkdir)
       throws IOException {
 
     FileSystem fs = FileSystem.getLocal(conf);
-    Path dir = fs.makeQualified(new Path(System.getProperty("java.io.tmpdir")
-        + Path.SEPARATOR + System.getProperty("user.name") + Path.SEPARATOR
-        + executionId));
+    Path dir = fs.makeQualified(new Path(localScratchPath));
 
     if (mkdir) {
       if (!fs.mkdirs(dir)) {
@@ -198,6 +201,11 @@ public class Context {
    */
   public String getMRScratchDir() {
     try {
+      // if we are executing entirely on the client side - then
+      // just (re)use the local scratch directory
+      if(isLocalOnlyExecutionMode())
+        return getLocalScratchDir();
+
       if (MRScratchDir == null) {
         MRScratchDir = makeMRScratchDir(conf, !explain);
       }
@@ -216,7 +224,7 @@ public class Context {
   public String getLocalScratchDir() {
     try {
       if (localScratchDir == null) {
-        localScratchDir = makeLocalScratchDir(conf, executionId, true);
+        localScratchDir = makeLocalScratchDir(true);
       }
       return localScratchDir.toString();
     } catch (IOException e) {
@@ -272,7 +280,7 @@ public class Context {
    *         false otherwise
    */
   public boolean isMRTmpFileURI(String uriStr) {
-    return (uriStr.indexOf(scratchPath) != -1);
+    return (uriStr.indexOf(executionId) != -1);
   }
 
   /**
@@ -466,10 +474,16 @@ public class Context {
   }
 
   public Path getQueryPath() {
-    return queryPath;
+    return queryScratchPath;
   }
 
-  public void setQueryPath(Path queryPath) {
-    this.queryPath = queryPath;
+  /**
+   * Does Hive wants to run tasks entirely on the local machine
+   * (where the query is being compiled)?
+   *
+   * Today this translates into running hadoop jobs locally
+   */
+  public boolean isLocalOnlyExecutionMode() {
+    return conf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local");
   }
 }

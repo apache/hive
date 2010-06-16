@@ -117,7 +117,7 @@ public class MapRedTask extends Task<MapredWork> implements Serializable {
       Utilities.serializeMapRedWork(plan, out);
 
       String isSilent = "true".equalsIgnoreCase(System
-          .getProperty("test.silent")) ? "-silent" : "";
+          .getProperty("test.silent")) ? "-nolog" : "";
 
       String jarCmd;
       if (ShimLoader.getHadoopShims().usesJobShell()) {

@@ -52,6 +52,7 @@
   <property name="test.junit.output.usefile" value="true"/>
   <property name="minimr.query.files" value="join1.q,groupby1.q"/>
   <property name="test.silent" value="true"/>
+  <property name="test.serialize.qplan" value="true"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
@@ -208,7 +209,7 @@
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
-    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"  excludes="*hadoop*.jar" 
+    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"  excludes="*hadoop*.jar"
 	erroronmissingdir="false" />
   </path>
 

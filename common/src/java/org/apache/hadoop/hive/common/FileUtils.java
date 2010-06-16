@@ -63,18 +63,22 @@ public final class FileUtils {
     String scheme = pathUri.getScheme();
     String authority = pathUri.getAuthority();
 
-    if (scheme != null && (authority != null || fsUri.getAuthority() == null)) {
-      return path;
-    }
+    // validate/fill-in scheme and authority. this follows logic
+    // identical to FileSystem.get(URI, conf) - but doesn't actually
+    // obtain a file system handle
 
     if (scheme == null) {
+      // no scheme - use default file system uri
       scheme = fsUri.getScheme();
-    }
-
-    if (authority == null) {
       authority = fsUri.getAuthority();
-      if (authority == null) {
-        authority = "";
+    } else {
+      if(authority == null) {
+        // no authority - use default one if it applies
+        if(scheme.equals(fsUri.getScheme()) &&
+           fsUri.getAuthority() != null)
+          authority = fsUri.getAuthority();
+        else
+          authority = "";
       }
     }
 

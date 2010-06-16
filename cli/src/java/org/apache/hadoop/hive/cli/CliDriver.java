@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * CliDriver.
- * 
+ *
  */
 public class CliDriver {
 
@@ -224,8 +224,7 @@ public class CliDriver {
     }
 
     // NOTE: It is critical to do this here so that log4j is reinitialized
-    // before
-    // any of the other core hive classes are loaded
+    // before any of the other core hive classes are loaded
     SessionState.initHiveLog4j();
 
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));

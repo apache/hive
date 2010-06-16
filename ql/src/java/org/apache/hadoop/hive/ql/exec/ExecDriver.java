@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -78,6 +80,8 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * ExecDriver.
@@ -955,28 +959,63 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   private static void printUsage() {
-    System.out
+    System.err
         .println("ExecDriver -plan <plan-file> [-jobconf k1=v1 [-jobconf k2=v2] ...] "
         + "[-files <file1>[,<file2>] ...]");
     System.exit(1);
+  }
+
+  /**
+   * we are running the hadoop job via a sub-command. this typically
+   * happens when we are running jobs in local mode. the log4j in this
+   * mode is controlled as follows:
+   * 1. if the admin provides a log4j properties file especially for
+   *    execution mode - then we pick that up
+   * 2. otherwise - we default to the regular hive log4j properties if
+   *    one is supplied
+   * 3. if none of the above two apply - we don't do anything - the log4j
+   *    properties would likely be determined by hadoop.
+   *
+   * The intention behind providing a separate option #1 is to be able to
+   * collect hive run time logs generated in local mode in a separate
+   * (centralized) location if desired. This mimics the behavior of hive
+   * run time logs when running against a hadoop cluster where they are available
+   * on the tasktracker nodes.
+   */
+
+  private static void setupChildLog4j(Configuration conf) {
+    URL hive_l4j = ExecDriver.class.getClassLoader().getResource
+      (SessionState.HIVE_EXEC_L4J);
+    if(hive_l4j == null)
+      hive_l4j = ExecDriver.class.getClassLoader().getResource
+      (SessionState.HIVE_L4J);
+
+    if (hive_l4j != null) {
+        // setting queryid so that log4j configuration can use it to generate
+        // per query log file
+        System.setProperty
+          (HiveConf.ConfVars.HIVEQUERYID.toString(),
+           HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+        LogManager.resetConfiguration();
+        PropertyConfigurator.configure(hive_l4j);
+      }
   }
 
   public static void main(String[] args) throws IOException, HiveException {
 
     String planFileName = null;
     ArrayList<String> jobConfArgs = new ArrayList<String>();
-    boolean isSilent = false;
+    boolean noLog = false;
     String files = null;
 
     try {
       for (int i = 0; i < args.length; i++) {
         if (args[i].equals("-plan")) {
           planFileName = args[++i];
-          System.out.println("plan = " + planFileName);
         } else if (args[i].equals("-jobconf")) {
           jobConfArgs.add(args[++i]);
-        } else if (args[i].equals("-silent")) {
-          isSilent = true;
+        } else if (args[i].equals("-nolog")) {
+          noLog = true;
         } else if (args[i].equals("-files")) {
           files = args[++i];
         }
@@ -986,26 +1025,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       printUsage();
     }
 
-    // If started from main(), and isSilent is on, we should not output
-    // any logs.
-    // To turn the error log on, please set -Dtest.silent=false
-    if (isSilent) {
-      BasicConfigurator.resetConfiguration();
-      BasicConfigurator.configure(new NullAppender());
-    }
-
-    if (planFileName == null) {
-      System.err.println("Must specify Plan File Name");
-      printUsage();
-    }
-
     JobConf conf = new JobConf(ExecDriver.class);
+    StringBuilder sb = new StringBuilder("JobConf:\n");
+
     for (String one : jobConfArgs) {
       int eqIndex = one.indexOf('=');
       if (eqIndex != -1) {
         try {
-          conf.set(one.substring(0, eqIndex), URLDecoder.decode(one
-              .substring(eqIndex + 1), "UTF-8"));
+          String key = one.substring(0, eqIndex);
+          String value = URLDecoder.decode(one.substring(eqIndex + 1),
+                                           "UTF-8");
+          conf.set(key, value);
+          sb.append(key).append("=").append(value).append("\n");
         } catch (UnsupportedEncodingException e) {
           System.err.println("Unexpected error " + e.getMessage()
               + " while encoding " + one.substring(eqIndex + 1));
@@ -1018,6 +1049,30 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       conf.set("tmpfiles", files);
     }
 
+    boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESESSIONSILENT);
+
+    if (noLog) {
+      // If started from main(), and noLog is on, we should not output
+      // any logs. To turn the log on, please set -Dtest.silent=false
+      BasicConfigurator.resetConfiguration();
+      BasicConfigurator.configure(new NullAppender());
+    } else {
+      setupChildLog4j(conf);
+    }
+
+    Log LOG = LogFactory.getLog(ExecDriver.class.getName());
+    LogHelper console = new LogHelper(LOG, isSilent);
+
+    if (planFileName == null) {
+      console.printError("Must specify Plan File Name");
+      printUsage();
+    }
+
+    console.printInfo("plan = " + planFileName);
+
+    // log the list of job conf parameters for reference
+    LOG.info(sb.toString());
+
     URI pathURI = (new Path(planFileName)).toUri();
     InputStream pathData;
     if (StringUtils.isEmpty(pathURI.getScheme())) {
@@ -1029,43 +1084,39 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       pathData = fs.open(new Path(planFileName));
     }
 
-    // workaround for hadoop-17 - libjars are not added to classpath. this
-    // affects local
-    // mode execution
-    boolean localMode = HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPJT)
-        .equals("local");
-    if (localMode) {
-      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-      String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
-      try {
-        // see also - code in CliDriver.java
-        ClassLoader loader = conf.getClassLoader();
-        if (StringUtils.isNotBlank(auxJars)) {
-          loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars,
-              ","));
-        }
-        if (StringUtils.isNotBlank(addedJars)) {
-          loader = Utilities.addToClassPath(loader, StringUtils.split(
-              addedJars, ","));
-        }
-        conf.setClassLoader(loader);
-        // Also set this to the Thread ContextClassLoader, so new threads will
-        // inherit
-        // this class loader, and propagate into newly created Configurations by
-        // those
-        // new threads.
-        Thread.currentThread().setContextClassLoader(loader);
-      } catch (Exception e) {
-        throw new HiveException(e.getMessage(), e);
+    // this is workaround for hadoop-17 - libjars are not added to classpath of the
+    // child process. so we add it here explicitly
+
+    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+    String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
+    try {
+      // see also - code in CliDriver.java
+      ClassLoader loader = conf.getClassLoader();
+      if (StringUtils.isNotBlank(auxJars)) {
+        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars,
+                                                                    ","));
       }
+      if (StringUtils.isNotBlank(addedJars)) {
+        loader = Utilities.addToClassPath(loader, StringUtils.split(
+                                                                    addedJars, ","));
+      }
+      conf.setClassLoader(loader);
+      // Also set this to the Thread ContextClassLoader, so new threads will
+      // inherit
+      // this class loader, and propagate into newly created Configurations by
+      // those
+      // new threads.
+      Thread.currentThread().setContextClassLoader(loader);
+    } catch (Exception e) {
+      throw new HiveException(e.getMessage(), e);
     }
+
 
     MapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
 
     int ret = ed.execute(new DriverContext());
     if (ret != 0) {
-      System.out.println("Job Failed");
       System.exit(2);
     }
   }
@@ -1078,7 +1129,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     try {
       StringBuilder sb = new StringBuilder();
       Properties deltaP = hconf.getChangedProperties();
-      boolean localMode = hconf.getVar(HiveConf.ConfVars.HADOOPJT).equals(
+      boolean hadoopLocalMode = hconf.getVar(HiveConf.ConfVars.HADOOPJT).equals(
           "local");
       String hadoopSysDir = "mapred.system.dir";
       String hadoopWorkDir = "mapred.local.dir";
@@ -1086,7 +1137,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       for (Object one : deltaP.keySet()) {
         String oneProp = (String) one;
 
-        if (localMode
+        if (hadoopLocalMode
             && (oneProp.equals(hadoopSysDir) || oneProp.equals(hadoopWorkDir))) {
           continue;
         }
@@ -1102,9 +1153,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
       // Multiple concurrent local mode job submissions can cause collisions in
       // working dirs
-      // Workaround is to rename map red working dir to a temp dir in such a
-      // case
-      if (localMode) {
+      // Workaround is to rename map red working dir to a temp dir in such cases
+
+      if (hadoopLocalMode) {
         sb.append("-jobconf ");
         sb.append(hadoopSysDir);
         sb.append("=");

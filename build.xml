@@ -115,7 +115,7 @@
     <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
-    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar" 
+    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"
 	excludes="*hadoop*.jar" erroronmissingdir="false"/>
   </path>
 
@@ -253,7 +253,9 @@
         <filter token="VERSION" value="${version}"/>
       </filterset>
     </copy>
-    <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>
+    <copy todir="${target.conf.dir}">
+     <fileset dir="${basedir}/conf" includes="*.properties"/>
+    </copy>
     <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
      <fileset dir="${hive.root}/service/lib/php" excludes="**.svn"/>
@@ -516,14 +518,14 @@
   <!-- ================================================================== -->
 
   <import file="${hive.root}/build-common.xml"/>
-  
+
   <target name="checkstyle" depends="ivy-retrieve-checkstyle,check-for-checkstyle"
           if="checkstyle.present"
           description="Run Checkstyle on source files">
     <taskdef resource="checkstyletask.properties">
       <classpath refid="checkstyle-classpath"/>
     </taskdef>
-    
+
     <mkdir dir="${checkstyle.build.dir}"/>
 
     <checkstyle config="${checkstyle.conf.dir}/checkstyle.xml"
@@ -542,11 +544,11 @@
           out="${checkstyle.build.dir}/checkstyle-errors.html"/>
 
   </target>
-  
+
   <target name="check-for-checkstyle">
     <available property="checkstyle.present" resource="checkstyletask.properties">
       <classpath refid="checkstyle-classpath"/>
-    </available>  	
+    </available>
   </target>
 
 </project>

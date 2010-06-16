@@ -93,6 +93,9 @@ Trunk -  Unreleased
     HIVE-1179. Add UDF array_contains
     (Arvind Prabhakar via namit)
 
+    HIVE-543. Add local mode execution in hive
+    (Joydeep Sen Sarma via namit)
+
     HIVE-1255. Add mathematical UDFs PI, E, degrees, radians, tan,
     sign, and atan.  (Edward Capriolo via jvs)
 

@@ -97,10 +97,16 @@ public class SessionState {
   }
 
   public boolean getIsSilent() {
-    return isSilent;
+    if(conf != null)
+      return conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
+    else
+      return isSilent;
   }
 
   public void setIsSilent(boolean isSilent) {
+    if(conf != null) {
+      conf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
+    }
     this.isSilent = isSilent;
   }
 
@@ -110,6 +116,7 @@ public class SessionState {
 
   public SessionState(HiveConf conf) {
     this.conf = conf;
+    isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
   }
 
@@ -194,6 +201,7 @@ public class SessionState {
   }
 
   public static final String HIVE_L4J = "hive-log4j.properties";
+  public static final String HIVE_EXEC_L4J = "hive-exec-log4j.properties";
 
   public static void initHiveLog4j() {
     // allow hive log4j to override any normal initialized one

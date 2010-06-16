@@ -316,25 +316,27 @@ public class Driver implements CommandProcessor {
       // get the output schema
       schema = getSchema(sem, conf);
 
-      // Serialize the query plan
-      //   get temp file name and remove file:
-      String queryPlanFileName = ctx.getLocalScratchDir() + Path.SEPARATOR_CHAR
+      // test Only - serialize the query plan and deserialize it
+      if("true".equalsIgnoreCase(System.getProperty("test.serialize.qplan"))) {
+
+        String queryPlanFileName = ctx.getLocalScratchDir() + Path.SEPARATOR_CHAR
           + "queryplan.xml";
-      LOG.info("query plan = " + queryPlanFileName);
-      queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
+        LOG.info("query plan = " + queryPlanFileName);
+        queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
 
-      //   serialize the queryPlan
-      FileOutputStream fos = new FileOutputStream(queryPlanFileName);
-      Utilities.serializeQueryPlan(plan, fos);
-      fos.close();
+        //   serialize the queryPlan
+        FileOutputStream fos = new FileOutputStream(queryPlanFileName);
+        Utilities.serializeQueryPlan(plan, fos);
+        fos.close();
 
-      //   deserialize the queryPlan
-      FileInputStream fis = new FileInputStream(queryPlanFileName);
-      QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
-      fis.close();
+        //   deserialize the queryPlan
+        FileInputStream fis = new FileInputStream(queryPlanFileName);
+        QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
+        fis.close();
 
-      // Use the deserialized plan
-      plan = newPlan;
+        // Use the deserialized plan
+        plan = newPlan;
+      }
 
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {

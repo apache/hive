@@ -145,6 +145,8 @@ public class HiveConf extends Configuration {
 
     // session identifier
     HIVESESSIONID("hive.session.id", ""),
+    // whether session is running in silent mode or not
+    HIVESESSIONSILENT("hive.session.silent", false),
 
     // query being executed (multiple per session)
     HIVEQUERYSTRING("hive.query.string", ""),
