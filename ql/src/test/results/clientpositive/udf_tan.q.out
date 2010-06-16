@@ -1,0 +1,70 @@
+PREHOOK: query: DESCRIBE FUNCTION tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+Example:
+   > SELECT tan(0) FROM src LIMIT 1;
+  1
+PREHOOK: query: SELECT tan(null)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-47-58_254_8202003455468604473/10000
+POSTHOOK: query: SELECT tan(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-47-58_254_8202003455468604473/10000
+NULL
+PREHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-48-03_619_4671353277889120706/10000
+POSTHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-48-03_619_4671353277889120706/10000
+1.5574077246549023	-0.29100619138474915	-1.5574077246549023
+PREHOOK: query: DESCRIBE FUNCTION tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+Example:
+   > SELECT tan(0) FROM src LIMIT 1;
+  1
+PREHOOK: query: SELECT tan(null)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-47-58_254_8202003455468604473/10000
+POSTHOOK: query: SELECT tan(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-47-58_254_8202003455468604473/10000
+NULL
+PREHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-48-03_619_4671353277889120706/10000
+POSTHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/ecapriolo/hive/hive/build/ql/scratchdir/hive_2010-03-20_09-48-03_619_4671353277889120706/10000
+1.5574077246549023	-0.29100619138474915	-1.5574077246549023

@@ -1,0 +1,70 @@
+PREHOOK: query: DESCRIBE FUNCTION atan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION atan
+POSTHOOK: type: DESCFUNCTION
+atan(x) - returns the atan (arctan) of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED atan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED atan
+POSTHOOK: type: DESCFUNCTION
+atan(x) - returns the atan (arctan) of x (x is in radians)
+Example:
+   > SELECT atan(0) FROM src LIMIT 1;
+  0
+PREHOOK: query: SELECT atan(null)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-50-44_404_5907852377719330358/10000
+POSTHOOK: query: SELECT atan(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-50-44_404_5907852377719330358/10000
+NULL
+PREHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-50-53_625_8550808324982957261/10000
+POSTHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-50-53_625_8550808324982957261/10000
+0.7853981633974483	1.4056476493802699	-0.7853981633974483
+PREHOOK: query: DESCRIBE FUNCTION atan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION atan
+POSTHOOK: type: DESCFUNCTION
+atan(x) - returns the atan (arctan) of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED atan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED atan
+POSTHOOK: type: DESCFUNCTION
+atan(x) - returns the atan (arctan) of x (x is in radians)
+Example:
+   > SELECT atan(0) FROM src LIMIT 1;
+  0
+PREHOOK: query: SELECT atan(null)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-51-02_451_2254439065849671450/10000
+POSTHOOK: query: SELECT atan(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-51-02_451_2254439065849671450/10000
+NULL
+PREHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-51-10_588_592143662617614500/10000
+POSTHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-51-10_588_592143662617614500/10000
+0.7853981633974483	1.4056476493802699	-0.7853981633974483

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.udf.UDFAbs;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
+import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFCeil;
 import org.apache.hadoop.hive.ql.udf.UDFConcat;
@@ -52,6 +53,8 @@ import org.apache.hadoop.hive.ql.udf.UDFDateAdd;
 import org.apache.hadoop.hive.ql.udf.UDFDateDiff;
 import org.apache.hadoop.hive.ql.udf.UDFDateSub;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFDegrees;
+import org.apache.hadoop.hive.ql.udf.UDFE;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
 import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
 import org.apache.hadoop.hive.ql.udf.UDFFloor;
@@ -91,10 +94,12 @@ import org.apache.hadoop.hive.ql.udf.UDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.UDFOPOr;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFPI;
 import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
 import org.apache.hadoop.hive.ql.udf.UDFPosMod;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
+import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
 import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
@@ -104,10 +109,12 @@ import org.apache.hadoop.hive.ql.udf.UDFReverse;
 import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.ql.udf.UDFRpad;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSign;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFSpace;
 import org.apache.hadoop.hive.ql.udf.UDFSqrt;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
+import org.apache.hadoop.hive.ql.udf.UDFTan;
 import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
 import org.apache.hadoop.hive.ql.udf.UDFToByte;
 import org.apache.hadoop.hive.ql.udf.UDFToDouble;
@@ -177,6 +184,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
+
 /**
  * FunctionRegistry.
  */
@@ -220,6 +228,13 @@ public final class FunctionRegistry {
     registerUDF("exp", UDFExp.class, false);
     registerUDF("power", UDFPower.class, false);
     registerUDF("pow", UDFPower.class, false);
+    registerUDF("sign", UDFSign.class, false);
+    registerUDF("pi", UDFPI.class, false);
+    registerUDF("degrees", UDFDegrees.class, false);
+    registerUDF("radians", UDFRadians.class, false);
+    registerUDF("atan", UDFAtan.class, false);
+    registerUDF("tan", UDFTan.class, false);
+    registerUDF("e", UDFE.class, false);
 
     registerUDF("conv", UDFConv.class, false);
     registerUDF("bin", UDFBin.class, false);

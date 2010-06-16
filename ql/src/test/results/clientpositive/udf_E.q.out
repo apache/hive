@@ -1,0 +1,122 @@
+PREHOOK: query: explain 
+select E() FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select E() FROM src LIMIT 1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION E))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: e()
+                    type: double
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+PREHOOK: query: select E() FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_06-20-54_669_28844682742749235/10000
+POSTHOOK: query: select E() FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_06-20-54_669_28844682742749235/10000
+2.718281828459045
+PREHOOK: query: DESCRIBE FUNCTION E
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION E
+POSTHOOK: type: DESCFUNCTION
+E() - returns E 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED E
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED E
+POSTHOOK: type: DESCFUNCTION
+E() - returns E 
+Synonyms: e
+Example:
+ > SELECT E() FROM src LIMIT 1;
+ 2.718281828459045
+PREHOOK: query: explain 
+select E() FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select E() FROM src LIMIT 1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION E))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: e()
+                    type: double
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+PREHOOK: query: select E() FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_06-21-02_250_7318325770859337186/10000
+POSTHOOK: query: select E() FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_06-21-02_250_7318325770859337186/10000
+2.718281828459045
+PREHOOK: query: DESCRIBE FUNCTION E
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION E
+POSTHOOK: type: DESCFUNCTION
+E() - returns E 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED E
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED E
+POSTHOOK: type: DESCFUNCTION
+E() - returns E 
+Synonyms: e
+Example:
+ > SELECT E() FROM src LIMIT 1;
+ 2.718281828459045

@@ -25,6 +25,7 @@ array
 array_contains
 ascii
 asin
+atan
 avg
 bigint
 bin
@@ -43,8 +44,10 @@ date_sub
 datediff
 day
 dayofmonth
+degrees
 div
 double
+e
 elt
 exp
 explode
@@ -86,10 +89,12 @@ not
 or
 parse_url
 percentile
+pi
 pmod
 positive
 pow
 power
+radians
 rand
 regexp
 regexp_extract
@@ -101,6 +106,7 @@ round
 rpad
 rtrim
 second
+sign
 sin
 size
 smallint
@@ -116,6 +122,7 @@ struct
 substr
 substring
 sum
+tan
 tinyint
 to_date
 trim
@@ -160,6 +167,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 case
 coalesce
 double
+e
 explode
 from_unixtime
 lcase

@@ -1,0 +1,140 @@
+PREHOOK: query: explain 
+select radians(57.2958) FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select radians(57.2958) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: radians(57.2958)
+                    type: double
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-40_585_4074288577412212093/10000
+POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-40_585_4074288577412212093/10000
+1.000000357564167
+PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-49_329_7599870839384039656/10000
+POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-49_329_7599870839384039656/10000
+2.4999991485811655
+PREHOOK: query: DESCRIBE FUNCTION radians
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION radians
+POSTHOOK: type: DESCFUNCTION
+radians(x) - Converts degrees to radians
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED radians
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED radians
+POSTHOOK: type: DESCFUNCTION
+radians(x) - Converts degrees to radians
+Example:
+  > SELECT radians(90) FROM src LIMIT 1;
+  1.5707963267949mo
+
+PREHOOK: query: explain 
+select radians(57.2958) FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select radians(57.2958) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: radians(57.2958)
+                    type: double
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-57_755_2267469268422543769/10000
+POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-57_755_2267469268422543769/10000
+1.000000357564167
+PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-42-05_384_6924630684028722794/10000
+POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-42-05_384_6924630684028722794/10000
+2.4999991485811655
+PREHOOK: query: DESCRIBE FUNCTION radians
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION radians
+POSTHOOK: type: DESCFUNCTION
+radians(x) - Converts degrees to radians
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED radians
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED radians
+POSTHOOK: type: DESCFUNCTION
+radians(x) - Converts degrees to radians
+Example:
+  > SELECT radians(90) FROM src LIMIT 1;
+  1.5707963267949mo
+
