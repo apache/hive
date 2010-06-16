@@ -87,6 +87,9 @@ Trunk -  Unreleased
     HIVE-1332. Support for archiving partitions
     (Paul Yang via namit)
 
+    HIVE-1397. histogram_numeric UDAF
+    (Mayank Lahiri via jvs)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

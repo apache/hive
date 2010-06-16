@@ -55,6 +55,7 @@ from_unixtime
 get_json_object
 hash
 hex
+histogram_numeric
 hour
 if
 in

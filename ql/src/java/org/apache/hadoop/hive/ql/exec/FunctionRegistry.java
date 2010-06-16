@@ -127,6 +127,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFHistogramNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
@@ -341,6 +342,8 @@ public final class FunctionRegistry {
     registerGenericUDAF("variance", new GenericUDAFVariance());
     registerGenericUDAF("var_pop", new GenericUDAFVariance());
     registerGenericUDAF("var_samp", new GenericUDAFVarianceSample());
+
+    registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
 
     registerUDAF("percentile", UDAFPercentile.class);
 
