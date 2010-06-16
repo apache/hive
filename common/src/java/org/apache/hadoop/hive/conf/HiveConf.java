@@ -46,7 +46,9 @@ public class HiveConf extends Configuration {
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
 
   /**
-   * Metastore related options that the db is initialized against.
+   * Metastore related options that the db is initialized against. When a conf
+   * var in this is list is changed, the metastore instance for the CLI will
+   * be recreated so that the change will take effect.
    */
   public static final HiveConf.ConfVars[] metaVars = {
       HiveConf.ConfVars.METASTOREDIRECTORY,
@@ -126,6 +128,7 @@ public class HiveConf extends Configuration {
     METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false),
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
     METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", Integer.MAX_VALUE),
+    METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true),
     // Intermediate dir suffixes used for archiving. Not important what they
     // are, as long as collisions are avoided
     METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",

@@ -1678,8 +1678,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // pool to min.
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
+      boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
 
-      TServerTransport serverTransport = new TServerSocket(port);
+      TServerTransport serverTransport = tcpKeepAlive ?
+          new TServerSocketKeepAlive(port) : new TServerSocket(port);
+
       FacebookService.Processor processor = new ThriftHiveMetastore.Processor(
           handler);
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
@@ -1694,6 +1697,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           + options.minWorkerThreads);
       HMSHandler.LOG.info("Options.maxWorkerThreads = "
           + options.maxWorkerThreads);
+      HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+
       server.serve();
     } catch (Throwable x) {
       x.printStackTrace();

@@ -528,6 +528,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.server.tcp.keepalive</name>
+  <value>true</value>
+  <description>Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections.</description>
+</property>
+
+<property>
   <name>hive.optimize.reducededuplication</name>
   <value>true</value>
   <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>
