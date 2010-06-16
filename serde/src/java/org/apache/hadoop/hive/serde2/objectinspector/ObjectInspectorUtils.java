@@ -23,11 +23,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -613,6 +615,109 @@ public final class ObjectInspectorUtils {
       return "unknown";
     }
   }
+
+  /**
+   * Compares two types identified by the given object inspectors. This method
+   * compares the types as follows:
+   * <ol>
+   * <li>If the given inspectors do not belong to same category, the result is
+   * negative.</li>
+   * <li>If the given inspectors are for <code>PRIMITIVE</code> type, the result
+   * is the comparison of their type names.</li>
+   * <li>If the given inspectors are for <code>LIST</code> type, then the result
+   * is recursive call to compare the type of list elements.</li>
+   * <li>If the given inspectors are <code>MAP</code> type, then the result is a
+   * recursive call to compare the map key and value types.</li>
+   * <li>If the given inspectors are <code>STRUCT</code> type, then the result
+   * is negative if they do not have the same number of fields. If they do have
+   * the same number of fields, the result is a recursive call to compare each
+   * of the field types.</li>
+   * <li>If none of the above, the result is negative.</li>
+   * </ol>
+   * @param o1
+   * @param o2
+   * @return true if the given object inspectors represent the same types.
+   */
+  public static boolean compareTypes(ObjectInspector o1, ObjectInspector o2) {
+    Category c1 = o1.getCategory();
+    Category c2 = o2.getCategory();
+
+    // Return false if categories are not equal
+    if (!c1.equals(c2)) {
+      return false;
+    }
+
+    // If both categories are primitive return the comparison of type names.
+    if (c1.equals(Category.PRIMITIVE)) {
+      return o1.getTypeName().equals(o2.getTypeName());
+    }
+
+    // If lists, recursively compare the list element types
+    if (c1.equals(Category.LIST)) {
+      ObjectInspector child1 =
+        ((ListObjectInspector) o1).getListElementObjectInspector();
+      ObjectInspector child2 =
+        ((ListObjectInspector) o2).getListElementObjectInspector();
+      return compareTypes(child1, child2);
+    }
+
+    // If maps, recursively compare the key and value types
+    if (c1.equals(Category.MAP)) {
+      MapObjectInspector mapOI1 = (MapObjectInspector) o1;
+      MapObjectInspector mapOI2 = (MapObjectInspector) o2;
+
+      ObjectInspector childKey1 = mapOI1.getMapKeyObjectInspector();
+      ObjectInspector childKey2 = mapOI2.getMapKeyObjectInspector();
+
+      if (compareTypes(childKey1, childKey2)) {
+        ObjectInspector childVal1 = mapOI1.getMapValueObjectInspector();
+        ObjectInspector childVal2 = mapOI2.getMapValueObjectInspector();
+
+        if (compareTypes(childVal1, childVal2)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    // If structs, recursively compare the fields
+    if (c1.equals(Category.STRUCT)) {
+      StructObjectInspector structOI1 = (StructObjectInspector) o1;
+      StructObjectInspector structOI2 = (StructObjectInspector) o2;
+
+      List<? extends StructField> childFieldsList1
+        = structOI1.getAllStructFieldRefs();
+      List<? extends StructField> childFieldsList2
+        = structOI2.getAllStructFieldRefs();
+
+      if (childFieldsList1 == null && childFieldsList2 == null) {
+        return true;
+      }
+
+      if (childFieldsList1.size() != childFieldsList2.size()) {
+        return false;
+      }
+
+      Iterator<? extends StructField> it1 = childFieldsList1.iterator();
+      Iterator<? extends StructField> it2 = childFieldsList2.iterator();
+      while (it1.hasNext()) {
+        StructField field1 = it1.next();
+        StructField field2 = it2.next();
+
+        if (!compareTypes(field1.getFieldObjectInspector(),
+              field2.getFieldObjectInspector())) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    // Unknown category
+    throw new RuntimeException("Unknown category encountered: " + c1);
+  }
+
 
   private ObjectInspectorUtils() {
     // prevent instantiation

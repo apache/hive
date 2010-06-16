@@ -138,6 +138,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
@@ -361,6 +362,7 @@ public final class FunctionRegistry {
     registerGenericUDF("locate", GenericUDFLocate.class);
     registerGenericUDF("elt", GenericUDFElt.class);
     registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
+    registerGenericUDF("array_contains", GenericUDFArrayContains.class);
 
     // Generic UDTF's
     registerGenericUDTF("explode", GenericUDTFExplode.class);
