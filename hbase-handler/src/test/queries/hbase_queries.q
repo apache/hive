@@ -134,6 +134,20 @@ WHERE key=98 OR key=100;
 
 SELECT * FROM hbase_table_7 ORDER BY key;
 
+set hive.hbase.wal.enabled=false;
+
+DROP TABLE hbase_table_8;
+CREATE TABLE hbase_table_8(key int, value1 string, value2 int, value3 int) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+"hbase.columns.mapping" = "a:b,a:c,d:e"
+);
+
+INSERT OVERWRITE TABLE hbase_table_8 SELECT key, value, key+1, key+2 
+FROM src WHERE key=98 OR key=100;
+
+SELECT * FROM hbase_table_8 ORDER BY key;
+
 DROP TABLE hbase_table_1;
 DROP TABLE hbase_table_2;
 DROP TABLE hbase_table_3;
@@ -141,5 +155,6 @@ DROP TABLE hbase_table_4;
 DROP TABLE hbase_table_5;
 DROP TABLE hbase_table_6;
 DROP TABLE hbase_table_7;
+DROP TABLE hbase_table_8;
 DROP TABLE empty_hbase_table;
 DROP TABLE empty_normal_table;

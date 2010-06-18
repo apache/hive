@@ -252,6 +252,9 @@ public class HiveConf extends Configuration {
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
 
+    // For HBase storage handler
+    HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true),
+
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false),
     HIVEHARPARENTDIRSETTABLE("hive.archive.har.parentdir.settable", false),

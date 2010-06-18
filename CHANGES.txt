@@ -223,6 +223,9 @@ Trunk -  Unreleased
 
     HIVE-1410. Add TCP keepalive option for metastore server
     (Paul Yang via Ning Zhang)
+ 
+    HIVE-1383. Allow HBase WAL to be disabled.
+    (John Sichi via Ning Zhang)
 
   OPTIMIZATIONS
 
