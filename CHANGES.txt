@@ -223,7 +223,7 @@ Trunk -  Unreleased
 
     HIVE-1410. Add TCP keepalive option for metastore server
     (Paul Yang via Ning Zhang)
- 
+
     HIVE-1383. Allow HBase WAL to be disabled.
     (John Sichi via Ning Zhang)
 
@@ -525,6 +525,9 @@ Trunk -  Unreleased
 
     HIVE-1409. Use the tableSpec if partitions is not present
     (Paul Yang via namit)
+
+    HIVE-1418. Bug in RCfiles with Lateral Views
+    (He Yongqiang via namit)
 
 Release 0.5.0 -  Unreleased
 

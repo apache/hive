@@ -179,7 +179,9 @@ public final class ColumnPrunerProcFactory {
       RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRR();
       for (int i = 0; i < cols.size(); i++) {
         int position = inputRR.getPosition(cols.get(i));
-        needed_columns.add(position);
+        if (position >=0) {
+          needed_columns.add(position);          
+        }
       }
       scanOp.setNeededColumnIDs(needed_columns);
       return null;
