@@ -1,6 +1,6 @@
 Hive Change Log
 
-Trunk -  Unreleased
+Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
 
