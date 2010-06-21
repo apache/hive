@@ -529,6 +529,9 @@ Trunk -  Unreleased
     HIVE-1418. Bug in RCfiles with Lateral Views
     (He Yongqiang via namit)
 
+    HIVE-1412. Bug in CombineHiveInputFormat with sampling
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
