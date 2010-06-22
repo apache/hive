@@ -6,6 +6,18 @@ Trunk -  Unreleased
 
   NEW FEATURES
 
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+Release 0.6.0 -  Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
     HIVE-964. Handle skew join
     (Yongqiang He via namit)
 
