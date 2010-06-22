@@ -15,6 +15,9 @@ Trunk -  Unreleased
     HIVE-1421. problem with sequence and rcfiles are mixed for null partitions
     (namit via He Yongqiang)
 
+    HIVE-1417. Archived partitions throw error with queries calling
+    getContentSummary (Paul Yang via namit)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

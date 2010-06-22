@@ -11,6 +11,11 @@ ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12');
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
 FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2;
 
+SELECT key, count(1) FROM srcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key;
+
+SELECT * FROM srcpart a JOIN src b ON a.key=b.key 
+WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0';
+
 ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12');
 
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
