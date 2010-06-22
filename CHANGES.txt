@@ -18,6 +18,8 @@ Trunk -  Unreleased
     HIVE-1417. Archived partitions throw error with queries calling
     getContentSummary (Paul Yang via namit)
 
+    HIVE-1422. Bug in updating progres counters (John Sichi via namit)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

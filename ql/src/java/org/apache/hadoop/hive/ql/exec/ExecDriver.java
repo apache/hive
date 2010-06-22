@@ -289,6 +289,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     RunningJob rj = th.getRunningJob();
     try {
       Counters ctrs = th.getCounters();
+      // HIVE-1422
+      if (ctrs == null) {
+        return false;
+      }
       for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
         if (op.checkFatalErrors(ctrs, errMsg)) {
           return true;
@@ -503,6 +507,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     taskCounters.put("CNTR_NAME_" + getId() + "_REDUCE_PROGRESS", Long
         .valueOf(reduceProgress));
     Counters ctrs = th.getCounters();
+    // HIVE-1422
+    if (ctrs == null) {
+      return;
+    }
     for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
       op.updateCounters(ctrs);
     }
