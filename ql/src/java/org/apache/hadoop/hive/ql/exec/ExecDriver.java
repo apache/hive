@@ -1211,16 +1211,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
     // The input file does not exist, replace it by a empty file
     Class<? extends HiveOutputFormat> outFileFormat = null;
-
-    TableDesc tableDesc;
+    boolean nonNative = true;
     if (isEmptyPath) {
-      tableDesc = work.getPathToPartitionInfo().get(path).getTableDesc();
+      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
+      outFileFormat = partDesc.getOutputFileFormatClass();
+      nonNative = partDesc.getTableDesc().isNonNative();
     } else {
-      tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
+      TableDesc tableDesc =  work.getAliasToPartnInfo().get(alias).getTableDesc();
+      outFileFormat = tableDesc.getOutputFileFormatClass();
+      nonNative = tableDesc.isNonNative();
     }
-    outFileFormat = tableDesc.getOutputFileFormatClass();
 
-    if (tableDesc.isNonNative()) {
+    if (nonNative) {
       FileInputFormat.addInputPaths(job, path);
       LOG.info("Add a non-native table " + path);
       return numEmptyPaths;

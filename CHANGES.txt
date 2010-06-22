@@ -529,6 +529,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1418. Bug in RCfiles with Lateral Views
     (He Yongqiang via namit)
 
+    HIVE-1421. problem with sequence and rcfiles are mixed for null partitions
+    (namit via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

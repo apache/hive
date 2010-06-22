@@ -304,6 +304,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return;
     }
 
+    this.out = null;
     if (!areAllParentsInitialized()) {
       return;
     }
