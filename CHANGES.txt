@@ -12,6 +12,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1421. problem with sequence and rcfiles are mixed for null partitions
+    (namit via He Yongqiang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
