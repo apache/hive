@@ -31,11 +31,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
+public final class PrimitiveTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  String typeName;
+  private String typeName;
 
   /**
    * For java serialization use only.

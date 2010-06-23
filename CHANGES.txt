@@ -559,6 +559,9 @@ Release 0.6.0 -  Unreleased
     getContentSummary (Paul Yang via namit)
 
     HIVE-1422. Bug in updating progres counters (John Sichi via namit)
+ 
+    HIVE-1271. Make matching of type information case insensitive. 
+    (Arvind Prabhakar via Ashish Thusoo)
 
 Release 0.5.0 -  Unreleased
 

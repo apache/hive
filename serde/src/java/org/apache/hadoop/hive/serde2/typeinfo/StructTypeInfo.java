@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde.Constants;
@@ -33,12 +34,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public class StructTypeInfo extends TypeInfo implements Serializable {
+public final class StructTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  ArrayList<String> allStructFieldNames;
-  ArrayList<TypeInfo> allStructFieldTypeInfos;
+  private ArrayList<String> allStructFieldNames;
+  private ArrayList<TypeInfo> allStructFieldTypeInfos;
 
   /**
    * For java serialization use only.
@@ -121,9 +122,23 @@ public class StructTypeInfo extends TypeInfo implements Serializable {
       return false;
     }
     StructTypeInfo o = (StructTypeInfo) other;
-    return o.getCategory().equals(getCategory())
-        && o.getAllStructFieldNames().equals(getAllStructFieldNames())
-        && o.getAllStructFieldTypeInfos().equals(getAllStructFieldTypeInfos());
+    Iterator<String> namesIterator = getAllStructFieldNames().iterator();
+    Iterator<String> otherNamesIterator = o.getAllStructFieldNames().iterator();
+
+    // Compare the field names using ignore-case semantics
+    while (namesIterator.hasNext() && otherNamesIterator.hasNext()) {
+      if (!namesIterator.next().equalsIgnoreCase(otherNamesIterator.next())) {
+        return false;
+      }
+    }
+
+    // Different number of field names
+    if (namesIterator.hasNext() || otherNamesIterator.hasNext()) {
+      return false;
+    }
+
+    // Compare the field types
+    return o.getAllStructFieldTypeInfos().equals(getAllStructFieldTypeInfos());
   }
 
   @Override

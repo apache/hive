@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  */
 public abstract class TypeInfo implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
   protected TypeInfo() {
   }
 
@@ -53,17 +55,8 @@ public abstract class TypeInfo implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof TypeInfo)) {
-      return false;
-    }
-    TypeInfo dest = (TypeInfo) o;
-    if (getCategory() != dest.getCategory()) {
-      return false;
-    }
-    if (getTypeName() != dest.getTypeName()) {
-      return false;
-    }
-    return true;
-  }
+  public abstract boolean equals(Object o);
+
+  @Override
+  public abstract int hashCode();
 }
