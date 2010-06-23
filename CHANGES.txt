@@ -15,14 +15,6 @@ Trunk -  Unreleased
 
   BUG FIXES
 
-    HIVE-1421. problem with sequence and rcfiles are mixed for null partitions
-    (namit via He Yongqiang)
-
-    HIVE-1417. Archived partitions throw error with queries calling
-    getContentSummary (Paul Yang via namit)
-
-    HIVE-1422. Bug in updating progres counters (John Sichi via namit)
-
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
@@ -554,6 +546,14 @@ Release 0.6.0 -  Unreleased
 
     HIVE-1412. Bug in CombineHiveInputFormat with sampling
     (Ning Zhang via namit)
+
+    HIVE-1421. problem with sequence and rcfiles are mixed for null partitions
+    (namit via He Yongqiang)
+
+    HIVE-1417. Archived partitions throw error with queries calling
+    getContentSummary (Paul Yang via namit)
+
+    HIVE-1422. Bug in updating progres counters (John Sichi via namit)
 
 Release 0.5.0 -  Unreleased
 
