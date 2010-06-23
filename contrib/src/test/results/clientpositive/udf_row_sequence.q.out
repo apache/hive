@@ -1,0 +1,623 @@
+PREHOOK: query: -- The ORDER BY on the outer query will typically have no effect,
+-- but there is really no guarantee that the ordering is preserved
+-- across various SQL operators.
+
+drop temporary function row_sequence
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: -- The ORDER BY on the outer query will typically have no effect,
+-- but there is really no guarantee that the ordering is preserved
+-- across various SQL operators.
+
+drop temporary function row_sequence
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
+POSTHOOK: type: DESCFUNCTION
+row_sequence() - Returns a generated row sequence number starting from 1
+PREHOOK: query: explain
+select key, row_sequence() as r
+from (select key from src order by key) x
+order by r
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, row_sequence() as r
+from (select key from src order by key) x
+order by r
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))))) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION row_sequence) r)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL r)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: row_sequence()
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-06-22_17-23-44_212_4881494104125773465/10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: bigint
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select key, row_sequence() as r
+from (select key from src order by key) x
+order by r
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-06-22_17-23-44_546_5387418396452836474/10000
+POSTHOOK: query: select key, row_sequence() as r
+from (select key from src order by key) x
+order by r
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-06-22_17-23-44_546_5387418396452836474/10000
+0	1
+0	2
+0	3
+10	4
+100	5
+100	6
+103	7
+103	8
+104	9
+104	10
+105	11
+11	12
+111	13
+113	14
+113	15
+114	16
+116	17
+118	18
+118	19
+119	20
+119	21
+119	22
+12	23
+12	24
+120	25
+120	26
+125	27
+125	28
+126	29
+128	30
+128	31
+128	32
+129	33
+129	34
+131	35
+133	36
+134	37
+134	38
+136	39
+137	40
+137	41
+138	42
+138	43
+138	44
+138	45
+143	46
+145	47
+146	48
+146	49
+149	50
+149	51
+15	52
+15	53
+150	54
+152	55
+152	56
+153	57
+155	58
+156	59
+157	60
+158	61
+160	62
+162	63
+163	64
+164	65
+164	66
+165	67
+165	68
+166	69
+167	70
+167	71
+167	72
+168	73
+169	74
+169	75
+169	76
+169	77
+17	78
+170	79
+172	80
+172	81
+174	82
+174	83
+175	84
+175	85
+176	86
+176	87
+177	88
+178	89
+179	90
+179	91
+18	92
+18	93
+180	94
+181	95
+183	96
+186	97
+187	98
+187	99
+187	100
+189	101
+19	102
+190	103
+191	104
+191	105
+192	106
+193	107
+193	108
+193	109
+194	110
+195	111
+195	112
+196	113
+197	114
+197	115
+199	116
+199	117
+199	118
+2	119
+20	120
+200	121
+200	122
+201	123
+202	124
+203	125
+203	126
+205	127
+205	128
+207	129
+207	130
+208	131
+208	132
+208	133
+209	134
+209	135
+213	136
+213	137
+214	138
+216	139
+216	140
+217	141
+217	142
+218	143
+219	144
+219	145
+221	146
+221	147
+222	148
+223	149
+223	150
+224	151
+224	152
+226	153
+228	154
+229	155
+229	156
+230	157
+230	158
+230	159
+230	160
+230	161
+233	162
+233	163
+235	164
+237	165
+237	166
+238	167
+238	168
+239	169
+239	170
+24	171
+24	172
+241	173
+242	174
+242	175
+244	176
+247	177
+248	178
+249	179
+252	180
+255	181
+255	182
+256	183
+256	184
+257	185
+258	186
+26	187
+26	188
+260	189
+262	190
+263	191
+265	192
+265	193
+266	194
+27	195
+272	196
+272	197
+273	198
+273	199
+273	200
+274	201
+275	202
+277	203
+277	204
+277	205
+277	206
+278	207
+278	208
+28	209
+280	210
+280	211
+281	212
+281	213
+282	214
+282	215
+283	216
+284	217
+285	218
+286	219
+287	220
+288	221
+288	222
+289	223
+291	224
+292	225
+296	226
+298	227
+298	228
+298	229
+30	230
+302	231
+305	232
+306	233
+307	234
+307	235
+308	236
+309	237
+309	238
+310	239
+311	240
+311	241
+311	242
+315	243
+316	244
+316	245
+316	246
+317	247
+317	248
+318	249
+318	250
+318	251
+321	252
+321	253
+322	254
+322	255
+323	256
+325	257
+325	258
+327	259
+327	260
+327	261
+33	262
+331	263
+331	264
+332	265
+333	266
+333	267
+335	268
+336	269
+338	270
+339	271
+34	272
+341	273
+342	274
+342	275
+344	276
+344	277
+345	278
+348	279
+348	280
+348	281
+348	282
+348	283
+35	284
+35	285
+35	286
+351	287
+353	288
+353	289
+356	290
+360	291
+362	292
+364	293
+365	294
+366	295
+367	296
+367	297
+368	298
+369	299
+369	300
+369	301
+37	302
+37	303
+373	304
+374	305
+375	306
+377	307
+378	308
+379	309
+382	310
+382	311
+384	312
+384	313
+384	314
+386	315
+389	316
+392	317
+393	318
+394	319
+395	320
+395	321
+396	322
+396	323
+396	324
+397	325
+397	326
+399	327
+399	328
+4	329
+400	330
+401	331
+401	332
+401	333
+401	334
+401	335
+402	336
+403	337
+403	338
+403	339
+404	340
+404	341
+406	342
+406	343
+406	344
+406	345
+407	346
+409	347
+409	348
+409	349
+41	350
+411	351
+413	352
+413	353
+414	354
+414	355
+417	356
+417	357
+417	358
+418	359
+419	360
+42	361
+42	362
+421	363
+424	364
+424	365
+427	366
+429	367
+429	368
+43	369
+430	370
+430	371
+430	372
+431	373
+431	374
+431	375
+432	376
+435	377
+436	378
+437	379
+438	380
+438	381
+438	382
+439	383
+439	384
+44	385
+443	386
+444	387
+446	388
+448	389
+449	390
+452	391
+453	392
+454	393
+454	394
+454	395
+455	396
+457	397
+458	398
+458	399
+459	400
+459	401
+460	402
+462	403
+462	404
+463	405
+463	406
+466	407
+466	408
+466	409
+467	410
+468	411
+468	412
+468	413
+468	414
+469	415
+469	416
+469	417
+469	418
+469	419
+47	420
+470	421
+472	422
+475	423
+477	424
+478	425
+478	426
+479	427
+480	428
+480	429
+480	430
+481	431
+482	432
+483	433
+484	434
+485	435
+487	436
+489	437
+489	438
+489	439
+489	440
+490	441
+491	442
+492	443
+492	444
+493	445
+494	446
+495	447
+496	448
+497	449
+498	450
+498	451
+498	452
+5	453
+5	454
+5	455
+51	456
+51	457
+53	458
+54	459
+57	460
+58	461
+58	462
+64	463
+65	464
+66	465
+67	466
+67	467
+69	468
+70	469
+70	470
+70	471
+72	472
+72	473
+74	474
+76	475
+76	476
+77	477
+78	478
+8	479
+80	480
+82	481
+83	482
+83	483
+84	484
+84	485
+85	486
+86	487
+87	488
+9	489
+90	490
+90	491
+90	492
+92	493
+95	494
+95	495
+96	496
+97	497
+97	498
+98	499
+98	500
+PREHOOK: query: drop temporary function row_sequence
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: drop temporary function row_sequence
+POSTHOOK: type: DROPFUNCTION
