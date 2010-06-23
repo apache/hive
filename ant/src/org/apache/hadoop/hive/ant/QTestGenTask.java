@@ -95,7 +95,17 @@ public class QTestGenTask extends Task {
   private String logFile;
 
   private String clusterMode;
+  
+  private String hadoopVersion;
 
+  public void setHadoopVersion(String ver) {
+    this.hadoopVersion = ver;
+  }
+
+  public String getHadoopVersion() {
+    return hadoopVersion;
+  }
+  
   public void setClusterMode(String clusterMode) {
     this.clusterMode = clusterMode;
   }
@@ -291,6 +301,9 @@ public class QTestGenTask extends Task {
       if (clusterMode == null) {
         clusterMode = new String("");
       }
+      if (hadoopVersion == null) {
+        hadoopVersion = "";
+      }
 
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
@@ -299,6 +312,7 @@ public class QTestGenTask extends Task {
       ctx.put("resultsDir", resultsDir);
       ctx.put("logDir", logDir);
       ctx.put("clusterMode", clusterMode);
+      ctx.put("hadoopVersion", hadoopVersion);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);

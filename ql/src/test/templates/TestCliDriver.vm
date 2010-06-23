@@ -33,10 +33,13 @@ public class $className extends TestCase {
   protected void setUp() {
     try {
       boolean miniMR = false;
+      String hadoopVer;
+
       if ("$clusterMode".equals("miniMR"))
         miniMR = true;
+      hadoopVer = "$hadoopVersion";
 
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR);
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR, hadoopVer);
 
     }
     catch (Exception e) {

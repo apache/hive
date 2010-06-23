@@ -52,6 +52,7 @@
   <property name="test.junit.output.usefile" value="true"/>
   <property name="minimr.query.files" value="join1.q,groupby1.q"/>
   <property name="test.silent" value="true"/>
+  <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
   <property name="test.serialize.qplan" value="true"/>
 
   <path id="test.classpath">

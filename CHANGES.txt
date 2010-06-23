@@ -244,6 +244,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1383. Allow HBase WAL to be disabled.
     (John Sichi via Ning Zhang)
 
+    HIVE-1359. Unit test should be shim-aware
+    (Ning Zhang via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
