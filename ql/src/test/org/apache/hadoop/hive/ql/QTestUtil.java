@@ -28,6 +28,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -96,6 +97,7 @@ public class QTestUtil {
   private MiniMRCluster mr = null;
   private HadoopShims.MiniDFSShim dfs = null;
   private boolean miniMr = false;
+  private String hadoopVer = null;
 
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -167,14 +169,27 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir) throws Exception {
-    this(outDir, logDir, false);
+    this(outDir, logDir, false, "0.20");
   }
 
-  public QTestUtil(String outDir, String logDir, boolean miniMr) throws Exception {
+  private String getHadoopMainVersion(String input) {
+    if (input == null) {
+      return null;
+    }
+    Pattern p = Pattern.compile("^(\\d+\\.\\d+).*");
+    Matcher m = p.matcher(input);
+    if (m.matches()) {
+      return m.group(1);
+    }
+    return null;
+  }
+
+  public QTestUtil(String outDir, String logDir, boolean miniMr, String hadoopVer) throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
     this.miniMr = miniMr;
+    this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
 
@@ -706,6 +721,7 @@ public class QTestUtil {
 
   }
 
+
   public int checkResults(String tname) throws Exception {
     Path warehousePath = new Path(FileSystem.get(conf).getUri().getPath());
     warehousePath = new Path(warehousePath, (new URI(testWarehouse)).getPath());
@@ -783,9 +799,46 @@ public class QTestUtil {
     return exitVal;
   }
 
+  /**
+   * Given the current configurations (e.g., hadoop version and execution mode), return
+   * the correct file name to compare with the current test run output.
+   * @param outDir The directory where the reference log files are stored.
+   * @param testName The test file name (terminated by ".out").
+   * @return The file name appended with the configuration values if it exists.
+   */
+  public String outPath(String outDir, String testName) {
+    String ret = testName;
+    // List of configurations. Currently the list consists of hadoop version and execution mode only
+    List<String> configs = new ArrayList<String>();
+    configs.add(this.hadoopVer);
+
+    Deque<String> stack = new LinkedList<String>();
+    StringBuilder sb = new StringBuilder();
+    sb.append(testName);
+    stack.push(sb.toString());
+
+    // example file names are input1.q.out_0.20.0_minimr or input2.q.out_0.17
+    for (String s: configs) {
+      sb.append('_');
+      sb.append(s);
+      stack.push(sb.toString());
+    }
+    while (stack.size() > 0) {
+      String fileName = stack.pop();
+      File f = new File(outDir, fileName);
+      if (f.exists()) {
+        ret = f.getPath();
+        break;
+      }
+    }
+   return ret;
+  }
+
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
     assert(qMap.containsKey(tname));
+
+    String outFileName = outPath(outDir, tname + ".out");
 
     cmdArray = new String[] {
         "diff", "-a",
@@ -804,7 +857,7 @@ public class QTestUtil {
         "-I", "Caused by:",
         "-I", "[.][.][.] [0-9]* more",
         (new File(logDir, tname + ".out")).getPath(),
-        (new File(outDir, tname + ".out")).getPath()};
+        outFileName };
 
     System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
 
@@ -825,7 +878,7 @@ public class QTestUtil {
       cmdArray = new String[3];
       cmdArray[0] = "cp";
       cmdArray[1] = (new File(logDir, tname + ".out")).getPath();
-      cmdArray[2] = (new File(outDir, tname + ".out")).getPath();
+      cmdArray[2] = outFileName;
       executor = Runtime.getRuntime().exec(cmdArray);
       exitVal = executor.waitFor();
     }

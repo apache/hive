@@ -27,7 +27,7 @@ public class HBaseQTestUtil extends QTestUtil {
     String outDir, String logDir, boolean miniMr, HBaseTestSetup setup)
     throws Exception {
 
-    super(outDir, logDir, miniMr);
+    super(outDir, logDir, miniMr, null);
     setup.preTest(conf);
     super.init();
   }
