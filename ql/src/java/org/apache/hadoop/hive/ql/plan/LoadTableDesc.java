@@ -32,12 +32,14 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   private boolean replace;
   private String tmpDir;
   private DynamicPartitionCtx dpCtx;
+  private boolean holdDDLTime;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
   public LoadTableDesc() {
+    this.holdDDLTime = false;
   }
 
   public LoadTableDesc(final String sourceDir, final String tmpDir,
@@ -72,6 +74,15 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
+    this.holdDDLTime = false;
+  }
+
+  public void setHoldDDLTime(boolean ddlTime) {
+    holdDDLTime = ddlTime;
+  }
+
+  public boolean getHoldDDLTime() {
+    return holdDDLTime;
   }
 
   @Explain(displayName = "tmp directory", normalExplain = false)

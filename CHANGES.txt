@@ -8,6 +8,9 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
+    operation (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

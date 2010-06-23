@@ -158,6 +158,8 @@ public enum ErrorMsg {
   UNARCHIVE_ON_MULI_PARTS("ARCHIVE can only be run on a single partition"),
   ARCHIVE_ON_TABLE("ARCHIVE can only be run on partitions"),
   RESERVED_PART_VAL("Partition value contains a reserved substring"),
+  HOLD_DDLTIME_ON_NONEXIST_PARTITIONS("HOLD_DDLTIME hint cannot be applied to dynamic " +
+  		"partitions or non-existent partitions"),
       ;
 
   private String mesg;

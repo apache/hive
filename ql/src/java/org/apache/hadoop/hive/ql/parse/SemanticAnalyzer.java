@@ -31,9 +31,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
@@ -97,7 +98,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
@@ -137,12 +138,11 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -150,9 +150,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -3146,6 +3146,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return input;
   }
 
+  /**
+   * Check for HOLD_DDLTIME hint.
+   * @param qb
+   * @return true if HOLD_DDLTIME is set, false otherwise.
+   */
+  private boolean checkHoldDDLTime(QB qb) {
+    ASTNode hints = qb.getParseInfo().getHints();
+    if (hints == null) {
+      return false;
+    }
+    for (int pos = 0; pos < hints.getChildCount(); pos++) {
+      ASTNode hint = (ASTNode) hints.getChild(pos);
+      if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_HOLD_DDLTIME) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @SuppressWarnings("nls")
   private Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
@@ -3163,6 +3182,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
     DynamicPartitionCtx dpCtx = null;
     LoadTableDesc ltd = null;
+    boolean holdDDLTime = checkHoldDDLTime(qb);
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -3176,6 +3196,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (parts != null && parts.size() > 0) { // table is partitioned
         if (partSpec== null || partSpec.size() == 0) { // user did NOT specify partition
           throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+        }
+        // the HOLD_DDLTIIME hint should not be used with dynamic partition since the
+        // newly generated partitions should always update their DDLTIME
+        if (holdDDLTime) {
+          throw new SemanticException(ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg());
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
@@ -3234,6 +3259,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isNonNativeTable) {
         ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
             table_desc, dpCtx);
+        if (holdDDLTime) {
+          LOG.info("this query will not update transient_lastDdlTime!");
+          ltd.setHoldDDLTime(true);
+        }
         loadTableWork.add(ltd);
       }
 
@@ -3267,9 +3296,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       currentTableId = destTableId;
       destTableId++;
 
-      ltd = new LoadTableDesc(queryTmpdir, ctx
-          .getExternalTmpFileURI(dest_path.toUri()), table_desc, dest_part
-          .getSpec());
+      ltd = new LoadTableDesc(queryTmpdir, ctx.getExternalTmpFileURI(dest_path.toUri()),
+          table_desc, dest_part.getSpec());
+      if (holdDDLTime) {
+        try {
+          Partition part = db.getPartition(dest_tab, dest_part.getSpec(), false);
+          if (part == null) {
+            throw new SemanticException(ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg());
+          }
+        } catch (HiveException e) {
+          throw new SemanticException(e);
+        }
+        LOG.info("this query will not update transient_lastDdlTime!");
+        ltd.setHoldDDLTime(true);
+      }
       loadTableWork.add(ltd);
       if (!outputs.add(new WriteEntity(dest_part))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES

@@ -149,6 +149,7 @@ TOK_HINTLIST;
 TOK_HINT;
 TOK_MAPJOIN;
 TOK_STREAMTABLE;
+TOK_HOLD_DDLTIME;
 TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
@@ -923,7 +924,7 @@ hintItem
 @init { msgs.push("hint item"); }
 @after { msgs.pop(); }
     :
-    hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs)
+    hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs?)
     ;
 
 hintName
@@ -932,6 +933,7 @@ hintName
     :
     KW_MAPJOIN -> TOK_MAPJOIN
     | KW_STREAMTABLE -> TOK_STREAMTABLE
+    | KW_HOLD_DDLTIME -> TOK_HOLD_DDLTIME
     ;
 
 hintArgs
@@ -1601,6 +1603,7 @@ KW_ELSE: 'ELSE';
 KW_END: 'END';
 KW_MAPJOIN: 'MAPJOIN';
 KW_STREAMTABLE: 'STREAMTABLE';
+KW_HOLD_DDLTIME: 'HOLD_DDLTIME';
 KW_CLUSTERSTATUS: 'CLUSTERSTATUS';
 KW_UTC: 'UTC';
 KW_UTCTIMESTAMP: 'UTC_TMESTAMP';

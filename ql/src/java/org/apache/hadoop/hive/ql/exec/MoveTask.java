@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -45,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -171,7 +171,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
-              .getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()));
+              .getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()),
+              tbd.getHoldDDLTime());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table));
           }
@@ -188,7 +189,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 	tbd.getPartitionSpec(),
                 	tbd.getReplace(),
                 	new Path(tbd.getTmpDir()),
-                	dpCtx.getNumDPCols());
+                	dpCtx.getNumDPCols(),
+                	tbd.getHoldDDLTime());
             // for each partition spec, get the partition
             // and put it to WriteEntity for post-exec hook
             for (LinkedHashMap<String, String> partSpec: dp) {
@@ -221,7 +223,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()));
+                tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()),
+                tbd.getHoldDDLTime());
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
