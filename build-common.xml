@@ -53,7 +53,7 @@
   <property name="minimr.query.files" value="join1.q,groupby1.q"/>
   <property name="test.silent" value="true"/>
   <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
-  <property name="test.serialize.qplan" value="true"/>
+  <property name="test.serialize.qplan" value="false"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />

@@ -13,6 +13,8 @@ Trunk -  Unreleased
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
     operation (Ning Zhang via namit)
 
+    HIVE-1430. Dont run serialize plan by default (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
