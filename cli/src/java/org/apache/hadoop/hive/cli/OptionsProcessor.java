@@ -46,21 +46,24 @@ public class OptionsProcessor {
   protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class.getName());
 
   private final Parser parser = new Parser();
-  private final Option confOptions, isSilentOption, execOption, fileOption, isHelpOption;
+  private final Option confOptions, initFilesOption, isSilentOption,
+    execOption, fileOption, isHelpOption;
 
   /**
    * Shamelessly cloned from Hadoop streaming take in multiple -hiveconf x=y parameters.
    */
   class MultiPropertyOption extends PropertyOption {
     private String optionString;
+    private boolean keyValue;
 
     MultiPropertyOption() {
       super();
     }
 
-    MultiPropertyOption(final String optionString, final String description, final int id) {
+    MultiPropertyOption(final String optionString, final String description, final int id, boolean keyValue) {
       super(optionString, description, id);
       this.optionString = optionString;
+      this.keyValue = keyValue;
     }
 
     @Override
@@ -85,7 +88,7 @@ public class OptionsProcessor {
         next = (String) arguments.next();
         if (!next.startsWith("-")) {
 
-          if (next.indexOf("=") == -1) {
+          if (keyValue && (next.indexOf("=") == -1)) {
             throw new OptionException(this, ResourceConstants.UNEXPECTED_TOKEN, "argument: '"
                 + next + "' is not of the form x=y");
           }
@@ -152,11 +155,16 @@ public class OptionsProcessor {
 
     // -hiveconf var=val
     confOptions = new MultiPropertyOption("-hiveconf",
-        "(n=v) Optional. Add or override Hive/Hadoop properties.", 'D');
+      "(n=v) Optional. Add or override Hive/Hadoop properties.", 'D', true);
+
+    initFilesOption = new MultiPropertyOption(
+      "-i", "File to run before other commands", 'I', false);
 
     new PropertyOption();
-    Group allOptions = new GroupBuilder().withOption(confOptions).withOption(isSilentOption)
-        .withOption(isHelpOption).withOption(execOption).withOption(fileOption).create();
+    Group allOptions =
+      new GroupBuilder().withOption(confOptions).withOption(initFilesOption)
+      .withOption(isSilentOption).withOption(isHelpOption)
+      .withOption(execOption).withOption(fileOption).create();
     parser.setGroup(allOptions);
   }
 
@@ -188,6 +196,11 @@ public class OptionsProcessor {
     ss.execString = (String) cmdLine.getValue(execOption);
     // -f
     ss.fileName = (String) cmdLine.getValue(fileOption);
+    // -i
+    List<String> initFiles = (List<String>) cmdLine.getValue(initFilesOption);
+    if (null != initFiles) {
+      ss.initFiles = initFiles;
+    }
     // -h
     if (cmdLine.hasOption(isHelpOption)) {
       printUsage(null);
@@ -214,15 +227,17 @@ public class OptionsProcessor {
       System.err.println("Invalid arguments: " + error);
     }
     System.err.println("");
-    System.err
-        .println("Usage: hive [--config confdir] [-hiveconf x=y]* [<-f filename>|<-e query-string>] [-S]");
+    System.err.println(
+      "Usage: hive [--config confdir] [-hiveconf x=y]* [-i <init-filename>]*"
+      + " [-f <filename>|-e <query-string>] [-S]");
     System.err.println("");
+    System.err.println("  -i <filename>             init Sql file");
     System.err.println("  -e 'quoted query string'  Sql from command line");
     System.err.println("  -f <filename>             Sql from files");
     System.err.println("  -S                        Silent mode in interactive shell");
     System.err.println("");
     System.err.println("-e and -f cannot be specified together. In the absence of these");
-    System.err.println("options, interactive shell is started");
+    System.err.println(" options, interactive shell is started.");
     System.err.println("");
 
   }

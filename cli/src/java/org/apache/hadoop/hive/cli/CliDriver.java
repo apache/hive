@@ -216,6 +216,30 @@ public class CliDriver {
     return (processLine(qsb.toString()));
   }
 
+  public int processFile(String fileName) throws IOException {
+    FileReader fileReader = null;
+    try {
+      fileReader = new FileReader(fileName);
+      return processReader(new BufferedReader(fileReader));
+    } finally {
+      if (fileReader != null) {
+        fileReader.close();
+      }
+    }
+  }
+
+  public void processInitFiles(CliSessionState ss) throws IOException {
+    boolean saveSilent = ss.getIsSilent();
+    ss.setIsSilent(true);
+    for (String initFile : ss.initFiles) {
+      int rc = processFile(initFile);
+      if (rc != 0) {
+        System.exit(rc);
+      }
+    }
+    ss.setIsSilent(saveSilent);
+  }
+  
   public static void main(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
@@ -263,13 +287,16 @@ public class CliDriver {
 
     CliDriver cli = new CliDriver();
 
+    // Execute -i init files (always in silent mode)
+    cli.processInitFiles(ss);
+    
     if (ss.execString != null) {
       System.exit(cli.processLine(ss.execString));
     }
 
     try {
       if (ss.fileName != null) {
-        System.exit(cli.processReader(new BufferedReader(new FileReader(ss.fileName))));
+        System.exit(cli.processFile(ss.fileName));
       }
     } catch (FileNotFoundException e) {
       System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");

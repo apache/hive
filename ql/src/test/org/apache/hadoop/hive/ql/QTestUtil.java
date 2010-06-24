@@ -530,6 +530,10 @@ public class QTestUtil {
     }
     SessionState.start(ss);
     cliDriver = new CliDriver();
+    if (tname.equals("init_file.q")) {
+      ss.initFiles.add("../data/scripts/test_init_file.sql");
+    }
+    cliDriver.processInitFiles(ss);
   }
 
   public int executeOne(String tname) {

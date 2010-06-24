@@ -8,6 +8,8 @@ Trunk -  Unreleased
 
     HIVE-1304. Add function row_sequence in contrib (John Sichi via namit)
 
+    HIVE-1405. Add ability to run an initialization script by 'hive -i <fileName>' (John Sichi via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
