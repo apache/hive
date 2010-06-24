@@ -301,9 +301,10 @@
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
       <fileset file="${build.dir.hive}/contrib/hive-hbase_handler-${version}.jar"/>
-      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/commons-dbcp-*.jar"/>
-      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/commons-pool-*.jar"/>
-      <fileset file="${build.dir.hive}/ivy/lib/metastore/default/datanucleus-connectionpool-*.jar"/>
+      <fileset dir="${build.dir.hive}/ivy/lib/metastore/default">
+        <include name="*.jar"/>
+        <exclude name="*.tar.gz"/>
+      </fileset>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>

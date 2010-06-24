@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -226,7 +228,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition add_partition(Partition new_part)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
-    return client.add_partition(new_part);
+    return deepCopy(client.add_partition(new_part));
   }
 
   /**
@@ -244,12 +246,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition appendPartition(String db_name, String table_name,
       List<String> part_vals) throws InvalidObjectException,
       AlreadyExistsException, MetaException, TException {
-    return client.append_partition(db_name, table_name, part_vals);
+    return deepCopy(client.append_partition(db_name, table_name, part_vals));
   }
 
   public Partition appendPartition(String dbName, String tableName, String partName)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    return client.append_partition_by_name(dbName, tableName, partName);
+      throws InvalidObjectException, AlreadyExistsException,
+             MetaException, TException {
+    return deepCopy(
+        client.append_partition_by_name(dbName, tableName, partName));
   }
   /**
    * @param name
@@ -439,7 +443,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public Map<String, Type> getTypeAll(String name) throws MetaException,
       TException {
-    return client.get_type_all(name);
+    Map<String, Type> result = null;
+    Map<String, Type> fromClient = client.get_type_all(name);
+    if (fromClient != null) {
+      result = new LinkedHashMap<String, Type>();
+      for (String key : fromClient.keySet()) {
+        result.put(key, deepCopy(fromClient.get(key)));
+      }
+    }
+    return result;
   }
 
   /**
@@ -463,13 +475,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public List<Partition> listPartitions(String db_name, String tbl_name,
       short max_parts) throws NoSuchObjectException, MetaException, TException {
-    return client.get_partitions(db_name, tbl_name, max_parts);
+    return deepCopyPartitions(
+        client.get_partitions(db_name, tbl_name, max_parts));
   }
 
   @Override
-  public List<Partition> listPartitions(String db_name, String tbl_name, List<String> part_vals,
-      short max_parts) throws NoSuchObjectException, MetaException, TException {
-    return client.get_partitions_ps(db_name, tbl_name, part_vals, max_parts);
+  public List<Partition> listPartitions(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts)
+      throws NoSuchObjectException, MetaException, TException {
+    return deepCopyPartitions(
+        client.get_partitions_ps(db_name, tbl_name, part_vals, max_parts));
   }
 
   /**
@@ -482,7 +497,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public Database getDatabase(String name) throws NoSuchObjectException,
       MetaException, TException {
-    return client.get_database(name);
+    return deepCopy(client.get_database(name));
   }
 
   /**
@@ -497,7 +512,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public Partition getPartition(String db_name, String tbl_name,
       List<String> part_vals) throws MetaException, TException {
-    return client.get_partition(db_name, tbl_name, part_vals);
+    return deepCopy(client.get_partition(db_name, tbl_name, part_vals));
   }
 
   /**
@@ -513,7 +528,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public Table getTable(String dbname, String name) throws MetaException,
       TException, NoSuchObjectException {
-    return client.get_table(dbname, name);
+    return deepCopy(client.get_table(dbname, name));
   }
 
   /**
@@ -524,7 +539,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_type(java.lang.String)
    */
   public Type getType(String name) throws MetaException, TException {
-    return client.get_type(name);
+    return deepCopy(client.get_type(name));
   }
 
   public List<String> getTables(String dbname, String tablePattern)
@@ -586,7 +601,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getFields(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    return client.get_fields(db, tableName);
+    return deepCopyFieldSchemas(client.get_fields(db, tableName));
   }
 
   /**
@@ -602,7 +617,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getSchema(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    return client.get_schema(db, tableName);
+    return deepCopyFieldSchemas(client.get_schema(db, tableName));
   }
 
   public String getConfigValue(String name, String defaultValue)
@@ -612,12 +627,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public Partition getPartition(String db, String tableName, String partName)
       throws MetaException, TException, UnknownTableException, NoSuchObjectException {
-    return client.get_partition_by_name(db, tableName, partName);
+    return deepCopy(client.get_partition_by_name(db, tableName, partName));
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    return client.append_partition_by_name(dbName, tableName, partName);
+    return deepCopy(
+        client.append_partition_by_name(dbName, tableName, partName));
   }
 
   public boolean dropPartitionByName(String dbName, String tableName, String partName, boolean deleteData)
@@ -640,5 +656,82 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Map<String, String> partitionNameToSpec(String name) throws MetaException, TException {
     return client.partition_name_to_spec(name);
+  }
+
+  /**
+   * @param partition
+   * @return
+   */
+  private Partition deepCopy(Partition partition) {
+    Partition copy = null;
+    if (partition != null) {
+      copy = new Partition(partition);
+    }
+    return copy;
+  }
+
+  private Database deepCopy(Database database) {
+    Database copy = null;
+    if (database != null) {
+      copy = new Database(database);
+    }
+    return copy;
+  }
+
+  private Table deepCopy(Table table) {
+    Table copy = null;
+    if (table != null) {
+      copy = new Table(table);
+    }
+    return copy;
+  }
+
+  private Type deepCopy(Type type) {
+    Type copy = null;
+    if (type != null) {
+      copy = new Type(type);
+    }
+    return copy;
+  }
+
+  private FieldSchema deepCopy(FieldSchema schema) {
+    FieldSchema copy = null;
+    if (schema != null) {
+      copy = new FieldSchema(schema);
+    }
+    return copy;
+  }
+
+  private List<Partition> deepCopyPartitions(List<Partition> partitions) {
+    List<Partition> copy = null;
+    if (partitions != null) {
+      copy = new ArrayList<Partition>();
+      for (Partition part : partitions) {
+        copy.add(deepCopy(part));
+      }
+    }
+    return copy;
+  }
+
+  private List<Table> deepCopyTables(List<Table> tables) {
+    List<Table> copy = null;
+    if (tables != null) {
+      copy = new ArrayList<Table>();
+      for (Table tab : tables) {
+        copy.add(deepCopy(tab));
+      }
+    }
+    return copy;
+  }
+
+  private List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
+    List<FieldSchema> copy = null;
+    if (schemas != null) {
+      copy = new ArrayList<FieldSchema>();
+      for (FieldSchema schema : schemas) {
+        copy.add(deepCopy(schema));
+      }
+    }
+    return copy;
   }
 }

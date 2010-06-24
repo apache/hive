@@ -4,21 +4,47 @@
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
         </dependency>
-	<dependency org="commons-dbcp" name="commons-dbcp" rev="1.2.2">
+	      <dependency org="commons-dbcp" name="commons-dbcp" rev="1.4">
           <exclude module="commons-pool" />
+          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
         </dependency>
-        <dependency org="commons-pool" name="commons-pool" rev="1.2">
-          <exclude module="commons-collections" />
-          <exclude module="xerces" />
-          <exclude module="xml-apis" />
-        </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="1.0.2">
+        <dependency org="commons-pool" name="commons-pool" rev="1.5.4"/>
+        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="2.0.1">
           <exclude module="proxool" />
           <exclude module="c3p0" />
           <exclude module="datanucleus-core" />
           <exclude module="datanucleus-rdbms" />
           <exclude module="commons-collections" />
           <exclude module="commons-pool" />
+          <exclude module="commons-dbcp" />
+        </dependency>
+        <dependency org="org.datanucleus" name="datanucleus-core" rev="2.0.3">
+          <exclude org="javax.jdo" module="jdo2-api"/>
+          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
+          <exclude org="org.eclipse.equinox" module="org.eclipse.equinox.registry"/>
+          <exclude org="org.eclipse.equinox" module="org.eclipse.equinox.common"/>
+          <exclude org="org.eclipse.core" module="org.eclipse.core.runtime"/>
+          <exclude org="org.eclipse.osgi" module="org.eclipse.osgi"/>
+          <exclude org="log4j" module="log4j"/>
+        </dependency>
+        <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="2.0.3">
+          <exclude org="org.datanucleus" module="datanucleus-core"/>
+          <exclude org="javax.jdo" module="jdo2-api"/>
+          <exclude org="asm" module="asm"/>
+          <exclude org="org.apache.ant" module="ant"/>
+        </dependency>
+        <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="2.0.3">
+          <exclude org="org.datanucleus" module="datanucleus-core"/>
+          <exclude org="javax.jdo" module="jdo2-api"/>
+          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
+          <exclude org="org.datanucleus" module="datanucleus-thirdparty"/>
+          <exclude org="org.apache.ant" module="ant"/>
+          <exclude org="oracle" module="ojdbc14_g"/>
+        </dependency>
+        <dependency org="javax.jdo" name="jdo2-api" rev="2.3-ec">
+          <exclude org="javax.transaction" module="jta"/>
+          <exclude org="org.apache.ant" module="ant"/>
+          <exclude org="org.apache.geronimo.specs" module="geronimo-jpa_3.0_spec"/>
         </dependency>
     </dependencies>
 </ivy-module>

@@ -47,6 +47,10 @@
     <ibiblio name="apache-snapshot" root="${snapshot.apache.org}" m2compatible="true"
         checkmodified="true" changingPattern=".*SNAPSHOT"/>
 
+    <url name="datanucleus-repo" m2compatible="true">
+      <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
+    </url>
+
     <filesystem name="fs" m2compatible="true" force="true">
        <artifact pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].[ext]"/>
        <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
@@ -56,16 +60,19 @@
       <resolver ref="hadoop-source"/>
       <resolver ref="apache-snapshot"/> 
       <resolver ref="maven2"/>
+      <resolver ref="datanucleus-repo"/>
     </chain>
 
     <chain name="internal" dual="true">
       <resolver ref="fs"/>
       <resolver ref="apache-snapshot"/> 
       <resolver ref="maven2"/>
+      <resolver ref="datanucleus-repo"/>
     </chain>
 
     <chain name="external">
       <resolver ref="maven2"/>
+      <resolver ref="datanucleus-repo"/>
     </chain>
     
   </resolvers>
