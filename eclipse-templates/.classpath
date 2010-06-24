@@ -16,16 +16,20 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-2.3-SNAPSHOT.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-1.1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-1.1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-1.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libfb303.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libthrift.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-3.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-3.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="testlibs/junit-3.8.1.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/jdo2-api-2.3-ec.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/datanucleus-core-2.0.3.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/datanucleus-enhancer-2.0.3.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/datanucleus-rdbms-2.0.3.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/commons-collections-3.2.1.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-1.4.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-2.0.1.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/commons-pool-1.5.4.jar"/>
 	<classpathentry kind="src" path="build/ql/gen-java"/>
 	<classpathentry kind="src" path="build/contrib/test/src"/>
 	<classpathentry kind="src" path="build/ql/test/src"/>
@@ -50,11 +54,7 @@
 	<classpathentry kind="src" path="jdbc/src/test"/>
 	<classpathentry kind="src" path="shims/src/@HADOOPVERPREF@/java"/>
 	<classpathentry kind="src" path="shims/src/common/java"/>
-    <classpathentry kind="src" path="hwi/src/java"/>
+  <classpathentry kind="src" path="hwi/src/java"/>
 	<classpathentry kind="src" path="hwi/src/test"/>
-    <classpathentry kind="lib" path="build/dist/lib/commons-collections-3.2.1.jar"/>
-    <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-1.2.2.jar"/>
-    <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-1.0.2.jar"/>
-    <classpathentry kind="lib" path="build/dist/lib/commons-pool-1.2.jar"/>
-    <classpathentry kind="output" path="build/eclipse-classes"/>
+  <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>
