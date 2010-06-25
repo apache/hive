@@ -571,6 +571,9 @@ Release 0.6.0 -  Unreleased
     'select' in it.
     (Arvind Prabhakar via jvs)
 
+    HIVE-1435. Upgraded naming scheme causes JDO exceptions
+    (Paul Yang via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

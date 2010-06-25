@@ -181,6 +181,12 @@
 </property>
 
 <property>
+  <name>datanucleus.identifierFactory</name>
+  <value>datanucleus</value>
+  <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus' is used for backward compatibility</description>
+</property>
+
+<property>
   <name>hive.metastore.warehouse.dir</name>
   <value>/user/hive/warehouse</value>
   <description>location of default database for the warehouse</description>
@@ -584,8 +590,8 @@
 <property>
   <name>hive.archive.har.parentdir.settable</name>
   <value>false</value>
-  <description>In new Hadoop versions, the parent directory must be set while 
-  creating a HAR. Because this functionality is hard to detect with just version 
+  <description>In new Hadoop versions, the parent directory must be set while
+  creating a HAR. Because this functionality is hard to detect with just version
   numbers, this conf var needs to be set manually.</description>
 </property>
 
