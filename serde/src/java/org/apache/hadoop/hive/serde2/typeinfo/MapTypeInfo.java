@@ -31,12 +31,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public class MapTypeInfo extends TypeInfo implements Serializable {
+public final class MapTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  TypeInfo mapKeyTypeInfo;
-  TypeInfo mapValueTypeInfo;
+  private TypeInfo mapKeyTypeInfo;
+  private TypeInfo mapValueTypeInfo;
 
   /**
    * For java serialization use only.
@@ -93,8 +93,7 @@ public class MapTypeInfo extends TypeInfo implements Serializable {
       return false;
     }
     MapTypeInfo o = (MapTypeInfo) other;
-    return o.getCategory().equals(getCategory())
-        && o.getMapKeyTypeInfo().equals(getMapKeyTypeInfo())
+    return o.getMapKeyTypeInfo().equals(getMapKeyTypeInfo())
         && o.getMapValueTypeInfo().equals(getMapValueTypeInfo());
   }
 

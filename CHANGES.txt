@@ -540,6 +540,9 @@ Release 0.6.0 -  Unreleased
 
     HIVE-1417. Archived partitions throw error with queries calling
     getContentSummary (Paul Yang via namit)
+  
+    HIVE-1271. Make matching of type information case insensitive. 
+    (Arvind Prabhakar via Ashish Thusoo)
 
     HIVE-1176. 'create if not exists' fails for a table name with
     'select' in it.

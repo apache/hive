@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public class ListTypeInfo extends TypeInfo implements Serializable {
+public final class ListTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  TypeInfo listElementTypeInfo;
+  private TypeInfo listElementTypeInfo;
 
   /**
    * For java serialization use only.
@@ -77,9 +77,8 @@ public class ListTypeInfo extends TypeInfo implements Serializable {
     if (!(other instanceof ListTypeInfo)) {
       return false;
     }
-    ListTypeInfo o = (ListTypeInfo) other;
-    return o.getCategory().equals(getCategory())
-        && o.getListElementTypeInfo().equals(getListElementTypeInfo());
+    return getListElementTypeInfo().equals(
+        ((ListTypeInfo) other).getListElementTypeInfo());
   }
 
   @Override
