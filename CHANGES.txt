@@ -10,6 +10,9 @@ Trunk -  Unreleased
 
     HIVE-1405. Add ability to run an initialization script by 'hive -i <fileName>' (John Sichi via namit)
 
+    HIVE-1387. Add PERCENTILE_APPROX which works with double data type
+    (Mayank Lahiri via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
