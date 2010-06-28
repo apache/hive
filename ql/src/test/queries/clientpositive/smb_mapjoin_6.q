@@ -3,10 +3,10 @@ set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
 drop table smb_bucket4_1;
-CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE;
 
 drop table smb_bucket4_2;
-CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE;
 
 create table smb_join_results(k1 int, v1 string, k2 int, v2 string);
 create table normal_join_results(k1 int, v1 string, k2 int, v2 string);

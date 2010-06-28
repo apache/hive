@@ -2,8 +2,8 @@ set hive.enforce.bucketing = true;
 set hive.exec.reducers.max = 1;
 
 drop table smb_bucket_input;
-create table smb_bucket_input (key int, value string) stored as textfile;
-load data local inpath '../data/files/smb_bucket_input.txt' into table smb_bucket_input;
+create table smb_bucket_input (key int, value string) stored as rcfile;
+load data local inpath '../data/files/smb_bucket_input.rc' into table smb_bucket_input;
 
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;

@@ -24,6 +24,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1440. Bug in RCFiles with local work (map-join or sort-merge join)
+    (He Yongqiang via namit)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
@@ -124,11 +125,25 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     localWorkInited = true;
     this.localWork = localWork;
     fetchOperators = new HashMap<String, FetchOperator>();
+    
+    Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>(); 
     // create map local operators
     for (Map.Entry<String, FetchWork> entry : localWork.getAliasToFetchWork()
         .entrySet()) {
-      fetchOperators.put(entry.getKey(), new FetchOperator(entry.getValue(),
-          new JobConf(hconf)));
+      JobConf jobClone = new JobConf(hconf);
+      Operator<? extends Serializable> tableScan = localWork.getAliasToWork()
+      .get(entry.getKey());
+      if(tableScan instanceof TableScanOperator) {
+        ArrayList<Integer> list = ((TableScanOperator)tableScan).getNeededColumnIDs();
+        if (list != null) {
+          ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
+        }  
+      } else {
+        ColumnProjectionUtils.setFullyReadColumns(jobClone);
+      }
+      FetchOperator fetchOp = new FetchOperator(entry.getValue(),jobClone);
+      fetchOpJobConfMap.put(fetchOp, jobClone);
+      fetchOperators.put(entry.getKey(), fetchOp);
       if (l4j != null) {
         l4j.info("fetchoperator for " + entry.getKey() + " created");
       }
@@ -139,8 +154,12 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
           .get(entry.getKey());
       // All the operators need to be initialized before process
       forwardOp.setExecContext(this.getExecContext());
-      forwardOp.initialize(this.getExecContext().getJc(), new ObjectInspector[] {entry.getValue()
-          .getOutputObjectInspector()});
+      FetchOperator fetchOp = entry.getValue();
+      JobConf jobConf = fetchOpJobConfMap.get(fetchOp);
+      if (jobConf == null) {
+        jobConf = this.getExecContext().getJc();
+      }
+      forwardOp.initialize(jobConf, new ObjectInspector[] {fetchOp.getOutputObjectInspector()});
       l4j.info("fetchoperator for " + entry.getKey() + " initialized");
     }
   }
