@@ -269,23 +269,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableClusterSort(ASTNode ast)
       throws SemanticException {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
-    ASTNode buckets = (ASTNode) ast.getChild(1);
-    List<String> bucketCols = getColumnNames((ASTNode) buckets.getChild(0));
-    List<Order> sortCols = new ArrayList<Order>();
-    int numBuckets = -1;
-    if (buckets.getChildCount() == 2) {
-      numBuckets = (Integer.valueOf(buckets.getChild(1).getText())).intValue();
+    if (ast.getChildCount() == 1) {
+      // This means that we want to turn off bucketing
+      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, -1,
+          new ArrayList<String>(), new ArrayList<Order>());
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+          alterTblDesc), conf));
     } else {
-      sortCols = getColumnNamesOrder((ASTNode) buckets.getChild(1));
-      numBuckets = (Integer.valueOf(buckets.getChild(2).getText())).intValue();
+      ASTNode buckets = (ASTNode) ast.getChild(1);
+      List<String> bucketCols = getColumnNames((ASTNode) buckets.getChild(0));
+      List<Order> sortCols = new ArrayList<Order>();
+      int numBuckets = -1;
+      if (buckets.getChildCount() == 2) {
+        numBuckets = (Integer.valueOf(buckets.getChild(1).getText())).intValue();
+      } else {
+        sortCols = getColumnNamesOrder((ASTNode) buckets.getChild(1));
+        numBuckets = (Integer.valueOf(buckets.getChild(2).getText())).intValue();
+      }
+      if (numBuckets <= 0) {
+        throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
+      }
+      AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, numBuckets,
+          bucketCols, sortCols);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+          alterTblDesc), conf));
     }
-    if (numBuckets <= 0) {
-      throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
-    }
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, numBuckets,
-        bucketCols, sortCols);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
   }
 
   static HashMap<String, String> getProps(ASTNode prop) {

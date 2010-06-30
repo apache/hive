@@ -1703,9 +1703,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Utilities.validateColumnNames(columns, Utilities
             .getColumnNamesFromSortCols(alterTbl.getSortColumns()));
       }
-      tbl.getTTable().getSd().setBucketCols(alterTbl.getBucketColumns());
-      tbl.getTTable().getSd().setNumBuckets(alterTbl.getNumberBuckets());
-      tbl.getTTable().getSd().setSortCols(alterTbl.getSortColumns());
+
+      int numBuckets = -1;
+      ArrayList<String> bucketCols = null;
+      ArrayList<Order> sortCols = null;
+
+      // -1 buckets means to turn off bucketing
+      if (alterTbl.getNumberBuckets() == -1) {
+        bucketCols = new ArrayList<String>();
+        sortCols = new ArrayList<Order>();
+        numBuckets = -1;
+      } else {
+        bucketCols = alterTbl.getBucketColumns();
+        sortCols = alterTbl.getSortColumns();
+        numBuckets = alterTbl.getNumberBuckets();
+      }
+      tbl.getTTable().getSd().setBucketCols(bucketCols);
+      tbl.getTTable().getSd().setNumBuckets(numBuckets);
+      tbl.getTTable().getSd().setSortCols(sortCols);
     } else {
       console.printError("Unsupported Alter commnad");
       return 1;

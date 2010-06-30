@@ -20,6 +20,8 @@ Trunk -  Unreleased
 
     HIVE-1430. Dont run serialize plan by default (Ning Zhang via namit)
 
+    HIVE-1443. Add an API to turn off bucketing (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

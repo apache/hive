@@ -403,6 +403,9 @@ alterStatementSuffixClusterbySortby
 @after{msgs.pop();}
 	:name=Identifier tableBuckets
 	->^(TOK_ALTERTABLE_CLUSTER_SORT $name tableBuckets)
+	| 
+	name=Identifier KW_NOT KW_CLUSTERED
+	->^(TOK_ALTERTABLE_CLUSTER_SORT $name)
 	;
 
 fileFormat
