@@ -179,6 +179,14 @@
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
 
+  <target name="ivy-docs" depends="ivy-init"
+    description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="docs"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+                  pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="docs"/>
+    <ivy:cachepath pathid="docs-classpath" conf="docs"/> 		
+  </target>
+
   <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
     file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
 

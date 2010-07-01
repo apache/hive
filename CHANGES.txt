@@ -259,6 +259,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1359. Unit test should be shim-aware
     (Ning Zhang via jvs)
 
+    HIVE-1135. Use Anakia for version controlled documentation
+    (Edward Capriolo via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed

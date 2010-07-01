@@ -28,15 +28,18 @@
     <conf name="master" description="contains the artifact but no dependencies"/>
     <conf name="compile" description="contains the artifact but no dependencies"/>
     <conf name="runtime" description="runtime but not the artifact"/>
-
+    <!-- Private configurations -->
+    <conf name="docs" visibility="private"/>
     <conf name="checkstyle" visibility="private"/>
   </configurations>
 
 
   <dependencies>
    <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
-               conf="checkstyle->default"/>
-    <conflict manager="all" />
+     conf="checkstyle->default"/>
+   <dependency org="org.jdom" name="jdom" rev="${jdom.version}"
+     conf="docs->default"/>
+   <conflict manager="all" />
   </dependencies>
   
 </ivy-module>

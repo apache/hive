@@ -1,0 +1,317 @@
+## Licensed to the Apache Software Foundation (ASF) under one
+## or more contributor license agreements.  See the NOTICE file
+## distributed with this work for additional information
+## regarding copyright ownership.  The ASF licenses this file
+## to you under the Apache License, Version 2.0 (the
+## "License"); you may not use this file except in compliance
+## with the License.  You may obtain a copy of the License at
+##
+##   http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing,
+## software distributed under the License is distributed on an
+## "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+## KIND, either express or implied.  See the License for the
+## specific language governing permissions and limitations
+## under the License.    
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.    
+-->
+
+<!-- start the processing -->
+#document()
+<!-- end the processing -->
+
+## This is where the macro's live
+
+#macro ( table $table)
+<table>
+    #foreach ( $items in $table.getChildren() )
+        #if ($items.getName().equals("tr"))
+            #tr ($items)
+        #end
+    #end
+</table>
+#end
+
+#macro ( tr $tr)
+<tr>
+    #foreach ( $items in $tr.getChildren() )
+        #if ($items.getName().equals("td"))
+            #td ($items)
+        #elseif ($items.getName().equals("th"))
+            #th ($items)
+        #end
+    #end
+</tr>
+#end
+
+#macro ( td $value)
+#if ($value.getAttributeValue("colspan"))
+#set ($colspan = $value.getAttributeValue("colspan"))
+#end
+#if ($value.getAttributeValue("rowspan"))
+#set ($rowspan = $value.getAttributeValue("rowspan"))
+#end
+<td colspan="$!colspan" rowspan="$!rowspan">
+	#foreach ( $items in $value.getContent() )
+		#if($items.name)
+			#display($items)
+		#else
+			$items.value
+		#end
+	#end
+</td>
+#end
+
+#macro ( th $value)
+#if ($value.getAttributeValue("colspan"))
+#set ($colspan = $value.getAttributeValue("colspan"))
+#end
+#if ($value.getAttributeValue("rowspan"))
+#set ($rowspan = $value.getAttributeValue("rowspan"))
+#end
+<th colspan="$!colspan" rowspan="$!rowspan">
+	#foreach ( $items in $value.getContent() )
+		#if($items.name)
+			#display($items)
+		#else
+			$items.value
+		#end
+	#end
+</th>
+#end
+
+#macro ( projectanchor $name $value )
+#if ($value.startsWith("http://"))
+    <a href="$value">$name</a>
+#elseif ($value.startsWith("https://"))
+    <a href="$value">$name</a>
+#else
+    <a href="$relativePath$value">$name</a>
+#end
+#end
+
+#macro ( metaauthor $author $email )
+            <meta name="author" value="$author">
+            <meta name="email" value="$email">
+#end
+
+#macro ( image $value )
+#if ($value.getAttributeValue("width"))
+#set ($width=$value.getAttributeValue("width"))
+#end
+#if ($value.getAttributeValue("height"))
+#set ($height=$value.getAttributeValue("height"))
+#end
+#if ($value.getAttributeValue("align"))
+#set ($align=$value.getAttributeValue("align"))
+#end
+<img src="$relativePath$value.getAttributeValue("src")" width="$!width" height="$!height" align="$!align">
+#end
+
+#macro ( source $value)
+<div class="source">$escape.getText($value.getText())</pre></div>
+#end
+
+
+## need these to catch special macros within lists
+#macro(list $node)
+<$node.getName()>
+	#foreach ( $items in $node.getChildren() )
+		#listitem($items)
+	#end
+</$node.getName()>
+#end
+
+#macro (listitem $node)
+<$node.getName()>
+## use getContent instead of getChildren
+## to include both text and nodes
+	#foreach ( $items in $node.getContent() )
+		#if($items.name)
+			#display($items)
+		#else
+			$items.value
+		#end
+	#end
+</$node.getName()>
+#end
+
+
+## # displays a basic node, calling macros if appropriate
+#macro ( display $node )
+		#if ($node.getName().equals("img"))
+			#image ($node)
+		#elseif ($node.getName().equals("source"))
+			#source ($node)
+		#elseif ($node.getName().equals("table"))
+			#table ($node)
+		#elseif ($node.getName().equals("ul"))
+			#list ($node)
+		#elseif ($node.getName().equals("ol"))
+			#list ($node)
+		#else
+			$node
+		#end
+#end
+
+#macro ( section $section)
+	<a name="#anchorName($section)"></a>
+	<h1>$section.getAttributeValue("name")</h1>
+
+	<div class="subsection">
+		#foreach ( $items in $section.getChildren() )
+			#if ($items.getName().equals("subsection"))
+				#subsection ($items)
+			#else
+				#display($items)
+			#end
+		#end
+	</div>
+#end
+
+#macro ( subsection $subsection)
+	<a name="#anchorName($subsection)"></a>
+	<h2>$subsection.getAttributeValue("name")</h2>
+	<div class="subsection">
+		#foreach ( $items in $subsection.getChildren() )
+			#display($items)
+		#end
+	</div>
+#end
+
+#macro ( anchorName $section)
+#if ($section.getAttributeValue("href"))
+$section.getAttributeValue("href")##
+#else
+$section.getAttributeValue("name")##
+#end
+#end
+
+#macro ( makeProject )
+
+    <!-- ============================================================ -->
+
+    #set ($menus = $project.getChild("body").getChildren("menu"))
+    #foreach ( $menu in $menus )
+    	<div class="menusection">
+    		<span class="menuheader">$menu.getAttributeValue("name")</span>
+			<ul>
+			#foreach ( $item in $menu.getChildren() )
+				#set ($name = $item.getAttributeValue("name"))
+				<li>#projectanchor($name $item.getAttributeValue("href"))</li>
+			#end
+			</ul>
+        </div>
+    #end
+#end
+
+#macro (getProjectImage)
+
+<div id="logo1">
+	<a href="http://hadoop.apache.org/hive/"><img src="${relativePath}/images/hive-logo.jpg" border="0"/></a>
+</div>
+
+
+#if ($project.getChild("logo"))
+
+<div id="logo2">
+
+#set ( $logoString = $project.getChild("logo").getAttributeValue("href") )
+#if ( $logoString.startsWith("/") )
+<a href="$project.getAttributeValue("href")"><img src="$relativePath$logoString" alt="$project.getChild("logo").getText()" border="0"/></a>
+#else
+<a href="$project.getAttributeValue("href")"><img src="$relativePath/$logoString" alt="$project.getChild("logo").getText()" border="0"/></a>
+#end
+
+</div>
+
+#end
+#end
+
+#macro (printMeta $metaElement)
+<meta #set ($attribs = $metaElement.getAttributes())
+#foreach ($a in $attribs) $a.getName()="$a.getValue()" #end />
+#end
+
+#macro (document)
+    <!-- ====================================================================== -->
+    <!-- GENERATED FILE, DO NOT EDIT, EDIT THE XML FILE IN xdocs INSTEAD! -->
+    <!-- Main Page Section -->
+    <!-- ====================================================================== -->
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+
+            #set ($authors = $root.getChild("properties").getChildren("author"))
+            #foreach ( $au in $authors )
+                #metaauthor ( $au.getText() $au.getAttributeValue("email") )
+            #end
+
+           #set ($metas = $root.getChildren("meta"))
+
+            ##    Parse meta directives such as
+            ##    <meta name="keyword" content="apache, velocity, java"/>
+            #foreach ($meta in $metas) #printMeta($meta) #end
+
+            ##    Support for <base> tags.
+            #if ($root.getChild("properties").getChild("base"))
+              #set ($url = $root.getChild("properties").getChild("base").getAttributeValue("href"))
+              <base href="$url"/>
+            #end
+
+            <title>$project.getChild("title").getText() - $root.getChild("properties").getChild("title").getText()</title>
+
+			## use a relative CSS for when the page is displayed locally (will overwrite
+			## previous CSS settings)
+			<link rel="stylesheet" href="${relativePath}/site.css" type="text/css">
+        </head>
+
+        <body>
+
+			## use a table in order to force footer to end of page
+
+			<div id="container">
+
+				<div id="header">
+					#getProjectImage()
+				</div>
+
+				<div id="menu">
+					#makeProject()
+				</div>
+
+				<div id="body">
+					#set ($allSections = $root.getChild("body").getChildren("section"))
+					#foreach ( $section in $allSections )
+						#section ($section)
+					#end
+				</div>
+
+				<div id="footer">
+					Copyright &#169; 1999-2007, <a href="http://www.apache.org/">The Apache Software Foundation</a>.
+				</div>
+
+			</div>
+
+        </body>
+    </html>
+#end
