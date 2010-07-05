@@ -104,6 +104,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
 
       // Get the reflection methods from ue
       for (Method method : udafEvaluator.getMethods()) {
+        method.setAccessible(true);
         if (method.getName().equals("iterate")) {
           iterateMethod = method;
         }

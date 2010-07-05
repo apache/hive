@@ -22,6 +22,8 @@ Trunk -  Unreleased
 
     HIVE-1443. Add an API to turn off bucketing (Paul Yang via namit)
 
+    HIVE-1447. Speed up reflection method calls (Zheng via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES
