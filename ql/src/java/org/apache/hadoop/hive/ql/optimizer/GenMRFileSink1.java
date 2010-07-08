@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -283,9 +284,10 @@ public class GenMRFileSink1 implements NodeProcessor {
       dest = fsOp.getConf().getDirName();
 
       // generate the temporary file
+      // it must be on the same file system as the current destination
       ParseContext parseCtx = ctx.getParseCtx();
       Context baseCtx = parseCtx.getContext();
-      String tmpDir = baseCtx.getMRTmpFileURI();
+      String tmpDir = baseCtx.getExternalTmpFileURI((new Path(dest)).toUri());
 
       fsOp.getConf().setDirName(tmpDir);
     }

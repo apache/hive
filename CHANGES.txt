@@ -31,6 +31,9 @@ Trunk -  Unreleased
     HIVE-1440. Bug in RCFiles with local work (map-join or sort-merge join)
     (He Yongqiang via namit)
 
+    HIVE-1454. insert overwrite and CTAS fail in hive local mode
+    (Joydeep Sen Sarma via He Yongqiang )
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

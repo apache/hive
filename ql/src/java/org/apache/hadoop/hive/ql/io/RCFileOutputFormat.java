@@ -134,8 +134,9 @@ public class RCFileOutputFormat extends
     }
 
     RCFileOutputFormat.setColumnNumber(jc, cols.length);
-    final RCFile.Writer outWriter = Utilities.createRCFileWriter(jc, FileSystem
-        .get(jc), finalOutPath, isCompressed);
+    final RCFile.Writer outWriter = Utilities.createRCFileWriter
+      (jc, finalOutPath.getFileSystem(jc),
+       finalOutPath, isCompressed);
 
     return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
       public void write(Writable r) throws IOException {
