@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -64,8 +64,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   HashMap<Byte, RowContainer<ArrayList<Object>>> candidateStorage;
 
   transient HashMap<Byte, String> tagToAlias;
-  private transient HashMap<Byte, Boolean> fetchOpDone = new HashMap<Byte, Boolean>();
-  private transient HashMap<Byte, Boolean> foundNextKeyGroup = new HashMap<Byte, Boolean>();
+  private transient final HashMap<Byte, Boolean> fetchOpDone = new HashMap<Byte, Boolean>();
+  private transient final HashMap<Byte, Boolean> foundNextKeyGroup = new HashMap<Byte, Boolean>();
   transient boolean firstFetchHappened = false;
   transient boolean localWorkInited = false;
 
@@ -125,8 +125,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     localWorkInited = true;
     this.localWork = localWork;
     fetchOperators = new HashMap<String, FetchOperator>();
-    
-    Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>(); 
+
+    Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>();
     // create map local operators
     for (Map.Entry<String, FetchWork> entry : localWork.getAliasToFetchWork()
         .entrySet()) {
@@ -137,7 +137,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         ArrayList<Integer> list = ((TableScanOperator)tableScan).getNeededColumnIDs();
         if (list != null) {
           ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
-        }  
+        }
       } else {
         ColumnProjectionUtils.setFullyReadColumns(jobClone);
       }
@@ -213,6 +213,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     reportProgress();
+    numMapRowsRead++;
 
     // the big table has reached a new key group. try to let the small tables
     // catch up with the big table.
@@ -256,6 +257,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         break;
       }
       reportProgress();
+      numMapRowsRead++;
       allFetchOpDone = allFetchOpDone();
     }
 

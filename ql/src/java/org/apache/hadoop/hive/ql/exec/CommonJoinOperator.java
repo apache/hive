@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,8 +44,8 @@ import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -139,6 +139,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   transient Byte lastAlias = null;
 
   transient boolean handleSkewJoin = false;
+
+  protected transient int countAfterReport;
+  protected transient int heartbeatInterval;
 
   public CommonJoinOperator() {
   }
@@ -266,6 +269,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected void initializeOp(Configuration hconf) throws HiveException {
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
+
+    heartbeatInterval = HiveConf.getIntVar(hconf,
+        HiveConf.ConfVars.HIVESENDHEARTBEAT);
+    countAfterReport = 0;
+
     totalSz = 0;
     // Map that contains the rows for each alias
     storage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
@@ -480,7 +488,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         }
       }
     }
+
     forward(forwardCache, outputObjInspector);
+    countAfterReport = 0;
   }
 
   private void copyOldArray(boolean[] src, boolean[] dest) {
@@ -816,6 +826,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
 
       forward(forwardCache, outputObjInspector);
+      countAfterReport = 0;
       return;
     }
 
@@ -875,6 +886,17 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0),
           true);
       LOG.trace("called genObject");
+    }
+  }
+
+  protected void reportProgress() {
+    // Send some status periodically
+    countAfterReport++;
+
+    if ((countAfterReport % heartbeatInterval) == 0
+        && (reporter != null)) {
+      reporter.progress();
+      countAfterReport = 0;
     }
   }
 

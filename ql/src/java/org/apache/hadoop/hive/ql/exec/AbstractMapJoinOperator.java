@@ -67,7 +67,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
       };
 
   transient boolean firstRow;
-  transient int heartbeatInterval;
 
   public AbstractMapJoinOperator() {
   }
@@ -82,8 +81,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
     numMapRowsRead = 0;
     firstRow = true;
-    heartbeatInterval = HiveConf.getIntVar(hconf,
-        HiveConf.ConfVars.HIVESENDHEARTBEAT);
 
     joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
 
@@ -127,14 +124,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
     errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): "
         + FATAL_ERR_MSG[(int) counterCode]);
-  }
-
-  protected void reportProgress() {
-    // Send some status periodically
-    numMapRowsRead++;
-    if (((numMapRowsRead % heartbeatInterval) == 0) && (reporter != null)) {
-      reporter.progress();
-    }
   }
 
   @Override

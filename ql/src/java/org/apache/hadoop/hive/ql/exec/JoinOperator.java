@@ -68,6 +68,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
+      reportProgress();
 
       // get alias
       alias = (byte) tag;
@@ -116,7 +117,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
 
       // Add the value to the vector
       storage.get(alias).add(nr);
-
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);

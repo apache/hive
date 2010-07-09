@@ -34,6 +34,9 @@ Trunk -  Unreleased
     HIVE-1454. insert overwrite and CTAS fail in hive local mode
     (Joydeep Sen Sarma via He Yongqiang )
 
+    HIVE-1305. add progress in join and groupby
+    (Siying Dong via He Yongqiang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
