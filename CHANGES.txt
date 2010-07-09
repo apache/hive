@@ -554,6 +554,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1435. Upgraded naming scheme causes JDO exceptions
     (Paul Yang via jvs)
 
+    HIVE-1454. insert overwrite and CTAS fail in hive local mode
+    (Joydeep Sen Sarma via He Yongqiang )
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

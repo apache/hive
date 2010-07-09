@@ -803,14 +803,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String fname = stripQuotes(ast.getChild(0).getText());
           if ((!qb.getParseInfo().getIsSubQ())
               && (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE)) {
-            fname = ctx.getMRTmpFileURI();
-            ctx.setResDir(new Path(fname));
 
             if (qb.isCTAS()) {
               qb.setIsQuery(false);
+
+              // allocate a temporary output dir on the location of the table
+              String location = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
+              try {
+                fname = ctx.getExternalTmpFileURI
+                  (FileUtils.makeQualified(new Path(location), conf).toUri());
+
+              } catch (Exception e) {
+                throw new SemanticException("Error creating temporary folder on: "
+                                            + location, e);
+              }
+
             } else {
               qb.setIsQuery(true);
+              fname = ctx.getMRTmpFileURI();
             }
+            ctx.setResDir(new Path(fname));
           }
           qb.getMetaData().setDestForAlias(name, fname,
               (ast.getToken().getType() == HiveParser.TOK_DIR));
