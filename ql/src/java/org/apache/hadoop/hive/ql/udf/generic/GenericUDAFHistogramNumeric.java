@@ -62,7 +62,7 @@ import org.apache.hadoop.util.StringUtils;
              + "bin widths. It offers no guarantees in terms of the mean-squared-error of the "
              + "histogram, but in practice is comparable to the histograms produced by the R/S-Plus "
              + "statistical computing packages." )
-public class GenericUDAFHistogramNumeric implements GenericUDAFResolver {
+public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
   // class static variables
   static final Log LOG = LogFactory.getLog(GenericUDAFHistogramNumeric.class.getName());
 

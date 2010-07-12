@@ -19,25 +19,24 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 @Description(name = "max", value = "_FUNC_(expr) - Returns the maximum value of expr")
-public class GenericUDAFMax implements GenericUDAFResolver {
+public class GenericUDAFMax extends AbstractGenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFMax.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-      throws SemanticException {
+    throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");

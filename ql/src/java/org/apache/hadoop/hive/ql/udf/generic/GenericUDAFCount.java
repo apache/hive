@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,16 +30,44 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * This class implements the COUNT aggregation function as in SQL.
  */
-@Description(name = "count", value = "_FUNC_(x) - Returns the count")
-public class GenericUDAFCount implements GenericUDAFResolver {
+@Description(name = "count",
+    value = "_FUNC_(*) - Returns the total number of retrieved rows, including "
+          +        "rows containing NULL values.\n"
+
+          + "_FUNC_(expr) - Returns the number of rows for which the supplied "
+          +        "expression is non-NULL.\n"
+
+          + "_FUNC_(DISTINCT expr[, expr...]) - Returns the number of rows for "
+          +        "which the supplied expression(s) are unique and non-NULL.")
+public class GenericUDAFCount implements GenericUDAFResolver2 {
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
-    if (parameters.length != 1) {
-      throw new UDFArgumentTypeException(parameters.length - 1,
-          "Exactly one argument is expected.");
-    }
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+      throws SemanticException {
+    // This method implementation is preserved for backward compatibility.
     return new GenericUDAFCountEvaluator();
+  }
+
+  @Override
+  public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo paramInfo)
+  throws SemanticException {
+
+    TypeInfo[] parameters = paramInfo.getParameters();
+
+    if (parameters.length == 0) {
+      if (!paramInfo.isAllColumns()) {
+        throw new UDFArgumentException("Argument expected");
+      }
+      assert !paramInfo.isDistinct() : "DISTINCT not supported with *";
+    } else {
+      if (parameters.length > 1 && !paramInfo.isDistinct()) {
+        throw new UDFArgumentException("DISTINCT keyword must be specified");
+      }
+      assert !paramInfo.isAllColumns() : "* not supported in expression list";
+    }
+
+    return new GenericUDAFCountEvaluator().setCountAllColumns(
+        paramInfo.isAllColumns());
   }
 
   /**
@@ -47,16 +75,23 @@ public class GenericUDAFCount implements GenericUDAFResolver {
    *
    */
   public static class GenericUDAFCountEvaluator extends GenericUDAFEvaluator {
-    private ObjectInspector inputOI;
+    private boolean countAllColumns = false;
+    private LongObjectInspector partialCountAggOI;
     private LongWritable result;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
+    throws HiveException {
       super.init(m, parameters);
-      assert (parameters.length == 1);
-      inputOI = parameters[0];
+      partialCountAggOI =
+        PrimitiveObjectInspectorFactory.writableLongObjectInspector;
       result = new LongWritable(0);
       return PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+    }
+
+    private GenericUDAFCountEvaluator setCountAllColumns(boolean countAllCols) {
+      countAllColumns = countAllCols;
+      return this;
     }
 
     /** class for storing count value. */
@@ -66,9 +101,9 @@ public class GenericUDAFCount implements GenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      CountAgg result = new CountAgg();
-      reset(result);
-      return result;
+      CountAgg buffer = new CountAgg();
+      reset(buffer);
+      return buffer;
     }
 
     @Override
@@ -77,17 +112,31 @@ public class GenericUDAFCount implements GenericUDAFResolver {
     }
 
     @Override
-    public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      assert (parameters.length == 1);
-      if (parameters[0] != null) {
+    public void iterate(AggregationBuffer agg, Object[] parameters)
+      throws HiveException {
+      if (countAllColumns) {
+        assert parameters.length == 0;
         ((CountAgg) agg).value++;
+      } else {
+        assert parameters.length > 0;
+        boolean countThisRow = true;
+        for (Object nextParam : parameters) {
+          if (nextParam == null) {
+            countThisRow = false;
+            break;
+          }
+        }
+        if (countThisRow) {
+          ((CountAgg) agg).value++;
+        }
       }
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
+    public void merge(AggregationBuffer agg, Object partial)
+      throws HiveException {
       if (partial != null) {
-        long p = ((LongObjectInspector) inputOI).get(partial);
+        long p = partialCountAggOI.get(partial);
         ((CountAgg) agg).value += p;
       }
     }
@@ -102,7 +151,5 @@ public class GenericUDAFCount implements GenericUDAFResolver {
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
       return terminate(agg);
     }
-
   }
-
 }

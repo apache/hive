@@ -45,7 +45,7 @@ import org.apache.hadoop.util.StringUtils;
  *
  */
 @Description(name = "avg", value = "_FUNC_(x) - Returns the mean of a set of numbers")
-public class GenericUDAFAverage implements GenericUDAFResolver {
+public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFAverage.class.getName());
 

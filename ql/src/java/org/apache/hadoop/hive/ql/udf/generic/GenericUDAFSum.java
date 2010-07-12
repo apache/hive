@@ -38,12 +38,13 @@ import org.apache.hadoop.util.StringUtils;
  *
  */
 @Description(name = "sum", value = "_FUNC_(x) - Returns the sum of a set of numbers")
-public class GenericUDAFSum implements GenericUDAFResolver {
+public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFSum.class.getName());
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
+    throws SemanticException {
     if (parameters.length != 1) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Exactly one argument is expected.");

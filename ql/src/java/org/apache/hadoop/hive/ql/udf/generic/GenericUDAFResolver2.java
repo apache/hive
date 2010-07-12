@@ -19,19 +19,26 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * A Generic User-defined aggregation function (GenericUDAF) for the use with
- * Hive.
- *
- * GenericUDAFResolver is used at compile time. We use GenericUDAFResolver to
- * find out the GenericUDAFEvaluator for the parameter types.
- *
- * @deprecated Use {@link GenericUDAFResolver2} instead.
+ * This interface extends the <tt>GenericUDAFResolver</tt> interface and
+ * provides more flexibility in terms of discovering the parameter types
+ * supplied to the UDAF. Implementations that extend this interface will
+ * also have access to extra information such as the specification of the
+ * <tt>DISTINCT</tt> qualifier or the invocation with the special wildcard
+ * character.
+ * <p>
+ * <b>Note:</b> The implementation of function does not have to handle the
+ * actual <tt>DISTINCT</tt> or wildcard implementation. This information is
+ * provided only to allow the function implementation to accept or reject
+ * such invocations. For example - the implementation of <tt>COUNT</tt> UDAF
+ * requires that the <tt>DISTINCT</tt> qualifier be supplied when more than
+ * one parameters are specified in the invocation. The actual filtering of
+ * data bound to parameter types for <tt>DISTINCT</tt> implementation is
+ * handled by the framework and not the <tt>COUNT</tt> UDAF implementation.
  */
-@Deprecated
-public interface GenericUDAFResolver {
+@SuppressWarnings("deprecation")
+public interface GenericUDAFResolver2 extends GenericUDAFResolver {
 
   /**
    * Get the evaluator for the parameter types.
@@ -45,11 +52,11 @@ public interface GenericUDAFResolver {
    * If the class of the object does not implement Serializable, then we will
    * create a new instance of the class at execution time.
    * </p>
-   * @param parameters
-   *          The types of the parameters. We need the type information to know
-   *          which evaluator class to use.
+   *
+   * @param info The parameter information that is applicable to the UDAF being
+   *          invoked.
    * @throws SemanticException
    */
-  GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
-    throws SemanticException;
+  GenericUDAFEvaluator getEvaluator(
+      GenericUDAFParameterInfo info) throws SemanticException;
 }
