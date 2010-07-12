@@ -47,7 +47,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 @Description(name = "variance,var_pop",
     value = "_FUNC_(x) - Returns the variance of a set of numbers")
-public class GenericUDAFVariance implements GenericUDAFResolver {
+public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
 
   static final Log LOG = LogFactory.getLog(GenericUDAFVariance.class.getName());
 

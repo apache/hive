@@ -137,7 +137,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFHistogramNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
@@ -167,6 +169,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
+import org.apache.hadoop.hive.ql.udf.generic.SimpleGenericUDAFParameterInfo;
 import org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathBoolean;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathDouble;
@@ -628,9 +631,11 @@ public final class FunctionRegistry {
    * @return The UDAF evaluator
    */
   public static GenericUDAFEvaluator getGenericUDAFEvaluator(String name,
-      List<TypeInfo> argumentTypeInfos) throws SemanticException {
-    GenericUDAFResolver udaf = getGenericUDAFResolver(name);
-    if (udaf == null) {
+      List<TypeInfo> argumentTypeInfos, boolean isDistinct,
+      boolean isAllColumns) throws SemanticException {
+
+    GenericUDAFResolver udafResolver = getGenericUDAFResolver(name);
+    if (udafResolver == null) {
       return null;
     }
 
@@ -638,7 +643,18 @@ public final class FunctionRegistry {
     for (int i = 0; i < parameters.length; i++) {
       parameters[i] = argumentTypeInfos.get(i);
     }
-    return udaf.getEvaluator(parameters);
+
+    GenericUDAFEvaluator udafEvaluator = null;
+    if (udafResolver instanceof GenericUDAFResolver2) {
+      GenericUDAFParameterInfo paramInfo =
+          new SimpleGenericUDAFParameterInfo(
+              parameters, isDistinct, isAllColumns);
+      udafEvaluator =
+          ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
+    } else {
+      udafEvaluator = udafResolver.getEvaluator(parameters);
+    }
+    return udafEvaluator;
   }
 
   /**

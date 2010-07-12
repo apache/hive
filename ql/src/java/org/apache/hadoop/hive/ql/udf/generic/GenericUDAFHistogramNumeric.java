@@ -52,7 +52,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 @Description(name = "histogram_numeric",
     value = "_FUNC_(expr, nb) - Computes a histogram on numeric 'expr' using nb bins.")
-public class GenericUDAFHistogramNumeric implements GenericUDAFResolver {
+public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
   // class static variables
   static final Log LOG = LogFactory.getLog(GenericUDAFHistogramNumeric.class.getName());
 
