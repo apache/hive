@@ -37,6 +37,10 @@ Trunk -  Unreleased
     HIVE-1305. add progress in join and groupby
     (Siying Dong via He Yongqiang)
 
+    HIVE-1453. Make Eclipse launch tempaltes auto-adjust to Hive
+    version number changes.
+    (Arvind Prabhakar via jvs)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
