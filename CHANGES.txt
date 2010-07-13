@@ -13,6 +13,9 @@ Trunk -  Unreleased
     HIVE-1387. Add PERCENTILE_APPROX which works with double data type
     (Mayank Lahiri via jvs)
 
+    HIVE-1438. SENTENCES() UDF for natural language tokenization
+    (Mayank Lahiri via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
