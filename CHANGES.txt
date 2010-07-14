@@ -27,6 +27,10 @@ Trunk -  Unreleased
 
     HIVE-1447. Speed up reflection method calls (Zheng via He Yongqiang)
 
+    HIVE-1462. Report progress in FileSinkOperator works in multiple directory
+    case
+    (Siying Dong via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

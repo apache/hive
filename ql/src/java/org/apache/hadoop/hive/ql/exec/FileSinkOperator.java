@@ -49,10 +49,10 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -100,7 +100,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path[] outPaths;
     Path[] finalPaths;
     RecordWriter[] outWriters;
-    int timeOut; // JT timeout in msec.
 
     public FSPaths() {
     }
@@ -110,10 +109,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       outPaths   = new Path[numFiles];
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
-      // Timeout is chosen to make sure that even if one iteration takes more than
-      // half of the script.timeout but less than script.timeout, we will still
-      // be able to report progress.
-      timeOut = hconf.getInt("mapred.healthChecker.script.timeout", 600000)/2;
     }
 
     /**
@@ -164,31 +159,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       return outWriters;
     }
 
-    /**
-     * Report status to JT so that JT won't kill this task if closing takes too long
-     * due to too many files to close and the NN is overloaded.
-     * @param lastUpdateTime the time (msec) that progress update happened.
-     * @return true if a new progress update is reported, false otherwise.
-     */
-    private boolean updateProgress(long lastUpdateTime) {
-      if (reporter != null &&
-          (System.currentTimeMillis() - lastUpdateTime) > timeOut) {
-        reporter.progress();
-        return true;
-      } else {
-        return false;
-      }
-    }
-
     public void closeWriters(boolean abort) throws HiveException {
-      long lastProgressReport = System.currentTimeMillis();
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
             outWriters[idx].close(abort);
-            if (updateProgress(lastProgressReport)) {
-              lastProgressReport = System.currentTimeMillis();
-            }
+            updateProgress();
           } catch (IOException e) {
             throw new HiveException(e);
           }
@@ -197,16 +173,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     private void commit(FileSystem fs) throws HiveException {
-      long lastProgressReport = System.currentTimeMillis();
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
           if (!fs.rename(outPaths[idx], finalPaths[idx])) {
             throw new HiveException("Unable to rename output to: "
                 + finalPaths[idx]);
           }
-          if (updateProgress(lastProgressReport)) {
-            lastProgressReport = System.currentTimeMillis();
-          }
+          updateProgress();
         } catch (IOException e) {
           throw new HiveException(e + "Unable to rename output to: "
               + finalPaths[idx]);
@@ -215,7 +188,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     public void abortWriters(FileSystem fs, boolean abort, boolean delete) throws HiveException {
-      long lastProgressReport = System.currentTimeMillis();
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
@@ -223,9 +195,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           	if (delete) {
           	  fs.delete(outPaths[idx], true);
           	}
-          	if (updateProgress(lastProgressReport)) {
-          	  lastProgressReport = System.currentTimeMillis();
-          	}
+          	updateProgress();
           } catch (IOException e) {
             throw new HiveException(e);
           }
@@ -260,6 +230,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient FSPaths fsp;
   private transient boolean bDynParts;
   private transient SubStructObjectInspector subSetOI;
+  private transient int timeOut; // JT timeout in msec.
+  private transient long lastProgressReport = System.currentTimeMillis();
 
   /**
    * TableIdEnum.
@@ -313,6 +285,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       serializer       = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
+
+      // Timeout is chosen to make sure that even if one iteration takes more than
+      // half of the script.timeout but less than script.timeout, we will still
+      // be able to report progress.
+      timeOut = hconf.getInt("mapred.healthChecker.script.timeout", 600000)/2;
 
       if (hconf instanceof JobConf) {
         jc = (JobConf) hconf;
@@ -504,6 +481,23 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     filesCreated = true;
   }
 
+  /**
+   * Report status to JT so that JT won't kill this task if closing takes too long
+   * due to too many files to close and the NN is overloaded.
+   * @param lastUpdateTime the time (msec) that progress update happened.
+   * @return true if a new progress update is reported, false otherwise.
+   */
+  private boolean updateProgress() {
+    if (reporter != null &&
+        (System.currentTimeMillis() - lastProgressReport) > timeOut) {
+      reporter.progress();
+      lastProgressReport = System.currentTimeMillis();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Writable recordValue;
 
   @Override
@@ -632,6 +626,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       createBucketFiles(fsp);
     }
 
+    lastProgressReport = System.currentTimeMillis();
     if (!abort) {
       for (FSPaths fsp: valToPaths.values()) {
         fsp.closeWriters(abort);
