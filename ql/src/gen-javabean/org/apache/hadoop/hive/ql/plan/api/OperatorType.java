@@ -29,6 +29,7 @@ public class OperatorType {
   public static final int UNION = 12;
   public static final int UDTF = 13;
   public static final int LATERALVIEWJOIN = 14;
+  public static final int LATERALVIEWFORWARD = 15;
 
   public static final IntRangeSet VALID_VALUES = new IntRangeSet(
     JOIN, 
@@ -45,7 +46,8 @@ public class OperatorType {
     REDUCESINK, 
     UNION, 
     UDTF, 
-    LATERALVIEWJOIN );
+    LATERALVIEWJOIN, 
+    LATERALVIEWFORWARD );
 
   public static final Map<Integer, String> VALUES_TO_NAMES = new HashMap<Integer, String>() {{
     put(JOIN, "JOIN");
@@ -63,5 +65,6 @@ public class OperatorType {
     put(UNION, "UNION");
     put(UDTF, "UDTF");
     put(LATERALVIEWJOIN, "LATERALVIEWJOIN");
+    put(LATERALVIEWFORWARD, "LATERALVIEWFORWARD");
   }};
 }

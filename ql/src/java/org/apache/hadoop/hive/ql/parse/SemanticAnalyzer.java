@@ -122,6 +122,7 @@ import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
@@ -5618,21 +5619,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // TS -> SelectOperator(*) -> LateralViewJoinOperator
           // TS -> SelectOperator (gets cols for UDTF) -> UDTFOperator0
           // -> LateralViewJoinOperator
+          //
+
+          RowResolver lvForwardRR = opParseCtx.get(op).getRR();
+          Operator lvForward = putOpInsertMap(OperatorFactory.getAndMakeChild(
+              new LateralViewForwardDesc(), new RowSchema(lvForwardRR.getColumnInfos()),
+              op), lvForwardRR);
 
           // The order in which the two paths are added is important. The
           // lateral view join operator depends on having the select operator
           // give it the row first.
 
-          // Get the all path by making a select(*)
-          RowResolver allPathRR = opParseCtx.get(op).getRR();
+          // Get the all path by making a select(*).
+          RowResolver allPathRR = opParseCtx.get(lvForward).getRR();
+          //Operator allPath = op;
           Operator allPath = putOpInsertMap(OperatorFactory.getAndMakeChild(
-              new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
-              op), allPathRR);
-
+                            new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
+                            lvForward), allPathRR);
           // Get the UDTF Path
           QB blankQb = new QB(null, null, false);
           Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
-              .getChild(0), blankQb, op);
+              .getChild(0), blankQb, lvForward);
           RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRR();
 
           // Merge the two into the lateral view join
@@ -5646,10 +5653,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           LVmergeRowResolvers(allPathRR, lateralViewRR, outputInternalColNames);
           LVmergeRowResolvers(udtfPathRR, lateralViewRR, outputInternalColNames);
 
+          // For PPD, we need a column to expression map so that during the walk,
+          // the processor knows how to transform the internal col names.
+          // Following steps are dependant on the fact that we called
+          // LVmerge.. in the above order
+          Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+
+          int i=0;
+          for (ColumnInfo c : allPathRR.getColumnInfos()) {
+            String internalName = getColumnInternalName(i);
+            i++;
+            colExprMap.put(internalName,
+                new ExprNodeColumnDesc(c.getType(), c.getInternalName(),
+                    c.getTabAlias(), c.getIsPartitionCol()));
+          }
+
           Operator lateralViewJoin = putOpInsertMap(OperatorFactory
               .getAndMakeChild(new LateralViewJoinDesc(outputInternalColNames),
-              new RowSchema(lateralViewRR.getColumnInfos()), allPath,
-              udtfPath), lateralViewRR);
+                  new RowSchema(lateralViewRR.getColumnInfos()), allPath,
+                  udtfPath), lateralViewRR);
+          lateralViewJoin.setColumnExprMap(colExprMap);
           op = lateralViewJoin;
         }
         e.setValue(op);

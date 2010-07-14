@@ -1,0 +1,545 @@
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL myCol))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) '0'))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key = '0')
+                  type: boolean
+              Lateral View Forward
+                Select Operator
+                  SELECT * : (no compute)
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: int
+                      outputColumnNames: _col0, _col1, _col2
+                      Filter Operator
+                        predicate:
+                            expr: (_col0 = '0')
+                            type: boolean
+                        Select Operator
+                          expressions:
+                                expr: _col1
+                                type: string
+                                expr: _col2
+                                type: int
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: array(1,2,3)
+                        type: array<int>
+                  outputColumnNames: _col0
+                  UDTF Operator
+                    function name: explode
+                    Lateral View Join Operator
+                      outputColumnNames: _col0, _col1, _col2
+                      Select Operator
+                        expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: int
+                        outputColumnNames: _col0, _col1, _col2
+                        Filter Operator
+                          predicate:
+                              expr: (_col0 = '0')
+                              type: boolean
+                          Select Operator
+                            expressions:
+                                  expr: _col1
+                                  type: string
+                                  expr: _col2
+                                  type: int
+                            outputColumnNames: _col0, _col1
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 0
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-14_652_3272602982878468302/10000
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-14_652_3272602982878468302/10000
+val_0	1
+val_0	2
+val_0	3
+val_0	1
+val_0	2
+val_0	3
+val_0	1
+val_0	2
+val_0	3
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL myCol))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL key) '0') (= (TOK_TABLE_OR_COL myCol) 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key = '0')
+                  type: boolean
+              Lateral View Forward
+                Select Operator
+                  SELECT * : (no compute)
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: int
+                      outputColumnNames: _col0, _col1, _col2
+                      Filter Operator
+                        predicate:
+                            expr: ((_col0 = '0') and (_col2 = 1))
+                            type: boolean
+                        Select Operator
+                          expressions:
+                                expr: _col1
+                                type: string
+                                expr: _col2
+                                type: int
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: array(1,2,3)
+                        type: array<int>
+                  outputColumnNames: _col0
+                  UDTF Operator
+                    function name: explode
+                    Lateral View Join Operator
+                      outputColumnNames: _col0, _col1, _col2
+                      Select Operator
+                        expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: int
+                        outputColumnNames: _col0, _col1, _col2
+                        Filter Operator
+                          predicate:
+                              expr: ((_col0 = '0') and (_col2 = 1))
+                              type: boolean
+                          Select Operator
+                            expressions:
+                                  expr: _col1
+                                  type: string
+                                  expr: _col2
+                                  type: int
+                            outputColumnNames: _col0, _col1
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 0
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-19_184_3947037482170607721/10000
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-19_184_3947037482170607721/10000
+val_0	1
+val_0	1
+val_0	1
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL myCol))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) "12"))) (TOK_LIMIT 12)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:srcpart 
+          TableScan
+            alias: srcpart
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (hr = '12'))
+                  type: boolean
+              Lateral View Forward
+                Select Operator
+                  SELECT * : (no compute)
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Select Operator
+                      expressions:
+                            expr: _col1
+                            type: string
+                            expr: _col4
+                            type: int
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
+                      outputColumnNames: _col1, _col4, _col2, _col3
+                      Filter Operator
+                        predicate:
+                            expr: ((_col2 = '2008-04-08') and (_col3 = '12'))
+                            type: boolean
+                        Select Operator
+                          expressions:
+                                expr: _col1
+                                type: string
+                                expr: _col4
+                                type: int
+                          outputColumnNames: _col0, _col1
+                          Limit
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 0
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: array(1,2,3)
+                        type: array<int>
+                  outputColumnNames: _col0
+                  UDTF Operator
+                    function name: explode
+                    Lateral View Join Operator
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Select Operator
+                        expressions:
+                              expr: _col1
+                              type: string
+                              expr: _col4
+                              type: int
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
+                        outputColumnNames: _col1, _col4, _col2, _col3
+                        Filter Operator
+                          predicate:
+                              expr: ((_col2 = '2008-04-08') and (_col3 = '12'))
+                              type: boolean
+                          Select Operator
+                            expressions:
+                                  expr: _col1
+                                  type: string
+                                  expr: _col4
+                                  type: int
+                            outputColumnNames: _col0, _col1
+                            Limit
+                              File Output Operator
+                                compressed: false
+                                GlobalTableId: 0
+                                table:
+                                    input format: org.apache.hadoop.mapred.TextInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 12
+
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-25_323_2549037778500077245/10000
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-25_323_2549037778500077245/10000
+val_238	1
+val_238	2
+val_238	3
+val_86	1
+val_86	2
+val_86	3
+val_311	1
+val_311	2
+val_311	3
+val_27	1
+val_27	2
+val_27	3
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol2 (TOK_TABALIAS myTable2))) (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol (TOK_TABALIAS myTable))) (TOK_TABREF src)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL myCol))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) '0'))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key = '0')
+                  type: boolean
+              Lateral View Forward
+                Select Operator
+                  SELECT * : (no compute)
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Lateral View Forward
+                      Select Operator
+                        SELECT * : (no compute)
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Operator
+                            expressions:
+                                  expr: _col1
+                                  type: string
+                                  expr: _col2
+                                  type: int
+                                  expr: _col0
+                                  type: string
+                            outputColumnNames: _col1, _col2, _col0
+                            Filter Operator
+                              predicate:
+                                  expr: (_col0 = '0')
+                                  type: boolean
+                              Select Operator
+                                expressions:
+                                      expr: _col1
+                                      type: string
+                                      expr: _col2
+                                      type: int
+                                outputColumnNames: _col0, _col1
+                                File Output Operator
+                                  compressed: false
+                                  GlobalTableId: 0
+                                  table:
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      Select Operator
+                        expressions:
+                              expr: array(1,2,3)
+                              type: array<int>
+                        outputColumnNames: _col0
+                        UDTF Operator
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col2, _col3
+                            Select Operator
+                              expressions:
+                                    expr: _col1
+                                    type: string
+                                    expr: _col2
+                                    type: int
+                                    expr: _col0
+                                    type: string
+                              outputColumnNames: _col1, _col2, _col0
+                              Filter Operator
+                                predicate:
+                                    expr: (_col0 = '0')
+                                    type: boolean
+                                Select Operator
+                                  expressions:
+                                        expr: _col1
+                                        type: string
+                                        expr: _col2
+                                        type: int
+                                  outputColumnNames: _col0, _col1
+                                  File Output Operator
+                                    compressed: false
+                                    GlobalTableId: 0
+                                    table:
+                                        input format: org.apache.hadoop.mapred.TextInputFormat
+                                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: array(1,2,3)
+                        type: array<int>
+                  outputColumnNames: _col0
+                  UDTF Operator
+                    function name: explode
+                    Lateral View Join Operator
+                      outputColumnNames: _col0, _col1, _col2
+                      Lateral View Forward
+                        Select Operator
+                          SELECT * : (no compute)
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col2, _col3
+                            Select Operator
+                              expressions:
+                                    expr: _col1
+                                    type: string
+                                    expr: _col2
+                                    type: int
+                                    expr: _col0
+                                    type: string
+                              outputColumnNames: _col1, _col2, _col0
+                              Filter Operator
+                                predicate:
+                                    expr: (_col0 = '0')
+                                    type: boolean
+                                Select Operator
+                                  expressions:
+                                        expr: _col1
+                                        type: string
+                                        expr: _col2
+                                        type: int
+                                  outputColumnNames: _col0, _col1
+                                  File Output Operator
+                                    compressed: false
+                                    GlobalTableId: 0
+                                    table:
+                                        input format: org.apache.hadoop.mapred.TextInputFormat
+                                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        Select Operator
+                          expressions:
+                                expr: array(1,2,3)
+                                type: array<int>
+                          outputColumnNames: _col0
+                          UDTF Operator
+                            function name: explode
+                            Lateral View Join Operator
+                              outputColumnNames: _col0, _col1, _col2, _col3
+                              Select Operator
+                                expressions:
+                                      expr: _col1
+                                      type: string
+                                      expr: _col2
+                                      type: int
+                                      expr: _col0
+                                      type: string
+                                outputColumnNames: _col1, _col2, _col0
+                                Filter Operator
+                                  predicate:
+                                      expr: (_col0 = '0')
+                                      type: boolean
+                                  Select Operator
+                                    expressions:
+                                          expr: _col1
+                                          type: string
+                                          expr: _col2
+                                          type: int
+                                    outputColumnNames: _col0, _col1
+                                    File Output Operator
+                                      compressed: false
+                                      GlobalTableId: 0
+                                      table:
+                                          input format: org.apache.hadoop.mapred.TextInputFormat
+                                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-30_014_6879501059714270125/10000
+POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-08_16-08-30_014_6879501059714270125/10000
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3
+val_0	1
+val_0	1
+val_0	1
+val_0	2
+val_0	2
+val_0	2
+val_0	3
+val_0	3
+val_0	3

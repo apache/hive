@@ -38,6 +38,7 @@ class OperatorType:
   UNION = 12
   UDTF = 13
   LATERALVIEWJOIN = 14
+  LATERALVIEWFORWARD = 15
 
 class TaskType:
   MAP = 0

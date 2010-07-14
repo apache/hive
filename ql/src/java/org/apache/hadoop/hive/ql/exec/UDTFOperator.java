@@ -51,7 +51,6 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
    * sends periodic reports back to the tracker.
    */
   transient AutoProgressor autoProgressor;
-  transient boolean closeCalled = false;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
@@ -103,14 +102,11 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
    * forwardUDTFOutput is typically called indirectly by the GenericUDTF when
    * the GenericUDTF has generated output rows that should be passed on to the
    * next operator(s) in the DAG.
-   * 
+   *
    * @param o
    * @throws HiveException
    */
   public void forwardUDTFOutput(Object o) throws HiveException {
-    if (closeCalled) {
-      throw new HiveException("UDTF's should not output rows on close");
-    }
     // Since the output of the UDTF is a struct, we can just forward that
     forward(o, outputObjInspector);
   }
@@ -127,7 +123,6 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    closeCalled = true;
     conf.getGenericUDTF().close();
   }
 }

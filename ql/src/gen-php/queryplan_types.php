@@ -51,6 +51,7 @@ $GLOBALS['E_OperatorType'] = array(
   'UNION' => 12,
   'UDTF' => 13,
   'LATERALVIEWJOIN' => 14,
+  'LATERALVIEWFORWARD' => 15,
 );
 
 final class OperatorType {
@@ -69,6 +70,7 @@ final class OperatorType {
   const UNION = 12;
   const UDTF = 13;
   const LATERALVIEWJOIN = 14;
+  const LATERALVIEWFORWARD = 15;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -85,6 +87,7 @@ final class OperatorType {
     12 => 'UNION',
     13 => 'UDTF',
     14 => 'LATERALVIEWJOIN',
+    15 => 'LATERALVIEWFORWARD',
   );
 }
 

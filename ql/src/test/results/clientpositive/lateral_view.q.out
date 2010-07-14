@@ -32,41 +32,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Select Operator
-              SELECT * : (no compute)
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col2
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                        expr: _col2
-                        type: int
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col2
-                          type: int
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: int
-            Select Operator
-              expressions:
-                    expr: array(1,2,3)
-                    type: array<int>
-              outputColumnNames: _col0
-              UDTF Operator
-                function name: explode
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col2
                   Select Operator
@@ -93,6 +61,39 @@ STAGE PLANS:
                             type: string
                             expr: _col2
                             type: int
+              Select Operator
+                expressions:
+                      expr: array(1,2,3)
+                      type: array<int>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: int
+                      outputColumnNames: _col0, _col1, _col2
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col2
+                              type: int
+                        sort order: ++
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: int
       Reduce Operator Tree:
         Extract
           Limit
@@ -106,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-16_286_7545304927031880480/10002 
+        file:/tmp/pyang/hive_2010-07-12_18-55-27_411_1145974600848861508/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -156,29 +157,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Select Operator
-              SELECT * : (no compute)
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col2
-                Select Operator
-                  expressions:
-                        expr: _col2
-                        type: int
-                  outputColumnNames: _col0
-                  Limit
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            Select Operator
-              expressions:
-                    expr: array(1,2,3)
-                    type: array<int>
-              outputColumnNames: _col0
-              UDTF Operator
-                function name: explode
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col2
                   Select Operator
@@ -193,6 +174,27 @@ STAGE PLANS:
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: array(1,2,3)
+                      type: array<int>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Operator
+                      expressions:
+                            expr: _col2
+                            type: int
+                      outputColumnNames: _col0
+                      Limit
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -218,85 +220,14 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Select Operator
-              SELECT * : (no compute)
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col2
-                Select Operator
-                  SELECT * : (no compute)
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Select Operator
-                      expressions:
-                            expr: _col2
-                            type: int
-                            expr: _col3
-                            type: string
-                      outputColumnNames: _col0, _col1
-                      Limit
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                Select Operator
-                  expressions:
-                        expr: array('a','b','c')
-                        type: array<string>
-                  outputColumnNames: _col0
-                  UDTF Operator
-                    function name: explode
-                    Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Select Operator
-                        expressions:
-                              expr: _col2
-                              type: int
-                              expr: _col3
-                              type: string
-                        outputColumnNames: _col0, _col1
-                        Limit
-                          File Output Operator
-                            compressed: false
-                            GlobalTableId: 0
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            Select Operator
-              expressions:
-                    expr: array(1,2,3)
-                    type: array<int>
-              outputColumnNames: _col0
-              UDTF Operator
-                function name: explode
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col2
-                  Select Operator
-                    SELECT * : (no compute)
-                    Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Select Operator
-                        expressions:
-                              expr: _col2
-                              type: int
-                              expr: _col3
-                              type: string
-                        outputColumnNames: _col0, _col1
-                        Limit
-                          File Output Operator
-                            compressed: false
-                            GlobalTableId: 0
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  Select Operator
-                    expressions:
-                          expr: array('a','b','c')
-                          type: array<string>
-                    outputColumnNames: _col0
-                    UDTF Operator
-                      function name: explode
+                  Lateral View Forward
+                    Select Operator
+                      SELECT * : (no compute)
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Select Operator
@@ -313,6 +244,80 @@ STAGE PLANS:
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    Select Operator
+                      expressions:
+                            expr: array('a','b','c')
+                            type: array<string>
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Operator
+                            expressions:
+                                  expr: _col2
+                                  type: int
+                                  expr: _col3
+                                  type: string
+                            outputColumnNames: _col0, _col1
+                            Limit
+                              File Output Operator
+                                compressed: false
+                                GlobalTableId: 0
+                                table:
+                                    input format: org.apache.hadoop.mapred.TextInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: array(1,2,3)
+                      type: array<int>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Lateral View Forward
+                      Select Operator
+                        SELECT * : (no compute)
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Operator
+                            expressions:
+                                  expr: _col2
+                                  type: int
+                                  expr: _col3
+                                  type: string
+                            outputColumnNames: _col0, _col1
+                            Limit
+                              File Output Operator
+                                compressed: false
+                                GlobalTableId: 0
+                                table:
+                                    input format: org.apache.hadoop.mapred.TextInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      Select Operator
+                        expressions:
+                              expr: array('a','b','c')
+                              type: array<string>
+                        outputColumnNames: _col0
+                        UDTF Operator
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col2, _col3
+                            Select Operator
+                              expressions:
+                                    expr: _col2
+                                    type: int
+                                    expr: _col3
+                                    type: string
+                              outputColumnNames: _col0, _col1
+                              Limit
+                                File Output Operator
+                                  compressed: false
+                                  GlobalTableId: 0
+                                  table:
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -338,79 +343,14 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Select Operator
-              SELECT * : (no compute)
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col1, _col2
-                Select Operator
-                  SELECT * : (no compute)
-                  Lateral View Join Operator
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Select Operator
-                      expressions:
-                            expr: _col3
-                            type: int
-                      outputColumnNames: _col0
-                      Limit
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                Select Operator
-                  expressions:
-                        expr: _col2
-                        type: array<int>
-                  outputColumnNames: _col0
-                  UDTF Operator
-                    function name: explode
-                    Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Select Operator
-                        expressions:
-                              expr: _col3
-                              type: int
-                        outputColumnNames: _col0
-                        Limit
-                          File Output Operator
-                            compressed: false
-                            GlobalTableId: 0
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            Select Operator
-              expressions:
-                    expr: array(array(1,2,3))
-                    type: array<array<int>>
-              outputColumnNames: _col0
-              UDTF Operator
-                function name: explode
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col2
-                  Select Operator
-                    SELECT * : (no compute)
-                    Lateral View Join Operator
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Select Operator
-                        expressions:
-                              expr: _col3
-                              type: int
-                        outputColumnNames: _col0
-                        Limit
-                          File Output Operator
-                            compressed: false
-                            GlobalTableId: 0
-                            table:
-                                input format: org.apache.hadoop.mapred.TextInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  Select Operator
-                    expressions:
-                          expr: _col2
-                          type: array<int>
-                    outputColumnNames: _col0
-                    UDTF Operator
-                      function name: explode
+                  Lateral View Forward
+                    Select Operator
+                      SELECT * : (no compute)
                       Lateral View Join Operator
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Select Operator
@@ -425,6 +365,74 @@ STAGE PLANS:
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    Select Operator
+                      expressions:
+                            expr: _col2
+                            type: array<int>
+                      outputColumnNames: _col0
+                      UDTF Operator
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Operator
+                            expressions:
+                                  expr: _col3
+                                  type: int
+                            outputColumnNames: _col0
+                            Limit
+                              File Output Operator
+                                compressed: false
+                                GlobalTableId: 0
+                                table:
+                                    input format: org.apache.hadoop.mapred.TextInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: array(array(1,2,3))
+                      type: array<array<int>>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2
+                    Lateral View Forward
+                      Select Operator
+                        SELECT * : (no compute)
+                        Lateral View Join Operator
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Operator
+                            expressions:
+                                  expr: _col3
+                                  type: int
+                            outputColumnNames: _col0
+                            Limit
+                              File Output Operator
+                                compressed: false
+                                GlobalTableId: 0
+                                table:
+                                    input format: org.apache.hadoop.mapred.TextInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      Select Operator
+                        expressions:
+                              expr: _col2
+                              type: array<int>
+                        outputColumnNames: _col0
+                        UDTF Operator
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col0, _col1, _col2, _col3
+                            Select Operator
+                              expressions:
+                                    expr: _col3
+                                    type: int
+                              outputColumnNames: _col0
+                              Limit
+                                File Output Operator
+                                  compressed: false
+                                  GlobalTableId: 0
+                                  table:
+                                      input format: org.apache.hadoop.mapred.TextInputFormat
+                                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -435,24 +443,24 @@ PREHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-16_764_354722541681050276/10000
+PREHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-28_009_6995650598612404812/10000
 POSTHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-16_764_354722541681050276/10000
+POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-28_009_6995650598612404812/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-23_656_7186983670906657556/10000
+PREHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-34_711_2463279077825371084/10000
 POSTHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-23_656_7186983670906657556/10000
+POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-34_711_2463279077825371084/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -461,12 +469,12 @@ PREHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-27_321_7329581422596695757/10000
+PREHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-38_741_540021488120755230/10000
 POSTHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-27_321_7329581422596695757/10000
+POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-38_741_540021488120755230/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	a
 1	b
@@ -481,12 +489,12 @@ PREHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-31_056_3810278535508636145/10000
+PREHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-42_193_8532007851928358632/10000
 POSTHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-31_056_3810278535508636145/10000
+POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-42_193_8532007851928358632/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -512,29 +520,9 @@ STAGE PLANS:
         tmp_pyang_lv 
           TableScan
             alias: tmp_pyang_lv
-            Select Operator
-              SELECT * : (no compute)
-              Lateral View Join Operator
-                outputColumnNames: _col0, _col1
-                Select Operator
-                  expressions:
-                        expr: _col1
-                        type: int
-                  outputColumnNames: _col0
-                  Limit
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            Select Operator
-              expressions:
-                    expr: array(1,2,3)
-                    type: array<int>
-              outputColumnNames: _col0
-              UDTF Operator
-                function name: explode
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1
                   Select Operator
@@ -549,6 +537,27 @@ STAGE PLANS:
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: array(1,2,3)
+                      type: array<int>
+                outputColumnNames: _col0
+                UDTF Operator
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1
+                    Select Operator
+                      expressions:
+                            expr: _col1
+                            type: int
+                      outputColumnNames: _col0
+                      Limit
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -558,11 +567,11 @@ STAGE PLANS:
 PREHOOK: query: select myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_lv
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-35_530_6647775029322914068/10000
+PREHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-45_516_3682011975992575089/10000
 POSTHOOK: query: select myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_lv
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-18_19-54-35_530_6647775029322914068/10000
+POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-12_18-55-45_516_3682011975992575089/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2

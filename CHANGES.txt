@@ -44,6 +44,9 @@ Trunk -  Unreleased
     version number changes.
     (Arvind Prabhakar via jvs)
 
+    HIVE-1056. Predicate push down does not work with UDTF's
+    (Paul Yang via He Yongqiang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
