@@ -201,7 +201,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2) 
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
-                       throws(1:MetaException o1)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
   Partition get_partition_by_name(1:string db_name 2:string tbl_name, 3:string part_name)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

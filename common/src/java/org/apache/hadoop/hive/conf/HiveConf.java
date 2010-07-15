@@ -111,7 +111,7 @@ public class HiveConf extends Configuration {
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
     METASTOREURIS("hive.metastore.uris", ""),
     // Number of times to retry a connection to a Thrift metastore server
-    METATORETHRIFTRETRIES("hive.metastore.connect.retries", ""),
+    METATORETHRIFTRETRIES("hive.metastore.connect.retries", 3),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
     // Class name of JDO connection url hook
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", ""),

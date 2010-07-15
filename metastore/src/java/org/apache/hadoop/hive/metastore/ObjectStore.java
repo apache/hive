@@ -772,10 +772,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   public Partition getPartition(String dbName, String tableName,
-      List<String> part_vals) throws MetaException {
+      List<String> part_vals) throws NoSuchObjectException, MetaException {
     openTransaction();
     Partition part = convertToPart(getMPartition(dbName, tableName, part_vals));
     commitTransaction();
+    if(part == null) {
+        throw new NoSuchObjectException();
+    }
     return part;
   }
 

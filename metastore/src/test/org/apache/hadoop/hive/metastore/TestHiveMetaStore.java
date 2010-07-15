@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -117,6 +118,11 @@ public class TestHiveMetaStore extends TestCase {
    * @throws Exception
    */
   public void testPartition() throws Exception {
+    partitionTester(client, hiveConf, false);
+  }
+
+  public static void partitionTester(HiveMetaStoreClient client, HiveConf hiveConf,
+      boolean isThriftClient) throws Exception {
     try {
       String dbName = "compdb";
       String tblName = "comptbl";
@@ -175,6 +181,14 @@ public class TestHiveMetaStore extends TestCase {
 
       client.createTable(tbl);
 
+      if(isThriftClient) {
+        // the createTable() above does not update the location in the 'tbl'
+        // object when the client is a thrift client and the code below relies
+        // on the location being present in the 'tbl' object - so get the table
+        // from the metastore
+        tbl = client.getTable(dbName, tblName);
+      }
+
       Partition part = new Partition();
       part.setDbName(dbName);
       part.setTableName(tblName);
@@ -202,6 +216,16 @@ public class TestHiveMetaStore extends TestCase {
       part3.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
       part3.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
 
+      // check if the partition exists (it shouldn;t)
+      boolean exceptionThrown = false;
+      try {
+        Partition p = client.getPartition(dbName, tblName, vals);
+      } catch(Exception e) {
+        assertEquals("partition should not have existed",
+            NoSuchObjectException.class, e.getClass());
+        exceptionThrown = true;
+      }
+      assertTrue("getPartition() should have thrown NoSuchObjectException", exceptionThrown);
       Partition retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
       Partition retp2 = client.add_partition(part2);
@@ -210,6 +234,15 @@ public class TestHiveMetaStore extends TestCase {
       assertNotNull("Unable to create partition " + part3, retp3);
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
+      if(isThriftClient) {
+        // since we are using thrift, 'part' will not have the create time and
+        // last DDL time set since it does not get updated in the add_partition()
+        // call - likewise part2 and part3 - set it correctly so that equals check
+        // doesn't fail
+        adjust(client, part, dbName, tblName);
+        adjust(client, part2, dbName, tblName);
+        adjust(client, part3, dbName, tblName);
+      }
       assertTrue("Partitions are not same", part.equals(part_get));
 
       String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
@@ -261,7 +294,7 @@ public class TestHiveMetaStore extends TestCase {
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Verify escaped partition names don't return partitions
-      boolean exceptionThrown = false;
+      exceptionThrown = false;
       try {
         String badPartName = "ds=2008-07-01 14%3A13%3A12/hrs=14";
         client.getPartition(dbName, tblName, badPartName);
@@ -890,5 +923,13 @@ public class TestHiveMetaStore extends TestCase {
       threwException = true;
     }
     assert (threwException);
+  }
+
+  private static void adjust(HiveMetaStoreClient client, Partition part,
+      String dbName, String tblName)
+  throws NoSuchObjectException, MetaException, TException {
+    Partition part_get = client.getPartition(dbName, tblName, part.getValues());
+    part.setCreateTime(part_get.getCreateTime());
+    part.putToParameters(org.apache.hadoop.hive.metastore.api.Constants.DDL_TIME, Long.toString(part_get.getCreateTime()));
   }
 }

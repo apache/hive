@@ -765,6 +765,16 @@ public class Hive {
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
       tpart = getMSC().getPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+    } catch (NoSuchObjectException nsoe) {
+      // this means no partition exists for the given partition
+      // key value pairs - thrift cannot handle null return values, hence
+      // getPartition() throws NoSuchObjectException to indicate null partition
+      tpart = null;
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    try {
       if (forceCreate) {
         if (tpart == null) {
           LOG.debug("creating partition for table " + tbl.getTableName()
