@@ -24,25 +24,31 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 
 /**
  * GenericUDFField.
- *
+ * 
  */
 @Description(name = "field", value = "_FUNC_(str, str1, str2, ...) - "
-    + "returns the index of str in the str1,str2,... list or 0 if not found",
-    extended = "All primitive types are supported, arguments are compared using str.equals(x)."
+    + "returns the index of str in the str1,str2,... list or 0 if not found", extended = "All primitive types are supported, arguments are compared using str.equals(x)."
     + " If str is NULL, the return value is 0.")
 public class GenericUDFField extends GenericUDF {
+  private ObjectInspector[] argumentOIs;
+
   @Override
-  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+  public ObjectInspector initialize(ObjectInspector[] arguments)
+      throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentException(
           "The function FIELD(str, str1, str2, ...) needs at least two arguments.");
     }
+
+    argumentOIs = arguments;
 
     for (int i = 0; i < arguments.length; i++) {
       Category category = arguments[i].getCategory();
@@ -68,7 +74,11 @@ public class GenericUDFField extends GenericUDF {
     }
 
     for (int i = 1; i < arguments.length; i++) {
-      if (arguments[0].get().equals(arguments[i].get())) {
+      if (arguments[i].get() == null) {
+        continue;
+      }
+      if (ObjectInspectorUtils.compare(arguments[0].get(), argumentOIs[0],
+          arguments[i].get(), argumentOIs[i]) == 0) {
         r.set(i);
         return r;
       }

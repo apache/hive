@@ -55,6 +55,9 @@ Trunk -  Unreleased
     metastore
     (Pradeep Kamath via jvs)
 
+    HIVE-1385. UDF field() doesn't work
+    (Siying Dong via He Yongqiang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
