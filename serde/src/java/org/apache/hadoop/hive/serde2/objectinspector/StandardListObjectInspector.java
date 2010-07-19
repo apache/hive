@@ -56,7 +56,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = data.getClass().isArray();
+    boolean isArray = ! (data instanceof List);
     if (isArray) {
       Object[] list = (Object[]) data;
       if (index < 0 || index >= list.length) {
@@ -78,7 +78,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = data.getClass().isArray();
+    boolean isArray = ! (data instanceof List);
     if (isArray) {
       Object[] list = (Object[]) data;
       return list.length;
@@ -94,7 +94,7 @@ public class StandardListObjectInspector implements SettableListObjectInspector 
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    if (data.getClass().isArray()) {
+    if (! (data instanceof List)) {
       data = java.util.Arrays.asList((Object[]) data);
     }
     List<?> list = (List<?>) data;

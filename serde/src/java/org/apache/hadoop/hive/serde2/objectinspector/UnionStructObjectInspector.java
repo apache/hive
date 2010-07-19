@@ -112,7 +112,7 @@ public class UnionStructObjectInspector extends StructObjectInspector {
     Object fieldData;
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    if (data.getClass().isArray()) {
+    if (! (data instanceof List)) {
       Object[] list = (Object[]) data;
       assert (list.length == unionObjectInspectors.size());
       fieldData = list[f.structID];
@@ -133,7 +133,7 @@ public class UnionStructObjectInspector extends StructObjectInspector {
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    if (data.getClass().isArray()) {
+    if (! (data instanceof List)) {
       data = java.util.Arrays.asList((Object[]) data);
     }
     List<Object> list = (List<Object>) data;

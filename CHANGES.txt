@@ -31,6 +31,10 @@ Trunk -  Unreleased
     case
     (Siying Dong via Ning Zhang)
 
+    HIVE-1469. replace isArray() calls and remove LOG.isInfoEnabled() in 
+    Operator.forward()
+    (Yongqiang He via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

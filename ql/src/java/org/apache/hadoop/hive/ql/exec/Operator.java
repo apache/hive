@@ -191,6 +191,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   protected transient HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
   protected transient OutputCollector out;
   protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected transient boolean isLogInfoEnabled = LOG.isInfoEnabled();
   protected transient String alias;
   protected transient Reporter reporter;
   protected transient String id;
@@ -665,7 +666,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       }
     }
 
-    if (LOG.isInfoEnabled()) {
+    if (isLogInfoEnabled) {
       cntr++;
       if (cntr == nextCntr) {
         LOG.info(id + " forwarding " + cntr + " rows");

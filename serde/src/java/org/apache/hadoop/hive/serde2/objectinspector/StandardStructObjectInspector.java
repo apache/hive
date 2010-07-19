@@ -135,7 +135,7 @@ public class StandardStructObjectInspector extends
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    boolean isArray = data.getClass().isArray();
+    boolean isArray = ! (data instanceof List);
     if (!isArray && !(data instanceof List)) {
       return data;
     }
@@ -170,7 +170,7 @@ public class StandardStructObjectInspector extends
     }
     // We support both List<Object> and Object[]
     // so we have to do differently.
-    if (data.getClass().isArray()) {
+    if (! (data instanceof List)) {
       data = java.util.Arrays.asList((Object[]) data);
     }
     List<Object> list = (List<Object>) data;
