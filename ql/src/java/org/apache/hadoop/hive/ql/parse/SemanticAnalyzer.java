@@ -3386,7 +3386,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (field_schemas != null) {
           FieldSchema col = new FieldSchema();
           if (nm[1] != null) {
-            col.setName(colInfo.getAlias());
+            col.setName(unescapeIdentifier(colInfo.getAlias()).toLowerCase()); // remove ``
           } else {
             col.setName(colInfo.getInternalName());
           }

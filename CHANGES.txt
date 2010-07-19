@@ -39,6 +39,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1471. CTAS should unescape column names in select-clause
+    (Ning Zhang via jssarma)
+
     HIVE-1440. Bug in RCFiles with local work (map-join or sort-merge join)
     (He Yongqiang via namit)
 
