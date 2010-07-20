@@ -26,6 +26,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
@@ -137,48 +138,47 @@ public class TestOperators extends TestCase {
     }
   }
 
+  private void testTaskIds(String [] taskIds, String expectedAttemptId, String expectedTaskId) {
+    Configuration conf = new JobConf(TestOperators.class);
+    for (String one: taskIds) {
+      conf.set("mapred.task.id", one);
+      String attemptId = Utilities.getTaskId(conf);
+      assertEquals(expectedAttemptId, attemptId);
+      assertEquals(Utilities.getTaskIdFromFilename(attemptId), expectedTaskId);
+      assertEquals(Utilities.getTaskIdFromFilename(attemptId + ".gz"), expectedTaskId);
+      assertEquals(Utilities.getTaskIdFromFilename
+                   (Utilities.toTempPath(new Path(attemptId + ".gz")).toString()), expectedTaskId);
+    }
+  }
+
+  /**
+   * More stuff needs to be added here. Currently it only checks some basic
+   * file naming libraries
+   * The old test was deactivated as part of hive-405
+   */
   public void testFileSinkOperator() throws Throwable {
+
     try {
-      System.out.println("Testing FileSink Operator");
-      // col1
-      ExprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
+      testTaskIds (new String [] {
+          "attempt_200707121733_0003_m_000005_0",
+          "attempt_local_0001_m_000005_0",
+          "task_200709221812_0001_m_000005_0",
+          "task_local_0001_m_000005_0"
+        }, "000005_0", "000005");
 
-      // col2
-      ExprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
-      ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
-      ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
-          .getFuncExprNodeDesc("concat", expr1, expr2);
+      testTaskIds (new String [] {
+          "job_local_0001_map_000005",
+          "job_local_0001_reduce_000005",
+        }, "000005", "000005");
 
-      // select operator to project these two columns
-      ArrayList<ExprNodeDesc> earr = new ArrayList<ExprNodeDesc>();
-      earr.add(exprDesc1);
-      earr.add(exprDesc2);
-      ArrayList<String> outputCols = new ArrayList<String>();
-      for (int i = 0; i < earr.size(); i++) {
-        outputCols.add("_col" + i);
-      }
-      SelectDesc selectCtx = new SelectDesc(earr, outputCols);
-      Operator<SelectDesc> op = OperatorFactory.get(SelectDesc.class);
-      op.setConf(selectCtx);
+      testTaskIds (new String [] {"1234567"},
+                   "1234567", "1234567");
 
-      // fileSinkOperator to dump the output of the select
-      // fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator +
-      // System.getProperty("user.name") + File.separator +
-      // "TestFileSinkOperator",
-      // Utilities.defaultTd, false);
-      // Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
-
-      op.initialize(new JobConf(TestOperators.class),
-          new ObjectInspector[] {r[0].oi});
-
-      // evaluate on row
-      for (int i = 0; i < 5; i++) {
-        op.process(r[i].o, 0);
-      }
-      op.close(false);
+      assertEquals(Utilities.getTaskIdFromFilename
+                   ("/mnt/dev005/task_local_0001_m_000005_0"),
+                   "000005");
 
       System.out.println("FileSink Operator ok");
-
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

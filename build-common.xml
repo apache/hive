@@ -407,6 +407,7 @@
       <jvmarg value="-Xdebug"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"/> -->
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
+      <env key="HADOOP_CLASSPATH" value="${test.data.dir}/conf"/>
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>

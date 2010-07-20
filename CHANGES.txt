@@ -35,6 +35,9 @@ Trunk -  Unreleased
     Operator.forward()
     (Yongqiang He via Ning Zhang)
 
+    HIVE-1463. Hive output file names are unnecessarily large
+    (Joydeep Sen Sarma via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

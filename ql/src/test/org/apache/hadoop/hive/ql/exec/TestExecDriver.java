@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -433,33 +433,13 @@ public class TestExecDriver extends TestCase {
     mr.setReducer(op5);
   }
 
-  private File generatePlanFile() throws Exception {
-    File scratchDir = new File((new HiveConf(TestExecDriver.class))
-        .getVar(ConfVars.SCRATCHDIR));
-    File planFile = File.createTempFile("plan", ".xml", scratchDir);
-    System.out.println("Generating plan file " + planFile.toString());
-    FileOutputStream out = new FileOutputStream(planFile);
-    Utilities.serializeMapRedWork(mr, out);
-    return planFile;
-  }
-
-  private void executePlan(File planFile) throws Exception {
+  private void executePlan() throws Exception {
     String testName = new Exception().getStackTrace()[1].getMethodName();
-    String cmdLine = conf.getVar(HiveConf.ConfVars.HADOOPBIN) + " jar "
-        + conf.getJar() + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan "
-        + planFile.toString() + " " + ExecDriver.generateCmdLine(conf);
-    System.out.println("Executing: " + cmdLine);
-    Process executor = Runtime.getRuntime().exec(cmdLine);
-
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-        null, System.out);
-    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-        null, System.err);
-
-    outPrinter.start();
-    errPrinter.start();
-
-    int exitVal = executor.waitFor();
+    MapRedTask mrtask = new MapRedTask();
+    DriverContext dctx = new DriverContext ();
+    mrtask.setWork(mr);
+    mrtask.initialize(conf, null, dctx);
+    int exitVal =  mrtask.execute(dctx);
 
     if (exitVal != 0) {
       System.out.println(testName + " execution failed with exit status: "
@@ -475,8 +455,7 @@ public class TestExecDriver extends TestCase {
 
     try {
       populateMapPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("lt100.txt.deflate", "mapplan1.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -490,8 +469,7 @@ public class TestExecDriver extends TestCase {
 
     try {
       populateMapPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("lt100.txt", "mapplan2.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -506,8 +484,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -522,8 +499,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("lt100.sorted.txt", "mapredplan2.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -538,8 +514,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan3(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"), db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src2"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -554,8 +529,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan4(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -570,8 +544,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan5(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -586,8 +559,7 @@ public class TestExecDriver extends TestCase {
     try {
       populateMapRedPlan6(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
           "src"));
-      File planFile = generatePlanFile();
-      executePlan(planFile);
+      executePlan();
       fileDiff("lt100.sorted.txt", "mapredplan6.out");
     } catch (Throwable e) {
       e.printStackTrace();

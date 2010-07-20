@@ -278,8 +278,8 @@ public final class Utilities {
 
       if(!HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local")) {
         // use the default file system of the job
-        FileSystem fs = FileSystem.get(job);
         Path planPath = new Path(hiveScratchDir, "plan." + randGen.nextInt());
+        FileSystem fs = planPath.getFileSystem(job);
         FSDataOutputStream out = fs.create(planPath);
         serializeMapRedWork(w, out);
         HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toString());
@@ -467,9 +467,16 @@ public final class Utilities {
   public static String getTaskId(Configuration hconf) {
     String taskid = (hconf == null) ? null : hconf.get("mapred.task.id");
     if ((taskid == null) || taskid.equals("")) {
-      return ("" + randGen.nextInt());
+      return ("" + Math.abs(randGen.nextInt()));
     } else {
-      return taskid.replaceAll("task_[0-9]+_", "");
+       /* extract the task and attempt id from the hadoop taskid.
+          in version 17 the leading component was 'task_'. thereafter
+          the leading component is 'attempt_'. in 17 - hadoop also 
+          seems to have used _map_ and _reduce_ to denote map/reduce
+          task types
+       */
+      String ret = taskid.replaceAll(".*_[mr]_", "").replaceAll(".*_(map|reduce)_", "");
+      return (ret);
     }
   }
 
@@ -958,31 +965,28 @@ public final class Utilities {
 
   /**
    * The first group will contain the task id. The second group is the optional
-   * extension. The file name looks like: "24931_r_000000_0" or
-   * "24931_r_000000_0.gz"
+   * extension. The file name looks like: "0_0" or "0_0.gz". There may be a leading
+   * prefix (tmp_). Since getTaskId() can return an integer only - this should match
+   * a pure integer as well
    */
-  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*_([0-9]*)_[0-9](\\..*)?$");
+  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9])?(\\..*)?$");
 
   /**
-   * Local job name looks like "job_local_1_map_0000", where 1 is job ID and 0000 is task ID.
-   */
-  private static Pattern fileNameLocalTaskIdRegex = Pattern.compile(".*local.*_([0-9]*)$");
-
-  /**
-   * Get the task id from the filename. E.g., get "000000" out of
-   * "24931_r_000000_0" or "24931_r_000000_0.gz"
+   * Get the task id from the filename.
+   * It is assumed that the filename is derived from the output of getTaskId
+   *
+   * @param filename filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
     String taskId = filename;
-    Matcher m = fileNameTaskIdRegex.matcher(filename);
+    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+    if (dirEnd != -1)
+      taskId = filename.substring(dirEnd + 1);
+
+    Matcher m = fileNameTaskIdRegex.matcher(taskId);
     if (!m.matches()) {
-      Matcher m2 = fileNameLocalTaskIdRegex.matcher(filename);
-      if (!m2.matches()) {
-        LOG.warn("Unable to get task id from file name: " + filename
-            + ". Using full filename as task id.");
-      } else {
-        taskId = m2.group(1);
-      }
+      LOG.warn("Unable to get task id from file name: " + filename
+               + ". Using last component" + taskId + " as task id.");
     } else {
       taskId = m.group(1);
     }
@@ -991,17 +995,21 @@ public final class Utilities {
   }
 
   /**
-   * Replace the task id from the filename. E.g., replace "000000" out of
-   * "24931_r_000000_0" or "24931_r_000000_0.gz" by 33 to
-   * "24931_r_000033_0" or "24931_r_000033_0.gz"
+   * Replace the task id from the filename.
+   * It is assumed that the filename is derived from the output of getTaskId
+   *
+   * @param filename filename to replace taskid
+   * "0_0" or "0_0.gz" by 33 to
+   * "33_0" or "33_0.gz"
    */
   public static String replaceTaskIdFromFilename(String filename, int bucketNum) {
     String taskId = getTaskIdFromFilename(filename);
     String newTaskId = replaceTaskId(taskId, bucketNum);
-    return replaceTaskIdFromFilename(filename, taskId, newTaskId);
+    String ret =  replaceTaskIdFromFilename(filename, taskId, newTaskId);
+    return (ret);
   }
 
-  public static String replaceTaskId(String taskId, int bucketNum) {
+  private static String replaceTaskId(String taskId, int bucketNum) {
     String strBucketNum = String.valueOf(bucketNum);
     int bucketNumLen = strBucketNum.length();
     int taskIdLen = taskId.length();
@@ -1020,7 +1028,7 @@ public final class Utilities {
    * @param newTaskId
    * @return
    */
-  public static String replaceTaskIdFromFilename(String filename,
+  private static String replaceTaskIdFromFilename(String filename,
       String oldTaskId, String newTaskId) {
 
     String[] spl = filename.split(oldTaskId);
