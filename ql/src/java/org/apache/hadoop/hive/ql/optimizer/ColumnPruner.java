@@ -63,7 +63,7 @@ public class ColumnPruner implements Transform {
    * Transform the query tree. For each table under consideration, check if all
    * columns are needed. If not, only select the operators needed at the
    * beginning and proceed.
-   * 
+   *
    * @param pactx
    *          the current parse context
    */
@@ -92,7 +92,8 @@ public class ColumnPruner implements Transform {
         .getMapJoinProc());
     opRules.put(new RuleRegExp("R7", "TS%"), ColumnPrunerProcFactory
         .getTableScanProc());
-
+    opRules.put(new RuleRegExp("R8", "LVJ%"), ColumnPrunerProcFactory
+        .getLateralViewJoinProc());
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory

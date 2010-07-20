@@ -68,6 +68,9 @@ Trunk -  Unreleased
     HIVE-1385. UDF field() doesn't work
     (Siying Dong via He Yongqiang)
 
+    HIVE-1455. lateral view does not work with column pruning
+    (Paul Yang via He Yongqiang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
