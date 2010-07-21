@@ -1,4 +1,6 @@
 PREHOOK: query: CREATE TABLE alter_test (d STRING)
 PREHOOK: type: CREATETABLE
-FAILED: Error in metadata: AlreadyExistsException(message:Table alter_test already exists)
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+POSTHOOK: query: CREATE TABLE alter_test (d STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter_test
+FAILED: Error in semantic analysis: DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use STRING instead.

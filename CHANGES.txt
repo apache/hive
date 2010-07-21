@@ -71,6 +71,11 @@ Trunk -  Unreleased
     HIVE-1455. lateral view does not work with column pruning
     (Paul Yang via He Yongqiang)
 
+  TESTS
+
+    HIVE-1464. improve  test query performance
+    (Joydeep Sen Sarma via Ning Zhang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
