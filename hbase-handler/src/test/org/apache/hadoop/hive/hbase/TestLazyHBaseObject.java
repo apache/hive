@@ -15,14 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.hbase;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.hbase.io.Cell;
-import org.apache.hadoop.hbase.io.HbaseMapWritable;
-import org.apache.hadoop.hbase.io.RowResult;
+import junit.framework.TestCase;
+
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyString;
@@ -33,8 +37,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-
-import junit.framework.TestCase;
 
 /**
  * TestLazyHBaseObject is a test for the LazyHBaseXXX classes.
@@ -47,44 +49,56 @@ public class TestLazyHBaseObject extends TestCase {
     // Map of Integer to String
     Text nullSequence = new Text("\\N");
     ObjectInspector oi = LazyFactory.createLazyObjectInspector(
-      TypeInfoUtils.getTypeInfosFromTypeString("map<int,string>").get(0), 
+      TypeInfoUtils.getTypeInfosFromTypeString("map<int,string>").get(0),
       new byte[]{(byte)1, (byte)2}, 0, nullSequence, false, (byte)0);
-        
+
     LazyHBaseCellMap b = new LazyHBaseCellMap((LazyMapObjectInspector) oi);
-        
-    // Intialize a row result
-    HbaseMapWritable<byte[], Cell> cells = new HbaseMapWritable<byte[], Cell>();
-    cells.put("cfa:col1".getBytes(), new Cell("cfacol1".getBytes(), 0));
-    cells.put("cfa:col2".getBytes(), new Cell("cfacol2".getBytes(), 0));
-    cells.put("cfb:2".getBytes(),    new Cell("def".getBytes(), 0));
-    cells.put("cfb:-1".getBytes(),   new Cell("".getBytes(), 0));
-    cells.put("cfb:0".getBytes(),    new Cell("0".getBytes(), 0));
-    cells.put("cfb:8".getBytes(),    new Cell("abc".getBytes(), 0));
-    cells.put("cfc:col3".getBytes(), new Cell("cfccol3".getBytes(), 0));
-        
-    RowResult rr = new RowResult("test-row".getBytes(), cells);
-        
-    b.init(rr, "cfb:");
-        
+
+    // Initialize a result
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa:col1"), 0, Bytes.toBytes("cfacol1")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa:col2"), 0, Bytes.toBytes("cfacol2")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb:2"), 0, Bytes.toBytes("def")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb:-1"), 0, Bytes.toBytes("")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb:0"), 0, Bytes.toBytes("0")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb:8"), 0, Bytes.toBytes("abc")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc:col3"), 0, Bytes.toBytes("cfccol3")));
+
+    Result r = new Result(kvs);
+
+    b.init(r, "cfb".getBytes());
+
     assertEquals(
       new Text("def"),
       ((LazyString)b.getMapValueElement(
         new IntWritable(2))).getWritableObject());
+
     assertNull(b.getMapValueElement(new IntWritable(-1)));
+
     assertEquals(
       new Text("0"),
       ((LazyString)b.getMapValueElement(
         new IntWritable(0))).getWritableObject());
+
     assertEquals(
       new Text("abc"),
       ((LazyString)b.getMapValueElement(
         new IntWritable(8))).getWritableObject());
+
     assertNull(b.getMapValueElement(new IntWritable(12345)));
-        
+
     assertEquals("{0:'0',2:'def',8:'abc'}".replace('\'', '\"'),
       SerDeUtils.getJSONString(b, oi));
   }
-      
+
   /**
    * Test the LazyMap class with String-to-String.
    */
@@ -92,139 +106,171 @@ public class TestLazyHBaseObject extends TestCase {
     // Map of String to String
     Text nullSequence = new Text("\\N");
     ObjectInspector oi = LazyFactory.createLazyObjectInspector(
-      TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(0), 
+      TypeInfoUtils.getTypeInfosFromTypeString("map<string,string>").get(0),
       new byte[]{(byte)'#', (byte)'\t'}, 0, nullSequence, false, (byte)0);
-        
+
     LazyHBaseCellMap b = new LazyHBaseCellMap((LazyMapObjectInspector) oi);
-        
-    // Intialize a row result
-    HbaseMapWritable<byte[], Cell> cells =
-      new HbaseMapWritable<byte[], Cell>();
-    cells.put("cfa:col1".getBytes(), new Cell("cfacol1".getBytes(), 0));
-    cells.put("cfa:col2".getBytes(), new Cell("cfacol2".getBytes(), 0));
-    cells.put("cfb:2".getBytes(),    new Cell("d\tf".getBytes(), 0));
-    cells.put("cfb:-1".getBytes(),   new Cell("".getBytes(), 0));
-    cells.put("cfb:0".getBytes(),    new Cell("0".getBytes(), 0));
-    cells.put("cfb:8".getBytes(),    new Cell("abc".getBytes(), 0));
-    cells.put("cfc:col3".getBytes(), new Cell("cfccol3".getBytes(), 0));
-        
-    RowResult rr = new RowResult("test-row".getBytes(), cells);
-        
-    b.init(rr, "cfb:");
-        
+
+    // Initialize a result
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("col1"), 0, Bytes.toBytes("cfacol1")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("col2"), 0, Bytes.toBytes("cfacol2")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("2"), 0, Bytes.toBytes("d\tf")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("-1"), 0, Bytes.toBytes("")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("0"), 0, Bytes.toBytes("0")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("8"), 0, Bytes.toBytes("abc")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc"), Bytes.toBytes("col3"), 0, Bytes.toBytes("cfccol3")));
+
+    Result r = new Result(kvs);
+    b.init(r, "cfb".getBytes());
+
     assertEquals(
       new Text("d\tf"),
       ((LazyString)b.getMapValueElement(
         new Text("2"))).getWritableObject());
+
     assertNull(b.getMapValueElement(new Text("-1")));
+
     assertEquals(
       new Text("0"),
       ((LazyString)b.getMapValueElement(
         new Text("0"))).getWritableObject());
+
     assertEquals(
       new Text("abc"),
       ((LazyString)b.getMapValueElement(
         new Text("8"))).getWritableObject());
+
     assertNull(b.getMapValueElement(new Text("-")));
-        
+
     assertEquals(
       "{'0':'0','2':'d\\tf','8':'abc'}".replace('\'', '\"'),
       SerDeUtils.getJSONString(b, oi));
   }
-  
+
   /**
    * Test the LazyHBaseRow class with one-for-one mappings between
    * Hive fields and HBase columns.
    */
   public void testLazyHBaseRow1() {
-    List<TypeInfo> fieldTypeInfos = 
+    List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
         "string,int,array<string>,map<string,string>,string");
     List<String> fieldNames = Arrays.asList(
       new String[]{"key", "a", "b", "c", "d"});
     Text nullSequence = new Text("\\N");
-        
-    List<String> hbaseColumnNames = 
+
+    List<String> hbaseColumnNames =
       Arrays.asList(new String[]{":key", "cfa:a", "cfa:b", "cfb:c", "cfb:d"});
-        
+    List<byte []> hbaseColumnNamesBytes = HBaseSerDe.initColumnNamesBytes(hbaseColumnNames);
+
     ObjectInspector oi = LazyFactory.createLazyStructInspector(fieldNames,
       fieldTypeInfos, new byte[] {' ', ':', '='},
       nullSequence, false, false, (byte)0);
     LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi);
 
-    HbaseMapWritable<byte[], Cell> cells =
-      new HbaseMapWritable<byte[], Cell>();
-        
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfa:b".getBytes(), new Cell("a:b:c".getBytes(), 0));
-    cells.put("cfb:c".getBytes(), new Cell("d=e:f=g".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("hi".getBytes(), 0));
-    RowResult rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("a:b:c")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("c"), 0, Bytes.toBytes("d=e:f=g")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("hi")));
+
+    Result r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
-        + "'c':{'d':'e','f':'g'},'d':'hi'}").replace("'", "\""), 
+        + "'c':{'d':'e','f':'g'},'d':'hi'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfb:c".getBytes(), new Cell("d=e:f=g".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("c"), 0, Bytes.toBytes("d=e:f=g")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
-      ("{'key':'test-row','a':123,'b':null,"
-        + "'c':{'d':'e','f':'g'},'d':null}").replace("'", "\""),
-      SerDeUtils.getJSONString(o, oi));
+        ("{'key':'test-row','a':123,'b':null,"
+          + "'c':{'d':'e','f':'g'},'d':null}").replace("'", "\""),
+        SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:b".getBytes(), new Cell("a".getBytes(), 0));
-    cells.put("cfb:c".getBytes(), new Cell("d=\\N:f=g:h".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("no".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("a")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("c"), 0, Bytes.toBytes("d=\\N:f=g:h")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("no")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
-      ("{'key':'test-row','a':null,'b':['a'],"
-        + "'c':{'d':null,'f':'g','h':null},'d':'no'}").replace("'", "\""),
-      SerDeUtils.getJSONString(o, oi));
+        ("{'key':'test-row','a':null,'b':['a'],"
+          + "'c':{'d':null,'f':'g','h':null},'d':'no'}").replace("'", "\""),
+        SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:b".getBytes(), new Cell(":a::".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("no".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes(":a::")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("no")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
         + "'c':null,'d':'no'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfa:b".getBytes(), new Cell("".getBytes(), 0));
-    cells.put("cfb:c".getBytes(), new Cell("".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("c"), 0, Bytes.toBytes("")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
   }
-      
+
   /**
    * Test the LazyHBaseRow class with a mapping from a Hive field to
    * an HBase column family.
    */
   public void testLazyHBaseRow2() {
     // column family is mapped to Map<string,string>
-    List<TypeInfo> fieldTypeInfos = 
+    List<TypeInfo> fieldTypeInfos =
       TypeInfoUtils.getTypeInfosFromTypeString(
         "string,int,array<string>,map<string,string>,string");
     List<String> fieldNames = Arrays.asList(
       new String[]{"key", "a", "b", "c", "d"});
     Text nullSequence = new Text("\\N");
-        
-    List<String> hbaseColumnNames = 
+
+    List<String> hbaseColumnNames =
       Arrays.asList(new String[]{":key", "cfa:a", "cfa:b", "cfb:", "cfc:d"});
-        
+    List<byte []> hbaseColumnNamesBytes = HBaseSerDe.initColumnNamesBytes(hbaseColumnNames);
+
     ObjectInspector oi = LazyFactory.createLazyStructInspector(
       fieldNames,
       fieldTypeInfos,
@@ -232,59 +278,79 @@ public class TestLazyHBaseObject extends TestCase {
       nullSequence, false, false, (byte) 0);
     LazyHBaseRow o = new LazyHBaseRow((LazySimpleStructObjectInspector) oi);
 
-    HbaseMapWritable<byte[], Cell> cells =
-      new HbaseMapWritable<byte[], Cell>();
-        
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfa:b".getBytes(), new Cell("a:b:c".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("e".getBytes(), 0));
-    cells.put("cfb:f".getBytes(), new Cell("g".getBytes(), 0));
-    cells.put("cfc:d".getBytes(), new Cell("hi".getBytes(), 0));
-    RowResult rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("a:b:c")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("e")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("f"), 0, Bytes.toBytes("g")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc"), Bytes.toBytes("d"), 0, Bytes.toBytes("hi")));
+
+    Result r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':123,'b':['a','b','c'],"
-        + "'c':{'d':'e','f':'g'},'d':'hi'}").replace("'", "\""), 
+        + "'c':{'d':'e','f':'g'},'d':'hi'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfb:d".getBytes(), new Cell("e".getBytes(), 0));
-    cells.put("cfb:f".getBytes(), new Cell("g".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("d"), 0, Bytes.toBytes("e")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("f"), 0, Bytes.toBytes("g")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':123,'b':null,"
         + "'c':{'d':'e','f':'g'},'d':null}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:b".getBytes(), new Cell("a".getBytes(), 0));
-    cells.put("cfb:f".getBytes(), new Cell("g".getBytes(), 0));
-    cells.put("cfc:d".getBytes(), new Cell("no".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("a")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfb"), Bytes.toBytes("f"), 0, Bytes.toBytes("g")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc"), Bytes.toBytes("d"), 0, Bytes.toBytes("no")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':null,'b':['a'],"
         + "'c':{'f':'g'},'d':'no'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:b".getBytes(), new Cell(":a::".getBytes(), 0));
-    cells.put("cfc:d".getBytes(), new Cell("no".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes(":a::")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc"), Bytes.toBytes("d"), 0, Bytes.toBytes("no")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       ("{'key':'test-row','a':null,'b':['','a','',''],"
         + "'c':{},'d':'no'}").replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));
 
-    cells.clear();
-    cells.put("cfa:a".getBytes(), new Cell("123".getBytes(), 0));
-    cells.put("cfa:b".getBytes(), new Cell("".getBytes(), 0));
-    cells.put("cfc:d".getBytes(), new Cell("".getBytes(), 0));
-    rr = new RowResult("test-row".getBytes(), cells);
-    o.init(rr, hbaseColumnNames);
+    kvs.clear();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("a"), 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfa"), Bytes.toBytes("b"), 0, Bytes.toBytes("")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row"),
+        Bytes.toBytes("cfc"), Bytes.toBytes("d"), 0, Bytes.toBytes("")));
+    r = new Result(kvs);
+
+    o.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     assertEquals(
       "{'key':'test-row','a':123,'b':[],'c':{},'d':''}".replace("'", "\""),
       SerDeUtils.getJSONString(o, oi));

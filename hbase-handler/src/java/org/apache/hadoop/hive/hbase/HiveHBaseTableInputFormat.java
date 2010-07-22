@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -28,57 +27,51 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.io.RowResult;
-import org.apache.hadoop.hbase.mapred.TableSplit;
+import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
+import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.util.Writables;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 /**
  * HiveHBaseTableInputFormat implements InputFormat for HBase storage handler
  * tables, decorating an underlying HBase TableInputFormat with extra Hive logic
  * such as column pruning.
  */
-public class HiveHBaseTableInputFormat<K extends ImmutableBytesWritable, V extends RowResult>
-    implements InputFormat<K, V>, JobConfigurable {
-  
-  static final Log LOG = LogFactory.getLog(HiveHBaseTableInputFormat.class);
-  
-  private HBaseExposedTableInputFormat hbaseInputFormat;
+public class HiveHBaseTableInputFormat extends TableInputFormatBase
+    implements InputFormat<ImmutableBytesWritable, Result> {
 
-  public HiveHBaseTableInputFormat() {
-    hbaseInputFormat = new HBaseExposedTableInputFormat();
-  }
+  static final Log LOG = LogFactory.getLog(HiveHBaseTableInputFormat.class);
 
   @Override
-  public RecordReader<K, V> getRecordReader(
-    InputSplit split, JobConf job,
-    Reporter reporter) throws IOException {
+  public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
+    InputSplit split,
+    JobConf jobConf,
+    final Reporter reporter) throws IOException {
 
     HBaseSplit hbaseSplit = (HBaseSplit) split;
+    String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
+    setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
 
-    byte [] tableNameBytes;
-    String hbaseTableName = job.get(HBaseSerDe.HBASE_TABLE_NAME);
-    hbaseInputFormat.setHBaseTable(
-      new HTable(
-        new HBaseConfiguration(job),
-        Bytes.toBytes(hbaseTableName)));
-    
-    String columnMapping = hbaseSplit.getColumnsMapping();
-    List<String> columns = HBaseSerDe.parseColumnMapping(columnMapping);
-    List<Integer> readColIDs =
-      ColumnProjectionUtils.getReadColumnIDs(job);
- 
+    String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
+    List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
+
     if (columns.size() < readColIDs.size()) {
-      throw new IOException(
-        "Cannot read more columns than the given table contains.");
+      throw new IOException("Cannot read more columns than the given table contains.");
     }
 
     List<byte []> scanColumns = new ArrayList<byte []>();
@@ -103,28 +96,92 @@ public class HiveHBaseTableInputFormat<K extends ImmutableBytesWritable, V exten
         }
       }
     }
-    
-    hbaseInputFormat.setScanColumns(scanColumns.toArray(new byte[0][]));
-    
-    return (RecordReader<K, V>)
-      hbaseInputFormat.getRecordReader(hbaseSplit.getSplit(), job, reporter);
+
+    setScan(new Scan().addColumns(scanColumns.toArray(new byte[0][])));
+    org.apache.hadoop.hbase.mapreduce.TableSplit tableSplit = hbaseSplit.getSplit();
+
+    Job job = new Job(jobConf);
+    TaskAttemptContext tac =
+      new TaskAttemptContext(job.getConfiguration(), new TaskAttemptID()) {
+
+        @Override
+        public void progress() {
+          reporter.progress();
+        }
+      };
+
+    final org.apache.hadoop.mapreduce.RecordReader<ImmutableBytesWritable, Result>
+    recordReader = createRecordReader(tableSplit, tac);
+
+    return new RecordReader<ImmutableBytesWritable, Result>() {
+
+      @Override
+      public void close() throws IOException {
+        recordReader.close();
+      }
+
+      @Override
+      public ImmutableBytesWritable createKey() {
+        return new ImmutableBytesWritable();
+      }
+
+      @Override
+      public Result createValue() {
+        return new Result();
+      }
+
+      @Override
+      public long getPos() throws IOException {
+        return 0;
+      }
+
+      @Override
+      public float getProgress() throws IOException {
+        float progress = 0.0F;
+
+        try {
+          progress = recordReader.getProgress();
+        } catch (InterruptedException e) {
+          throw new IOException(e);
+        }
+
+        return progress;
+      }
+
+      @Override
+      public boolean next(ImmutableBytesWritable rowKey, Result value) throws IOException {
+
+        boolean next = false;
+
+        try {
+          next = recordReader.nextKeyValue();
+
+          if (next) {
+            rowKey.set(recordReader.getCurrentValue().getRow());
+            Writables.copyWritable(recordReader.getCurrentValue(), value);
+          }
+        } catch (InterruptedException e) {
+          throw new IOException(e);
+        }
+
+        return next;
+      }
+    };
   }
 
   @Override
-  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    Path [] tableNames = FileInputFormat.getInputPaths(job);
-    String hbaseTableName = job.get(HBaseSerDe.HBASE_TABLE_NAME);
-    hbaseInputFormat.setHBaseTable(
-      new HTable(new HBaseConfiguration(job), hbaseTableName));
-    
-    String hbaseSchemaMapping = job.get(HBaseSerDe.HBASE_COL_MAPPING);
-    if (hbaseSchemaMapping == null) {
+  public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
+
+    String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
+    setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
+    String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+    if (hbaseColumnsMapping == null) {
       throw new IOException("hbase.columns.mapping required for HBase Table.");
     }
 
     // REVIEW:  are we supposed to be applying the getReadColumnIDs
     // same as in getRecordReader?
-    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseSchemaMapping);
+    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
     List<byte []> inputColumns = new ArrayList<byte []>();
     for (String column : columns) {
       if (HBaseSerDe.isSpecialColumn(column)) {
@@ -132,43 +189,18 @@ public class HiveHBaseTableInputFormat<K extends ImmutableBytesWritable, V exten
       }
       inputColumns.add(Bytes.toBytes(column));
     }
-    
-    hbaseInputFormat.setScanColumns(inputColumns.toArray(new byte[0][]));
-    
-    InputSplit[] splits = hbaseInputFormat.getSplits(
-      job, numSplits <= 0 ? 1 : numSplits);
-    InputSplit[] results = new InputSplit[splits.length];
-    for (int i = 0; i < splits.length; i++) {
-      results[i] = new HBaseSplit(
-        (TableSplit) splits[i], hbaseSchemaMapping, tableNames[0]);
+
+    setScan(new Scan().addColumns(inputColumns.toArray(new byte[0][])));
+    Job job = new Job(jobConf);
+    JobContext jobContext = new JobContext(job.getConfiguration(), job.getJobID());
+    Path [] tablePaths = FileInputFormat.getInputPaths(jobContext);
+    List<org.apache.hadoop.mapreduce.InputSplit> splits = getSplits(jobContext);
+    InputSplit [] results = new InputSplit[splits.size()];
+
+    for (int i = 0; i < splits.size(); i++) {
+      results[i] = new HBaseSplit((TableSplit) splits.get(i), tablePaths[0]);
     }
+
     return results;
-  }
- 
-  @Override
-  public void configure(JobConf job) {
-    hbaseInputFormat.configure(job);
-  }
-
-  /**
-   * HBaseExposedTableInputFormat exposes some protected methods
-   * from the HBase TableInputFormatBase.
-   */
-  static class HBaseExposedTableInputFormat
-    extends org.apache.hadoop.hbase.mapred.TableInputFormatBase
-    implements JobConfigurable {
-
-    @Override
-    public void configure(JobConf job) {
-      // not needed for now
-    }
-    
-    public void setScanColumns(byte[][] scanColumns) {
-      setInputColumns(scanColumns);
-    }
-    
-    public void setHBaseTable(HTable table) {
-      setHTable(table);
-    }
   }
 }

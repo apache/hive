@@ -26,20 +26,17 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -57,7 +54,7 @@ public class HBaseStorageHandler
 
   private HBaseConfiguration hbaseConf;
   private HBaseAdmin admin;
-  
+
   private HBaseAdmin getHBaseAdmin() throws MetaException {
     try {
       if (admin == null) {
@@ -88,12 +85,12 @@ public class HBaseStorageHandler
   public void preDropTable(Table table) throws MetaException {
     // nothing to do
   }
-  
+
   @Override
   public void rollbackDropTable(Table table) throws MetaException {
     // nothing to do
   }
-  
+
   @Override
   public void commitDropTable(
     Table tbl, boolean deleteData) throws MetaException {
@@ -130,12 +127,12 @@ public class HBaseStorageHandler
       // Check the hbase columns and get all the families
       Map<String, String> serdeParam =
         tbl.getSd().getSerdeInfo().getParameters();
-      String hbaseColumnStr = serdeParam.get(HBaseSerDe.HBASE_COL_MAPPING);
-      if (hbaseColumnStr == null) {
+      String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+      if (hbaseColumnsMapping == null) {
         throw new MetaException("No hbase.columns.mapping defined in Serde.");
       }
       List<String> hbaseColumns =
-        HBaseSerDe.parseColumnMapping(hbaseColumnStr);
+        HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
       int iKeyFirst = hbaseColumns.indexOf(HBaseSerDe.HBASE_KEY_COL);
       int iKeyLast = hbaseColumns.lastIndexOf(HBaseSerDe.HBASE_KEY_COL);
       if (iKeyFirst != iKeyLast) {
@@ -152,10 +149,10 @@ public class HBaseStorageHandler
         }
         columnFamilies.add(hbaseColumn.substring(0, idx));
       }
-  
+
       // Check if the given hbase table exists
       HTableDescriptor tblDesc;
-      
+
       if (!getHBaseAdmin().tableExists(tblName)) {
         // if it is not an external table then create one
         if (!isExternal) {
@@ -164,14 +161,14 @@ public class HBaseStorageHandler
           for (String cf : columnFamilies) {
             tblDesc.addFamily(new HColumnDescriptor(cf + ":"));
           }
-  
+
           getHBaseAdmin().createTable(tblDesc);
         } else {
           // an external table
-          throw new MetaException("HBase table " + tblName + 
+          throw new MetaException("HBase table " + tblName +
               " doesn't exist while the table is declared as an external table.");
         }
-      
+
       } else {
         if (!isExternal) {
           throw new MetaException("Table " + tblName + " already exists"
@@ -233,7 +230,7 @@ public class HBaseStorageHandler
   public Class<? extends InputFormat> getInputFormatClass() {
     return HiveHBaseTableInputFormat.class;
   }
-  
+
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
     return HiveHBaseTableOutputFormat.class;
@@ -255,10 +252,10 @@ public class HBaseStorageHandler
     Map<String, String> jobProperties) {
 
     Properties tableProperties = tableDesc.getProperties();
-    
+
     jobProperties.put(
-      HBaseSerDe.HBASE_COL_MAPPING,
-      tableProperties.getProperty(HBaseSerDe.HBASE_COL_MAPPING));
+      HBaseSerDe.HBASE_COLUMNS_MAPPING,
+      tableProperties.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING));
 
     String tableName =
       tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);

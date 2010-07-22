@@ -31,12 +31,15 @@ Trunk -  Unreleased
     case
     (Siying Dong via Ning Zhang)
 
-    HIVE-1469. replace isArray() calls and remove LOG.isInfoEnabled() in 
+    HIVE-1469. replace isArray() calls and remove LOG.isInfoEnabled() in
     Operator.forward()
     (Yongqiang He via Ning Zhang)
 
     HIVE-1463. Hive output file names are unnecessarily large
     (Joydeep Sen Sarma via Ning Zhang)
+
+    HIVE-1229. Replace dependencies on HBase deprecated API.
+    (Basab Maulik via jvs)
 
   OPTIMIZATIONS
 

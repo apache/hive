@@ -15,17 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.hbase;
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.io.BatchUpdate;
-import org.apache.hadoop.hbase.io.Cell;
-import org.apache.hadoop.hbase.io.HbaseMapWritable;
-import org.apache.hadoop.hbase.io.RowResult;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -37,8 +40,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
-import junit.framework.TestCase;
 
 /**
  * Tests the HBaseSerDe class.
@@ -54,32 +55,39 @@ public class TestHBaseSerDe extends TestCase {
     Configuration conf = new Configuration();
     Properties tbl = createProperties();
     serDe.initialize(conf, tbl);
-      
+
     byte[] colabyte   = "cola:abyte".getBytes();
     byte[] colbshort  = "colb:ashort".getBytes();
     byte[] colcint    = "colc:aint".getBytes();
     byte[] colalong   = "cola:along".getBytes();
     byte[] colbdouble = "colb:adouble".getBytes();
     byte[] colcstring = "colc:astring".getBytes();
-      
+
     // Data
-    HbaseMapWritable<byte[], Cell> cells =
-      new HbaseMapWritable<byte[], Cell>();
-    cells.put(colabyte,    new Cell("123".getBytes(), 0));
-    cells.put(colbshort,   new Cell("456".getBytes(), 0));
-    cells.put(colcint,     new Cell("789".getBytes(), 0));
-    cells.put(colalong,    new Cell("1000".getBytes(), 0));
-    cells.put(colbdouble,  new Cell("5.3".getBytes(), 0));
-    cells.put(colcstring,  new Cell("hive and hadoop".getBytes(), 0));
-    RowResult rr = new RowResult("test-row1".getBytes(), cells);
-    BatchUpdate bu = new BatchUpdate("test-row1".getBytes());
-    bu.put(colabyte,    "123".getBytes());
-    bu.put(colbshort,   "456".getBytes());
-    bu.put(colcint,     "789".getBytes());
-    bu.put(colalong,    "1000".getBytes());
-    bu.put(colbdouble,  "5.3".getBytes());
-    bu.put(colcstring,  "hive and hadoop".getBytes());
-      
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colabyte, 0, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colbshort, 0, Bytes.toBytes("456")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colcint, 0, Bytes.toBytes("789")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colalong, 0, Bytes.toBytes("1000")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colbdouble, 0, Bytes.toBytes("5.3")));
+    kvs.add(new KeyValue(Bytes.toBytes("test-row1"),
+        colcstring, 0, Bytes.toBytes("hive and hadoop")));
+    Result r = new Result(kvs);
+
+    Put p = new Put(Bytes.toBytes("test-row1"));
+
+    p.add(colabyte, 0, Bytes.toBytes("123"));
+    p.add(colbshort, 0, Bytes.toBytes("456"));
+    p.add(colcint, 0, Bytes.toBytes("789"));
+    p.add(colalong, 0, Bytes.toBytes("1000"));
+    p.add(colbdouble, 0, Bytes.toBytes("5.3"));
+    p.add(colcstring, 0, Bytes.toBytes("hive and hadoop"));
+
     Object[] expectedFieldsData = {
       new Text("test-row1"),
       new ByteWritable((byte)123),
@@ -89,12 +97,12 @@ public class TestHBaseSerDe extends TestCase {
       new DoubleWritable(5.3),
       new Text("hive and hadoop")
     };
-     
-    deserializeAndSerialize(serDe, rr, bu, expectedFieldsData);
+
+    deserializeAndSerialize(serDe, r, p, expectedFieldsData);
   }
 
   private void deserializeAndSerialize(
-    HBaseSerDe serDe, RowResult rr, BatchUpdate bu,
+      HBaseSerDe serDe, Result r, Put p,
       Object[] expectedFieldsData) throws SerDeException {
 
     // Get the row structure
@@ -102,34 +110,33 @@ public class TestHBaseSerDe extends TestCase {
       serDe.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
     assertEquals(7, fieldRefs.size());
-    
+
     // Deserialize
-    Object row = serDe.deserialize(rr);
+    Object row = serDe.deserialize(r);
     for (int i = 0; i < fieldRefs.size(); i++) {
       Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
       if (fieldData != null) {
-        fieldData = ((LazyPrimitive)fieldData).getWritableObject();
+        fieldData = ((LazyPrimitive<?, ?>)fieldData).getWritableObject();
       }
       assertEquals("Field " + i, expectedFieldsData[i], fieldData);
     }
-    // Serialize 
-    assertEquals(BatchUpdate.class, serDe.getSerializedClass());
-    BatchUpdate serializedBU = (BatchUpdate)serDe.serialize(row, oi);
-    assertEquals("Serialized data", bu.toString(), serializedBU.toString());
+    // Serialize
+    assertEquals(Put.class, serDe.getSerializedClass());
+    Put serializedPut = (Put) serDe.serialize(row, oi);
+    assertEquals("Serialized data", p.toString(), serializedPut.toString());
   }
 
   private Properties createProperties() {
     Properties tbl = new Properties();
-    
+
     // Set the configuration parameters
     tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
     tbl.setProperty("columns",
         "key,abyte,ashort,aint,along,adouble,astring");
     tbl.setProperty("columns.types",
         "string,tinyint:smallint:int:bigint:double:string");
-    tbl.setProperty(HBaseSerDe.HBASE_COL_MAPPING, 
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
         "cola:abyte,colb:ashort,colc:aint,cola:along,colb:adouble,colc:astring");
     return tbl;
   }
-  
 }

@@ -28,8 +28,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.io.BatchUpdate;
-import org.apache.hadoop.hbase.io.RowResult;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -52,8 +52,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -61,24 +59,29 @@ import org.apache.hadoop.io.Writable;
  * deserialize objects from an HBase table.
  */
 public class HBaseSerDe implements SerDe {
-  
-  public static final String HBASE_COL_MAPPING = "hbase.columns.mapping";
-  
+
+  public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
-  
   public static final String HBASE_KEY_COL = ":key";
-  
-  public static final Log LOG = LogFactory.getLog(
-      HBaseSerDe.class.getName());
+  public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
   private ObjectInspector cachedObjectInspector;
   private List<String> hbaseColumnNames;
+  private List<byte []> hbaseColumnNamesBytes;
   private SerDeParameters serdeParams;
   private boolean useJSONSerialize;
   private LazyHBaseRow cachedHBaseRow;
-  private ByteStream.Output serializeStream = new ByteStream.Output();
+  private final ByteStream.Output serializeStream = new ByteStream.Output();
   private int iKey;
 
+  // used for serializing a field
+  private byte [] separators;     // the separators array
+  private boolean escaped;        // whether we need to escape the data when writing out
+  private byte escapeChar;        // which char to use as the escape char, e.g. '\\'
+  private boolean [] needsEscape; // which chars need to be escaped. This array should have size
+                                  // of 128. Negative byte values (or byte values >= 128) are
+                                  // never escaped.
+  @Override
   public String toString() {
     return getClass().toString()
         + "["
@@ -90,32 +93,33 @@ public class HBaseSerDe implements SerDe {
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
             .getAllStructFieldTypeInfos() + "]";
   }
-  
+
   public HBaseSerDe() throws SerDeException {
   }
-  
+
   /**
    * Initialize the SerDe given parameters.
    * @see SerDe#initialize(Configuration, Properties)
    */
+  @Override
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
 
-    initHBaseSerDeParameters(conf, tbl, 
+    initHBaseSerDeParameters(conf, tbl,
         getClass().getName());
-    
+
     cachedObjectInspector = LazyFactory.createLazyStructInspector(
-        serdeParams.getColumnNames(), 
-        serdeParams.getColumnTypes(), 
+        serdeParams.getColumnNames(),
+        serdeParams.getColumnTypes(),
         serdeParams.getSeparators(),
         serdeParams.getNullSequence(),
         serdeParams.isLastColumnTakesRest(),
         serdeParams.isEscaped(),
-        serdeParams.getEscapeChar()); 
-    
+        serdeParams.getEscapeChar());
+
     cachedHBaseRow = new LazyHBaseRow(
       (LazySimpleStructObjectInspector) cachedObjectInspector);
-    
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("HBaseSerDe initialized with : columnNames = "
         + serdeParams.getColumnNames()
@@ -136,25 +140,45 @@ public class HBaseSerDe implements SerDe {
     }
     return columnList;
   }
-  
+
+  public static List<byte []> initColumnNamesBytes(List<String> columnNames) {
+    List<byte []> columnBytes = new ArrayList<byte []>();
+    String column = null;
+
+    for (int i = 0; i < columnNames.size(); i++) {
+      column = columnNames.get(i);
+
+      if (column.endsWith(":")) {
+        columnBytes.add(Bytes.toBytes(column.split(":")[0]));
+      } else {
+        columnBytes.add(Bytes.toBytes(column));
+      }
+    }
+
+    return columnBytes;
+  }
+
   public static boolean isSpecialColumn(String hbaseColumnName) {
     return hbaseColumnName.equals(HBASE_KEY_COL);
   }
-  
+
   private void initHBaseSerDeParameters(
-      Configuration job, Properties tbl, String serdeName) 
+      Configuration job, Properties tbl, String serdeName)
     throws SerDeException {
 
     // Read configuration parameters
     String hbaseColumnNameProperty =
-      tbl.getProperty(HBaseSerDe.HBASE_COL_MAPPING);
+      tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     String columnTypeProperty =
       tbl.getProperty(Constants.LIST_COLUMN_TYPES);
-    
-    // Initialize the hbase column list
+
+    // Initialize the HBase column list
     hbaseColumnNames = parseColumnMapping(hbaseColumnNameProperty);
     iKey = hbaseColumnNames.indexOf(HBASE_KEY_COL);
-      
+
+    // initialize the byte [] corresponding to each column name
+    hbaseColumnNamesBytes = initColumnNamesBytes(hbaseColumnNames);
+
     // Build the type property string if not supplied
     if (columnTypeProperty == null) {
       StringBuilder sb = new StringBuilder();
@@ -180,20 +204,24 @@ public class HBaseSerDe implements SerDe {
       }
       tbl.setProperty(Constants.LIST_COLUMN_TYPES, sb.toString());
     }
-    
-    serdeParams = LazySimpleSerDe.initSerdeParams(
-      job, tbl, serdeName);
-    
+
+    serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
+
     if (hbaseColumnNames.size() != serdeParams.getColumnNames().size()) {
-      throw new SerDeException(serdeName + ": columns has " + 
-        serdeParams.getColumnNames().size() + 
-        " elements while hbase.columns.mapping has " + 
+      throw new SerDeException(serdeName + ": columns has " +
+        serdeParams.getColumnNames().size() +
+        " elements while hbase.columns.mapping has " +
         hbaseColumnNames.size() + " elements" +
         " (counting the key if implicit)");
     }
-    
+
+    separators = serdeParams.getSeparators();
+    escaped = serdeParams.isEscaped();
+    escapeChar = serdeParams.getEscapeChar();
+    needsEscape = serdeParams.getNeedsEscape();
+
     // check that the mapping schema is right;
-    // we just can make sure that "columnfamily:" is mapped to MAP<String,?> 
+    // we just can make sure that "column-family:" is mapped to MAP<String,?>
     for (int i = 0; i < hbaseColumnNames.size(); i++) {
       String hbaseColName = hbaseColumnNames.get(i);
       if (hbaseColName.endsWith(":")) {
@@ -211,21 +239,22 @@ public class HBaseSerDe implements SerDe {
       }
     }
   }
-  
+
   /**
-   * Deserialize a row from the HBase RowResult writable to a LazyObject
-   * @param rowResult the HBase RowResult Writable contain a row
+   * Deserialize a row from the HBase Result writable to a LazyObject
+   * @param result the HBase Result Writable containing the row
    * @return the deserialized object
-   * @see SerDe#deserialize(Writable) 
+   * @see SerDe#deserialize(Writable)
    */
-  public Object deserialize(Writable rowResult) throws SerDeException {
-    
-    if (!(rowResult instanceof RowResult)) {
-      throw new SerDeException(getClass().getName() + ": expects RowResult!");
+  @Override
+  public Object deserialize(Writable result) throws SerDeException {
+
+    if (!(result instanceof Result)) {
+      throw new SerDeException(getClass().getName() + ": expects Result!");
     }
-    
-    RowResult rr = (RowResult)rowResult;
-    cachedHBaseRow.init(rr, hbaseColumnNames);
+
+    Result r = (Result)result;
+    cachedHBaseRow.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
     return cachedHBaseRow;
   }
 
@@ -236,15 +265,15 @@ public class HBaseSerDe implements SerDe {
 
   @Override
   public Class<? extends Writable> getSerializedClass() {
-    return BatchUpdate.class;
+    return Put.class;
   }
 
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
     if (objInspector.getCategory() != Category.STRUCT) {
-      throw new SerDeException(getClass().toString() 
-          + " can only serialize struct types, but we got: " 
+      throw new SerDeException(getClass().toString()
+          + " can only serialize struct types, but we got: "
           + objInspector.getTypeName());
     }
 
@@ -253,44 +282,47 @@ public class HBaseSerDe implements SerDe {
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
     List<? extends StructField> declaredFields =
-      (serdeParams.getRowTypeInfo() != null && 
+      (serdeParams.getRowTypeInfo() != null &&
         ((StructTypeInfo) serdeParams.getRowTypeInfo())
-        .getAllStructFieldNames().size() > 0) ? 
+        .getAllStructFieldNames().size() > 0) ?
       ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs()
       : null;
-        
-    BatchUpdate batchUpdate;
+
+    Put put = null;
 
     try {
-      byte [] key =
-        serializeField(
-          iKey, HBASE_KEY_COL, null, fields, list, declaredFields);
+      byte [] key = serializeField(iKey, null, fields, list, declaredFields);
+
       if (key == null) {
         throw new SerDeException("HBase row key cannot be NULL");
       }
-      batchUpdate = new BatchUpdate(key);
+
+      put = new Put(key);
+
       // Serialize each field
       for (int i = 0; i < fields.size(); i++) {
         if (i == iKey) {
           // already processed the key above
           continue;
         }
-        String hbaseColumn = hbaseColumnNames.get(i);
-        serializeField(
-          i, hbaseColumn, batchUpdate, fields, list, declaredFields);
+        serializeField(i, put, fields, list, declaredFields);
       }
     } catch (IOException e) {
       throw new SerDeException(e);
     }
-    
-    return batchUpdate;
+
+    return put;
   }
 
   private byte [] serializeField(
-    int i, String hbaseColumn, BatchUpdate batchUpdate,
+    int i,
+    Put put,
     List<? extends StructField> fields,
     List<Object> list,
     List<? extends StructField> declaredFields) throws IOException {
+
+    // column name
+    String hbaseColumn = hbaseColumnNames.get(i);
 
     // Get the field objectInspector and the field object.
     ObjectInspector foi = fields.get(i).getFieldObjectInspector();
@@ -300,7 +332,7 @@ public class HBaseSerDe implements SerDe {
       // a null object, we do not serialize it
       return null;
     }
-        
+
     // If the field corresponds to a column family in hbase
     if (hbaseColumn.endsWith(":")) {
       MapObjectInspector moi = (MapObjectInspector)foi;
@@ -314,107 +346,73 @@ public class HBaseSerDe implements SerDe {
         for (Map.Entry<?, ?> entry: map.entrySet()) {
           // Get the Key
           serializeStream.reset();
-          serialize(serializeStream, entry.getKey(), koi, 
-            serdeParams.getSeparators(), 3,
-            serdeParams.getNullSequence(),
-            serdeParams.isEscaped(),
-            serdeParams.getEscapeChar(),
-            serdeParams.getNeedsEscape());
-              
-          // generate a column name (column_family:column_name)
-          String hbaseSparseColumn =
-            hbaseColumn + Bytes.toString(
-              serializeStream.getData(), 0, serializeStream.getCount());
+          serialize(entry.getKey(), koi, 3);
+
+          // Get the column-qualifier
+          byte [] columnQualifier = new byte[serializeStream.getCount()];
+          System.arraycopy(serializeStream.getData(), 0, columnQualifier, 0, serializeStream.getCount());
 
           // Get the Value
           serializeStream.reset();
-
-          boolean isNotNull = serialize(serializeStream, entry.getValue(), voi, 
-            serdeParams.getSeparators(), 3,
-            serdeParams.getNullSequence(),
-            serdeParams.isEscaped(),
-            serdeParams.getEscapeChar(),
-            serdeParams.getNeedsEscape());
+          boolean isNotNull = serialize(entry.getValue(), voi, 3);
           if (!isNotNull) {
             continue;
           }
-          byte [] key = new byte[serializeStream.getCount()];
-          System.arraycopy(
-            serializeStream.getData(), 0, key, 0, serializeStream.getCount());
-          batchUpdate.put(hbaseSparseColumn, key);
+          byte [] value = new byte[serializeStream.getCount()];
+          System.arraycopy(serializeStream.getData(), 0, value, 0, serializeStream.getCount());
+          put.add(hbaseColumnNamesBytes.get(i), columnQualifier, value);
         }
       }
     } else {
-      // If the field that is passed in is NOT a primitive, and either the 
-      // field is not declared (no schema was given at initialization), or 
-      // the field is declared as a primitive in initialization, serialize 
-      // the data to JSON string.  Otherwise serialize the data in the 
+      // If the field that is passed in is NOT a primitive, and either the
+      // field is not declared (no schema was given at initialization), or
+      // the field is declared as a primitive in initialization, serialize
+      // the data to JSON string.  Otherwise serialize the data in the
       // delimited way.
       serializeStream.reset();
       boolean isNotNull;
       if (!foi.getCategory().equals(Category.PRIMITIVE)
-        && (declaredFields == null || 
-          declaredFields.get(i).getFieldObjectInspector().getCategory()
-          .equals(Category.PRIMITIVE) || useJSONSerialize)) {
+          && (declaredFields == null ||
+              declaredFields.get(i).getFieldObjectInspector().getCategory()
+              .equals(Category.PRIMITIVE) || useJSONSerialize)) {
+
         isNotNull = serialize(
-          serializeStream, SerDeUtils.getJSONString(f, foi),
-          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-          serdeParams.getSeparators(), 1,
-          serdeParams.getNullSequence(),
-          serdeParams.isEscaped(),
-          serdeParams.getEscapeChar(),
-          serdeParams.getNeedsEscape());
+            SerDeUtils.getJSONString(f, foi),
+            PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+            1);
       } else {
-        isNotNull = serialize(
-          serializeStream, f, foi, 
-          serdeParams.getSeparators(), 1,
-          serdeParams.getNullSequence(),
-          serdeParams.isEscaped(),
-          serdeParams.getEscapeChar(),
-          serdeParams.getNeedsEscape());
+        isNotNull = serialize(f, foi, 1);
       }
       if (!isNotNull) {
         return null;
       }
       byte [] key = new byte[serializeStream.getCount()];
-      System.arraycopy(
-        serializeStream.getData(), 0, key, 0, serializeStream.getCount());
-      if (hbaseColumn.equals(HBASE_KEY_COL)) {
+      System.arraycopy(serializeStream.getData(), 0, key, 0, serializeStream.getCount());
+      if (i == iKey) {
         return key;
       }
-      batchUpdate.put(hbaseColumn, key);
+      put.add(hbaseColumnNamesBytes.get(i), 0, key);
     }
 
     return null;
   }
-  
+
   /**
    * Serialize the row into a ByteStream.
    *
-   * @param out  The ByteStream.Output to store the serialized data.
-   * @param obj The object for the current field.
+   * @param obj           The object for the current field.
    * @param objInspector  The ObjectInspector for the current Object.
-   * @param separators    The separators array.
    * @param level         The current level of separator.
-   * @param nullSequence  The byte sequence representing the NULL value.
-   * @param escaped       Whether we need to escape the data when writing out
-   * @param escapeChar    Which char to use as the escape char, e.g. '\\'     
-   * @param needsEscape   Which chars needs to be escaped.
-   *                      This array should have size of 128.
-   *                      Negative byte values (or byte values >= 128)
-   *                      are never escaped.
-   * @throws IOException 
-   * @return true, if serialize a not-null object; otherwise false.
+   * @throws IOException
+   * @return true, if serialize is a not-null object; otherwise false.
    */
-  public static boolean serialize(ByteStream.Output out, Object obj, 
-    ObjectInspector objInspector, byte[] separators, int level,
-    Text nullSequence, boolean escaped, byte escapeChar,
-    boolean[] needsEscape) throws IOException {
-    
+  private boolean serialize(Object obj, ObjectInspector objInspector, int level)
+      throws IOException {
+
     switch (objInspector.getCategory()) {
       case PRIMITIVE: {
         LazyUtils.writePrimitiveUTF8(
-          out, obj,
+          serializeStream, obj,
           (PrimitiveObjectInspector) objInspector,
           escaped, escapeChar, needsEscape);
         return true;
@@ -429,10 +427,9 @@ public class HBaseSerDe implements SerDe {
         } else {
           for (int i = 0; i < list.size(); i++) {
             if (i > 0) {
-              out.write(separator);
+              serializeStream.write(separator);
             }
-            serialize(out, list.get(i), eoi, separators, level + 1,
-                nullSequence, escaped, escapeChar, needsEscape);
+            serialize(list.get(i), eoi, level + 1);
           }
         }
         return true;
@@ -443,7 +440,7 @@ public class HBaseSerDe implements SerDe {
         MapObjectInspector moi = (MapObjectInspector) objInspector;
         ObjectInspector koi = moi.getMapKeyObjectInspector();
         ObjectInspector voi = moi.getMapValueObjectInspector();
-        
+
         Map<?, ?> map = moi.getMap(obj);
         if (map == null) {
           return false;
@@ -453,13 +450,11 @@ public class HBaseSerDe implements SerDe {
             if (first) {
               first = false;
             } else {
-              out.write(separator);
+              serializeStream.write(separator);
             }
-            serialize(out, entry.getKey(), koi, separators, level+2, 
-                nullSequence, escaped, escapeChar, needsEscape);
-            out.write(keyValueSeparator);
-            serialize(out, entry.getValue(), voi, separators, level+2, 
-                nullSequence, escaped, escapeChar, needsEscape);
+            serialize(entry.getKey(), koi, level+2);
+            serializeStream.write(keyValueSeparator);
+            serialize(entry.getValue(), voi, level+2);
           }
         }
         return true;
@@ -474,22 +469,19 @@ public class HBaseSerDe implements SerDe {
         } else {
           for (int i = 0; i < list.size(); i++) {
             if (i > 0) {
-              out.write(separator);
+              serializeStream.write(separator);
             }
-            serialize(out, list.get(i),
-                fields.get(i).getFieldObjectInspector(), separators, level + 1,
-                nullSequence, escaped, escapeChar, needsEscape);
+            serialize(list.get(i), fields.get(i).getFieldObjectInspector(), level + 1);
           }
         }
         return true;
       }
     }
-    
-    throw new RuntimeException("Unknown category type: "
-        + objInspector.getCategory());
+
+    throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
   }
-    
-  
+
+
   /**
    * @return the useJSONSerialize
    */
@@ -503,5 +495,4 @@ public class HBaseSerDe implements SerDe {
   public void setUseJSONSerialize(boolean useJSONSerialize) {
     this.useJSONSerialize = useJSONSerialize;
   }
-
 }

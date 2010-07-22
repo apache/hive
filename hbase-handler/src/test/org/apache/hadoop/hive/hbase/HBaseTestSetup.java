@@ -37,8 +37,8 @@ import org.apache.zookeeper.Watcher;
  * HBaseTestSetup defines HBase-specific test fixtures which are
  * reused across testcases.
  */
-public class HBaseTestSetup extends TestSetup
-{
+public class HBaseTestSetup extends TestSetup {
+
   private MiniHBaseCluster hbaseCluster;
   private MiniZooKeeperCluster zooKeeperCluster;
   private int zooKeeperPort;
@@ -49,7 +49,7 @@ public class HBaseTestSetup extends TestSetup
   public HBaseTestSetup(Test test) {
     super(test);
   }
-  
+
   void preTest(HiveConf conf) throws Exception {
     if (hbaseCluster == null) {
       // We set up fixtures on demand for the first testcase, and leave
