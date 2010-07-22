@@ -1,11 +1,3 @@
-PREHOOK: query: drop table hive_test_src
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table hive_test_src
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table hive_test_dst
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table hive_test_dst
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
@@ -33,11 +25,11 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-27_161_4058867181423672724/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-08_582_5840765576374175576/10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-27_161_4058867181423672724/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-08_582_5840765576374175576/10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
 2	test_part	test_Part
@@ -57,20 +49,20 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_005_7262990256756311796/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_329_4921545927597783630/10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_005_7262990256756311796/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_329_4921545927597783630/10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_055_1756029915176080993/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_375_7311986483705850817/10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_055_1756029915176080993/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_375_7311986483705850817/10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
@@ -81,31 +73,17 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6	test_part	test_Part
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_130_4753679815952473777/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_440_6906366422294316277/10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_130_4753679815952473777/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_440_6906366422294316277/10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_181_3514948387985518789/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_474_301584563410557410/10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-18-32_181_3514948387985518789/10000
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: drop table hive_test_src
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table hive_test_src
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@hive_test_src
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: drop table hive_test_dst
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table hive_test_dst
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@hive_test_dst
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-40-11_474_301584563410557410/10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]

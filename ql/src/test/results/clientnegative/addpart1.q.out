@@ -1,7 +1,3 @@
-PREHOOK: query: drop table addpart1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table addpart1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table addpart1 (a int) partitioned by (b string, c string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table addpart1 (a int) partitioned by (b string, c string)

@@ -1,5 +1,5 @@
-drop table tst_dest30;
-drop table dest30;
+
+
 
 
 create table dest30(a int);
@@ -19,5 +19,5 @@ set hive.test.mode=false;
 
 select * from tst_dest30;
 
-drop table tst_dest30;
-drop table dest30;
+
+

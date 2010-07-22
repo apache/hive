@@ -1,16 +1,8 @@
-PREHOOK: query: drop table tmp1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tmp1 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmp1
-PREHOOK: query: drop table tmp2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp2
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tmp2 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tmp2 (a string, b string) clustered by (a) sorted by (a) into 10 buckets
@@ -34,14 +26,6 @@ POSTHOOK: query: insert overwrite table tmp2 select * from src where key < 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp2
-POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: drop table tmp3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp3
-POSTHOOK: type: DROPTABLE
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -79,11 +63,11 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 PREHOOK: query: select * from tmp3 order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-PREHOOK: Output: file:/data/users/nzhang/work/999/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-20_11-17-38_126_6207291158988738744/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-16-34_797_3291869263216721850/10000
 POSTHOOK: query: select * from tmp3 order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-POSTHOOK: Output: file:/data/users/nzhang/work/999/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-20_11-17-38_126_6207291158988738744/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-16-34_797_3291869263216721850/10000
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -164,39 +148,3 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 5	val_5	val_5
 8	val_8	val_8
 9	val_9	val_9
-PREHOOK: query: drop table tmp1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp1
-POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp3.a SIMPLE [(tmp1)i.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.b SIMPLE [(tmp1)i.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comment:null), ]
-PREHOOK: query: drop table tmp2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp2
-POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp3.a SIMPLE [(tmp1)i.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.b SIMPLE [(tmp1)i.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comment:null), ]
-PREHOOK: query: drop table tmp3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp3
-POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp3.a SIMPLE [(tmp1)i.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.b SIMPLE [(tmp1)i.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comment:null), ]

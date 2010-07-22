@@ -6,4 +6,4 @@ ALTER TABLE part_test ADD PARTITION(ds='1');
 ALTER TABLE part_test SET FILEFORMAT RCFILE;
 ALTER TABLE part_test ADD PARTITION(ds='2');
 SELECT count(1) FROM part_test WHERE ds='3';
-DROP TABLE part_test;
+

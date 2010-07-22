@@ -528,7 +528,7 @@ public class QTestUtil {
       createSources();
     }
 
-    CliSessionState ss = new CliSessionState(new HiveConf(Driver.class));
+    CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
 

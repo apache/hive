@@ -1,4 +1,4 @@
-drop table dest_j1;
+
 
 CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE;
 
@@ -19,5 +19,5 @@ FROM
 
 select * from dest_j1 x order by x.key;
 
-drop table dest_j1;
+
 

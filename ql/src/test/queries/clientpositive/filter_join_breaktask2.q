@@ -1,7 +1,7 @@
-drop table T1;
-drop table T2;
-drop table T3;
-drop table T4;
+
+
+
+
 
 create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
 partitioned by (ds string);
@@ -34,7 +34,7 @@ FROM T1 a JOIN T2 b
      JOIN T4 d 
        ON (c.c0 = d.c0 AND c.ds='2010-04-17' AND d.ds='2010-04-17');
 
-drop table T1;
-drop table T2;
-drop table T3;
-drop table T4;
+
+
+
+

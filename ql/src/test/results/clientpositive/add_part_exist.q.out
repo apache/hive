@@ -49,8 +49,3 @@ POSTHOOK: type: SHOWPARTITIONS
 ds=2010-01-01
 ds=2010-01-02
 ds=2010-01-03
-PREHOOK: query: DROP TABLE add_part_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE add_part_test
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@add_part_test

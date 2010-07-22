@@ -16,11 +16,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT * FROM src1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rc
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-45_304_3014831283453834869/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-47_002_2104750496460432907/10000
 POSTHOOK: query: SELECT * FROM src1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rc
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-45_304_3014831283453834869/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-47_002_2104750496460432907/10000
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -48,13 +48,6 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 	
 	
 	
-PREHOOK: query: DROP TABLE src1_rc
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE src1_rc
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@src1_rc
-POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE
@@ -272,11 +265,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_rc
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-51_035_1392258075462361596/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-50_018_8982453667868960765/10000
 POSTHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_rc
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-51_035_1392258075462361596/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-50_018_8982453667868960765/10000
 POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
@@ -292,14 +285,3 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 NULL	NULL	20	val_20
 NULL	NULL	24	val_24
 NULL	NULL	24	val_24
-PREHOOK: query: DROP TABLE dest1_rc
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest1_rc
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest1_rc
-POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1_rc.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

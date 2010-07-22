@@ -46,5 +46,5 @@ ORDER BY key, value;
 SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 ORDER BY key, value;
 
-drop table empty_bucket;
-drop table dest1;
+
+

@@ -1,7 +1,7 @@
 set hive.map.aggr.hash.percentmemory = 0.3;
 set hive.mapred.local.mem = 256;
 
-DROP TABLE columnTable_Bigdata;
+
 CREATE table columnTable_Bigdata (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -15,4 +15,4 @@ INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value;
 describe columnTable_Bigdata;
 select count(columnTable_Bigdata.key) from columnTable_Bigdata;
 
-DROP TABLE columnTable_Bigdata;
+

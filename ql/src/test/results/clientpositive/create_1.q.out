@@ -1,15 +1,3 @@
-PREHOOK: query: DROP TABLE table1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table1
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE table2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE table3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table3
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
@@ -28,7 +16,7 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:nzhang, createTime:1254242350, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:jssarma, createTime:1279736301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736301}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
@@ -51,7 +39,7 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:table2, dbName:default, owner:nzhang, createTime:1254242351, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+Detailed Table Information	Table(tableName:table2, dbName:default, owner:jssarma, createTime:1279736301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736301}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: CREATE TABLE table3 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
@@ -74,19 +62,4 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table3, dbName:default, owner:nzhang, createTime:1254242351, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=9,field.delim=	}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})
-PREHOOK: query: DROP TABLE table1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@table1
-PREHOOK: query: DROP TABLE table2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@table2
-PREHOOK: query: DROP TABLE table3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@table3
+Detailed Table Information	Table(tableName:table3, dbName:default, owner:jssarma, createTime:1279736302, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=	, field.delim=

@@ -1,15 +1,3 @@
-PREHOOK: query: drop table smb_bucket_3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_3
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table smb_bucket_2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table smb_bucket_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
@@ -110,12 +98,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-12_974_8125076326452015201/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-20_114_6729049322478705958/10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-12_974_8125076326452015201/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-20_114_6729049322478705958/10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -188,12 +176,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-17_315_263973989687054916/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-22_746_1628423413210127007/10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-17_315_263973989687054916/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-22_746_1628423413210127007/10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -269,12 +257,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-21_146_6176650628602536007/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-25_414_5347137080834424806/10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-21_146_6176650628602536007/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-25_414_5347137080834424806/10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -351,12 +339,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-25_346_6914946660741597957/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-28_070_5426906800620762025/10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-25_346_6914946660741597957/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-28_070_5426906800620762025/10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -436,12 +424,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-29_569_7469092976690151810/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-30_739_59573784104638805/10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-29_569_7469092976690151810/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-30_739_59573784104638805/10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -514,12 +502,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-34_270_3218310252140217265/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-33_409_6668885682210635497/10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-34_270_3218310252140217265/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-33_409_6668885682210635497/10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -595,12 +583,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-39_271_4438844521663002310/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-36_171_6013991795978323279/10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-39_271_4438844521663002310/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-36_171_6013991795978323279/10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -677,12 +665,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-44_008_7608838401063726842/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-38_942_2715973452861735765/10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-25_22-29-44_008_7608838401063726842/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-38_942_2715973452861735765/10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -692,18 +680,3 @@ NULL	NULL	17	val_17
 NULL	NULL	19	val_19
 NULL	NULL	20	val_20
 NULL	NULL	23	val_23
-PREHOOK: query: drop table smb_bucket_3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: drop table smb_bucket_2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: drop table smb_bucket_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket_1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@smb_bucket_1

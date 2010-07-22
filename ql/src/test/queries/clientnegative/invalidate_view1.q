@@ -1,6 +1,6 @@
 DROP VIEW xxx8;
 DROP VIEW xxx9;
-DROP TABLE xxx10;
+
 -- create two levels of view reference, then invalidate intermediate view
 -- by dropping a column from underlying table, and verify that
 -- querying outermost view results in full error context

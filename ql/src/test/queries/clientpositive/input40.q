@@ -1,5 +1,5 @@
-drop table tmp_insert_test;
-drop table tmp_insert_test_p;
+
+
 
 create table tmp_insert_test (key string, value string) stored as textfile;
 load data local inpath '../data/files/kv1.txt' into table tmp_insert_test;
@@ -16,5 +16,5 @@ select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key;
 
 
-drop table tmp_insert_test;
-drop table tmp_insert_test_p;
+
+

@@ -21,4 +21,4 @@ select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) wh
 
 select * from srcpartbucket where ds is not null;
 
-drop table srcpartbucket;
+

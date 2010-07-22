@@ -18,7 +18,7 @@ FROM
 group by url
 PREHOOK: type: QUERY
 PREHOOK: Input: default@documents
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/282167247/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-09_514_9061274612297235392/10000
 POSTHOOK: query: select url, count(1) 
 FROM
 (
@@ -29,11 +29,6 @@ FROM
 group by url
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@documents
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/282167247/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-09_514_9061274612297235392/10000
 1uauniajqtunlsvadmxhlxvngxpqjuzbpzvdiwmzphmbaicduzkgxgtdeiunduosu.html	4
 4uzsbtwvdypfitqfqdjosynqp.html	4
-PREHOOK: query: DROP TABLE documents
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE documents
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@documents

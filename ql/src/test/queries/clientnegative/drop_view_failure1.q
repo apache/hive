@@ -1,4 +1,4 @@
-DROP TABLE xxx1;
+
 
 CREATE TABLE xxx1(key int);
 

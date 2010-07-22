@@ -11,5 +11,5 @@ alter table mp drop partition (b='1');
 
 show partitions mp;
 
-drop table mp;
+
 

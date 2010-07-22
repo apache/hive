@@ -13,4 +13,4 @@ FROM
 group by url;
 
 
-DROP TABLE documents;
+

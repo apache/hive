@@ -1,11 +1,3 @@
-PREHOOK: query: drop table tst_dest30
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tst_dest30
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table dest30
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dest30
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table dest30(a int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table dest30(a int)
@@ -106,22 +98,10 @@ POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from tst_dest30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest30
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-11-25_544_4956721364351044321/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-48_308_1489139289605344338/10000
 POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-11-25_544_4956721364351044321/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-48_308_1489139289605344338/10000
 POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 18
-PREHOOK: query: drop table tst_dest30
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tst_dest30
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tst_dest30
-POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
-PREHOOK: query: drop table dest30
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dest30
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest30
-POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]

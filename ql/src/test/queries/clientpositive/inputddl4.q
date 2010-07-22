@@ -1,5 +1,5 @@
 -- a simple test to test sorted/clustered syntax
-DROP TABLE INPUTDDL4;
+
 CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
                        page_url STRING, referrer_url STRING, 
                        friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
@@ -9,4 +9,4 @@ CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
     CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS;
 DESCRIBE INPUTDDL4;
 DESCRIBE EXTENDED INPUTDDL4;
-DROP TABLE INPUTDDL4;
+

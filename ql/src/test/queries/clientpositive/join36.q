@@ -1,8 +1,8 @@
 set hive.mapjoin.numrows = 2;
 
-drop table dest_j1;
-drop table tmp1;
-drop table tmp2;
+
+
+
 
 CREATE TABLE tmp1(key INT, cnt INT);
 CREATE TABLE tmp2(key INT, cnt INT);
@@ -25,5 +25,5 @@ FROM tmp1 x JOIN tmp2 y ON (x.key = y.key);
 
 select * from dest_j1 x order by x.key;
 
-drop table dest_j1;
+
 

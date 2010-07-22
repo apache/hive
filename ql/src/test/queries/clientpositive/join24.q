@@ -5,4 +5,4 @@ SELECT a.key, count(1) FROM src a group by a.key;
 
 SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key;
 
-drop table tst1;
+

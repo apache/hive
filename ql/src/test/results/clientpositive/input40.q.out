@@ -1,11 +1,3 @@
-PREHOOK: query: drop table tmp_insert_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp_insert_test
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table tmp_insert_test_p
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp_insert_test_p
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
@@ -19,11 +11,11 @@ POSTHOOK: Output: default@tmp_insert_test
 PREHOOK: query: select * from tmp_insert_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1950785675/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-39_638_2152892791432727451/10000
 POSTHOOK: query: select * from tmp_insert_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1950785675/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-39_638_2152892791432727451/10000
 238	val_238
 86	val_86
 311	val_311
@@ -538,12 +530,12 @@ PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/237111013/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-39_834_15988274396181587/10000
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/237111013/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-39_834_15988274396181587/10000
 0	val_0	2009-08-01
 0	val_0	2009-08-01
 0	val_0	2009-08-01
@@ -1053,12 +1045,12 @@ PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1350476431/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-42_667_8118898466258302182/10000
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1350476431/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-42_667_8118898466258302182/10000
 0	val_1	2009-08-01
 0	val_1	2009-08-01
 0	val_0	2009-08-01
@@ -2059,13 +2051,3 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/135047643
 98	val_98	2009-08-01
 98	val_98	2009-08-01
 99	val_100	2009-08-01
-PREHOOK: query: drop table tmp_insert_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp_insert_test
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp_insert_test
-PREHOOK: query: drop table tmp_insert_test_p
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmp_insert_test_p
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp_insert_test_p

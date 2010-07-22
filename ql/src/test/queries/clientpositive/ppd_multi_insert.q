@@ -1,7 +1,7 @@
 set hive.optimize.ppd=true;
-DROP TABLE mi1;
-DROP TABLE mi2;
-DROP TABLE mi3;
+
+
+
 CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE;
@@ -24,6 +24,6 @@ SELECT mi2.* FROM mi2;
 SELECT mi3.* FROM mi3;
 dfs -cat ../build/ql/test/data/warehouse/mi4.out/*;
 
-DROP TABLE mi1;
-DROP TABLE mi2;
-DROP TABLE mi3;
+
+
+

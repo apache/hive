@@ -1,8 +1,3 @@
-drop table alter3_src;
-drop table alter3;
-drop table alter3_renamed;
-drop table alter3_like_renamed;
-
 create table alter3_src ( col1 string ) stored as textfile ;
 load data local inpath '../data/files/test.dat' overwrite into table alter3_src ;
 
@@ -24,8 +19,3 @@ select col1 from alter3_src;
 alter table alter3_like rename to alter3_like_renamed;
 
 describe extended alter3_like_renamed;
-
-drop table alter3_src;
-drop table alter3;
-drop table alter3_renamed;
-drop table alter3_like_renamed;

@@ -1,4 +1,3 @@
-drop TABLE triples;
 CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string);
 
 EXPLAIN
@@ -56,5 +55,4 @@ WHERE
 t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
 ) t66
 ON (t66.subject=t55.object);
-drop TABLE triples;
 

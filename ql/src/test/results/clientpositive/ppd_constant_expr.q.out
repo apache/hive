@@ -62,7 +62,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-25-25_765_7258606383966097370/10000
+          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-46-27_316_7397975593428086505/10000
 
   Stage: Stage-0
     Move Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-25-25_765_7258606383966097370/10002 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-46-27_316_7397975593428086505/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -119,11 +119,11 @@ POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-25-31_117_7150325701898782164/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-29_875_7776179823012704510/10000
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-25-31_117_7150325701898782164/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-29_875_7776179823012704510/10000
 POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
 POSTHOOK: Lineage: ppd_constant_expr.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
@@ -152,11 +152,3 @@ NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
-PREHOOK: query: DROP TABLE ppd_constant_expr
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE ppd_constant_expr
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@ppd_constant_expr
-POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
-POSTHOOK: Lineage: ppd_constant_expr.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []

@@ -6,10 +6,6 @@ ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
-PREHOOK: query: drop table nzhang_part10
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nzhang_part10
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table if not exists nzhang_part10 like srcpart
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table if not exists nzhang_part10 like srcpart
@@ -24,7 +20,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part10, dbName:default, owner:null, createTime:1271267562, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/nzhang_part10, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE,transient_lastDdlTime=1271267562}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part10, dbName:default, owner:null, createTime:1279737503, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/nzhang_part10, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279737503}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
@@ -117,12 +113,12 @@ PREHOOK: query: select * from nzhang_part10 where ds is not null and hr is not n
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-47_140_4020149388903312321/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-26_462_5702859057182730002/10000
 POSTHOOK: query: select * from nzhang_part10 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-47_140_4020149388903312321/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-26_462_5702859057182730002/10000
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -1127,12 +1123,3 @@ POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(s
 400	val_400	2008-12-31	12
 200	val_200	2008-12-31	12
 97	val_97	2008-12-31	12
-PREHOOK: query: drop table nzhang_part10
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nzhang_part10
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@nzhang_part10
-POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]

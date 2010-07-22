@@ -1,11 +1,3 @@
-PREHOOK: query: DROP TABLE tmp_pyang_lv
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_pyang_lv
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE tmp_pyang_src_rcfile
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_pyang_src_rcfile
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE
@@ -115,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/pyang/hive_2010-07-14_16-15-34_051_4828871152684194272/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-37-17_144_3458539882275515544/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -451,24 +443,24 @@ PREHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-34_600_5107346587153071440/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-17_490_228117844421732265/10000
 POSTHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-34_600_5107346587153071440/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-17_490_228117844421732265/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-41_257_8220843170923127190/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-22_740_2713465299397417423/10000
 POSTHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-41_257_8220843170923127190/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-22_740_2713465299397417423/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -477,12 +469,12 @@ PREHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-44_673_2747911293056086153/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-25_345_4555727829445494206/10000
 POSTHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-44_673_2747911293056086153/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-25_345_4555727829445494206/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	a
 1	b
@@ -497,12 +489,12 @@ PREHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-47_980_4164961629359858242/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-27_957_3802707944191728309/10000
 POSTHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-47_980_4164961629359858242/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-27_957_3802707944191728309/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -575,11 +567,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_lv
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-51_579_4337534379576799491/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-30_705_7614845439925178391/10000
 POSTHOOK: query: SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_lv
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-15-51_579_4337534379576799491/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-30_705_7614845439925178391/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -604,11 +596,11 @@ POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(n
 PREHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-01_099_1803034064573776934/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-38_346_8286485984240319426/10000
 POSTHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-01_099_1803034064573776934/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-38_346_8286485984240319426/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -635,11 +627,11 @@ POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(n
 PREHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-05_104_3522643641494524502/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-40_934_9042604436385795850/10000
 POSTHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-05_104_3522643641494524502/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-40_934_9042604436385795850/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -666,11 +658,11 @@ val_119
 PREHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-08_316_5289580697756818313/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-43_563_2397125834453795185/10000
 POSTHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-08_316_5289580697756818313/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-43_563_2397125834453795185/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -700,14 +692,14 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-11_498_461410201661197582/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-46_264_3992245203524780732/10000
 POSTHOOK: query: SELECT subq.key,subq.value 
 FROM (
 SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-11_498_461410201661197582/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-46_264_3992245203524780732/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -737,14 +729,14 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-14_661_8437009580148501289/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-48_829_4806162384243621220/10000
 POSTHOOK: query: SELECT subq.myCol
 FROM (
 SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-14_661_8437009580148501289/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-48_829_4806162384243621220/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -774,14 +766,14 @@ SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable 
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-18_398_4323350114519412048/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-51_450_6950611993397322223/10000
 POSTHOOK: query: SELECT subq.key 
 FROM (
 SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-18_398_4323350114519412048/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-51_450_6950611993397322223/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -924,12 +916,12 @@ PREHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value F
 LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-22_146_140933306084614689/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-54_210_4766434103306434571/10000
 POSTHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
 LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/pyang/hive_2010-07-14_16-16-22_146_140933306084614689/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-54_210_4766434103306434571/10000
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -946,19 +938,3 @@ POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(n
 ["val_116"]	val_116
 ["val_118"]	val_118
 ["val_119"]	val_119
-PREHOOK: query: DROP TABLE tmp_pyang_src_rcfile
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_pyang_src_rcfile
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp_pyang_src_rcfile
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DROP TABLE tmp_pyang_lv
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_pyang_lv
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp_pyang_lv
-POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

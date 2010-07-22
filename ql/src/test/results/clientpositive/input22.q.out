@@ -74,14 +74,14 @@ FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
 ORDER BY KEY2 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/569155063/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-12_928_5119963589127065058/10000
 POSTHOOK: query: SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/569155063/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-12_928_5119963589127065058/10000
 0
 0
 0
@@ -92,8 +92,3 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/569155063/1000
 103
 104
 104
-PREHOOK: query: DROP TABLE INPUT4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUT4
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@input4

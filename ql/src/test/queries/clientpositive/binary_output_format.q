@@ -1,5 +1,3 @@
-DROP TABLE dest1;
-
 -- Create a table with binary output format
 CREATE TABLE dest1(mydata STRING)
 ROW FORMAT SERDE
@@ -39,5 +37,3 @@ FROM src;
 
 -- Test the result
 SELECT * FROM dest1;
-
-DROP TABLE dest1;

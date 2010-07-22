@@ -6,21 +6,16 @@ POSTHOOK: Output: default@tstnullinut
 PREHOOK: query: select x.* from tstnullinut x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstnullinut
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1976338873/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-42_572_4519312906185121533/10000
 POSTHOOK: query: select x.* from tstnullinut x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstnullinut
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1976338873/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-42_572_4519312906185121533/10000
 PREHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstnullinut
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1008263015/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-42_620_1570615621828082286/10000
 POSTHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstnullinut
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1008263015/10000
-PREHOOK: query: drop table tstnullinut
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tstnullinut
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tstnullinut
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-42_620_1570615621828082286/10000

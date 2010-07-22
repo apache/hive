@@ -1,8 +1,8 @@
-DROP TABLE tstparttbl;
+
 CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09');
 
-DROP TABLE tstparttbl2;
+
 CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09');
 
@@ -22,5 +22,5 @@ select u.* from
 )u;
 
 
-DROP TABLE tstparttbl;
-DROP TABLE tstparttbl2;
+
+

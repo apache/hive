@@ -1,4 +1,4 @@
-DROP TABLE xxx12;
+
 DROP VIEW xxx12;
 
 -- views and tables share the same namespace

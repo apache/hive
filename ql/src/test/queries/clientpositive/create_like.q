@@ -1,6 +1,6 @@
-DROP TABLE table1;
-DROP TABLE table2;
-DROP TABLE table3;
+
+
+
 
 CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE;
 DESCRIBE table1;
@@ -24,6 +24,6 @@ INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100;
 SELECT * FROM table1;
 SELECT * FROM table2;
 
-DROP TABLE table1;
-DROP TABLE table2;
-DROP TABLE table3;
+
+
+

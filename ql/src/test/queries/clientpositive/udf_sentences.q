@@ -5,9 +5,9 @@ SELECT explode(sentences(unhex("486976652065737420756E20657863656C6C656E74206F75
 INSERT OVERWRITE TABLE sent_tmp2
 SELECT explode(val) AS val FROM sent_tmp;
 SELECT hex(val) FROM sent_tmp2;
+
 DROP TABLE sent_tmp;
 DROP TABLE sent_tmp2;
-
 
 CREATE TABLE sent_tmp (val array<string>);
 CREATE TABLE sent_tmp2 (val string);
@@ -16,7 +16,7 @@ SELECT explode(sentences(unhex("48697665206973742065696E2061757367657A656963686E
 INSERT OVERWRITE TABLE sent_tmp2
 SELECT explode(val) AS val FROM sent_tmp;
 SELECT hex(val) FROM sent_tmp2;
-DROP TABLE sent_tmp;
-DROP TABLE sent_tmp2;
+
+
 
 SELECT sentences("Hive is an excellent tool for data querying\; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") FROM src LIMIT 1;

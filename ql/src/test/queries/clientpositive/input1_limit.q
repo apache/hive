@@ -13,6 +13,6 @@ INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT
 SELECT dest1.* FROM dest1;
 SELECT dest2.* FROM dest2;
 
-DROP TABLE dest1;
-DROP TABLE dest2;
+
+
 

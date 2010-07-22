@@ -9,16 +9,11 @@ PREHOOK: query: -- tbl_created_by_init is supposed to have been created for us
 select * from tbl_created_by_init
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_created_by_init
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-06-18_15-26-08_648_7822849778594453961/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-27_744_1100043554292552055/10000
 POSTHOOK: query: -- tbl_created_by_init is supposed to have been created for us
 -- automatically by test_init_file.sql
 
 select * from tbl_created_by_init
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_created_by_init
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-06-18_15-26-08_648_7822849778594453961/10000
-PREHOOK: query: drop table tbl_created_by_init
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tbl_created_by_init
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tbl_created_by_init
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-27_744_1100043554292552055/10000

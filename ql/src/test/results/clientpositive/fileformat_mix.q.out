@@ -1,7 +1,3 @@
-PREHOOK: query: drop table fileformat_mix_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table fileformat_mix_test
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table fileformat_mix_test (src int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table fileformat_mix_test (src int, value string) partitioned by (ds string)
@@ -44,12 +40,12 @@ PREHOOK: query: select count(1) from fileformat_mix_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fileformat_mix_test@ds=1
 PREHOOK: Input: default@fileformat_mix_test@ds=2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-20_21-21-12_115_4377005987442515283/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-45_393_3654336984212621494/10000
 POSTHOOK: query: select count(1) from fileformat_mix_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fileformat_mix_test@ds=1
 POSTHOOK: Input: default@fileformat_mix_test@ds=2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-20_21-21-12_115_4377005987442515283/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-45_393_3654336984212621494/10000
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
@@ -57,12 +53,12 @@ PREHOOK: query: select src from fileformat_mix_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fileformat_mix_test@ds=1
 PREHOOK: Input: default@fileformat_mix_test@ds=2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-20_21-21-17_269_3478340175683868925/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-48_001_5704820361095123784/10000
 POSTHOOK: query: select src from fileformat_mix_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fileformat_mix_test@ds=1
 POSTHOOK: Input: default@fileformat_mix_test@ds=2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-06-20_21-21-17_269_3478340175683868925/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-48_001_5704820361095123784/10000
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238
@@ -565,10 +561,3 @@ POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.Fi
 400
 200
 97
-PREHOOK: query: drop table fileformat_mix_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table fileformat_mix_test
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@fileformat_mix_test
-POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

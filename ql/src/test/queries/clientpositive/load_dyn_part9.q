@@ -1,6 +1,6 @@
 show partitions srcpart;
 
-drop table nzhang_part9;
+
 
 create table if not exists nzhang_part9 like srcpart;
 describe extended nzhang_part9;
@@ -20,4 +20,4 @@ insert overwrite table nzhang_part9 partition (ds, hr) select key, value, ds, hr
 show partitions nzhang_part9;
 
 select * from nzhang_part9 where ds is not null and hr is not null;
-drop table nzhang_part9;
+

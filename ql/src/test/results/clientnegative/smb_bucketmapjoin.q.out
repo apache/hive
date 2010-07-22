@@ -1,16 +1,8 @@
-PREHOOK: query: drop table smb_bucket4_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket4_1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smb_bucket4_1
-PREHOOK: query: drop table smb_bucket4_2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table smb_bucket4_2
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS

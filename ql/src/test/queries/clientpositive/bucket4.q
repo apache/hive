@@ -2,7 +2,6 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
-drop table bucket4_1;
 CREATE TABLE bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
 explain extended
@@ -16,5 +15,3 @@ explain
 select * from bucket4_1 tablesample (bucket 1 out of 2) s;
 
 select * from bucket4_1 tablesample (bucket 1 out of 2) s;
-
-drop table bucket4_1;

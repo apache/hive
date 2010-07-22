@@ -19,7 +19,7 @@ insert overwrite table T1 select * from src;
 
 desc extended T1;
 
-drop table T1;
+
 
 create table if not exists T2 like srcpart;
 desc extended T2;
@@ -42,4 +42,4 @@ insert overwrite table T2 partition (ds='2010-06-01', hr='1') select key, value 
 
 desc extended T2 partition(ds='2010-06-01', hr='1');
 
-drop table T2;
+

@@ -36,7 +36,7 @@
     <pathelement location="${test.build.classes}" />
     <pathelement location="" />
     <pathelement location="${hadoop.conf.dir}"/>
-    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
     <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
     <pathelement location="${hadoop.test.jar}"/>

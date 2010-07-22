@@ -79,6 +79,10 @@ Trunk -  Unreleased
     HIVE-1464. improve  test query performance
     (Joydeep Sen Sarma via Ning Zhang)
 
+    HIVE-1475. .gitignore files being placed in test warehouse directories 
+    causing build failure
+    (Joydeep Sen Sarma via Ning Zhang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

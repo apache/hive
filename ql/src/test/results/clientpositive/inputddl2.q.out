@@ -37,8 +37,3 @@ key	int
 value	string	
 ds	string	
 country	string	
-PREHOOK: query: DROP TABLE INPUTDDL2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUTDDL2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@inputddl2

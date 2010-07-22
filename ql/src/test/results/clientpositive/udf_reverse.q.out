@@ -58,7 +58,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-26_713_7153404554728375659/10000
+          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-33-53_988_9126910952478207979/10000
 
   Stage: Stage-0
     Move Operator
@@ -73,7 +73,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-26_713_7153404554728375659/10002 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-33-53_988_9126910952478207979/10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -107,11 +107,11 @@ POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-30_312_4824860817457749674/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-33-56_476_2425632697021785832/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-30_312_4824860817457749674/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-33-56_476_2425632697021785832/10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 832_lav
 
@@ -165,16 +165,10 @@ POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-30_502_4981122021200605739/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-33-56_662_1561780003827857387/10000
 POSTHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-34-30_502_4981122021200605739/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-33-56_662_1561780003827857387/10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 1
-PREHOOK: query: DROP TABLE dest1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

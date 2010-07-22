@@ -9,5 +9,5 @@ SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0;
 
-DROP TABLE implicit_test1;
+
 

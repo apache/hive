@@ -1,11 +1,11 @@
 set hive.optimize.skewjoin = true;
 set hive.skewjoin.key = 2;
 
-DROP TABLE T1;
-DROP TABLE T2;
-DROP TABLE T3;
-DROP TABLE T4;
-DROP TABLE dest_j1;
+
+
+
+
+
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;
@@ -131,8 +131,7 @@ SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src
 select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key;
 
 
-DROP TABLE dest_j1;
-DROP TABLE T1;
-DROP TABLE T2;
-DROP TABLE T3;
-DROP TABLE T4;
+
+
+
+

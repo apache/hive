@@ -53,8 +53,3 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions mp
 POSTHOOK: type: SHOWPARTITIONS
 b=2/c=2
-PREHOOK: query: drop table mp
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table mp
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@mp

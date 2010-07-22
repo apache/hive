@@ -5,4 +5,3 @@ INSERT OVERWRITE TABLE dest1 SELECT '1234', concat(src.key) WHERE src.key < 100 
 
 SELECT dest1.* FROM dest1;
 
-DROP TABLE dest1;

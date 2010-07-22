@@ -1,4 +1,4 @@
-DROP TABLE rcfile_unionTable;
+
 CREATE table rcfile_unionTable (b STRING, c STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -12,4 +12,3 @@ SELECT b AS cola FROM rcfile_unionTable
 UNION ALL
 SELECT c AS cola FROM rcfile_unionTable) s;
 
-DROP TABLE rcfile_unionTable;

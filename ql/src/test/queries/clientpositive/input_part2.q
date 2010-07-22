@@ -13,4 +13,4 @@ INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcp
 SELECT dest1.* FROM dest1 sort by key,value,ds,hr;
 SELECT dest2.* FROM dest2 sort by key,value,ds,hr;
 
-drop table dest2;
+

@@ -1,7 +1,3 @@
-PREHOOK: query: drop TABLE dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop TABLE dest_j1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
@@ -91,7 +87,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -142,11 +138,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10004 
+            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10004 
+            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -202,7 +198,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10000
+          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10000
 
   Stage: Stage-0
     Move Operator
@@ -217,7 +213,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10003 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -321,11 +317,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-53_522_4492151849840756172/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-53_522_4492151849840756172/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
@@ -344,11 +340,3 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 406	1	4
 66	1	1
 98	1	2
-PREHOOK: query: drop TABLE dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop TABLE dest_j1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
-POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

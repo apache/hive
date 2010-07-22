@@ -1,5 +1,5 @@
-drop table join_rc1;
-drop table join_rc2;
+
+
 create table join_rc1(key string, value string) stored as RCFile;
 create table join_rc2(key string, value string) stored as RCFile;
 insert overwrite table join_rc1 select * from src;
@@ -12,5 +12,5 @@ FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key;
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key;
 
-drop table join_rc1;
-drop table join_rc2;
+
+

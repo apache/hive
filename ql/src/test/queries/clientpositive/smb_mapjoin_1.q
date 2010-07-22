@@ -1,6 +1,6 @@
-drop table smb_bucket_3;
-drop table smb_bucket_2;
-drop table smb_bucket_1;
+
+
+
 
 create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE; 
 create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE; 
@@ -47,6 +47,6 @@ select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a
 select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key;
 
  
-drop table smb_bucket_3;
-drop table smb_bucket_2;
-drop table smb_bucket_1;
+
+
+

@@ -1,5 +1,5 @@
-DROP TABLE tmp_pyang_lv;
-DROP TABLE tmp_pyang_src_rcfile;
+
+
 
 CREATE TABLE tmp_pyang_lv (inputs string) STORED AS RCFILE;
 INSERT OVERWRITE TABLE tmp_pyang_lv SELECT key FROM src;
@@ -51,5 +51,5 @@ LATERAL VIEW explode(value) myTable AS myCol;
 SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
 LATERAL VIEW explode(value) myTable AS myCol;
 
-DROP TABLE tmp_pyang_src_rcfile;
-DROP TABLE tmp_pyang_lv;
+
+

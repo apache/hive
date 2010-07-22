@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE src_null
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE src_null
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
@@ -76,11 +72,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_null
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/944884170/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-09_926_7521845290777085588/10000
 POSTHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/944884170/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-09_926_7521845290777085588/10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2
@@ -91,8 +87,3 @@ NULL	NULL	same	6
 1.0	NULL	same	7
 1.0	1	same	8
 1.0	1	same	9
-PREHOOK: query: DROP TABLE src_null
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE src_null
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@src_null

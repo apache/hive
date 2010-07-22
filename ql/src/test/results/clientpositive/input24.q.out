@@ -1,7 +1,3 @@
-PREHOOK: query: drop table tst
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tst
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tst(a int, b int) partitioned by (d string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tst(a int, b int) partitioned by (d string)
@@ -80,14 +76,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1844534662/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-18_997_2954899292364767462/10000
 POSTHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1844534662/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-18_997_2954899292364767462/10000
 0
-PREHOOK: query: drop table tst
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tst
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tst

@@ -1,4 +1,4 @@
-drop table addpart1;
+
 create table addpart1 (a int) partitioned by (b string, c string);
 
 alter table addpart1 add partition (b='f', c='s');
@@ -9,4 +9,3 @@ alter table addpart1 add partition (b='f', c='');
 
 show prtitions addpart1;
 
-drop table addpart1;

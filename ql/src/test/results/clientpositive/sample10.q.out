@@ -128,7 +128,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              transient_lastDdlTime 1279517872
+              transient_lastDdlTime 1279738180
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -146,7 +146,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                transient_lastDdlTime 1279517872
+                transient_lastDdlTime 1279738180
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
@@ -171,7 +171,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              transient_lastDdlTime 1279517872
+              transient_lastDdlTime 1279738180
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -189,7 +189,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                transient_lastDdlTime 1279517872
+                transient_lastDdlTime 1279738180
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
@@ -214,7 +214,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              transient_lastDdlTime 1279517872
+              transient_lastDdlTime 1279738180
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -232,7 +232,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                transient_lastDdlTime 1279517872
+                transient_lastDdlTime 1279738180
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
@@ -257,7 +257,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              transient_lastDdlTime 1279517872
+              transient_lastDdlTime 1279738180
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -275,7 +275,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                transient_lastDdlTime 1279517872
+                transient_lastDdlTime 1279738180
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
@@ -299,7 +299,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-18_22-37-59_060_3045357226899710132/10001
+              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-49-50_698_7661671497801340247/10001
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -322,14 +322,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-37-59_639_2719302052990534208/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-50_833_8314246371963786235/10000
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-37-59_639_2719302052990534208/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-50_833_8314246371963786235/10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -346,14 +346,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-38-03_708_4461107599597555917/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-54_664_3335998091673950970/10000
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-38-03_708_4461107599597555917/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-54_664_3335998091673950970/10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -370,14 +370,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-38-07_920_2071428667805216792/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-50-01_601_3474709675356949178/10000
 POSTHOOK: query: select * from srcpartbucket where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-18_22-38-07_920_2071428667805216792/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-50-01_601_3474709675356949178/10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -426,16 +426,3 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(s
 2	val_2	2008-04-09	12
 5	val_5	2008-04-09	12
 9	val_9	2008-04-09	12
-PREHOOK: query: drop table srcpartbucket
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table srcpartbucket
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@srcpartbucket
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]

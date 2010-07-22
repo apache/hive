@@ -1,14 +1,10 @@
 PREHOOK: query: -- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
 
-drop table tmptable
-PREHOOK: type: DROPTABLE
+create table tmptable(key string, value int)
+PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
 
-drop table tmptable
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tmptable(key string, value int)
-PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table tmptable(key string, value int)
+create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmptable
 PREHOOK: query: explain 
@@ -84,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-37-42_214_5006661846869960005/10002 
+        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10002 
           Union
             Select Operator
               expressions:
@@ -108,7 +104,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-37-42_214_5006661846869960005/10004 
+        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10004 
           Union
             Select Operator
               expressions:
@@ -132,7 +128,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-37-42_214_5006661846869960005/10005 
+        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10005 
           Union
             Select Operator
               expressions:
@@ -164,7 +160,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-37-42_214_5006661846869960005/10000
+          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-39-13_146_6578228270380339492/10000
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +175,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-37-42_214_5006661846869960005/10003 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-39-13_146_6578228270380339492/10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -310,20 +306,13 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcb
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-03_125_7195580015263686359/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-39-25_864_5858813916026518675/10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-38-03_125_7195580015263686359/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-39-25_864_5858813916026518675/10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500
 tst2	25
 tst3	1000
-PREHOOK: query: drop table tmptable
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tmptable
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmptable
-POSTHOOK: Lineage: tmptable.key EXPRESSION []
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]

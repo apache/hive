@@ -1,8 +1,8 @@
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 
-drop table dest1;
-drop table dest2;
+
+
 
 CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string);
 CREATE TABLE dest2(key STRING, val1 INT, val2 INT) partitioned by (ds string);
@@ -23,5 +23,5 @@ INSERT OVERWRITE TABLE dest2  partition(ds='111')
 SELECT * from dest1;
 SELECT * from dest2;
 
-drop table dest1;
-drop table dest2;
+
+

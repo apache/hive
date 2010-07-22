@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE symlink_text_input_format
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE symlink_text_input_format
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: EXPLAIN
 CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 PREHOOK: type: CREATETABLE
@@ -87,11 +83,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-50_024_8543560563248210858/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-11_531_6628783367593217570/10000
 POSTHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-50_024_8543560563248210858/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-11_531_6628783367593217570/10000
 1	11
 2	12
 2	12
@@ -157,11 +153,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value FROM symlink_text_input_format order by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-54_036_4918019810802046490/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-14_067_9110589625279027226/10000
 POSTHOOK: query: SELECT value FROM symlink_text_input_format order by value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-54_036_4918019810802046490/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-14_067_9110589625279027226/10000
 11
 12
 12
@@ -236,14 +232,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(1) FROM symlink_text_input_format
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-57_782_3642968004654844824/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-16_606_6863105097181523081/10000
 POSTHOOK: query: SELECT count(1) FROM symlink_text_input_format
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-06_15-29-57_782_3642968004654844824/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-16_606_6863105097181523081/10000
 16
-PREHOOK: query: DROP TABLE symlink_text_input_format
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE symlink_text_input_format
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@symlink_text_input_format

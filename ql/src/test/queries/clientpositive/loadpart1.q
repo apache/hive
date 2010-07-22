@@ -1,5 +1,5 @@
-drop table hive_test_src;
-drop table hive_test_dst;
+
+
 
 create table hive_test_src ( col1 string ) stored as textfile ;
 load data local inpath '../data/files/test.dat' overwrite into table hive_test_src ;
@@ -15,5 +15,5 @@ select * from hive_test_dst where pcol1='test_part';
 select * from hive_test_dst where pcol1='test_part' and pcol2='test_part';
 select * from hive_test_dst where pcol1='test_Part';
 
-drop table hive_test_src;
-drop table hive_test_dst;
+
+

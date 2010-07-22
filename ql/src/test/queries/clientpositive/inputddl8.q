@@ -1,4 +1,4 @@
-DROP TABLE INPUTDDL8;
+
 CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
     PARTITIONED BY(ds STRING, country STRING)
     CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
@@ -7,4 +7,4 @@ CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
                           'serialization.format' = 'com.facebook.thrift.protocol.TBinaryProtocol')
     STORED AS SEQUENCEFILE;
 DESCRIBE EXTENDED INPUTDDL8;
-DROP TABLE INPUTDDL8;
+

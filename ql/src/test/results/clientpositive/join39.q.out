@@ -1,7 +1,3 @@
-PREHOOK: query: drop table dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dest_j1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, key1 string, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, key1 string, val2 STRING) STORED AS TEXTFILE
@@ -26,11 +22,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)x.FieldSchema(name:value, type:str
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-20-09_939_2652321174464424560/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-34-38_483_2873236764151910976/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-20-09_939_2652321174464424560/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-34-38_483_2873236764151910976/10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.key1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -601,12 +597,3 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)x.FieldSchema(name:value, type:str
 98	val_98	98	val_98
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: drop table dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dest_j1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(src)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.key1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)x.FieldSchema(name:value, type:string, comment:default), ]

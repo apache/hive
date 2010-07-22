@@ -22,5 +22,5 @@ DESCRIBE kv_rename_test;
 ALTER TABLE kv_rename_test CHANGE COLUMN a2 a INT AFTER b;
 DESCRIBE kv_rename_test;
 
-DROP TABLE kv_rename_test;
+
 

@@ -34,7 +34,7 @@
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="" />
-    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
     <!-- We are running unit tests like the one inside ql -->
     <pathelement location="${build.dir.hive}/ql/test/classes"/> 

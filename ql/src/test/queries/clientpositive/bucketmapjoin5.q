@@ -1,10 +1,3 @@
-drop table bucketmapjoin_hash_result_2;
-drop table bucketmapjoin_hash_result_1;
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part;
-drop table srcbucket_mapjoin_part_2;
-
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;
 load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin;
@@ -90,10 +83,3 @@ select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_t
 select a.key-b.key, a.value1-b.value1, a.value2-b.value2
 from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
 on a.key = b.key;
-
-drop table bucketmapjoin_hash_result_2;
-drop table bucketmapjoin_hash_result_1;
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part;
-drop table srcbucket_mapjoin_part_2;

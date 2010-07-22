@@ -17,7 +17,7 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a;
 
-DROP TABLE union_out;
+
 
 CREATE TABLE union_out (id int);
 

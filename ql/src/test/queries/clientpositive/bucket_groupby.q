@@ -1,4 +1,3 @@
-drop table clustergroupby;
 create table clustergroupby(key string, value string) partitioned by(ds string);
 describe extended clustergroupby;
 
@@ -67,5 +66,3 @@ select key, count(1) from clustergroupby  where ds='103' group by key limit 10;
 explain
 select key, count(1) from clustergroupby  where ds='103'  group by value, key limit 10;
 select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10;
-
-drop table clustergroupby;

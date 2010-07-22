@@ -1,5 +1,1 @@
-PREHOOK: query: DROP TABLE inv_valid_tbl1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE inv_valid_tbl1
-POSTHOOK: type: DROPTABLE
 FAILED: Error in semantic analysis: DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use STRING instead.

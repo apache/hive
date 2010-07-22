@@ -1,23 +1,3 @@
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T4
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest_j1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
@@ -256,11 +236,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-18_221_756482606592619495/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-54-34_773_8974429205684276500/10000
 POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-18_221_756482606592619495/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-54-34_773_8974429205684276500/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 278697	101852390308
@@ -410,7 +390,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-46_933_3748785950132645671/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-54-58_628_3356378875993632263/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -420,7 +400,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-46_933_3748785950132645671/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-54-58_628_3356378875993632263/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -570,7 +550,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-54_591_7735680493194698737/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-01_582_1289945692817010031/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -580,7 +560,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-28-54_591_7735680493194698737/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-01_582_1289945692817010031/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -670,7 +650,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-01_179_7724911428408855420/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-55-04_590_6073131371882078309/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -715,12 +695,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-01_540_565341542651646006/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-04_686_5498328271539894923/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-01_540_565341542651646006/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-04_686_5498328271539894923/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 198	6274	194
@@ -908,7 +888,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-10_811_4042443695658644025/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-55-10_006_6998240996689349171/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -952,7 +932,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-11_447_1334505274424294054/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-10_210_3789281218627696460/10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -961,7 +941,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-29-11_447_1334505274424294054/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-55-10_210_3789281218627696460/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 44481300	101852390308
@@ -1159,7 +1139,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-30-31_216_4251844864071091426/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-56-24_288_8833007000539087866/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1203,7 +1183,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-30-32_014_2966662653258024270/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-56-24_510_9175473615433048274/10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -1212,7 +1192,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-30-32_014_2966662653258024270/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-56-24_510_9175473615433048274/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
@@ -1490,7 +1470,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-04_750_6194673445329677427/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-57-04_081_7395777836875573715/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1659,7 +1639,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-05_886_658859308132239366/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-04_482_4874015887141984879/10000
 POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -1671,7 +1651,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-05_886_658859308132239366/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-04_482_4874015887141984879/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 293143	-136853010385
@@ -1748,7 +1728,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-45_414_6561971598792572097/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-57-50_557_7888570900112459597/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1808,55 +1788,55 @@ STAGE PLANS:
 PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-45_819_8893484307159075646/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-50_652_7524559661828781918/10000
 POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-45_819_8893484307159075646/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-50_652_7524559661828781918/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-52_646_8054489073820291796/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-55_680_7454971209844095002/10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-52_646_8054489073820291796/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-57-55_680_7454971209844095002/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-59_404_6324512370718311890/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-00_759_2503525506382756482/10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-31-59_404_6324512370718311890/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-00_759_2503525506382756482/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-06_304_4816645829569851115/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-05_940_2644358672516865932/10000
 POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-06_304_4816645829569851115/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-05_940_2644358672516865932/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-16_483_8042226294549297199/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-13_601_8769607871191941131/10000
 POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-16_483_8042226294549297199/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-13_601_8769607871191941131/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 8
@@ -1864,12 +1844,12 @@ PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-27_501_4841981538239651087/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-21_418_5101143786482013059/10000
 POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-27_501_4841981538239651087/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-21_418_5101143786482013059/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	50
@@ -1877,12 +1857,12 @@ PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STRE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-34_947_2689434768638553625/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-26_607_2103870217105546568/10000
 POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-34_947_2689434768638553625/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-26_607_2103870217105546568/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 51	1570	318
@@ -1890,12 +1870,12 @@ PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREA
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-42_009_8260289531826672082/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-31_727_8374135807047103504/10000
 POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-42_009_8260289531826672082/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-31_727_8374135807047103504/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	318
@@ -1903,12 +1883,12 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-48_929_687856413641903607/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-36_776_8115766802135436631/10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-48_929_687856413641903607/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-36_776_8115766802135436631/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
@@ -1916,58 +1896,23 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-55_994_3719817742027708223/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-42_007_1359296702764686796/10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-32-55_994_3719817742027708223/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-42_007_1359296702764686796/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
 PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-33-10_325_5236716677181376533/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-52_321_6570425935975725957/10000
 POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-33-10_325_5236716677181376533/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-58-52_321_6570425935975725957/10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320
-PREHOOK: query: DROP TABLE dest_j1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest_j1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t3
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DROP TABLE T4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T4
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t4
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]

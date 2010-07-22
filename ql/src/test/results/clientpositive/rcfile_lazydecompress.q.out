@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE rcfileTableLazyDecompress
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE rcfileTableLazyDecompress
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
@@ -22,11 +18,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-08_126_1758618048562072306/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-26_308_5035766417306203353/10000
 POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-08_126_1758618048562072306/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-26_308_5035766417306203353/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 311	val_311
@@ -37,11 +33,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-12_756_7047055078902721683/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-28_826_2664555248442666518/10000
 POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-12_756_7047055078902721683/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-28_826_2664555248442666518/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 311	val_311
@@ -50,11 +46,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-16_962_6661530342559954352/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-31_347_4980542755724589562/10000
 POSTHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-16_962_6661530342559954352/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-31_347_4980542755724589562/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 255	1
@@ -79,11 +75,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-24_793_7750074014093688381/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-36_558_7043959496739147343/10000
 POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-24_793_7750074014093688381/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-36_558_7043959496739147343/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -96,11 +92,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-28_589_3116278472072779381/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-39_022_510504722430321903/10000
 POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-28_589_3116278472072779381/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-39_022_510504722430321903/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -111,11 +107,11 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfiletablelazydecompress
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-33_415_4146404104589934880/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-41_564_865533805813240026/10000
 POSTHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfiletablelazydecompress
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-25-33_415_4146404104589934880/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-41_564_865533805813240026/10000
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -125,12 +121,3 @@ POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(
 311	1
 409	1
 484	1
-PREHOOK: query: DROP TABLE rcfileTableLazyDecompress
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE rcfileTableLazyDecompress
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@rcfiletablelazydecompress
-POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

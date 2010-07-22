@@ -1,6 +1,6 @@
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part;
+
+
+
 
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;
@@ -22,6 +22,6 @@ select /*+mapjoin(b)*/ a.key, a.value, b.value
 from srcbucket_mapjoin a join srcbucket_mapjoin_part b 
 on a.key=b.key where b.ds="2008-04-08";
 
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part;
+
+
+

@@ -68,13 +68,3 @@ POSTHOOK: query: SHOW TABLES 'shtb_test1|shtb_test2'
 POSTHOOK: type: SHOWTABLES
 shtb_test1
 shtb_test2
-PREHOOK: query: DROP TABLE shtb_test1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE shtb_test1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@shtb_test1
-PREHOOK: query: DROP TABLE shtb_test2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE shtb_test2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@shtb_test2

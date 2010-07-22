@@ -1,4 +1,4 @@
-drop table partition_test_partitioned;
+
 
 create table partition_test_partitioned(key string, value string) partitioned by (dt string);
 
@@ -29,4 +29,4 @@ select key from partition_test_partitioned where dt=102;
 select key from partition_test_partitioned;
 
 select key from partition_test_partitioned where dt >=100 and dt <= 102;
-drop table partition_test_partitioned;
+

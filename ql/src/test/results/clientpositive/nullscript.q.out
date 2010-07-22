@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE nullscript
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE nullscript
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
@@ -62,11 +58,11 @@ STAGE PLANS:
 PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109237316/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-51_131_1687271560149359862/10000
 POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nullscript
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109237316/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-51_131_1687271560149359862/10000
 238
 86
 311

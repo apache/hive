@@ -1,7 +1,3 @@
-PREHOOK: query: drop table nzhang_part1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nzhang_part1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table nzhang_part1 (key string, value string) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table nzhang_part1 (key string, value string) partitioned by (ds string, hr string)

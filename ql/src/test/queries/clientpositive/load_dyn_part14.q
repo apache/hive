@@ -1,4 +1,4 @@
-drop table nzhang_part14;
+
 create table if not exists nzhang_part14 (key string) 
   partitioned by (value string);
 
@@ -32,4 +32,4 @@ show partitions nzhang_part14;
 select * from nzhang_part14 where value <> 'a'
 order by key, value;
 
-drop table nzhang_part14;
+

@@ -1,15 +1,3 @@
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
@@ -203,13 +191,13 @@ SELECT a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-56_522_2427479678690495417/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-07_706_4137842264568073660/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-56_522_2427479678690495417/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-07_706_4137842264568073660/10000
 1	11	0
 1	11	0
 1	11	0
@@ -219,13 +207,13 @@ SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-01_499_4645186819885871483/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-10_458_6076144350106106313/10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-01_499_4645186819885871483/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-10_458_6076144350106106313/10000
 1	11	0
 1	11	0
 1	11	0
@@ -512,7 +500,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-07_922_2294786151582488765/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-13_343_7536917868494596794/10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -521,7 +509,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-07_922_2294786151582488765/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-13_343_7536917868494596794/10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -534,7 +522,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-20_301_8638454003102682278/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-18_608_5119660399295658126/10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -543,7 +531,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-20_301_8638454003102682278/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-18_608_5119660399295658126/10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -781,7 +769,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-31_833_1632343405751503469/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-24_350_4665014421054179440/10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -791,7 +779,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-31_833_1632343405751503469/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-24_350_4665014421054179440/10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -812,7 +800,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-38_626_3188343531104185080/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-34_969_3293491720663599421/10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -822,7 +810,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-28-38_626_3188343531104185080/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-34_969_3293491720663599421/10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -834,18 +822,3 @@ NULL	NULL	6
 8	8	NULL
 8	8	NULL
 8	NULL	NULL
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t1
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t2
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t3

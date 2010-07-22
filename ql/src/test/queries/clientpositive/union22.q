@@ -1,7 +1,7 @@
-drop table dst_union22;
+
 create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);
 
-drop table dst_union22_delta;
+
 create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string);
 
 insert overwrite table dst_union22 partition (ds='1')
@@ -40,5 +40,5 @@ subq;
 
 select * from dst_union22 where ds = '2' order by k1;
 
-drop table dst_union22;
-drop table dst_union22_delta;
+
+

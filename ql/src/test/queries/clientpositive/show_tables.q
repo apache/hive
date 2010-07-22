@@ -11,5 +11,5 @@ SHOW TABLES 'shtb_test1|shtb_test2';
 
 SHOW TABLES 'shtb_test1|shtb_test2';
 
-DROP TABLE shtb_test1;
-DROP TABLE shtb_test2;
+
+

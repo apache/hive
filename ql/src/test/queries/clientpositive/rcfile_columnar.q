@@ -1,4 +1,4 @@
-DROP TABLE columnTable;
+
 CREATE table columnTable (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -12,4 +12,4 @@ describe columnTable;
 
 SELECT columnTable.* FROM columnTable;
 
-DROP TABLE columnTable;
+

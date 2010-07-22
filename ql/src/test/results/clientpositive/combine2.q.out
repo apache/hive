@@ -1,7 +1,3 @@
-PREHOOK: query: drop table combine2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table combine2
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table combine2(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table combine2(key string) partitioned by (value string)
@@ -139,7 +135,7 @@ PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
 PREHOOK: Input: default@combine2@value=|
-PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-13_883_855858049469186899/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-17-58_631_7891940326859316299/10000
 POSTHOOK: query: select key, value from combine2 where value is not null order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
@@ -150,7 +146,7 @@ POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
 POSTHOOK: Input: default@combine2@value=|
-POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-13_883_855858049469186899/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-17-58_631_7891940326859316299/10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -224,18 +220,18 @@ STAGE PLANS:
                             type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_0 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_2 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_4 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_5 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_8 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_9 [combine2]
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=| [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_0 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_2 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_4 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_5 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_8 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_9 [combine2]
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=| [combine2]
       Path -> Partition:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 
           Partition
-            base file name: file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00
+            base file name: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -246,13 +242,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -263,17 +259,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_0 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_0 
           Partition
             base file name: value=val_0
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -286,13 +282,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -303,17 +299,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_2 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_2 
           Partition
             base file name: value=val_2
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -326,13 +322,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -343,17 +339,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_4 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_4 
           Partition
             base file name: value=val_4
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -366,13 +362,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -383,17 +379,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_5 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_5 
           Partition
             base file name: value=val_5
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -406,13 +402,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -423,17 +419,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_8 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_8 
           Partition
             base file name: value=val_8
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -446,13 +442,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -463,17 +459,17 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=val_9 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=val_9 
           Partition
             base file name: value=val_9
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -486,13 +482,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -503,19 +499,19 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=| 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=| 
           Partition
-            base file name: file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2/value=|
+            base file name: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2/value=|
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -526,13 +522,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
               name combine2
               partition_columns value
               serialization.ddl struct combine2 { string key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1272921606
+              transient_lastDdlTime 1279736275
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -543,13 +539,13 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/combine2
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/combine2
                 name combine2
                 partition_columns value
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1272921606
+                transient_lastDdlTime 1279736275
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: combine2
             name: combine2
@@ -568,7 +564,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-20_454_1592342701152243108/10001
+              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-18-02_660_5546731649050577338/10001
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -595,7 +591,7 @@ PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
 PREHOOK: Input: default@combine2@value=|
-PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-21_322_7197686956634622367/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-02_861_7906523373378058182/10000
 POSTHOOK: query: select count(1) from combine2 where value is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
@@ -606,7 +602,7 @@ POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
 POSTHOOK: Input: default@combine2@value=|
-POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-21_322_7197686956634622367/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-02_861_7906523373378058182/10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -713,14 +709,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-28_859_8819683951488328325/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-06_997_989404447897197159/10000
 POSTHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-05-03_14-20-28_859_8819683951488328325/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-06_997_989404447897197159/10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -731,16 +727,3 @@ POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.Fiel
 POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 2008-04-08	1000
 2008-04-09	1000
-PREHOOK: query: drop table combine2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table combine2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@combine2
-POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]

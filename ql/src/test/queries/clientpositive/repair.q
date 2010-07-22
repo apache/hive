@@ -1,4 +1,4 @@
-DROP TABLE repairtable;
+
 
 CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING);
 
@@ -13,4 +13,4 @@ MSCK REPAIR TABLE repairtable;
 
 MSCK TABLE repairtable;
 
-DROP TABLE repairtable;
+

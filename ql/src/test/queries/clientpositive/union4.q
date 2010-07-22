@@ -2,7 +2,7 @@ set hive.map.aggr = true;
 
 -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
 
-drop table tmptable;
+
 create table tmptable(key string, value int);
 
 explain 
@@ -18,4 +18,4 @@ select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as valu
 
 select * from tmptable x sort by x.key;
 
-drop table tmptable;
+

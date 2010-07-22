@@ -1,7 +1,3 @@
-PREHOOK: query: drop table nulltbl
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nulltbl
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table nulltbl(key int) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table nulltbl(key int) partitioned by (ds string)
@@ -9,19 +5,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nulltbl
 PREHOOK: query: select key from nulltbl where ds='101'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1897224698/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-45_538_2037787558373086452/10000
 POSTHOOK: query: select key from nulltbl where ds='101'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1897224698/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-45_538_2037787558373086452/10000
 PREHOOK: query: select count(1) from nulltbl where ds='101'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1803910053/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-48_052_5788292989741758557/10000
 POSTHOOK: query: select count(1) from nulltbl where ds='101'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1803910053/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-48_052_5788292989741758557/10000
 0
-PREHOOK: query: drop table nulltbl
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nulltbl
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@nulltbl

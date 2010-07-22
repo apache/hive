@@ -1,4 +1,4 @@
-drop table nzhang_part5;
+
 
 create table if not exists nzhang_part5 (key string) partitioned by (value string);
 describe extended nzhang_part5;
@@ -19,4 +19,4 @@ show partitions nzhang_part5;
 select * from nzhang_part5 where value='val_0';
 select * from nzhang_part5 where value='val_2';
 
-drop table nzhang_part5;
+

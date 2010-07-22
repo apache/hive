@@ -1,5 +1,1 @@
-PREHOOK: query: drop table nzhang_ctas4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nzhang_ctas4
-POSTHOOK: type: DROPTABLE
 FAILED: Error in semantic analysis: CREATE-TABLE-AS-SELECT cannot create external table.

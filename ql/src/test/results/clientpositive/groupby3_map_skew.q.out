@@ -119,7 +119,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-11-19_485_6759193827936294497/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-23-38_951_8559728103103624706/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -259,11 +259,11 @@ POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-11-30_179_7629474680624414038/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-23-44_381_5135448855404252228/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-11-30_179_7629474680624414038/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-23-44_381_5135448855404252228/10000
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -274,17 +274,3 @@ POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 130091.0	260.182	256.10355987055016	98.0	0.0	142.9268095075238	143.06995106518906	20428.072876	20469.01089779559
-PREHOOK: query: DROP TABLE dest1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

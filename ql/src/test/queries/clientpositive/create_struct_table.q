@@ -1,4 +1,4 @@
-drop table abc;
+
 create table abc(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'
@@ -9,4 +9,4 @@ overwrite into table abc;
 
 SELECT strct, strct.a, strct.b FROM abc LIMIT 10;
 
-drop table abc;
+

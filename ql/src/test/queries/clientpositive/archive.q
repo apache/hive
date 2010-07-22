@@ -33,7 +33,6 @@ SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key;
 ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12');
 SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key;
 
-DROP TABLE harbucket;
 
 CREATE TABLE old_name(key INT) 
 PARTITIONED by (ds STRING);
@@ -45,5 +44,3 @@ FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2;
 ALTER TABLE old_name RENAME TO new_name;
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2;
-
-DROP TABLE new_name;

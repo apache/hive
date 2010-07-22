@@ -7,9 +7,6 @@ set mapred.max.split.size=256;
 
 set mapred.output.compression.codec=org.apache.hadoop.io.compress.GzipCodec;
 
-drop table combine1_1;
-
-
 create table combine1_1(key string, value string) stored as textfile;
 
 insert overwrite table combine1_1
@@ -17,6 +14,4 @@ select * from src;
 
 
 select key, value from combine1_1;
-
-drop table combine1_1;
 

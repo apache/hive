@@ -1,4 +1,4 @@
-drop table dest_l1;
+
 
 CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE;
 

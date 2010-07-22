@@ -1,19 +1,3 @@
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE T4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T4
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
@@ -198,7 +182,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-33-34_907_1935969450376975821/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-00_490_2765894359578078501/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -208,7 +192,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-33-34_907_1935969450376975821/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-00_490_2765894359578078501/10000
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
@@ -431,7 +415,7 @@ PREHOOK: Input: default@t4
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-33-41_586_5996486802122601404/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-03_448_3407530204384318986/10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON a.val = c.val
@@ -441,25 +425,5 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-33-41_586_5996486802122601404/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-37-03_448_3407530204384318986/10000
 2	22	2	12	2	12	2	12
-PREHOOK: query: DROP TABLE T1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t1
-PREHOOK: query: DROP TABLE T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T2
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t2
-PREHOOK: query: DROP TABLE T3
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T3
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t3
-PREHOOK: query: DROP TABLE T4
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE T4
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t4

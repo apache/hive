@@ -33,7 +33,7 @@
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="" />
-    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>

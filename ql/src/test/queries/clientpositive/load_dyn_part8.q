@@ -1,6 +1,6 @@
 show partitions srcpart;
 
-drop table nzhang_part8;
+
 
 create table if not exists nzhang_part8 like srcpart;
 describe extended nzhang_part8;
@@ -21,4 +21,4 @@ insert overwrite table nzhang_part8 partition(ds='2008-12-31', hr) select key, v
 show partitions nzhang_part8;
 
 select * from nzhang_part8 where ds is not null and hr is not null;
-drop table nzhang_part8;
+

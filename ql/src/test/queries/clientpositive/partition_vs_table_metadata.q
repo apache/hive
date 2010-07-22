@@ -1,4 +1,4 @@
-drop table partition_vs_table;
+
 
 create table partition_vs_table(key string, value string) partitioned by (ds string);
 
@@ -11,4 +11,3 @@ insert overwrite table partition_vs_table partition(ds='101') select key, value,
 select key, value, newcol from partition_vs_table
 order by key;
 
-drop table partition_vs_table;

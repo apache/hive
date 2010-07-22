@@ -2,15 +2,15 @@ set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
 
-drop table smb_bucket4_1;
+
 CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
-drop table smb_bucket4_2;
+
 CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
-drop table smb_join_results;
-drop table smb_join_results_empty_bigtable;
-drop table normal_join_results;
+
+
+
 create table smb_join_results(k1 int, v1 string, k2 int, v2 string);
 create table smb_join_results_empty_bigtable(k1 int, v1 string, k2 int, v2 string);
 create table normal_join_results(k1 int, v1 string, k2 int, v2 string);
@@ -47,8 +47,8 @@ select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v
 select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results;
 select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_empty_bigtable;
 
-drop table smb_join_results;
-drop table smb_join_results_empty_bigtable;
-drop table normal_join_results;
-drop table smb_bucket4_1;
-drop table smb_bucket4_2;
+
+
+
+
+

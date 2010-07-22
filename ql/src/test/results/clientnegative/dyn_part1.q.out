@@ -1,7 +1,3 @@
-PREHOOK: query: drop table dynamic_partition
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dynamic_partition
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table dynamic_partition (key string) partitioned by (value string)

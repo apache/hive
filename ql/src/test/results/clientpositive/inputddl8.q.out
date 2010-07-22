@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE INPUTDDL8
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUTDDL8
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
     PARTITIONED BY(ds STRING, country STRING)
     CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
@@ -32,9 +28,4 @@ mstringstring	map<string,string>	from deserializer
 ds	string	
 country	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:pyang, createTime:1264209638, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:file:/data/users/pyang/task2/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex,serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1264209638,comment=This is a thrift based table}, viewOriginalText:null, viewExpandedText:null)	
-PREHOOK: query: DROP TABLE INPUTDDL8
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUTDDL8
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@inputddl8
+Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:jssarma, createTime:1279737072, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex, serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737072, comment=This is a thrift based table}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

@@ -1,4 +1,4 @@
-drop table fileformat_mix_test;
+
 
 create table fileformat_mix_test (src int, value string) partitioned by (ds string);
 alter table fileformat_mix_test set fileformat Sequencefile;
@@ -14,4 +14,3 @@ select count(1) from fileformat_mix_test;
 
 select src from fileformat_mix_test;
 
-drop table fileformat_mix_test;

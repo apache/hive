@@ -1,4 +1,4 @@
-DROP TABLE rcfileTableLazyDecompress;
+
 CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile;
 
 FROM src
@@ -25,4 +25,3 @@ SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key
 set mapred.output.compress=false;
 set hive.exec.compress.output=false;
 
-DROP TABLE rcfileTableLazyDecompress;

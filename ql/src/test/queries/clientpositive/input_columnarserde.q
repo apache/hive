@@ -1,4 +1,4 @@
-drop table input_columnarserde;
+
 CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -17,4 +17,3 @@ SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1;
 
 SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1;
 
-drop table input_columnarserde;

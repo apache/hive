@@ -1,7 +1,7 @@
 CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE;
 INSERT OVERWRITE TABLE src1_rc SELECT * FROM src1;
 SELECT * FROM src1_rc;
-DROP TABLE src1_rc;
+
 
 CREATE TABLE dest1_rc(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS RCFILE;
 
@@ -36,5 +36,5 @@ INSERT OVERWRITE TABLE dest1_rc SELECT c.c1, c.c2, c.c3, c.c4;
 
 SELECT dest1_rc.* FROM dest1_rc;
 
-DROP TABLE dest1_rc;
+
 

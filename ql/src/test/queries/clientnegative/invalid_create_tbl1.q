@@ -1,4 +1,4 @@
-DROP TABLE inv_valid_tbl1;
+
 CREATE TABLE inv_valid_tbl1 COMMENT 'This is a thrift based table'
     PARTITIONED BY(aint DATETIME, country STRING)
     CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS

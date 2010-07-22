@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE filter_join_breaktask
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE filter_join_breaktask
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
@@ -123,7 +119,7 @@ STAGE PLANS:
               serialization.ddl struct filter_join_breaktask { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1276212172
+              transient_lastDdlTime 1279736517
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -140,7 +136,7 @@ STAGE PLANS:
                 serialization.ddl struct filter_join_breaktask { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1276212172
+                transient_lastDdlTime 1279736517
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: filter_join_breaktask
             name: filter_join_breaktask
@@ -171,7 +167,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002
+                  directory: file:/tmp/jssarma/hive_2010-07-21_11-22-00_300_3159170495555394870/10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -227,7 +223,7 @@ STAGE PLANS:
       Needs Tagging: true
       Path -> Alias:
         file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [g]
-        file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002 [$INTNAME]
+        file:/tmp/jssarma/hive_2010-07-21_11-22-00_300_3159170495555394870/10002 [$INTNAME]
       Path -> Partition:
         file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
           Partition
@@ -248,7 +244,7 @@ STAGE PLANS:
               serialization.ddl struct filter_join_breaktask { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1276212172
+              transient_lastDdlTime 1279736517
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -265,11 +261,11 @@ STAGE PLANS:
                 serialization.ddl struct filter_join_breaktask { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1276212172
+                transient_lastDdlTime 1279736517
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: filter_join_breaktask
             name: filter_join_breaktask
-        file:/tmp/jssarma/hive_2010-06-10_16-22-55_084_1486227885854106344/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-22-00_300_3159170495555394870/10002 
           Partition
             base file name: 10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -304,7 +300,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-06-10_16-22-55_084_1486227885854106344/10001
+              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-22-00_300_3159170495555394870/10001
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -326,13 +322,13 @@ FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-06-10_16-22-55_434_9085757094579036575/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-00_469_3112953081846350734/10000
 POSTHOOK: query: SELECT f.key, g.value 
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-06-10_16-22-55_434_9085757094579036575/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-00_469_3112953081846350734/10000
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 146	val_146
@@ -347,10 +343,3 @@ POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [
 406	val_406
 66	val_66
 98	val_98
-PREHOOK: query: DROP TABLE filter_join_breaktask
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE filter_join_breaktask
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@filter_join_breaktask
-POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]

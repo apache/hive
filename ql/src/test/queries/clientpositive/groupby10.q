@@ -1,9 +1,9 @@
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 
-drop table dest1;
-drop table dest2;
-drop table INPUT;
+
+
+
 
 CREATE TABLE dest1(key INT, val1 INT, val2 INT);
 CREATE TABLE dest2(key INT, val1 INT, val2 INT);
@@ -23,6 +23,6 @@ INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(d
 SELECT * from dest1;
 SELECT * from dest2;
 
-drop table INPUT;
-drop table dest1;
-drop table dest2;
+
+
+

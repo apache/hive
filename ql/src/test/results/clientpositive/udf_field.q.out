@@ -16,7 +16,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-03-53_853_4058708356956086462/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-12_715_3200523781855195298/10000
 POSTHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
@@ -24,7 +24,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-03-53_853_4058708356956086462/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-12_715_3200523781855195298/10000
 0	0	0
 PREHOOK: query: SELECT
   field("a", "a", "b", "c", "d"),
@@ -35,7 +35,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-03-57_114_3619904766510787355/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-15_174_5120124527305231631/10000
 POSTHOOK: query: SELECT
   field("a", "a", "b", "c", "d"),
   field("b", "a", "b", "c", "d"),
@@ -45,7 +45,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-03-57_114_3619904766510787355/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-15_174_5120124527305231631/10000
 1	2	3	4	4
 PREHOOK: query: SELECT
   field(1, 1, 2, 3, 4),
@@ -56,7 +56,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-00_022_7855241436646966982/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-17_642_1728575695911963493/10000
 POSTHOOK: query: SELECT
   field(1, 1, 2, 3, 4),
   field(2, 1, 2, 3, 4),
@@ -66,12 +66,8 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-00_022_7855241436646966982/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-17_642_1728575695911963493/10000
 1	2	3	4	4
-PREHOOK: query: DROP TABLE test_table
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE test_table
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
@@ -96,7 +92,7 @@ PREHOOK: query: select col1,col2,
 from test_table where col1="86" or col1="66"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-03_113_1342575242967564464/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-20_226_722121447925099635/10000
 POSTHOOK: query: select col1,col2,
   field("66",col1),
   field("66",col1, col2),
@@ -111,13 +107,9 @@ POSTHOOK: query: select col1,col2,
 from test_table where col1="86" or col1="66"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-03_113_1342575242967564464/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-20_226_722121447925099635/10000
 86	val_86	0	0	2	0	0	0	0	0	2	0
 66	val_66	1	1	0	0	0	1	0	0	2	2
-PREHOOK: query: DROP TABLE test_table1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE test_table1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
@@ -139,7 +131,7 @@ PREHOOK: query: select col1,col2,
 from (select col1, col2, NULL as n from test_table1 where col1=86 or col1=66) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-06_325_6448537514873636635/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-22_921_8146473053376578748/10000
 POSTHOOK: query: select col1,col2,
   field(66,col1),
   field(66,col1, col2),
@@ -151,6 +143,6 @@ POSTHOOK: query: select col1,col2,
 from (select col1, col2, NULL as n from test_table1 where col1=86 or col1=66) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-14_18-04-06_325_6448537514873636635/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-09-22_921_8146473053376578748/10000
 86	val_86	0	0	2	1	1	0	0
 66	val_66	1	1	0	0	0	0	0

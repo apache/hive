@@ -1,15 +1,3 @@
-PREHOOK: query: DROP TABLE TEST3a
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3a
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE TEST3b
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3b
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE TEST3c
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3c
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
@@ -165,18 +153,4 @@ POSTHOOK: type: DESCTABLE
 r1	int	
 r2	double	
 	 	 
-Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1269906076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1269906077,transient_lastDdlTime=1269906077}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
-PREHOOK: query: DROP TABLE TEST3a
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3a
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@test3a
-PREHOOK: query: DROP TABLE TEST3b
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3b
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE TEST3c
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE TEST3c
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@test3c
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:jssarma, createTime:1279736864, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=jssarma, last_modified_time=1279736865, transient_lastDdlTime=1279736865}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

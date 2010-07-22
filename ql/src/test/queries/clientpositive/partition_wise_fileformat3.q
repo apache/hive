@@ -1,4 +1,4 @@
-drop table partition_test_partitioned;
+
 
 create table partition_test_partitioned(key string, value string) partitioned by (dt string);
 
@@ -15,4 +15,4 @@ insert overwrite table partition_test_partitioned partition(dt=101) select * fro
 show table extended like partition_test_partitioned partition(dt=101);
 select key from partition_test_partitioned where dt=101;
 
-drop table partition_test_partitioned;
+

@@ -27,4 +27,4 @@ DROP TABLE dest1;
 CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\';
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1;
 SELECT * from dest1;
-DROP TABLE dest1;
+

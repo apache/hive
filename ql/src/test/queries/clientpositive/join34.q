@@ -1,4 +1,4 @@
-drop table dest_j1;
+
 
 CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;
 
@@ -23,5 +23,5 @@ JOIN src1 x ON (x.key = subq1.key);
 
 select * from dest_j1 x order by x.key;
 
-drop table dest_j1;
+
 

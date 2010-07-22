@@ -1,4 +1,4 @@
-DROP TABLE table1;
+
 
 CREATE TABLE table1 (
        a STRING,
@@ -13,4 +13,4 @@ LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TAB
 
 SELECT * from table1;
 
-DROP TABLE table1;
+

@@ -2,7 +2,6 @@ set hive.map.aggr = true;
 
 -- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
 
-drop table tmptable;
 create table tmptable(key string, value int);
 
 explain 
@@ -23,6 +22,4 @@ insert overwrite table tmptable
 
 
 select * from tmptable x sort by x.key;
-
-drop table tmptable;
 

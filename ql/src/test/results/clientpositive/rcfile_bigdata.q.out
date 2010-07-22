@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE columnTable_Bigdata
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE columnTable_Bigdata
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -40,18 +36,11 @@ value	string	from deserializer
 PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable_bigdata
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-24-35_314_4030817414359065552/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-04_694_763065487220152863/10000
 POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable_bigdata
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-24-35_314_4030817414359065552/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-04_694_763065487220152863/10000
 POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 5005500
-PREHOOK: query: DROP TABLE columnTable_Bigdata
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE columnTable_Bigdata
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@columntable_bigdata
-POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

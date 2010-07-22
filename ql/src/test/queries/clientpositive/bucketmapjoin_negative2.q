@@ -1,7 +1,3 @@
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part_2;
-
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;
 load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin;
@@ -20,7 +16,3 @@ insert overwrite table bucketmapjoin_tmp_result
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin a join srcbucket_mapjoin_part_2 b 
 on a.key=b.key;
-
-drop table bucketmapjoin_tmp_result;
-drop table srcbucket_mapjoin;
-drop table srcbucket_mapjoin_part_2;

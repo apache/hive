@@ -1,2 +1,2 @@
-dfs -cat ../build/ql/test/data/files/kv1.txt;
+dfs -cat ../data/files/kv1.txt;
 

@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE tmp_select
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_select
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE tmp_select(a INT, b STRING)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE tmp_select(a INT, b STRING)
@@ -26,11 +22,11 @@ POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: SELECT a, b FROM tmp_select ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_select
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-06-23_16-31-21_482_1534986163090777807/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-21_919_7549876551032160144/10000
 POSTHOOK: query: SELECT a, b FROM tmp_select ORDER BY a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_select
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-06-23_16-31-21_482_1534986163090777807/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-04-21_919_7549876551032160144/10000
 POSTHOOK: Lineage: tmp_select.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
@@ -533,10 +529,3 @@ POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:st
 498	val_498
 498	val_498
 498	val_498
-PREHOOK: query: DROP TABLE tmp_select
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE tmp_select
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@tmp_select
-POSTHOOK: Lineage: tmp_select.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

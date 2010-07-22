@@ -10,4 +10,4 @@ INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL 
 
 SELECT ppd_constant_expr.* FROM ppd_constant_expr;
 
-DROP TABLE ppd_constant_expr;
+

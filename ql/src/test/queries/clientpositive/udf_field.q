@@ -23,7 +23,7 @@ SELECT
   field(4, 1, 2, NULL, 4)
 FROM src LIMIT 1;
 
-DROP TABLE test_table;
+
 CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table;
 
@@ -40,7 +40,7 @@ select col1,col2,
   field(col1, col2, "66")
 from test_table where col1="86" or col1="66";
 
-DROP TABLE test_table1;
+
 CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table1;
 

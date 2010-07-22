@@ -1,7 +1,7 @@
-drop table t1;
-drop table t2;
-drop table t3;
-drop table t4;
+
+
+
+
 
 create table t1 as select cast(key as int) key, value from src where key <= 10;
 
@@ -77,7 +77,7 @@ select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c
 explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key;
 select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key;
 
-drop table t1;
-drop table t2;
-drop table t3;
-drop table t4;
+
+
+
+

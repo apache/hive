@@ -17,4 +17,4 @@ DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455');
 
 SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455';
 
-DROP TABLE part_special;
+

@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE set_bucketing_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE set_bucketing_test
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
@@ -14,7 +10,7 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:pyang, createTime:1277867951, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1277867951}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:jssarma, createTime:1279735699, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279735699}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
 PREHOOK: type: null
 POSTHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
@@ -28,9 +24,4 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:pyang, createTime:1277867951, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=pyang, last_modified_time=1277867951, transient_lastDdlTime=1277867951}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
-PREHOOK: query: DROP TABLE set_bucketing_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE set_bucketing_test
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@set_bucketing_test
+Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:jssarma, createTime:1279735699, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=jssarma, last_modified_time=1279735699, transient_lastDdlTime=1279735699}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

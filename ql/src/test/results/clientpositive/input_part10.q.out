@@ -102,22 +102,15 @@ b	string
 ds	string	
 ts	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008 04 08, 10:11:12=455], dbName:default, tableName:part_special, createTime:1270516600, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1270516600})	
+Detailed Partition Information	Partition(values:[2008 04 08, 10:11:12=455], dbName:default, tableName:part_special, createTime:1279737004, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279737004})	
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-16-40_448_5970205880764458638/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-04_674_1957557010167845537/10000
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-16-40_448_5970205880764458638/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-04_674_1957557010167845537/10000
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 1	2	2008 04 08	10:11:12=455
-PREHOOK: query: DROP TABLE part_special
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE part_special
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@part_special
-POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
-POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []

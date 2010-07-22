@@ -11,4 +11,4 @@ select * from
 
 select * from dest_sp x order by x.cnt limit 2;
 
-drop table dest_sp;
+

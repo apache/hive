@@ -1,7 +1,7 @@
 show partitions srcpart;
 
-drop table nzhang_part1;
-drop table nzhang_part2;
+
+
 
 create table if not exists nzhang_part1 like srcpart;
 create table if not exists nzhang_part2 like srcpart;
@@ -26,5 +26,5 @@ show partitions nzhang_part2;
 select * from nzhang_part1 where ds is not null and hr is not null;
 select * from nzhang_part2 where ds is not null and hr is not null;
 
-drop table nzhang_part1;
-drop table nzhang_part2;
+
+

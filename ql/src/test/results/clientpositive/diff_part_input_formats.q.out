@@ -27,13 +27,8 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@part_test@ds=2
 PREHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-15_10-14-51_112_6812982446306518733/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-20_502_7998672376160685808/10000
 POSTHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-06-15_10-14-51_112_6812982446306518733/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-21-20_502_7998672376160685808/10000
 0
-PREHOOK: query: DROP TABLE part_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE part_test
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@part_test

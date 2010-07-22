@@ -1,6 +1,6 @@
 show partitions srcpart;
 
-drop table nzhang_part4;
+
 
 create table if not exists nzhang_part4 like srcpart;
 describe extended nzhang_part4;
@@ -21,4 +21,4 @@ select * from nzhang_part4 where ds='2008-04-08' and hr is not null;
 
 select * from nzhang_part4 where ds is not null and hr is not null;
 
-drop table nzhang_part4;
+

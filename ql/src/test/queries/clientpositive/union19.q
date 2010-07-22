@@ -1,5 +1,5 @@
-drop table DEST1;
-drop table DEST2;
+
+
 
 CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE;
 CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
@@ -22,5 +22,5 @@ INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value;
 SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2;
 
-drop table DEST1;
-drop table DEST2;
+
+

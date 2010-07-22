@@ -1,7 +1,3 @@
-PREHOOK: query: drop table input_columnarserde
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table input_columnarserde
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -109,11 +105,11 @@ POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSch
 PREHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-41_460_8307039355218827807/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-33_249_4936798916691606497/10000
 POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-41_460_8307039355218827807/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-33_249_4936798916691606497/10000
 POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -133,11 +129,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-45_834_5356308050640112043/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-35_826_902275362669356666/10000
 POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-13-45_834_5356308050640112043/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-35_826_902275362669356666/10000
 POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -154,13 +150,3 @@ POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSch
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
-PREHOOK: query: drop table input_columnarserde
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table input_columnarserde
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@input_columnarserde
-POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]

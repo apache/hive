@@ -1,6 +1,6 @@
-drop table hive_foo;
-drop table hive_bar;
-drop table hive_count;
+
+
+
 
 create table hive_foo (foo_id int, foo_name string, foo_a string, foo_b string, 
 foo_c string, foo_d string) row format delimited fields terminated by ','
@@ -25,6 +25,6 @@ select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hi
 hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id;
 
 
-drop table hive_foo;
-drop table hive_bar;
-drop table hive_count;
+
+
+

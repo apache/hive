@@ -19,6 +19,3 @@ FROM (
         FROM mytable
         GROUP BY key
 ) a;
-
-
-DROP TABLE mytable;

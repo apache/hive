@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE PROGRESS_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE PROGRESS_1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE PROGRESS_1(key int, value string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PROGRESS_1(key int, value string) STORED AS TEXTFILE
@@ -15,14 +11,9 @@ POSTHOOK: Output: default@progress_1
 PREHOOK: query: select count(1) from PROGRESS_1 t1 join PROGRESS_1 t2 on t1.key=t2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@progress_1
-PREHOOK: Output: file:/tmp/sdong/hive_2010-07-08_16-37-28_683_2518541288555731352/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-47-20_302_6301008962928693970/10000
 POSTHOOK: query: select count(1) from PROGRESS_1 t1 join PROGRESS_1 t2 on t1.key=t2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@progress_1
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-07-08_16-37-28_683_2518541288555731352/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-47-20_302_6301008962928693970/10000
 5000
-PREHOOK: query: DROP TABLE PROGRESS_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE PROGRESS_1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@progress_1

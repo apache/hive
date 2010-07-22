@@ -12,4 +12,3 @@ CREATE TABLE dest1(name STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1;
 EXPLAIN SELECT length(dest1.name) FROM dest1;
 SELECT length(dest1.name) FROM dest1;
-DROP TABLE dest1;

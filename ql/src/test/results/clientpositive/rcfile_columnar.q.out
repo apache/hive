@@ -1,7 +1,3 @@
-PREHOOK: query: DROP TABLE columnTable
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE columnTable
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE table columnTable (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -40,11 +36,11 @@ value	string	from deserializer
 PREHOOK: query: SELECT columnTable.* FROM columnTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-39_201_8408576030937070945/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-15_409_223543948857251615/10000
 POSTHOOK: query: SELECT columnTable.* FROM columnTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-39_201_8408576030937070945/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-15_409_223543948857251615/10000
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -57,10 +53,3 @@ POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, ty
 278	val_278
 98	val_98
 484	val_484
-PREHOOK: query: DROP TABLE columnTable
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE columnTable
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@columntable
-POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

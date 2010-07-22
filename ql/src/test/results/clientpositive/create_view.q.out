@@ -74,71 +74,67 @@ PREHOOK: query: DROP TEMPORARY FUNCTION test_explode
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_explode
 POSTHOOK: type: DROPFUNCTION
-PREHOOK: query: DROP TABLE table1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE table1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: SELECT * FROM src WHERE key=86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-51_249_8922015804755915765/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-57_921_7591165424312533742/10000
 POSTHOOK: query: SELECT * FROM src WHERE key=86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-51_249_8922015804755915765/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-57_921_7591165424312533742/10000
 86	val_86
 PREHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-55_984_3430099555842364804/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_421_2109283399258862165/10000
 POSTHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-55_984_3430099555842364804/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_421_2109283399258862165/10000
 POSTHOOK: Output: default@view1
 PREHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_249_108391416081868894/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_454_3605012159234387182/10000
 POSTHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_249_108391416081868894/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_454_3605012159234387182/10000
 POSTHOOK: Output: default@view2
 PREHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_437_8091674377507713014/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_480_4023689453233021298/10000
 POSTHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_437_8091674377507713014/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_480_4023689453233021298/10000
 POSTHOOK: Output: default@view3
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_507_8760093099562298778/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_511_3538329728957553516/10000
 POSTHOOK: query: SELECT * from view1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-56_507_8760093099562298778/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-00_511_3538329728957553516/10000
 val_86
 PREHOOK: query: SELECT * from view2 where key=18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-00_929_2355503113072117248/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-03_015_2577597731172760421/10000
 POSTHOOK: query: SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-00_929_2355503113072117248/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-03_015_2577597731172760421/10000
 18	val_18
 18	val_18
 PREHOOK: query: SELECT * from view3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-04_967_4103779794841926239/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-05_549_1542870472733242854/10000
 POSTHOOK: query: SELECT * from view3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-04_967_4103779794841926239/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-05_549_1542870472733242854/10000
 VAL_86
 PREHOOK: query: -- test EXPLAIN output for CREATE VIEW
 EXPLAIN
@@ -239,7 +235,7 @@ POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view1, dbName:default, owner:athusoo, createTime:1270516076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516076}, viewOriginalText:SELECT value FROM src WHERE key=86, viewExpandedText:SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view1, dbName:default, owner:jssarma, createTime:1279736340, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736340}, viewOriginalText:SELECT value FROM src WHERE key=86, viewExpandedText:SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: DESCRIBE view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view2
@@ -253,7 +249,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view2, dbName:default, owner:athusoo, createTime:1270516076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516076}, viewOriginalText:SELECT * FROM src, viewExpandedText:SELECT `src`.`key`, `src`.`value` FROM `src`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view2, dbName:default, owner:jssarma, createTime:1279736340, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736340}, viewOriginalText:SELECT * FROM src, viewExpandedText:SELECT `src`.`key`, `src`.`value` FROM `src`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: DESCRIBE view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view3
@@ -265,7 +261,7 @@ POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
 valoo	string	
 	 	 
-Detailed Table Information	Table(tableName:view3, dbName:default, owner:athusoo, createTime:1270516076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516076,fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view3, dbName:default, owner:jssarma, createTime:1279736340, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736340, fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
 PREHOOK: type: ALTERVIEW_PROPERTIES
 POSTHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
@@ -278,7 +274,7 @@ POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
 valoo	string	
 	 	 
-Detailed Table Information	Table(tableName:view3, dbName:default, owner:athusoo, createTime:1270516076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=athusoo,last_modified_time=1270516090,biggest=loser,transient_lastDdlTime=1270516090,fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view3, dbName:default, owner:jssarma, createTime:1279736340, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=jssarma, last_modified_time=1279736348, biggest=loser, transient_lastDdlTime=1279736348, fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: CREATE TABLE table1 (key int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table1 (key int)
@@ -294,7 +290,7 @@ DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:athusoo, createTime:1270516090, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516090}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:jssarma, createTime:1279736349, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736349}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: DESCRIBE EXTENDED src1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED src1
@@ -302,7 +298,7 @@ POSTHOOK: type: DESCTABLE
 key	string	default
 value	string	default
 	 	 
-Detailed Table Information	Table(tableName:src1, dbName:default, owner:null, createTime:1270516069, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/test/data/warehouse/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516069}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:src1, dbName:default, owner:null, createTime:1279735684, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279735685}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparison for
 -- view descriptions
 DESCRIBE EXTENDED table1
@@ -313,7 +309,7 @@ DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:athusoo, createTime:1270516090, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516090}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:jssarma, createTime:1279736349, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736349}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -326,29 +322,29 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-14_929_2065389972532664204/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_054_6185622979764502547/10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-14_929_2065389972532664204/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_054_6185622979764502547/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-14_977_3015839202999327586/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_107_373418218143741165/10000
 POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-14_977_3015839202999327586/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_107_373418218143741165/10000
 POSTHOOK: Output: default@view4
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-15_021_9184931574613208716/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_159_5736721309726450669/10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-15_021_9184931574613208716/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-12_159_5736721309726450669/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: DESCRIBE view4
@@ -367,21 +363,21 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-19_105_5319518691601572932/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-14_884_6210545047734052322/10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-19_105_5319518691601572932/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-14_884_6210545047734052322/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	NULL
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-19_169_7551758402210110903/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-14_937_5926817710279534745/10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-19_169_7551758402210110903/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-14_937_5926817710279534745/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: DESCRIBE table1
@@ -400,21 +396,21 @@ key	int
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-23_879_1296898702625082815/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-17_650_1581979006666486814/10000
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-23_879_1296898702625082815/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-17_650_1581979006666486814/10000
 POSTHOOK: Output: default@view5
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-24_036_4857028717949657394/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-18_112_5156849292712269194/10000
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-24_036_4857028717949657394/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-18_112_5156849292712269194/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	86
 PREHOOK: query: DESCRIBE view5
@@ -429,13 +425,13 @@ PREHOOK: query: -- verify that column name and comment in DDL portion
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_046_710120165826100548/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-20_848_5361966232039317942/10000
 POSTHOOK: query: -- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_046_710120165826100548/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-20_848_5361966232039317942/10000
 POSTHOOK: Output: default@view6
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE view6
@@ -451,7 +447,7 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_265_1329913665876875445/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-21_026_524519195839168130/10000
 POSTHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
 SELECT * FROM src
@@ -459,17 +455,17 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_265_1329913665876875445/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-21_026_524519195839168130/10000
 POSTHOOK: Output: default@view7
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_421_7101883282785856237/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-21_142_2584542483416509596/10000
 POSTHOOK: query: SELECT * FROM view7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-29_421_7101883282785856237/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-21_142_2584542483416509596/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -487,14 +483,14 @@ PREHOOK: query: -- top-level ORDER BY should override the one inside the view
 SELECT * FROM view7 ORDER BY key DESC, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-34_345_8066508064336105515/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-23_826_7709192776984057918/10000
 POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
 -- (however, the inside ORDER BY should still influence the evaluation
 -- of the limit)
 SELECT * FROM view7 ORDER BY key DESC, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-34_345_8066508064336105515/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-23_826_7709192776984057918/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 90	val_90
 90	val_90
@@ -510,12 +506,12 @@ PREHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-43_427_4325024040225755725/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-29_094_7201546132722765129/10000
 POSTHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-43_427_4325024040225755725/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-29_094_7201546132722765129/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -526,12 +522,12 @@ PREHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-49_324_8898744127113466306/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-31_669_4716567495375910798/10000
 POSTHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-49_324_8898744127113466306/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-31_669_4716567495375910798/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -556,12 +552,12 @@ PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-53_840_2964907692712697676/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-34_300_8840699164640193963/10000
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-53_840_2964907692712697676/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-34_300_8840699164640193963/10000
 POSTHOOK: Output: default@view8
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view8
@@ -571,17 +567,17 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:view8, dbName:default, owner:athusoo, createTime:1270516133, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516133}, viewOriginalText:SELECT test_translate('abc', 'a', 'b')	 
+Detailed Table Information	Table(tableName:view8, dbName:default, owner:jssarma, createTime:1279736374, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736374}, viewOriginalText:SELECT test_translate('abc', 'a', 'b')	 
 FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
 FROM `table1`) `view8`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-53_924_7826463408574432406/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-34_450_3256858177096010496/10000
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-53_924_7826463408574432406/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-34_450_3256858177096010496/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 bbc
 PREHOOK: query: -- test usage of a UDAF within a view
@@ -597,12 +593,12 @@ PREHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-58_747_2163708409319152021/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-36_956_3482633729704300290/10000
 POSTHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-58_747_2163708409319152021/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-36_956_3482633729704300290/10000
 POSTHOOK: Output: default@view9
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view9
@@ -612,29 +608,29 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 m	int	
 	 	 
-Detailed Table Information	Table(tableName:view9, dbName:default, owner:athusoo, createTime:1270516138, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:m, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516138}, viewOriginalText:SELECT test_max(length(value))	 
+Detailed Table Information	Table(tableName:view9, dbName:default, owner:jssarma, createTime:1279736376, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:m, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736376}, viewOriginalText:SELECT test_max(length(value))	 
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
 FROM `src`) `view9`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-59_002_4960552290114258251/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-37_098_8931758755865355991/10000
 POSTHOOK: query: SELECT * FROM view9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-08-59_002_4960552290114258251/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-37_098_8931758755865355991/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 7
 PREHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-03_445_2038640404964168331/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-39_728_8538567105732339323/10000
 POSTHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-03_445_2038640404964168331/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-39_728_8538567105732339323/10000
 POSTHOOK: Output: default@view10
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view10
@@ -645,15 +641,15 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view10, dbName:default, owner:athusoo, createTime:1270516143, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516143}, viewOriginalText:SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp, viewExpandedText:SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view10, dbName:default, owner:jssarma, createTime:1279736379, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736379}, viewOriginalText:SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp, viewExpandedText:SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: SELECT * FROM view10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-03_534_4513987569168219590/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-39_954_121140881764531324/10000
 POSTHOOK: query: SELECT * FROM view10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-03_534_4513987569168219590/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-39_954_121140881764531324/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	val_86
 PREHOOK: query: -- test usage of a UDTF within a view
@@ -669,12 +665,12 @@ PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-08_172_6937271646873245957/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-42_507_941005864769279541/10000
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-08_172_6937271646873245957/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-42_507_941005864769279541/10000
 POSTHOOK: Output: default@view11
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view11
@@ -684,17 +680,17 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 boom	int	
 	 	 
-Detailed Table Information	Table(tableName:view11, dbName:default, owner:athusoo, createTime:1270516148, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:boom, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516148}, viewOriginalText:SELECT test_explode(array(1,2,3)) AS (boom)	 
+Detailed Table Information	Table(tableName:view11, dbName:default, owner:jssarma, createTime:1279736382, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:boom, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736382}, viewOriginalText:SELECT test_explode(array(1,2,3)) AS (boom)	 
 FROM table1, viewExpandedText:SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 	 
 FROM `table1`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-08_313_4664224396935808807/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-42_621_147481859612435905/10000
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-08_313_4664224396935808807/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-42_621_147481859612435905/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -703,12 +699,12 @@ PREHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-12_286_8427548702068975898/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-45_155_5582073945596947542/10000
 POSTHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-12_286_8427548702068975898/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-45_155_5582073945596947542/10000
 POSTHOOK: Output: default@view12
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view12
@@ -720,17 +716,17 @@ key	string
 value	string	
 mycol	int	
 	 	 
-Detailed Table Information	Table(tableName:view12, dbName:default, owner:athusoo, createTime:1270516152, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:mycol, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516152}, viewOriginalText:SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol, viewExpandedText:SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`, tableType:VIRTUAL_VIEW)	
+Detailed Table Information	Table(tableName:view12, dbName:default, owner:jssarma, createTime:1279736385, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:mycol, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736385}, viewOriginalText:SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol, viewExpandedText:SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`, tableType:VIRTUAL_VIEW)	
 PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-12_406_2588118547562629364/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-45_288_6471519897685463611/10000
 POSTHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-12_406_2588118547562629364/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-45_288_6471519897685463611/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- test usage of LATERAL with a view as the LHS
@@ -738,13 +734,13 @@ SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-17_007_2569567271321396526/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-47_967_4711091040062160152/10000
 POSTHOOK: query: -- test usage of LATERAL with a view as the LHS
 SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-17_007_2569567271321396526/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-47_967_4711091040062160152/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- test usage of TABLESAMPLE within a view
@@ -752,13 +748,13 @@ CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-21_328_3318797810129325812/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-50_665_3879547564260377848/10000
 POSTHOOK: query: -- test usage of TABLESAMPLE within a view
 CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-21_328_3318797810129325812/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-50_665_3879547564260377848/10000
 POSTHOOK: Output: default@view13
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view13
@@ -768,19 +764,19 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 key	int	
 	 	 
-Detailed Table Information	Table(tableName:view13, dbName:default, owner:athusoo, createTime:1270516161, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516161}, viewOriginalText:SELECT s.key	 
+Detailed Table Information	Table(tableName:view13, dbName:default, owner:jssarma, createTime:1279736390, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736390}, viewOriginalText:SELECT s.key	 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s, viewExpandedText:SELECT `s`.`key`	 	 
 FROM `srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-21_411_3195453265987665126/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-50_808_1357112183697677370/10000
 POSTHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-21_411_3195453265987665126/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-50_808_1357112183697677370/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0
 0
@@ -807,7 +803,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-25_913_4823304300133994589/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-53_382_1837567325290565612/10000
 POSTHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
 CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
@@ -821,7 +817,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-25_913_4823304300133994589/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-53_382_1837567325290565612/10000
 POSTHOOK: Output: default@view14
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view14
@@ -834,7 +830,7 @@ v1	string
 k2	string	
 v2	string	
 	 	 
-Detailed Table Information	Table(tableName:view14, dbName:default, owner:athusoo, createTime:1270516166, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:k1, type:string, comment:null), FieldSchema(name:v1, type:string, comment:null), FieldSchema(name:k2, type:string, comment:null), FieldSchema(name:v2, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516166}, viewOriginalText:SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
+Detailed Table Information	Table(tableName:view14, dbName:default, owner:jssarma, createTime:1279736393, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:k1, type:string, comment:null), FieldSchema(name:v1, type:string, comment:null), FieldSchema(name:k2, type:string, comment:null), FieldSchema(name:v2, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736393}, viewOriginalText:SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
        unionsrc2.key as k2, unionsrc2.value as v2	 	 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1	 	 
                          UNION  ALL	 	 
@@ -857,12 +853,12 @@ PREHOOK: query: SELECT * FROM view14
 ORDER BY k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-26_119_2761258753248431304/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-53_542_3266426952139641562/10000
 POSTHOOK: query: SELECT * FROM view14
 ORDER BY k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-26_119_2761258753248431304/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-19-53_542_3266426952139641562/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -893,14 +889,14 @@ SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-58_798_7555941970013621980/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-12_519_296683891105463355/10000
 POSTHOOK: query: -- test usage of GROUP BY within view
 CREATE VIEW view15 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-58_798_7555941970013621980/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-12_519_296683891105463355/10000
 POSTHOOK: Output: default@view15
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view15
@@ -911,7 +907,7 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 key	string	
 value_count	bigint	
 	 	 
-Detailed Table Information	Table(tableName:view15, dbName:default, owner:athusoo, createTime:1270516198, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value_count, type:bigint, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516198}, viewOriginalText:SELECT key,COUNT(value) AS value_count	 
+Detailed Table Information	Table(tableName:view15, dbName:default, owner:jssarma, createTime:1279736412, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value_count, type:bigint, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736412}, viewOriginalText:SELECT key,COUNT(value) AS value_count	 
 FROM src	 	 
 GROUP BY key, viewExpandedText:SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 	 
 FROM `src`	 	 
@@ -921,13 +917,13 @@ ORDER BY value_count DESC, key
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-58_914_3308702425437265515/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-12_632_2632827347997497908/10000
 POSTHOOK: query: SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-09-58_914_3308702425437265515/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-12_632_2632827347997497908/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 230	5
 348	5
@@ -944,13 +940,13 @@ CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-10-07_365_8609706981588395246/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-17_744_4594166188705296834/10000
 POSTHOOK: query: -- test usage of DISTINCT within view
 CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-10-07_365_8609706981588395246/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-17_744_4594166188705296834/10000
 POSTHOOK: Output: default@view16
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view16
@@ -960,7 +956,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:view16, dbName:default, owner:athusoo, createTime:1270516207, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1270516207}, viewOriginalText:SELECT DISTINCT value	 
+Detailed Table Information	Table(tableName:view16, dbName:default, owner:jssarma, createTime:1279736417, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736417}, viewOriginalText:SELECT DISTINCT value	 
 FROM src, viewExpandedText:SELECT DISTINCT `src`.`value`	 	 
 FROM `src`, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: SELECT * FROM view16
@@ -968,13 +964,13 @@ ORDER BY value
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-10-07_470_4237294142974167361/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-17_856_3789669241902298524/10000
 POSTHOOK: query: SELECT * FROM view16
 ORDER BY value
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-10-07_470_4237294142974167361/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-20-17_856_3789669241902298524/10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 val_0
 val_10
@@ -988,17 +984,15 @@ val_113
 val_114
 PREHOOK: query: -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
-DROP TABLE table1
-PREHOOK: type: DROPTABLE
+
+
+DROP VIEW view1
+PREHOOK: type: DROPVIEW
 POSTHOOK: query: -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
-DROP TABLE table1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: DROP VIEW view1
-PREHOOK: type: DROPVIEW
-POSTHOOK: query: DROP VIEW view1
+
+
+DROP VIEW view1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Output: default@view1
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

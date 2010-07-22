@@ -5,4 +5,4 @@ INSERT OVERWRITE TABLE dest1 SELECT concat('1234', 'abc', 'extra argument'), src
 
 SELECT dest1.* FROM dest1;
 
-DROP TABLE dest1;
+

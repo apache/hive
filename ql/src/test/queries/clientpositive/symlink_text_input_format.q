@@ -1,4 +1,4 @@
-DROP TABLE symlink_text_input_format;
+
 
 EXPLAIN
 CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat';
@@ -20,5 +20,5 @@ EXPLAIN SELECT count(1) FROM symlink_text_input_format;
 
 SELECT count(1) FROM symlink_text_input_format;
 
-DROP TABLE symlink_text_input_format;
+
 

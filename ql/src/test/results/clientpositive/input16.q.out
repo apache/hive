@@ -17,11 +17,11 @@ POSTHOOK: Output: default@input16
 PREHOOK: query: SELECT INPUT16.VALUE, INPUT16.KEY FROM INPUT16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input16
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1455551235/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_14-10-01_833_5335657696200375421/10000
 POSTHOOK: query: SELECT INPUT16.VALUE, INPUT16.KEY FROM INPUT16
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input16
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1455551235/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_14-10-01_833_5335657696200375421/10000
 val_238	238
 val_86	86
 val_311	311
@@ -522,8 +522,3 @@ val_403	403
 val_400	400
 val_200	200
 val_97	97
-PREHOOK: query: DROP TABLE INPUT16
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUT16
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@input16

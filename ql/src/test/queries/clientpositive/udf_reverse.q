@@ -13,4 +13,3 @@ DROP TABLE dest1;
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1;
 SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5;
-DROP TABLE dest1;

@@ -1,4 +1,4 @@
-DROP TABLE non_native1;
+
 CREATE TABLE non_native1(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler';
 

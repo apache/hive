@@ -1,4 +1,4 @@
-drop table nzhang_part_bucket;
+
 create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets;
@@ -19,5 +19,5 @@ show partitions nzhang_part_bucket;
 select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key;
 select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key;
 
-drop table nzhang_part_bucket;
+
 

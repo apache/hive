@@ -1,4 +1,4 @@
-drop table texternal;
+
 
 create table texternal(key string, val string) partitioned by (insertdate string);
 

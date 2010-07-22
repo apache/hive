@@ -1,5 +1,5 @@
-drop table union2_t1;
-drop table union2_t2;
+
+
 create table if not exists union2_t1(r string, c string, v string);
 create table if not exists union2_t2(s string, c string, v string);
 

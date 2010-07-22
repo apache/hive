@@ -1,7 +1,3 @@
-PREHOOK: query: drop table dest_l1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table dest_l1
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest_l1(key INT, value STRING) STORED AS TEXTFILE
@@ -105,7 +101,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/build/ql/scratchdir/hive_2010-04-22_15-52-46_260_8748362802646516479/10002 
+        file:/tmp/jssarma/hive_2010-07-21_11-38-08_578_3994995071945892234/10002 
           Union
             Select Operator
               expressions:
@@ -129,7 +125,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest_l1
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/build/ql/scratchdir/hive_2010-04-22_15-52-46_260_8748362802646516479/10004 
+        file:/tmp/jssarma/hive_2010-07-21_11-38-08_578_3994995071945892234/10004 
           Union
             Select Operator
               expressions:
@@ -161,7 +157,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/build/ql/scratchdir/hive_2010-04-22_15-52-46_260_8748362802646516479/10000
+          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-38-08_578_3994995071945892234/10000
 
   Stage: Stage-0
     Move Operator
@@ -176,7 +172,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/build/ql/scratchdir/hive_2010-04-22_15-52-46_260_8748362802646516479/10003 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-38-08_578_3994995071945892234/10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:

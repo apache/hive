@@ -1,5 +1,5 @@
-drop table tst_dest32;
-drop table dest32;
+
+
 
 set hive.test.mode=true;
 set hive.test.mode.prefix=tst_;
@@ -19,7 +19,7 @@ set hive.test.mode=false;
 
 select * from tst_dest32;
 
-drop table tst_dest32;
-drop table dest32;
+
+
 
 

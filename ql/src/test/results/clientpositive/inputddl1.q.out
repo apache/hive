@@ -31,13 +31,8 @@ POSTHOOK: Output: default@INPUTDDL1
 PREHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1810212600/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-53_062_1897784041995229554/10000
 POSTHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputddl1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1810212600/10000
-PREHOOK: query: DROP TABLE INPUTDDL1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE INPUTDDL1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@inputddl1
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-53_062_1897784041995229554/10000

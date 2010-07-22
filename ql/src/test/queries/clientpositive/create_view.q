@@ -17,7 +17,7 @@ DROP VIEW view16;
 DROP TEMPORARY FUNCTION test_translate;
 DROP TEMPORARY FUNCTION test_max;
 DROP TEMPORARY FUNCTION test_explode;
-DROP TABLE table1;
+
 
 SELECT * FROM src WHERE key=86;
 CREATE VIEW view1 AS SELECT value FROM src WHERE key=86;
@@ -192,7 +192,7 @@ LIMIT 10;
 
 -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
-DROP TABLE table1;
+
 
 DROP VIEW view1;
 DROP VIEW view2;

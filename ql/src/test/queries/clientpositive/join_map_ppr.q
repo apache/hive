@@ -35,7 +35,7 @@ WHERE z.ds='2008-04-08' and z.hr=11;
 
 select * from dest_j1 x order by x.key;
 
-drop table src_copy;
-drop table src1_copy;
-drop table dest_j1;
+
+
+
 

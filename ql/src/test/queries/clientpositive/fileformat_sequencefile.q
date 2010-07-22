@@ -14,4 +14,4 @@ INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10;
 
 SELECT dest1.* FROM dest1;
 
-DROP TABLE dest1;
+

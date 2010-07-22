@@ -1,7 +1,3 @@
-PREHOOK: query: drop table T2
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table T2
-POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table T2 like srcpart
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table T2 like srcpart

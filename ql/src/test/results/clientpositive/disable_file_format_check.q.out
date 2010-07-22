@@ -18,13 +18,3 @@ PREHOOK: type: LOAD
 POSTHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table kv_fileformat_check_seq
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@kv_fileformat_check_seq
-PREHOOK: query: drop table kv_fileformat_check_seq
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table kv_fileformat_check_seq
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@kv_fileformat_check_seq
-PREHOOK: query: drop table kv_fileformat_check_txt
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table kv_fileformat_check_txt
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@kv_fileformat_check_txt
