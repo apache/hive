@@ -45,16 +45,16 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * of the filter expressions can be pushed nearer to the operator that sees this
  * particular data for the first time. e.g. select a.*, b.* from a join b on
  * (a.col1 = b.col1) where a.col1 > 20 and b.col2 > 40
- * 
+ *
  * For the above query, the predicates (a.col1 > 20) and (b.col2 > 40), without
  * predicate pushdown, would be evaluated after the join processing has been
  * done. Suppose the two predicates filter out most of the rows from a and b,
  * the join is unnecessarily processing these rows. With predicate pushdown,
  * these two predicates will be processed before the join.
- * 
+ *
  * Predicate pushdown is enabled by setting hive.optimize.ppd to true. It is
  * disable by default.
- * 
+ *
  * The high-level algorithm is describe here - An operator is processed after
  * all its children have been processed - An operator processes its own
  * predicates and then merges (conjunction) with the processed predicates of its
@@ -90,6 +90,8 @@ public class PredicatePushDown implements Transform {
     opRules.put(new RuleRegExp("R5", "TS%"), OpProcFactory.getTSProc());
     opRules.put(new RuleRegExp("R6", "SCR%"), OpProcFactory.getSCRProc());
     opRules.put(new RuleRegExp("R6", "LIM%"), OpProcFactory.getLIMProc());
+    opRules.put(new RuleRegExp("R7", "UDTF%"), OpProcFactory.getUDTFProc());
+    opRules.put(new RuleRegExp("R8", "LVF%"), OpProcFactory.getLVFProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

@@ -81,6 +81,29 @@ public final class OpProcFactory {
 
   }
 
+  public static class LateralViewForwardPPD extends DefaultPPD implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      LOG.info("Processing for " + nd.getName() + "("
+          + ((Operator) nd).getIdentifier() + ")");
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+
+      // The lateral view forward operator has 2 children, a SELECT(*) and
+      // a SELECT(cols) (for the UDTF operator) The child at index 0 is the
+      // SELECT(*) because that's the way that the DAG was constructed. We
+      // only want to get the predicates from the SELECT(*).
+      ExprWalkerInfo childPreds = owi
+      .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
+      .get(0));
+
+      owi.putPrunedPreds((Operator<? extends Serializable>) nd, childPreds);
+      return null;
+    }
+
+  }
+
   /**
    * Combines predicates of its child into a single expression and adds a filter
    * op as new child.
@@ -169,7 +192,7 @@ public final class OpProcFactory {
      * thus disallowing predicate expr containing both tables a and b (such as
      * a.c3 + a.c4 > 20). Such predicates also can be pushed just above the
      * second join and below the first join
-     * 
+     *
      * @param op
      *          Join Operator
      * @param rr
@@ -221,7 +244,7 @@ public final class OpProcFactory {
 
   /**
    * Processor for ReduceSink operator.
-   * 
+   *
    */
   public static class ReduceSinkPPD extends DefaultPPD implements NodeProcessor {
     @Override
@@ -277,7 +300,7 @@ public final class OpProcFactory {
     /**
      * Take current operators pushdown predicates and merges them with
      * children's pushdown predicates.
-     * 
+     *
      * @param nd
      *          current operator
      * @param owi
@@ -406,6 +429,14 @@ public final class OpProcFactory {
 
   public static NodeProcessor getLIMProc() {
     return new ScriptPPD();
+  }
+
+  public static NodeProcessor getUDTFProc() {
+    return new ScriptPPD();
+  }
+
+  public static NodeProcessor getLVFProc() {
+    return new LateralViewForwardPPD();
   }
 
   private OpProcFactory() {

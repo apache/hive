@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -82,6 +83,8 @@ public final class OperatorFactory {
     opvec.add(new OpTuple<UDTFDesc>(UDTFDesc.class, UDTFOperator.class));
     opvec.add(new OpTuple<LateralViewJoinDesc>(LateralViewJoinDesc.class,
         LateralViewJoinOperator.class));
+    opvec.add(new OpTuple<LateralViewForwardDesc>(LateralViewForwardDesc.class,
+        LateralViewForwardOperator.class));
   }
 
   public static <T extends Serializable> Operator<T> get(Class<T> opClass) {
