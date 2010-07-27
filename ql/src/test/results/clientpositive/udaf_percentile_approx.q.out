@@ -1,108 +1,99 @@
-PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-37_073_6076210560386322054/10000
-POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5) FROM src
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-37_073_6076210560386322054/10000
-255.5
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5, 100) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-41_860_8275933713801449697/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-04_416_834356939093099091/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5, 100) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-41_860_8275933713801449697/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-04_416_834356939093099091/10000
 252.77777777777777
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5, 1000) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-46_334_9017578099479193081/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-09_347_2669488651086861546/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), 0.5, 1000) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-46_334_9017578099479193081/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-09_347_2669488651086861546/10000
 255.5
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-51_723_1654864352248105322/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-14_077_78739060255077214/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-51_723_1654864352248105322/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-14_077_78739060255077214/10000
 255.5
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5, 100) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-56_385_7799592520279056727/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-18_671_141245215173795995/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5, 100) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-43-56_385_7799592520279056727/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-18_671_141245215173795995/10000
 252.77777777777777
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5, 1000) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-00_946_3923666334878603072/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-23_266_8933622767986547541/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), 0.5, 1000) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-00_946_3923666334878603072/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-23_266_8933622767986547541/10000
 255.5
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-05_574_6679873308435909842/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-27_803_3529609176449051766/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-05_574_6679873308435909842/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-27_803_3529609176449051766/10000
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98), 100) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-10_350_1432232531700471217/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-32_749_7874714977417965677/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98), 100) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-10_350_1432232531700471217/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-32_749_7874714977417965677/10000
 [24.07,252.77777777777777,476.9444444444444,487.82]
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98), 1000) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-15_355_3332753751548479422/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-37_425_1289670844459308120/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS double), array(0.05,0.5,0.95,0.98), 1000) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-15_355_3332753751548479422/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-37_425_1289670844459308120/10000
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-19_897_625588204506780432/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-42_578_6317460559415319067/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-19_897_625588204506780432/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-42_578_6317460559415319067/10000
 [26.0,255.5,479.0,491.0]
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98), 100) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-24_513_3382890303984991141/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-47_287_2752385889854385296/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98), 100) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-24_513_3382890303984991141/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-47_287_2752385889854385296/10000
 [24.07,252.77777777777777,476.9444444444444,487.82]
 PREHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98), 1000) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-29_036_9025181836738993015/10000
+PREHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-51_922_7991525101468087783/10000
 POSTHOOK: query: SELECT percentile_approx(cast(substr(src.value,5) AS int), array(0.05,0.5,0.95,0.98), 1000) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-06-23_12-44-29_036_9025181836738993015/10000
+POSTHOOK: Output: file:/var/folders/7i/7iCDbWRkGHOcgJgX0zscimPXXts/-Tmp-/mlahiri/hive_2010-07-26_14-08-51_922_7991525101468087783/10000
 [26.0,255.5,479.0,491.0]

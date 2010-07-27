@@ -65,7 +65,7 @@ import org.apache.hadoop.util.StringUtils;
                "this function.\n" +
                "Example (three percentiles requested using a finer histogram approximation):\n" +
                "> SELECT percentile_approx(val, array(0.5, 0.95, 0.98), 100000) FROM somedata;\n" +
-               "[0.05,1.64,2.26]\n" )
+               "[0.05,1.64,2.26]\n")
 public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
   static final Log LOG = LogFactory.getLog(GenericUDAFPercentileApprox.class.getName());
 
@@ -98,6 +98,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
     }
 
     // Validate the second parameter, which is either a solitary double or an array of doubles.
+    boolean wantManyQuantiles = false;
     switch(parameters[1].getCategory()) {
     case PRIMITIVE:
       // Only a single double was passed as parameter 2, a single quantile is being requested
@@ -132,6 +133,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
           "A float/double array argument may be passed as parameter 2, but "
           + parameters[1].getTypeName() + " was passed instead.");
       }
+      wantManyQuantiles = true;
       break;
 
     default:
@@ -159,21 +161,16 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       }
     }
 
-    return new GenericUDAFPercentileApproxEvaluator();
+    // Return an evaluator depending on the return type
+    if(wantManyQuantiles) {
+      return new GenericUDAFMultiplePercentileApproxEvaluator();
+    } else {
+      return new GenericUDAFSinglePercentileApproxEvaluator();
+    }
   }
-
-  /**
-   * Construct a histogram using the algorithm described by Ben-Haim and Tom-Tov, and then
-   * use it to compute an approximate percentile value.
-   */
-  public static class GenericUDAFPercentileApproxEvaluator extends GenericUDAFEvaluator {
-    // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
-    private PrimitiveObjectInspector inputOI;
-    private ObjectInspector quantilesOI;
-    private PrimitiveObjectInspector nbinsOI;
-
-    // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list of doubles)
-    private StandardListObjectInspector loi;
+  
+  public static class GenericUDAFSinglePercentileApproxEvaluator extends
+    GenericUDAFPercentileApproxEvaluator {
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -196,18 +193,89 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       // GenericUDAFHistogramNumeric, but we add on the percentile values requested to the
       // end, and handle serializing/deserializing before we pass things on to the parent
       // method.
-      // The return type for FINAL and COMPLETE is a full aggregation result, which is also a
-      // list of DoubleWritables with the requested quantile values. The only exception is
-      // when a single double, as opposed to an array of doubles, is passed as a parameter. In
-      // that case, just return a single double value.
-      if (m == Mode.PARTIAL1 || m == Mode.COMPLETE ||
-          quantilesOI.getCategory() == ObjectInspector.Category.LIST) {
+      // The return type for FINAL and COMPLETE is a full aggregation result, which is a
+      // single double value
+      if (m == Mode.PARTIAL1 || m == Mode.PARTIAL2) {
         return ObjectInspectorFactory.getStandardListObjectInspector(
-                 PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+            PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
       } else {
         return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
       }
     }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      PercentileAggBuf myagg = (PercentileAggBuf) agg;
+
+      if (myagg.histogram.getUsedBins() < 1) { // SQL standard - return null for zero elements
+        return null;
+      } else {
+        assert(myagg.quantiles != null);
+        return new DoubleWritable(myagg.histogram.quantile(myagg.quantiles[0]));
+      }
+    }
+  }
+
+  
+  public static class GenericUDAFMultiplePercentileApproxEvaluator extends
+    GenericUDAFPercentileApproxEvaluator {
+
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
+      super.init(m, parameters);
+
+      // init input object inspectors
+      if (m == Mode.PARTIAL1 || m == Mode.COMPLETE) {
+        inputOI = (PrimitiveObjectInspector) parameters[0];
+        quantilesOI = parameters[1];
+        if(parameters.length > 2) {
+          nbinsOI = (PrimitiveObjectInspector) parameters[2];
+        }
+      } else {
+        loi = (StandardListObjectInspector) parameters[0];
+      }
+
+      // Init output object inspectors.
+      //
+      // The return type for a partial aggregation is still a list of doubles, as in
+      // GenericUDAFHistogramNumeric, but we add on the percentile values requested to the
+      // end, and handle serializing/deserializing before we pass things on to the parent
+      // method.
+      // The return type for FINAL and COMPLETE is a full aggregation result, which is also
+      // a list of doubles
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+          PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
+    }
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      PercentileAggBuf myagg = (PercentileAggBuf) agg;
+
+      if (myagg.histogram.getUsedBins() < 1) { // SQL standard - return null for zero elements
+        return null;
+      } else {
+        ArrayList<DoubleWritable> result = new ArrayList<DoubleWritable>();
+        assert(myagg.quantiles != null);
+        for(int i = 0; i < myagg.quantiles.length; i++) {
+          result.add(new DoubleWritable(myagg.histogram.quantile(myagg.quantiles[i])));
+        }
+        return result;
+      }
+    }
+  }
+
+  /**
+   * Construct a histogram using the algorithm described by Ben-Haim and Tom-Tov, and then
+   * use it to compute an approximate percentile value.
+   */
+  public abstract static class GenericUDAFPercentileApproxEvaluator extends GenericUDAFEvaluator {
+    // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
+    protected PrimitiveObjectInspector inputOI;
+    protected ObjectInspector quantilesOI;
+    protected PrimitiveObjectInspector nbinsOI;
+
+    // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list of doubles)
+    protected StandardListObjectInspector loi;
 
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
@@ -303,26 +371,6 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       // Get and process the current datum
       double v = PrimitiveObjectInspectorUtils.getDouble(parameters[0], inputOI);
       myagg.histogram.add(v);
-    }
-
-    @Override
-    public Object terminate(AggregationBuffer agg) throws HiveException {
-      PercentileAggBuf myagg = (PercentileAggBuf) agg;
-
-      if (myagg.histogram.getUsedBins() < 1) { // SQL standard - return null for zero elements
-        return null;
-      } else {
-        ArrayList<DoubleWritable> result = new ArrayList<DoubleWritable>();
-        assert(myagg.quantiles != null);
-        for(int i = 0; i < myagg.quantiles.length; i++) {
-          result.add(new DoubleWritable(myagg.histogram.quantile(myagg.quantiles[i])));
-        }
-        if(myagg.quantiles.length == 1) {
-          return result.get(0);
-        } else {
-          return result;
-        }
-      }
     }
 
     // Aggregation buffer methods. We wrap GenericUDAFHistogramNumeric's aggregation buffer
