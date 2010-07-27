@@ -86,6 +86,10 @@ Trunk -  Unreleased
     causing build failure
     (Joydeep Sen Sarma via Ning Zhang)
 
+    HIVE-1489. TestCliDriver -Doverwrite=true does not put the file in
+    the correct directory
+    (Ning Zhang via jvs)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

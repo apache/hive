@@ -304,8 +304,9 @@ public class QTestUtil {
   public void clearTestSideEffects () throws Exception {
     // delete any tables other than the source tables
     for (String s: db.getAllTables()) {
-      if (!srcTables.contains(s))
+      if (!srcTables.contains(s)) {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
+      }
     }
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
@@ -827,7 +828,7 @@ public class QTestUtil {
    * @return The file name appended with the configuration values if it exists.
    */
   public String outPath(String outDir, String testName) {
-    String ret = testName;
+    String ret = (new File(outDir, testName)).getPath();
     // List of configurations. Currently the list consists of hadoop version and execution mode only
     List<String> configs = new ArrayList<String>();
     configs.add(this.hadoopVer);
