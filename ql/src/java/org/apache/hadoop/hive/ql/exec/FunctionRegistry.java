@@ -130,6 +130,7 @@ import org.apache.hadoop.hive.ql.udf.UDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
@@ -367,7 +368,10 @@ public final class FunctionRegistry {
     registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
 
+    registerGenericUDAF("ngrams", new GenericUDAFnGrams());
+
     registerUDAF("percentile", UDAFPercentile.class);
+
 
     // Generic UDFs
     registerGenericUDF("array", GenericUDFArray.class);
