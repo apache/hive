@@ -77,6 +77,9 @@ Trunk -  Unreleased
     HIVE-1470. percentile_approx() fails with more than 1 reducer
     (Mayank Lahiri via jvs)
 
+    HIVE-1425. hive.task.progress should be added to conf/hive-default.xml
+    (John Sichi via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

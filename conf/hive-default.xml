@@ -390,6 +390,12 @@
 </property>
 
 <property>
+  <name>hive.task.progress</name>
+  <value>false</value>
+  <description>Whether Hive should periodically update task progress counters during execution.  Enabling this allows task progress to be monitored more closely in the job tracker, but may impose a performance penalty.  This flag is automatically set to true for jobs with hive.exec.dynamic.partition set to true.</description>
+</property>
+
+<property>
   <name>hive.hwi.war.file</name>
   <value>lib/hive-hwi-@VERSION@.war</value>
   <description>This sets the path to the HWI war file, relative to ${HIVE_HOME}. </description>
@@ -410,7 +416,13 @@
 <property>
   <name>hive.exec.pre.hooks</name>
   <value></value>
-  <description>Pre Execute Hook for Tests</description>
+  <description>Comma-separated list of pre-execution hooks to be invoked for each statement.  A pre-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.PreExecute interface.</description>
+</property>
+
+<property>
+  <name>hive.exec.post.hooks</name>
+  <value></value>
+  <description>Comma-separated list of post-execution hooks to be invoked for each statement.  A post-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.PostExecute interface.</description>
 </property>
 
 <property>
