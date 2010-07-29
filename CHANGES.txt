@@ -86,6 +86,9 @@ Trunk -  Unreleased
 
     HIVE-1425. hive.task.progress should be added to conf/hive-default.xml
     (John Sichi via Ning Zhang)
+    
+    HIVE-1492. FileSinkOperator should remove duplicated files from the same task based on file sizes
+    (Ning Zhang via He Yongqiang)
 
   TESTS
 
