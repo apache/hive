@@ -321,5 +321,4 @@ public class MapredWork implements Serializable {
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
   }
-
 }

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
@@ -198,5 +199,12 @@ public class ConditionalTask extends Task<ConditionalWork> implements
       }
     }
     return ret;
+  }
+
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    if (getListTasks() != null)
+      for(Task<? extends Serializable> t: getListTasks())
+        t.localizeMRTmpFiles(ctx);
   }
 }

@@ -65,10 +65,13 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -127,7 +130,7 @@ public final class Utilities {
   public static void clearMapRedWork(Configuration job) {
     try {
       Path planPath = new Path(HiveConf.getVar(job, HiveConf.ConfVars.PLAN));
-      FileSystem fs = FileSystem.get(job);
+      FileSystem fs = planPath.getFileSystem(job);
       if (fs.exists(planPath)) {
         try {
           fs.delete(planPath, true);
@@ -1332,4 +1335,79 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Calculate the total size of input files.
+   *
+   * @param job  the hadoop job conf.
+   * @param work map reduce job plan
+   * @param filter filter to apply to the input paths before calculating size
+   * @return the summary of all the input paths.
+   * @throws IOException
+   */
+  public static ContentSummary getInputSummary
+    (Context ctx, MapredWork work, PathFilter filter) throws IOException {
+
+    long[] summary = {0, 0, 0};
+
+    // For each input path, calculate the total size.
+    for (String path : work.getPathToAliases().keySet()) {
+      try {
+        Path p = new Path(path);
+
+        if(filter != null && !filter.accept(p))
+          continue;
+
+        ContentSummary cs = ctx.getCS(path);
+        if (cs == null) {
+          FileSystem fs = p.getFileSystem(ctx.getConf());
+          cs = fs.getContentSummary(p);
+          ctx.addCS(path, cs);
+        }
+
+        summary[0] += cs.getLength();
+        summary[1] += cs.getFileCount();
+        summary[2] += cs.getDirectoryCount();
+
+      } catch (IOException e) {
+        LOG.info("Cannot get size of " + path + ". Safely ignored.");
+        if (path != null) 
+          ctx.addCS(path, new ContentSummary(0, 0, 0));
+      }
+    }
+    return new ContentSummary(summary[0], summary[1], summary[2]);
+  }
+
+  public static boolean isEmptyPath(JobConf job, String path) throws Exception {
+    Path dirPath = new Path(path);
+    FileSystem inpFs = dirPath.getFileSystem(job);
+
+    if (inpFs.exists(dirPath)) {
+      FileStatus[] fStats = inpFs.listStatus(dirPath);
+      if (fStats.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static List<ExecDriver> getMRTasks (List<Task<? extends Serializable>> tasks) {
+    List<ExecDriver> mrTasks = new ArrayList<ExecDriver> ();
+    if(tasks !=  null)
+      getMRTasks(tasks, mrTasks);
+    return mrTasks;
+  }
+
+  private static void getMRTasks (List<Task<? extends Serializable>> tasks,
+                                  List<ExecDriver> mrTasks) {
+    for (Task<? extends Serializable> task : tasks) {
+      if (task instanceof ExecDriver && !mrTasks.contains((ExecDriver)task))
+        mrTasks.add((ExecDriver)task);
+
+      if (task instanceof ConditionalTask)
+        getMRTasks(((ConditionalTask)task).getListTasks(), mrTasks);
+
+      if (task.getChildTasks() != null)
+        getMRTasks(task.getChildTasks(), mrTasks);
+    }
+  }
 }

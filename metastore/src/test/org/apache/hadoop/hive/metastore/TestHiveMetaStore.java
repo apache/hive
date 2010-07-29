@@ -303,8 +303,8 @@ public class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Bad partition spec should have thrown an exception", exceptionThrown);
 
-      FileSystem fs = FileSystem.get(hiveConf);
       Path partPath = new Path(part2.getSd().getLocation());
+      FileSystem fs = FileSystem.get(partPath.toUri(), hiveConf);
 
       assertTrue(fs.exists(partPath));
       ret = client.dropPartition(dbName, tblName, part.getValues(), true);
@@ -683,7 +683,8 @@ public class TestHiveMetaStore extends TestCase {
           (tbl2.getPartitionKeys() == null)
               || (tbl2.getPartitionKeys().size() == 0));
 
-      FileSystem fs = FileSystem.get(hiveConf);
+      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(),
+                                     hiveConf);
       client.dropTable(dbName, tblName);
       assertFalse(fs.exists(new Path(tbl.getSd().getLocation())));
 
@@ -775,7 +776,8 @@ public class TestHiveMetaStore extends TestCase {
       assertEquals("Alter table didn't succeed. Num buckets is different ",
           tbl2.getSd().getNumBuckets(), tbl3.getSd().getNumBuckets());
       // check that data has moved
-      FileSystem fs = FileSystem.get(hiveConf);
+      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(),
+                                     hiveConf);
       assertFalse("old table location still exists", fs.exists(new Path(tbl
           .getSd().getLocation())));
       assertTrue("data did not move to new location", fs.exists(new Path(tbl3

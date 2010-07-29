@@ -37,7 +37,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_316_3921201311196435797/10001
+                    directory: file:/tmp/jssarma/hive_2010-07-25_12-45-28_746_6403683001829896191/-ext-10001
                     NumFilesPerFileSink: 1
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -50,9 +50,9 @@ STAGE PLANS:
                     MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -63,12 +63,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266454055
+              transient_lastDdlTime 1280086854
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -79,12 +79,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266454055
+                transient_lastDdlTime 1280086854
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -129,9 +129,9 @@ STAGE PLANS:
                           type: int
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src [a:src]
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src [a:src]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -142,12 +142,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266454055
+              transient_lastDdlTime 1280086854
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -158,12 +158,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266454055
+                transient_lastDdlTime 1280086854
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -187,7 +187,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10002
+                  directory: file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-mr-10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -202,7 +202,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10002 
+        file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -217,11 +217,11 @@ STAGE PLANS:
                     type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10002 [file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10002]
+        file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-mr-10002 [file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-mr-10002]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10002 
+        file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-mr-10002 
           Partition
-            base file name: 10002
+            base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -255,7 +255,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-36_561_2642184372620503865/10001
+              directory: file:/tmp/jssarma/hive_2010-07-25_12-45-28_813_2941624137821891314/-ext-10001
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -275,33 +275,33 @@ STAGE PLANS:
 PREHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-37_008_6185625478208513690/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-28_892_2431440475493662931/-mr-10000
 POSTHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-37_008_6185625478208513690/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-28_892_2431440475493662931/-mr-10000
 1
 2
 3
 PREHOOK: query: SELECT explode(array(1,2,3)) AS (myCol) FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-40_284_4747568601574563446/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-31_372_2926720035905767102/-mr-10000
 POSTHOOK: query: SELECT explode(array(1,2,3)) AS (myCol) FROM src LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-40_284_4747568601574563446/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-31_372_2926720035905767102/-mr-10000
 1
 2
 3
 PREHOOK: query: SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-43_526_8728743318366146781/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-33_795_6481265984988751332/-mr-10000
 POSTHOOK: query: SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-47-43_526_8728743318366146781/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_12-45-33_795_6481265984988751332/-mr-10000
 1	1
 2	1
 3	1

@@ -392,6 +392,14 @@
 
   <target name="gen-test"/>
 
+  <!-- use pfile:/// as warehouse file system in 20 for non miniMR runs -->
+  <condition property="test.warehouse.scheme" value="pfile://" else="">
+    <not>
+      <equals arg1="${clustermode}" arg2="miniMR" />
+    </not>
+  </condition>
+
+
   <!-- target to run the tests -->
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
@@ -417,7 +425,7 @@
       <sysproperty key="hadoop.log.dir" value="${test.log.dir}"/>
       <sysproperty key="test.silent" value="${test.silent}"/>
       <sysproperty key="test.tmp.dir" value="${build.dir}/tmp"/>
-      <sysproperty key="test.warehouse.dir" value="${build.dir}/test/data/warehouse"/>
+      <sysproperty key="test.warehouse.dir" value="${test.warehouse.scheme}${build.dir}/test/data/warehouse"/>
       <sysproperty key="build.dir" value="${build.dir}"/>
       <sysproperty key="build.dir.hive" value="${build.dir.hive}"/>
 

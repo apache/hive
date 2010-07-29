@@ -334,11 +334,11 @@ public class QTestUtil {
   private void runLoadCmd(String loadCmd) throws Exception {
     int ecode = 0;
     ecode = drv.run(loadCmd).getResponseCode();
+    drv.close();
     if (ecode != 0) {
       throw new Exception("load command: " + loadCmd
           + " failed with exit code= " + ecode);
     }
-
     return;
   }
 
@@ -366,7 +366,6 @@ public class QTestUtil {
         IgnoreKeyTextOutputFormat.class);
 
     Path fpath;
-    Path newfpath;
     HashMap<String, String> part_spec = new HashMap<String, String>();
     for (String ds : new String[] {"2008-04-08", "2008-04-09"}) {
       for (String hr : new String[] {"11", "12"}) {
@@ -376,11 +375,8 @@ public class QTestUtil {
         // System.out.println("Loading partition with spec: " + part_spec);
         // db.createPartition(srcpart, part_spec);
         fpath = new Path(testFiles, "kv1.txt");
-        newfpath = new Path(tmppath, "kv1.txt");
-        fs.copyFromLocalFile(false, true, fpath, newfpath);
-        fpath = newfpath;
         // db.loadPartition(fpath, srcpart.getName(), part_spec, true);
-        runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+        runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
             + "' OVERWRITE INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='"
             + hr + "')");
       }
@@ -392,9 +388,7 @@ public class QTestUtil {
     // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
     for (String fname : new String[] {"srcbucket0.txt", "srcbucket1.txt"}) {
       fpath = new Path(testFiles, fname);
-      newfpath = new Path(tmppath, fname);
-      fs.copyFromLocalFile(false, true, fpath, newfpath);
-      runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+      runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
           + "' INTO TABLE srcbucket");
     }
 
@@ -405,9 +399,7 @@ public class QTestUtil {
     for (String fname : new String[] {"srcbucket20.txt", "srcbucket21.txt",
         "srcbucket22.txt", "srcbucket23.txt"}) {
       fpath = new Path(testFiles, fname);
-      newfpath = new Path(tmppath, fname);
-      fs.copyFromLocalFile(false, true, fpath, newfpath);
-      runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+      runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
           + "' INTO TABLE srcbucket2");
     }
 
@@ -435,40 +427,25 @@ public class QTestUtil {
 
     // load the input data into the src table
     fpath = new Path(testFiles, "kv1.txt");
-    newfpath = new Path(tmppath, "kv1.txt");
-    fs.copyFromLocalFile(false, true, fpath, newfpath);
-    // db.loadTable(newfpath, "src", false);
-    runLoadCmd("LOAD DATA INPATH '" + newfpath.toString() + "' INTO TABLE src");
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString() + "' INTO TABLE src");
 
     // load the input data into the src table
     fpath = new Path(testFiles, "kv3.txt");
-    newfpath = new Path(tmppath, "kv3.txt");
-    fs.copyFromLocalFile(false, true, fpath, newfpath);
-    // db.loadTable(newfpath, "src1", false);
-    runLoadCmd("LOAD DATA INPATH '" + newfpath.toString() + "' INTO TABLE src1");
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString() + "' INTO TABLE src1");
 
     // load the input data into the src_sequencefile table
     fpath = new Path(testFiles, "kv1.seq");
-    newfpath = new Path(tmppath, "kv1.seq");
-    fs.copyFromLocalFile(false, true, fpath, newfpath);
-    // db.loadTable(newfpath, "src_sequencefile", true);
-    runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_sequencefile");
 
     // load the input data into the src_thrift table
     fpath = new Path(testFiles, "complex.seq");
-    newfpath = new Path(tmppath, "complex.seq");
-    fs.copyFromLocalFile(false, true, fpath, newfpath);
-    // db.loadTable(newfpath, "src_thrift", true);
-    runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_thrift");
 
     // load the json data into the src_json table
     fpath = new Path(testFiles, "json.txt");
-    newfpath = new Path(tmppath, "json.txt");
-    fs.copyFromLocalFile(false, true, fpath, newfpath);
-    // db.loadTable(newfpath, "src_json", false);
-    runLoadCmd("LOAD DATA INPATH '" + newfpath.toString()
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_json");
 
   }
@@ -709,6 +686,7 @@ public class QTestUtil {
       cmdArray[3] = "\\(\\(<java version=\".*\" class=\"java.beans.XMLDecoder\">\\)"
           + "\\|\\(<string>.*/tmp/.*</string>\\)"
           + "\\|\\(<string>file:.*</string>\\)"
+          + "\\|\\(<string>pfile:.*</string>\\)"
           + "\\|\\(<string>[0-9]\\{10\\}</string>\\)"
           + "\\|\\(<string>/.*/warehouse/.*</string>\\)\\)";
       cmdArray[4] = outf.getPath();
@@ -864,6 +842,7 @@ public class QTestUtil {
     cmdArray = new String[] {
         "diff", "-a",
         "-I", "file:",
+        "-I", "pfile:",
         "-I", "/tmp/",
         "-I", "invalidscheme:",
         "-I", "lastUpdateTime",

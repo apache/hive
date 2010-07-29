@@ -587,7 +587,8 @@ public final class GenMapRedUtils {
           continue;
         }
         String path = p.toString();
-        LOG.debug("Adding " + path + " of table" + alias_id);
+        if (LOG.isDebugEnabled())
+          LOG.debug("Adding " + path + " of table" + alias_id);
 
         partDir.add(p);
         try {
@@ -615,7 +616,8 @@ public final class GenMapRedUtils {
         }
         plan.getPathToAliases().get(path).add(alias_id);
         plan.getPathToPartitionInfo().put(path, prtDesc);
-        LOG.debug("Information added for path " + path);
+        if (LOG.isDebugEnabled())
+          LOG.debug("Information added for path " + path);
       }
 
       assert plan.getAliasToWork().get(alias_id) == null;

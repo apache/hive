@@ -77,4 +77,8 @@ public class CollectOperator extends Operator<CollectDesc> implements
     }
   }
 
+  @Override
+  public int getType() {
+    return -1;
+  }
 }

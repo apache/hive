@@ -238,13 +238,15 @@ public class PartitionPruner implements Transform {
             } else {
               Partition part = Hive.get().getPartition(tab, partSpec,
                   Boolean.FALSE);
+              String state = "retained";
               if (Boolean.TRUE.equals(r)) {
-                LOG.debug("retained partition: " + partSpec);
                 true_parts.add(part);
               } else {
-                LOG.debug("unknown partition: " + partSpec);
                 unkn_parts.add(part);
+                state = "unknown";
               }
+              if (LOG.isDebugEnabled())
+                LOG.debug(state + " partition: " + partSpec);
             }
           } else {
             // is there is no parition pruning, all of them are needed

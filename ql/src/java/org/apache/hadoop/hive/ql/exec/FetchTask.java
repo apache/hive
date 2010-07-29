@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -146,5 +147,16 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   @Override
   public String getName() {
     return "FETCH";
+  }
+
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    String s = work.getTblDir();
+    if ((s != null) && ctx.isMRTmpFileURI(s))
+      work.setTblDir(ctx.localizeMRTmpFileURI(s));
+
+    ArrayList<String> ls = work.getPartDir();
+    if (ls != null) 
+      ctx.localizePaths(ls);
   }
 }

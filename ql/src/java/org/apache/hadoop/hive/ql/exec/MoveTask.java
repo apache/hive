@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -276,5 +277,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public String getName() {
     return "MOVE";
+  }
+
+
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    // no-op
   }
 }

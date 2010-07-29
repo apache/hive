@@ -607,6 +607,12 @@
   numbers, this conf var needs to be set manually.</description>
 </property>
 
+<property>
+  <name>hive.exec.mode.local.auto</name>
+  <value>true</value>
+  <description> Let hive determine whether to run in local mode automatically </description>
+</property>
+
 <!-- HBase Storage Handler Parameters -->
 
 <property>

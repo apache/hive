@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
@@ -126,5 +127,10 @@ public class FunctionTask extends Task<FunctionWork> {
   @Override
   public String getName() {
     return "FUNCTION";
+  }
+
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    throw new RuntimeException ("Unexpected call");
   }
 }

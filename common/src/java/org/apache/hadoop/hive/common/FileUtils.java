@@ -82,7 +82,7 @@ public final class FileUtils {
       }
     }
 
-    return new Path(scheme + ":" + "//" + authority + pathUri.getPath());
+    return new Path(scheme, authority, pathUri.getPath());
   }
 
   private FileUtils() {

@@ -282,9 +282,13 @@ public class FetchOperator implements Serializable {
       splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
       serde.initialize(job, tmp.getProperties());
-      LOG.debug("Creating fetchTask with deserializer typeinfo: "
-          + serde.getObjectInspector().getTypeName());
-      LOG.debug("deserializer properties: " + tmp.getProperties());
+
+      if(LOG.isDebugEnabled()) {
+        LOG.debug("Creating fetchTask with deserializer typeinfo: "
+                  + serde.getObjectInspector().getTypeName());
+        LOG.debug("deserializer properties: " + tmp.getProperties());
+      }
+
       if (currPart != null) {
         setPrtnDesc();
       }

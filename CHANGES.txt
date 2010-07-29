@@ -19,6 +19,10 @@ Trunk -  Unreleased
     HIVE-1481. ngrams() UDAF for estimating top-k n-gram frequencies
     (Mayank Lahiri via jvs)
 
+    HIVE-1408. add option to let hive automatically run in local mode based on 
+    tunable heuristics
+    (Joydeep Sen Sarma via Ning Zhang)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

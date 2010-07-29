@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.fs.Path;
 
 /**
  * PartitionDesc.
@@ -249,12 +250,11 @@ public class PartitionDesc implements Serializable, Cloneable {
       return;
     }
     try {
-      URI uri = new URI(path);
-      File file = new File(uri);
-      baseFileName = file.getName();
+      Path p = new Path(path);
+      baseFileName = p.getName();
     } catch (Exception ex) {
-      // This could be due to either URI syntax error or File constructor
-      // illegal arg; we don't really care which one it is.
+      // don't really care about the exception. the goal is to capture the
+      // the last component at the minimum - so set to the complete path
       baseFileName = path;
     }
   }

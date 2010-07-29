@@ -48,13 +48,11 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 public class TestHive extends TestCase {
   private Hive hm;
   private HiveConf hiveConf;
-  private FileSystem fs;
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
-    fs = FileSystem.get(hiveConf);
     try {
       hm = Hive.get(hiveConf);
     } catch (Exception e) {
@@ -308,6 +306,7 @@ public class TestHive extends TestCase {
       assertNotNull(table1);
       assertEquals(table1Name, table1.getTableName());
 
+      FileSystem fs = table1.getPath().getFileSystem(hiveConf);
       assertTrue(fs.exists(table1.getPath()));
       // and test dropping this specific table
       hm.dropTable(dbName, table1Name);

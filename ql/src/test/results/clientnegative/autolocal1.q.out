@@ -1,0 +1,6 @@
+PREHOOK: query: SELECT key FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_01-23-08_631_3140637565055726778/-mr-10000
+Job Submission failed with exception 'java.lang.RuntimeException(Not a host:port pair: abracadabra)'
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MapRedTask

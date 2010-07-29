@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -424,8 +425,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     p.setLocation(parentDir);
   }
 
-  private boolean pathExists(FileSystem fs, Path p) throws HiveException {
+  private boolean pathExists(Path p) throws HiveException {
     try {
+      FileSystem fs = p.getFileSystem(conf);
       return fs.exists(p);
     } catch (IOException e) {
       throw new HiveException(e);
@@ -477,16 +479,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path originalDir = new Path(getOriginalLocation(p));
       Path leftOverIntermediateOriginal = new Path(originalDir.getParent(),
           originalDir.getName() + INTERMEDIATE_ORIGINAL_DIR_SUFFIX);
-      try {
-        if (pathExists(leftOverIntermediateOriginal.getFileSystem(conf),
-            leftOverIntermediateOriginal)) {
-          console.printInfo("Deleting " + leftOverIntermediateOriginal +
-              " left over from a previous archiving operation");
-          deleteDir(leftOverIntermediateOriginal);
-        }
-      } catch (IOException e) {
-        throw new HiveException(e);
+
+      if (pathExists(leftOverIntermediateOriginal)) {
+        console.printInfo("Deleting " + leftOverIntermediateOriginal +
+        " left over from a previous archiving operation");
+        deleteDir(leftOverIntermediateOriginal);
       }
+
       throw new HiveException("Specified partition is already archived");
     }
 
@@ -525,12 +524,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // ARCHIVE_INTERMEDIATE_DIR_SUFFIX that's the same level as the partition,
     // if it does not already exist. If it does exist, we assume the dir is good
     // to use as the move operation that created it is atomic.
-    if (!pathExists(fs, intermediateArchivedDir) &&
-        !pathExists(fs, intermediateOriginalDir)) {
+    if (!pathExists(intermediateArchivedDir) &&
+        !pathExists(intermediateOriginalDir)) {
 
       // First create the archive in a tmp dir so that if the job fails, the
       // bad files don't pollute the filesystem
-      Path tmpDir = new Path(driverContext.getCtx().getMRScratchDir(), "partlevel");
+      Path tmpDir = new Path(driverContext.getCtx().getExternalTmpFileURI(originalDir.toUri()), "partlevel");
 
       console.printInfo("Creating " + archiveName + " for " + originalDir.toString());
       console.printInfo("in " + tmpDir);
@@ -551,7 +550,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // the partition directory. e.g. .../hr=12-intermediate-archived
       try {
         console.printInfo("Moving " + tmpDir + " to " + intermediateArchivedDir);
-        if (pathExists(fs, intermediateArchivedDir)) {
+        if (pathExists(intermediateArchivedDir)) {
           throw new HiveException("The intermediate archive directory already exists.");
         }
         fs.rename(tmpDir, intermediateArchivedDir);
@@ -559,7 +558,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Error while moving tmp directory");
       }
     } else {
-      if (pathExists(fs, intermediateArchivedDir)) {
+      if (pathExists(intermediateArchivedDir)) {
         console.printInfo("Intermediate archive directory " + intermediateArchivedDir +
         " already exists. Assuming it contains an archived version of the partition");
       }
@@ -571,7 +570,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Move the original parent directory to the intermediate original directory
     // if the move hasn't been made already
-    if (!pathExists(fs, intermediateOriginalDir)) {
+    if (!pathExists(intermediateOriginalDir)) {
       console.printInfo("Moving " + originalDir + " to " +
           intermediateOriginalDir);
       moveDir(fs, originalDir, intermediateOriginalDir);
@@ -587,7 +586,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // recovery
 
     // Move the intermediate archived directory to the original parent directory
-    if (!pathExists(fs, originalDir)) {
+    if (!pathExists(originalDir)) {
       console.printInfo("Moving " + intermediateArchivedDir + " to " +
           originalDir);
       moveDir(fs, intermediateArchivedDir, originalDir);
@@ -663,15 +662,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path leftOverArchiveDir = new Path(location.getParent(),
           location.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
 
-      try {
-        if (pathExists(location.getFileSystem(conf), leftOverArchiveDir)) {
-          console.printInfo("Deleting " + leftOverArchiveDir + " left over " +
-          "from a previous unarchiving operation");
-          deleteDir(leftOverArchiveDir);
-        }
-      } catch (IOException e) {
-        throw new HiveException(e);
+      if (pathExists(leftOverArchiveDir)) {
+        console.printInfo("Deleting " + leftOverArchiveDir + " left over " +
+        "from a previous unarchiving operation");
+        deleteDir(leftOverArchiveDir);
       }
+
       throw new HiveException("Specified partition is not archived");
     }
 
@@ -682,7 +678,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Path intermediateExtractedDir = new Path(originalLocation.getParent(),
         originalLocation.getName() + INTERMEDIATE_EXTRACTED_DIR_SUFFIX);
 
-    Path tmpDir = new Path(driverContext.getCtx().getMRScratchDir());
+    Path tmpDir = new Path(driverContext
+          .getCtx()
+          .getExternalTmpFileURI(originalLocation.toUri()));
 
     FileSystem fs = null;
     try {
@@ -727,8 +725,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // 5. Change the metadata
     // 6. Delete the archived partition files in intermediate-archive
 
-    if (!pathExists(fs, intermediateExtractedDir) &&
-        !pathExists(fs, intermediateArchiveDir)) {
+    if (!pathExists(intermediateExtractedDir) &&
+        !pathExists(intermediateArchiveDir)) {
       try {
 
         // Copy the files out of the archive into the temporary directory
@@ -765,7 +763,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // At this point, we know that the extracted files are in the intermediate
     // extracted dir, or in the the original directory.
 
-    if (!pathExists(fs, intermediateArchiveDir)) {
+    if (!pathExists(intermediateArchiveDir)) {
       try {
         console.printInfo("Moving " + originalLocation + " to " + intermediateArchiveDir);
         fs.rename(originalLocation, intermediateArchiveDir);
@@ -783,7 +781,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If the original location exists here, then it must be the extracted files
     // because in the previous step, we moved the previous original location
     // (containing the archived version of the files) to intermediateArchiveDir
-    if (!pathExists(fs, originalLocation)) {
+    if (!pathExists(originalLocation)) {
       try {
         console.printInfo("Moving " + intermediateExtractedDir + " to " + originalLocation);
         fs.rename(intermediateExtractedDir, originalLocation);
@@ -2124,4 +2122,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return "DDL";
   }
 
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    // no-op
+  }
 }

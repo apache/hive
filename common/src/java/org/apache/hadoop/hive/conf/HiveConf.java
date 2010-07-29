@@ -93,6 +93,16 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
 
+
+    // should hive determine whether to run in local mode automatically ?
+    LOCALMODEAUTO("hive.exec.mode.local.auto", true),
+    // if yes:
+    // run in local mode only if input bytes is less than this. 128MB by default
+    LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L),
+    // run in local mode only if number of tasks (for map and reduce each) is
+    // less than this
+    LOCALMODEMAXTASKS("hive.exec.mode.local.auto.tasks.max", 4),
+
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
     HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),

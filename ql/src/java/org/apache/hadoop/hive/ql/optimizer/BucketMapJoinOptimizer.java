@@ -273,7 +273,7 @@ public class BucketMapJoinOptimizer implements Transform {
           aliasToBucketNumberMapping.put(alias, num);
           List<String> fileNames = new ArrayList<String>();
           try {
-            FileSystem fs = FileSystem.get(this.pGraphContext.getConf());
+            FileSystem fs = FileSystem.get(tbl.getDataLocation(), this.pGraphContext.getConf());
             FileStatus[] files = fs.listStatus(new Path(tbl.getDataLocation().toString()));
             if(files != null) {
               for(FileStatus file : files) {
@@ -412,7 +412,7 @@ public class BucketMapJoinOptimizer implements Transform {
         throws SemanticException {
       List<String> fileNames = new ArrayList<String>();
       try {
-        FileSystem fs = FileSystem.get(this.pGraphContext.getConf());
+        FileSystem fs = FileSystem.get(part.getDataLocation(), this.pGraphContext.getConf());
         FileStatus[] files = fs.listStatus(new Path(part.getDataLocation()
             .toString()));
         if (files != null) {

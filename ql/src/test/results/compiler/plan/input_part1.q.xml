@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_14" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
-   <string>Stage-2</string> 
+   <string>Stage-3</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -75,11 +75,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart</string> 
+          <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcpart</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1273610249</string> 
+          <string>1280088306</string> 
          </void> 
         </object> 
        </void> 
@@ -132,7 +132,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-05-11_13-37-32_816_8635842651230115640/10001</string> 
+                           <string>file:/tmp/jssarma/hive_2010-07-25_13-05-15_985_1867478457323905745/-ext-10001</string> 
                           </void> 
                           <void property="numFiles"> 
                            <int>1</int> 
@@ -1017,7 +1017,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>srcpart</string> 
@@ -1029,7 +1029,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>hr=12</string> 
@@ -1099,11 +1099,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart</string> 
+           <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcpart</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1273610249</string> 
+           <string>1280088306</string> 
           </void> 
          </object> 
         </void> 

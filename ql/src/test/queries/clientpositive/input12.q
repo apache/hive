@@ -1,3 +1,6 @@
+set mapred.job.tracker=does.notexist.com:666;
+set hive.exec.mode.local.auto=true;
+
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE;

@@ -732,7 +732,8 @@ public final class FunctionRegistry {
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
-    LOG.debug("Looking up GenericUDAF: " + functionName);
+    if (LOG.isDebugEnabled())
+      LOG.debug("Looking up GenericUDAF: " + functionName);
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
     if (finfo == null) {
       return null;
@@ -870,9 +871,10 @@ public final class FunctionRegistry {
           conversionCost += cost;
         }
       }
-      LOG.debug("Method " + (match ? "did" : "didn't") + " match: passed = "
-          + argumentsPassed + " accepted = " + argumentsAccepted + " method = "
-          + m);
+      if (LOG.isDebugEnabled())
+        LOG.debug("Method " + (match ? "did" : "didn't") + " match: passed = "
+                  + argumentsPassed + " accepted = " + argumentsAccepted +
+                  " method = " + m);
       if (match) {
         // Always choose the function with least implicit conversions.
         if (conversionCost < leastConversionCost) {

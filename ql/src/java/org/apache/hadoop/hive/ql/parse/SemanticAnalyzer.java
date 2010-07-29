@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.Serializable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,22 +40,26 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -1187,8 +1192,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new FilterDesc(genExprNodeDesc(condn, inputRR), false), new RowSchema(
         inputRR.getColumnInfos()), input), inputRR);
 
-    LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
-        + inputRR.toString());
+    if (LOG.isDebugEnabled()) 
+      LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: "
+                + inputRR.toString());
     return output;
   }
 
@@ -1685,14 +1691,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
 
     Operator<?> op = genSelectPlan(selExprList, qb, input);
-    LOG.debug("Created Select Plan for clause: " + dest);
+
+    if (LOG.isDebugEnabled()) 
+      LOG.debug("Created Select Plan for clause: " + dest);
+
     return op;
   }
 
   @SuppressWarnings("nls")
   private Operator<?> genSelectPlan(ASTNode selExprList, QB qb,
       Operator<?> input) throws SemanticException {
-    LOG.debug("tree: " + selExprList.toStringTree());
+
+    if (LOG.isDebugEnabled())
+      LOG.debug("tree: " + selExprList.toStringTree());
 
     ArrayList<ExprNodeDesc> col_list = new ArrayList<ExprNodeDesc>();
     RowResolver out_rwsch = new RowResolver();
@@ -1770,8 +1781,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           assert (false);
         }
       }
-      LOG.debug("UDTF table alias is " + udtfTableAlias);
-      LOG.debug("UDTF col aliases are " + udtfColAliases);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("UDTF table alias is " + udtfTableAlias);
+        LOG.debug("UDTF col aliases are " + udtfColAliases);
+      }
     }
 
     // The list of expressions after SELECT or SELECT TRANSFORM.
@@ -1784,7 +1797,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       exprList = selExprList;
     }
 
-    LOG.debug("genSelectPlan: input = " + inputRR.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("genSelectPlan: input = " + inputRR.toString());
 
     // For UDTF's, skip the function name to get the expressions
     int startPosn = isUDTF ? posn + 1 : posn;
@@ -1894,7 +1908,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb,
           output);
     }
-    LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
     return output;
   }
 
@@ -3494,8 +3509,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .mapDirToFop(ltd.getSourceDir(), (FileSinkOperator)output);
     }
 
-    LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
-        + dest_path + " row schema: " + inputRR.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
+                + dest_path + " row schema: " + inputRR.toString());
 
     return output;
   }
@@ -3648,8 +3664,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new LimitDesc(limit), new RowSchema(inputRR.getColumnInfos()), input),
         inputRR);
 
-    LOG.debug("Created LimitOperator Plan for clause: " + dest
-        + " row schema: " + inputRR.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created LimitOperator Plan for clause: " + dest
+                + " row schema: " + inputRR.toString());
 
     return limitMap;
   }
@@ -3676,8 +3693,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.UDTF_LATERAL_VIEW.getMsg());
     }
 
-    LOG.debug("Table alias: " + outputTableAlias + " Col aliases: "
-        + colAliases);
+    if (LOG.isDebugEnabled())
+      LOG.debug("Table alias: " + outputTableAlias + " Col aliases: "
+                + colAliases);
 
     // Use the RowResolver from the input operator to generate a input
     // ObjectInspector that can be used to initialize the UDTF. Then, the
@@ -3908,8 +3926,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
         out_rwsch.getColumnInfos()), interim), out_rwsch);
 
-    LOG.debug("Created ReduceSink Plan for table: " + tab.getTableName() + " row schema: "
-        + out_rwsch.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created ReduceSink Plan for table: " + tab.getTableName() +
+                " row schema: " + out_rwsch.toString());
     return output;
 
   }
@@ -4018,8 +4037,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Utilities.ReduceField.VALUE.toString(), "", false)), new RowSchema(
         out_rwsch.getColumnInfos()), interim), out_rwsch);
 
-    LOG.debug("Created ReduceSink Plan for clause: " + dest + " row schema: "
-        + out_rwsch.toString());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created ReduceSink Plan for clause: " + dest + " row schema: "
+                + out_rwsch.toString());
     return output;
   }
 
@@ -5132,7 +5152,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    LOG.debug("Created Body Plan for Query Block " + qb.getId());
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created Body Plan for Query Block " + qb.getId());
+
     return curr;
   }
 
@@ -5517,7 +5539,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Operator output = putOpInsertMap(tableOp, rwsch);
-    LOG.debug("Created Table Plan for " + alias + " " + tableOp.toString());
+
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created Table Plan for " + alias + " " + tableOp.toString());
 
     return output;
   }
@@ -5584,7 +5608,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Operator bodyOpInfo = genBodyPlan(qb, srcOpInfo);
-    LOG.debug("Created Plan for Query Block " + qb.getId());
+
+    if (LOG.isDebugEnabled())
+      LOG.debug("Created Plan for Query Block " + qb.getId());
 
     this.qb = qb;
     return bodyOpInfo;
@@ -5917,6 +5943,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    decideExecMode(rootTasks, ctx);
+
     if (qb.isCTAS()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = qb.getTableDesc();
@@ -5966,7 +5994,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // loop over all the tasks recursviely
   private void generateCountersTask(Task<? extends Serializable> task) {
-    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+    if (task instanceof ExecDriver) {
       HashMap<String, Operator<? extends Serializable>> opMap = ((MapredWork) task
           .getWork()).getAliasToWork();
       if (!opMap.isEmpty()) {
@@ -6016,7 +6044,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // loop over all the tasks recursviely
   private void breakTaskTree(Task<? extends Serializable> task) {
 
-    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+    if (task instanceof ExecDriver) {
       HashMap<String, Operator<? extends Serializable>> opMap = ((MapredWork) task
           .getWork()).getAliasToWork();
       if (!opMap.isEmpty()) {
@@ -6059,7 +6087,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // loop over all the tasks recursviely
   private void setKeyDescTaskTree(Task<? extends Serializable> task) {
 
-    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+    if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
       work.deriveExplainAttributes();
       HashMap<String, Operator<? extends Serializable>> opMap = work
@@ -6397,8 +6425,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void validate() throws SemanticException {
-    // Check if the plan contains atleast one path.
-
     // validate all tasks
     for (Task<? extends Serializable> rootTask : rootTasks) {
       validate(rootTask);
@@ -6407,13 +6433,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void validate(Task<? extends Serializable> task)
       throws SemanticException {
-    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
-      task.getWork();
-
-      // If the plan does not contain any path, an empty file
-      // will be added by ExecDriver at execute time
-    }
-
     if (task.getChildTasks() == null) {
       return;
     }
@@ -6857,4 +6876,81 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
   }
+
+  private void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx)
+    throws SemanticException {
+
+    // bypass for explain queries for now
+    if (ctx.getExplain())
+      return;
+
+    // user has told us to run in local mode or doesn't want auto-local mode
+    if (ctx.isLocalOnlyExecutionMode() ||
+        !conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO))
+      return;
+
+    final Context lCtx = ctx;
+    PathFilter p = new PathFilter () {
+        public boolean accept(Path file) {
+          return !lCtx.isMRTmpFileURI(file.toUri().getPath());
+        }
+      };
+    List<ExecDriver> mrtasks = Utilities.getMRTasks(rootTasks);
+
+    // map-reduce jobs will be run locally based on data size
+    // first find out if any of the jobs needs to run non-locally
+    boolean hasNonLocalJob = false;
+    for (ExecDriver mrtask: mrtasks) {
+      try {
+        ContentSummary inputSummary = Utilities.getInputSummary
+          (ctx, (MapredWork)mrtask.getWork(), p);
+        int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Task: " + mrtask.getId() + ", Summary: " + 
+                   inputSummary.getLength() + "," + inputSummary.getFileCount() + ","
+                   + numReducers);
+        }
+
+        if(MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers) != null) {
+          hasNonLocalJob = true;
+          break;
+        }
+      } catch (IOException e) {
+        throw new SemanticException (e);
+      }
+    }
+    
+    if(!hasNonLocalJob) {
+      // none of the mapred tasks needs to be run locally. That means that the
+      // query can be executed entirely in local mode. Save the current tracker
+      // value and restore it when done
+      ctx.setOriginalTracker(conf.getVar(HiveConf.ConfVars.HADOOPJT));
+      conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
+      console.printInfo("Automatically selecting local only mode for query");
+
+      // If all the tasks can be run locally, we can use local disk for
+      // storing intermediate data. 
+
+      /**
+       * This code is commented out pending further testing/development
+       * for (Task<? extends Serializable> t: rootTasks)
+       * t.localizeMRTmpFiles(ctx);
+       */
+    }
+  }
+
+  /**
+   * Make a best guess at trying to find the number of reducers
+   */
+  private static int getNumberOfReducers(MapredWork mrwork, HiveConf conf) {
+    if (mrwork.getReducer() == null)
+      return 0;
+
+    if (mrwork.getNumReduceTasks() >= 0)
+      return mrwork.getNumReduceTasks();
+
+    return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+  }
+
 }

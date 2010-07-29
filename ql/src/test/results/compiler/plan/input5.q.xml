@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_14" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
     <void method="add"> 
      <object class="org.apache.hadoop.hive.ql.exec.MoveTask"> 
       <void property="id"> 
-       <string>Stage-1</string> 
+       <string>Stage-2</string> 
       </void> 
       <void property="parentTasks"> 
        <object class="java.util.ArrayList"> 
@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-03-30_13-18-39_562_7268214911565139971/10000</string> 
+           <string>pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_13-04-23_420_1031369366148989562/-ext-10000</string> 
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -79,11 +79,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest1</string> 
+               <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1</string> 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1269980319</string> 
+               <string>1280088263</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-03-30_13-18-39_562_7268214911565139971/10001</string> 
+           <string>pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_13-04-23_420_1031369366148989562/-ext-10001</string> 
           </void> 
          </object> 
         </void> 
@@ -104,7 +104,7 @@
    </object> 
   </void> 
   <void property="id"> 
-   <string>Stage-2</string> 
+   <string>Stage-3</string> 
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.MapredWork"> 
@@ -168,11 +168,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+          <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1269980319</string> 
+          <string>1280088262</string> 
          </void> 
         </object> 
        </void> 
@@ -868,7 +868,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src_thrift</string> 
@@ -880,7 +880,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src_thrift</string> 
@@ -941,11 +941,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+           <string>pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src_thrift</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1269980319</string> 
+           <string>1280088262</string> 
           </void> 
          </object> 
         </void> 
@@ -991,7 +991,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-03-30_13-18-39_562_7268214911565139971/10000</string> 
+                 <string>pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_13-04-23_420_1031369366148989562/-ext-10000</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 

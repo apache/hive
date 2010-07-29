@@ -1129,15 +1129,12 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
-   * Should be overridden to return the type of the specific operator among the
+   * Return the type of the specific operator among the
    * types in OperatorType.
    *
-   * @return OperatorType.* or -1 if not overridden
+   * @return OperatorType.*
    */
-  public int getType() {
-    assert false;
-    return -1;
-  }
+  abstract public int getType();
 
   public void setGroupKeyObject(Object keyObject) {
     this.groupKeyObject = keyObject;

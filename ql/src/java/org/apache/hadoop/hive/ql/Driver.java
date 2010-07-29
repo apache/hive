@@ -97,34 +97,6 @@ public class Driver implements CommandProcessor {
     Operator.resetId();
   }
 
-  public int countJobs(List<Task<? extends Serializable>> tasks) {
-    return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
-  }
-
-  public int countJobs(List<Task<? extends Serializable>> tasks,
-      List<Task<? extends Serializable>> seenTasks) {
-    if (tasks == null) {
-      return 0;
-    }
-    int jobs = 0;
-    for (Task<? extends Serializable> task : tasks) {
-      if (!seenTasks.contains(task)) {
-        seenTasks.add(task);
-
-        if (task instanceof ConditionalTask) {
-          jobs += countJobs(((ConditionalTask) task).getListTasks(), seenTasks);
-        } else if (task.isMapRedTask()) { // this may be true for conditional
-                                          // task, but we will not inc the
-                                          // counter
-          jobs++;
-        }
-
-        jobs += countJobs(task.getChildTasks(), seenTasks);
-      }
-    }
-    return jobs;
-  }
-
   /**
    * Return the status information about the Map-Reduce cluster
    */
@@ -319,7 +291,7 @@ public class Driver implements CommandProcessor {
       // test Only - serialize the query plan and deserialize it
       if("true".equalsIgnoreCase(System.getProperty("test.serialize.qplan"))) {
 
-        String queryPlanFileName = ctx.getLocalScratchDir() + Path.SEPARATOR_CHAR
+        String queryPlanFileName = ctx.getLocalScratchDir(true) + Path.SEPARATOR_CHAR
           + "queryplan.xml";
         LOG.info("query plan = " + queryPlanFileName);
         queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
@@ -468,7 +440,7 @@ public class Driver implements CommandProcessor {
                 UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
 
-      int jobs = countJobs(plan.getRootTasks());
+      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
@@ -538,6 +510,10 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+
+      // in case we decided to run everything in local mode, restore the
+      // the jobtracker setting to its initial value
+      ctx.restoreOriginalTracker();
 
       // Get all the post execution hooks and execute them.
       for (PostExecute peh : getPostExecHooks()) {

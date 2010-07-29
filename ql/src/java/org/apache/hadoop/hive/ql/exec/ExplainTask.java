@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 
 
 /**
@@ -402,4 +403,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   public String getName() {
     return "EXPLAIN";
   }
+
+  @Override
+  protected void localizeMRTmpFilesImpl(Context ctx) {
+    // explain task has nothing to localize 
+    // we don't expect to enter this code path at all
+    throw new RuntimeException ("Unexpected call");
+  }
+
 }

@@ -60,7 +60,7 @@
 <property>
   <!--  this should eventually be deprecated since the metastore should supply this -->
   <name>hive.metastore.warehouse.dir</name>
-  <value>file://${build.dir}/test/data/warehouse/</value>
+  <value>${test.warehouse.dir}</value>
   <description></description>
 </property>
 
@@ -143,6 +143,21 @@
   <name>hive.task.progress</name>
   <value>false</value>
   <description>Track progress of a task</description>
+</property>
+
+<property>
+  <name>fs.pfile.impl</name>
+  <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
+  <description>A proxy for local file system used for cross file system testing</description>
+</property>
+
+<property>
+  <name>hive.exec.mode.local.auto</name>
+  <value>false</value>
+  <description>
+    Let hive determine whether to run in local mode automatically
+    Disabling this for tests so that minimr is not affected
+  </description>
 </property>
 
 </configuration>

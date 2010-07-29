@@ -88,7 +88,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002
+                  directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -99,22 +99,22 @@ STAGE PLANS:
                         columns.types string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
-                        location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/dest1
+                        location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1
                         name dest1
                         serialization.ddl struct dest1 { string mydata}
                         serialization.format 1
                         serialization.last.column.takes.rest true
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1279735739
+                        transient_lastDdlTime 1280083027
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest1
                   TotalFiles: 1
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src 
+        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -125,12 +125,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src
+              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1279735685
+              transient_lastDdlTime 1280082972
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -141,12 +141,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src
+                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279735685
+                transient_lastDdlTime 1280082972
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -158,14 +158,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10000
+          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002
+          destination: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10000
+          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
@@ -175,21 +175,21 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/dest1
+                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1
                 name dest1
                 serialization.ddl struct dest1 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279735739
+                transient_lastDdlTime 1280083027
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
-          tmp directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10001
+          tmp directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10001
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002 
+        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -201,11 +201,11 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002 [file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002]
+        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002 [pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002]
       Path -> Partition:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10002 
+        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10002 
           Partition
-            base file name: 10002
+            base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
             properties:
@@ -214,13 +214,13 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
-              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/dest1
+              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1
               name dest1
               serialization.ddl struct dest1 { string mydata}
               serialization.format 1
               serialization.last.column.takes.rest true
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1279735739
+              transient_lastDdlTime 1280083027
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -231,13 +231,13 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/dest1
+                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1
                 name dest1
                 serialization.ddl struct dest1 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279735739
+                transient_lastDdlTime 1280083027
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
             name: dest1
@@ -246,7 +246,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-08-59_521_6439138630072861096/10000
+            directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-37-07_143_545511266047909547/-ext-10000
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -257,13 +257,13 @@ STAGE PLANS:
                   columns.types string
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat
-                  location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/dest1
+                  location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/dest1
                   name dest1
                   serialization.ddl struct dest1 { string mydata}
                   serialization.format 1
                   serialization.last.column.takes.rest true
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  transient_lastDdlTime 1279735739
+                  transient_lastDdlTime 1280083027
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
             TotalFiles: 1
@@ -303,12 +303,12 @@ PREHOOK: query: -- Test the result
 SELECT * FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-02_211_5180340221675233412/10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-37-10_119_5660806743258606681/-mr-10000
 POSTHOOK: query: -- Test the result
 SELECT * FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-02_211_5180340221675233412/10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-37-10_119_5660806743258606681/-mr-10000
 POSTHOOK: Lineage: dest1.mydata SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
 86	val_86

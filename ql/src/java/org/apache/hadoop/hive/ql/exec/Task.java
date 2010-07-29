@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -122,18 +123,6 @@ public abstract class Task<T extends Serializable> implements Serializable,
    * @return status of executing the task
    */
   protected abstract int execute(DriverContext driverContext);
-
-  /**
-   * Update the progress of the task within taskHandle and also dump the
-   * progress information to the history file.
-   *
-   * @param taskHandle
-   *          task handle returned by execute
-   * @throws IOException
-   */
-  public void progress(TaskHandle taskHandle) throws IOException {
-    // do nothing by default
-  }
 
   // dummy method - FetchTask overwrites this
   public boolean fetch(ArrayList<String> res) throws IOException {
@@ -273,10 +262,6 @@ public abstract class Task<T extends Serializable> implements Serializable,
     return false;
   }
 
-  public void updateCounters(TaskHandle th) throws IOException {
-    // default, do nothing
-  }
-
   public HashMap<String, Long> getCounters() {
     return taskCounters;
   }
@@ -291,4 +276,34 @@ public abstract class Task<T extends Serializable> implements Serializable,
     assert false;
     return -1;
   }
+
+  /**
+   * If this task uses any map-reduce intermediate data (either for reading
+   * or for writing), localize them (using the supplied Context). Map-Reduce
+   * intermediate directories are allocated using Context.getMRTmpFileURI()
+   * and can be localized using localizeMRTmpFileURI().
+   *
+   * This method is declared abstract to force any task code to explicitly
+   * deal with this aspect of execution.
+   *
+   * @param ctx context object with which to localize
+   */
+  abstract protected void localizeMRTmpFilesImpl(Context ctx);
+
+  /**
+   * Localize a task tree
+   * @param ctx context object with which to localize
+   */
+  public final void localizeMRTmpFiles(Context ctx) {
+    localizeMRTmpFilesImpl(ctx);
+
+    if (childTasks == null)
+      return;
+
+    for (Task<? extends Serializable> t: childTasks) {
+      t.localizeMRTmpFiles(ctx);
+    }
+  }
+
 }
+ 

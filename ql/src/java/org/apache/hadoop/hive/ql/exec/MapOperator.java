@@ -427,4 +427,10 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   public String getName() {
     return "MAP";
   }
+
+  @Override
+  public int getType() {
+    return -1;
+  }
+
 }

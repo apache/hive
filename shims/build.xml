@@ -42,6 +42,7 @@ to call at top-level: ant deploy-contrib compile-core-test
     <javac
      encoding="${build.encoding}"
      includes="**/*.java"
+     excludes="**/Proxy*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}">
@@ -65,6 +66,17 @@ to call at top-level: ant deploy-contrib compile-core-test
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="0.20.0" />
     </antcall>
+    <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version}" />
+    <javac
+     encoding="${build.encoding}"
+     includes="**/Proxy*.java"
+     destdir="${build.classes}"
+     debug="${javac.debug}"
+     deprecation="${javac.deprecation}">
+      <compilerarg line="${javac.args} ${javac.args.warnings}" />
+      <classpath refid="classpath"/>
+      <src path="${basedir}/src/${hadoop.version.ant-internal.prefix}/java" />
+    </javac>
   </target>
 
 

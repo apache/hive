@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.fs.Path;
 
 /**
  * MapredLocalWork.
@@ -166,9 +167,7 @@ public class MapredLocalWork implements Serializable {
 
     private String getBaseFileName (String path) {
       try {
-        URI uri = new URI(path);
-        File file = new File(uri);
-        return file.getName();
+	return ((new Path(path)).getName());
       } catch (Exception ex) {
         // This could be due to either URI syntax error or File constructor
         // illegal arg; we don't really care which one it is.
