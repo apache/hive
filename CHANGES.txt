@@ -566,6 +566,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1455. lateral view does not work with column pruning.
     (Paul Yang via He Yongqiang)
 
+    HIVE-1492. FileSinkOperator should remove duplicated files from the same task based on file sizes.
+    (Ning Zhang via He Yongqiang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

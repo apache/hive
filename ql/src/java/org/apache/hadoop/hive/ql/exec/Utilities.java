@@ -1135,12 +1135,26 @@ public final class Utilities {
         if (otherFile == null) {
           taskIdToFile.put(taskId, one);
         } else {
-          if (!fs.delete(one.getPath(), true)) {
-            throw new IOException("Unable to delete duplicate file: "
-                + one.getPath() + ". Existing file: " + otherFile.getPath());
+          // Compare the file sizes of all the attempt files for the same task, the largest win
+          // any attempt files could contain partial results (due to task failures or
+          // speculative runs), but the largest should be the correct one since the result
+          // of a successful run should never be smaller than a failed/speculative run.
+          FileStatus toDelete = null;
+          if (otherFile.getLen() >= one.getLen()) {
+            toDelete = one;
           } else {
-            LOG.warn("Duplicate taskid file removed: " + one.getPath()
-                + ". Existing file: " + otherFile.getPath());
+            toDelete = otherFile;
+            taskIdToFile.put(taskId, one);
+          }
+          long len1 = toDelete.getLen();
+          long len2 = taskIdToFile.get(taskId).getLen();
+          if (!fs.delete(toDelete.getPath(), true)) {
+            throw new IOException("Unable to delete duplicate file: "
+                + toDelete.getPath() + ". Existing file: " + taskIdToFile.get(taskId).getPath());
+          } else {
+            LOG.warn("Duplicate taskid file removed: " + toDelete.getPath() + " with length "
+                + len1 + ". Existing file: " +  taskIdToFile.get(taskId).getPath()
+                + " with length " + len2);
           }
         }
       }
