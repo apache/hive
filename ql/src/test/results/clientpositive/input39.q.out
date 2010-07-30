@@ -128,10 +128,10 @@ STAGE PLANS:
             0 {VALUE._col2}
             1 {VALUE._col2}
           handleSkewJoin: false
-          outputColumnNames: _col2, _col5
+          outputColumnNames: _col2, _col7
           Filter Operator
             predicate:
-                expr: ((_col2 = '1') and (_col5 = '1'))
+                expr: ((_col2 = '1') and (_col7 = '1'))
                 type: boolean
             Select Operator
               Group By Operator
@@ -150,7 +150,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-58-50_690_6498911926142241137/-mr-10002 
+        file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_227_47797524032104088/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -185,12 +185,12 @@ PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2@ds=1
 PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: file:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-58-50_822_5615771567236501342/-mr-10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_383_386196245099968730/-mr-10000
 POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2@ds=1
 POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: file:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-58-50_822_5615771567236501342/-mr-10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_383_386196245099968730/-mr-10000
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

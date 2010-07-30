@@ -328,4 +328,13 @@ public class Warehouse {
     }
     return FileUtils.makePartName(colNames, vals);
   }
+  
+  public static List<String> getPartValuesFromPartName(String partName)
+      throws MetaException {
+    LinkedHashMap<String, String> partSpec = Warehouse.makeSpecFromName(partName);
+    List<String> values = new ArrayList<String>();
+    values.addAll(partSpec.values());
+    return values;
+  }
+
 }

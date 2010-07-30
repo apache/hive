@@ -60,7 +60,7 @@ public class MetaStoreUtils {
   protected static final Log LOG = LogFactory.getLog("hive.log");
 
   public static final String DEFAULT_DATABASE_NAME = "default";
-
+  
   /**
    * printStackTrace
    *
@@ -883,4 +883,16 @@ public class MetaStoreUtils {
     }
     return true;
   }
+  
+  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
+    return dbName + "__" + baseTblName + "_" + indexName + "__";
+  }
+
+  public static boolean isIndexTable(Table table) {
+    if (table == null) {
+      return false;
+    }
+    return TableType.INDEX_TABLE.toString().equals(table.getTableType());
+  }
+  
 }

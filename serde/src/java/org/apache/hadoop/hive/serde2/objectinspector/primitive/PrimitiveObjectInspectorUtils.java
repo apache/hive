@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +39,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableUtils;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -49,7 +53,7 @@ public final class PrimitiveObjectInspectorUtils {
   /**
    * TypeEntry stores information about a Hive Primitive TypeInfo.
    */
-  public static class PrimitiveTypeEntry {
+  public static class PrimitiveTypeEntry implements Writable{
 
     /**
      * The category of the PrimitiveType.
@@ -84,6 +88,29 @@ public final class PrimitiveObjectInspectorUtils {
       primitiveJavaClass = javaClass;
       primitiveWritableClass = hiveClass;
       this.typeName = typeName;
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+      primitiveCategory = WritableUtils.readEnum(in,
+          PrimitiveObjectInspector.PrimitiveCategory.class);
+      typeName = WritableUtils.readString(in);
+      try {
+        primitiveJavaType = Class.forName(WritableUtils.readString(in));
+        primitiveJavaClass = Class.forName(WritableUtils.readString(in));
+        primitiveWritableClass = Class.forName(WritableUtils.readString(in));
+      } catch (ClassNotFoundException e) {
+        throw new IOException(e);
+      }
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      WritableUtils.writeEnum(out, primitiveCategory);
+      WritableUtils.writeString(out, typeName);
+      WritableUtils.writeString(out, primitiveJavaType.getName());
+      WritableUtils.writeString(out, primitiveJavaClass.getName());
+      WritableUtils.writeString(out, primitiveWritableClass.getName());
     }
   }
 

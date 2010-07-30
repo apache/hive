@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFHistogramNumeric;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo;
@@ -367,6 +368,7 @@ public final class FunctionRegistry {
 
     registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
+    registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
 
     registerGenericUDAF("ngrams", new GenericUDAFnGrams());
 

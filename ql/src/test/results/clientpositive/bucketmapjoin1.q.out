@@ -107,7 +107,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col3, _col4
+              outputColumnNames: _col0, _col1, _col5, _col6
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -115,15 +115,15 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col3
+                      expr: _col5
                       type: string
-                      expr: _col4
+                      expr: _col6
                       type: string
-                outputColumnNames: _col0, _col1, _col3, _col4
+                outputColumnNames: _col0, _col1, _col5, _col6
                 Filter Operator
                   isSamplingPred: false
                   predicate:
-                      expr: (_col4 = '2008-04-08')
+                      expr: (_col6 = '2008-04-08')
                       type: boolean
                   Select Operator
                     expressions:
@@ -131,13 +131,13 @@ STAGE PLANS:
                           type: int
                           expr: _col1
                           type: string
-                          expr: _col3
+                          expr: _col5
                           type: string
                     outputColumnNames: _col0, _col1, _col2
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002
+                      directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002
                       NumFilesPerFileSink: 1
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -148,12 +148,12 @@ STAGE PLANS:
                             columns.types string:string:string
                             file.inputformat org.apache.hadoop.mapred.TextInputFormat
                             file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                            location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                             name bucketmapjoin_tmp_result
                             serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            transient_lastDdlTime 1280083219
+                            transient_lastDdlTime 1280425955
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: bucketmapjoin_tmp_result
                       TotalFiles: 1
@@ -183,7 +183,7 @@ STAGE PLANS:
                     keys:
                       0 [Column[key]]
                       1 [Column[key]]
-                    outputColumnNames: _col0, _col1, _col3, _col4
+                    outputColumnNames: _col0, _col1, _col5, _col6
                     Position of Big Table: 0
                     Select Operator
                       expressions:
@@ -191,15 +191,15 @@ STAGE PLANS:
                             type: int
                             expr: _col1
                             type: string
-                            expr: _col3
+                            expr: _col5
                             type: string
-                            expr: _col4
+                            expr: _col6
                             type: string
-                      outputColumnNames: _col0, _col1, _col3, _col4
+                      outputColumnNames: _col0, _col1, _col5, _col6
                       Filter Operator
                         isSamplingPred: false
                         predicate:
-                            expr: (_col4 = '2008-04-08')
+                            expr: (_col6 = '2008-04-08')
                             type: boolean
                         Select Operator
                           expressions:
@@ -207,13 +207,13 @@ STAGE PLANS:
                                 type: int
                                 expr: _col1
                                 type: string
-                                expr: _col3
+                                expr: _col5
                                 type: string
                           outputColumnNames: _col0, _col1, _col2
                           File Output Operator
                             compressed: false
                             GlobalTableId: 1
-                            directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002
+                            directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002
                             NumFilesPerFileSink: 1
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -224,12 +224,12 @@ STAGE PLANS:
                                   columns.types string:string:string
                                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                                  location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                                   name bucketmapjoin_tmp_result
                                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                                   serialization.format 1
                                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  transient_lastDdlTime 1280083219
+                                  transient_lastDdlTime 1280425955
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                 name: bucketmapjoin_tmp_result
                             TotalFiles: 1
@@ -238,15 +238,15 @@ STAGE PLANS:
               Alias Bucket Base File Name Mapping:
                 b {srcbucket20.txt=[srcbucket20.txt, srcbucket22.txt], srcbucket21.txt=[srcbucket21.txt, srcbucket23.txt]}
               Alias Bucket File Name Mapping:
-                b {pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt, pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt], pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt, pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt]}
+                b {pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt, pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt], pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt, pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt]}
               Alias Bucket Output File Name Mapping:
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt 0
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt 1
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt 0
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt 1
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin [a]
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin [a]
       Path -> Partition:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin 
           Partition
             base file name: srcbucket_mapjoin
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -258,12 +258,12 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin
+              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin
               name srcbucket_mapjoin
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280083214
+              transient_lastDdlTime 1280425951
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -275,12 +275,12 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin
                 name srcbucket_mapjoin
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083214
+                transient_lastDdlTime 1280425951
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket_mapjoin
             name: srcbucket_mapjoin
@@ -292,14 +292,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002
-          destination: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10000
+          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002
+          destination: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10000
+          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -309,20 +309,20 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083219
+                transient_lastDdlTime 1280425955
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
-          tmp directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10001
+          tmp directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10001
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -338,9 +338,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002 [pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002]
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002 [pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002]
       Path -> Partition:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10002 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -351,12 +351,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
               name bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280083219
+              transient_lastDdlTime 1280425955
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -367,12 +367,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083219
+                transient_lastDdlTime 1280425955
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
             name: bucketmapjoin_tmp_result
@@ -381,7 +381,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-19_167_2673747164055048229/-ext-10000
+            directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-52-35_366_8749407810388390396/-ext-10000
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -392,12 +392,12 @@ STAGE PLANS:
                   columns.types string:string:string
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                  location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                   name bucketmapjoin_tmp_result
                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  transient_lastDdlTime 1280083219
+                  transient_lastDdlTime 1280425955
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: bucketmapjoin_tmp_result
             TotalFiles: 1
@@ -426,11 +426,11 @@ POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_pa
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-25_482_8863784295269010139/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-52-47_947_1373971970810832824/-mr-10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-25_482_8863784295269010139/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-52-47_947_1373971970810832824/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.key SIMPLE [(srcbucket_mapjoin)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.value1 SIMPLE [(srcbucket_mapjoin)a.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_part)b.FieldSchema(name:key, type:int, comment:null), ]
@@ -479,11 +479,11 @@ POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_pa
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-37_529_1833707518210532364/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-06_994_5152208779378490082/-mr-10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-37_529_1833707518210532364/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-06_994_5152208779378490082/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value1 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value1, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value2 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value2, type:string, comment:null), ]
@@ -522,14 +522,14 @@ on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_hash_result_2
 PREHOOK: Input: default@bucketmapjoin_hash_result_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-42_954_929355026598795712/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-15_481_7356264960905577318/-mr-10000
 POSTHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
 from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
 on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_hash_result_2
 POSTHOOK: Input: default@bucketmapjoin_hash_result_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-42_954_929355026598795712/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-15_481_7356264960905577318/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value1 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value1, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value2 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value2, type:string, comment:null), ]
@@ -599,7 +599,7 @@ STAGE PLANS:
                 keys:
                   0 [Column[key]]
                   1 [Column[key]]
-                outputColumnNames: _col0, _col1, _col3, _col4
+                outputColumnNames: _col0, _col1, _col5, _col6
                 Position of Big Table: 1
                 Select Operator
                   expressions:
@@ -607,15 +607,15 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col3
+                        expr: _col5
                         type: string
-                        expr: _col4
+                        expr: _col6
                         type: string
-                  outputColumnNames: _col0, _col1, _col3, _col4
+                  outputColumnNames: _col0, _col1, _col5, _col6
                   Filter Operator
                     isSamplingPred: false
                     predicate:
-                        expr: (_col4 = '2008-04-08')
+                        expr: (_col6 = '2008-04-08')
                         type: boolean
                     Select Operator
                       expressions:
@@ -623,13 +623,13 @@ STAGE PLANS:
                             type: int
                             expr: _col1
                             type: string
-                            expr: _col3
+                            expr: _col5
                             type: string
                       outputColumnNames: _col0, _col1, _col2
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
-                        directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002
+                        directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002
                         NumFilesPerFileSink: 1
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -640,12 +640,12 @@ STAGE PLANS:
                               columns.types string:string:string
                               file.inputformat org.apache.hadoop.mapred.TextInputFormat
                               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                               name bucketmapjoin_tmp_result
                               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              transient_lastDdlTime 1280083237
+                              transient_lastDdlTime 1280425986
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: bucketmapjoin_tmp_result
                         TotalFiles: 1
@@ -670,7 +670,7 @@ STAGE PLANS:
                   keys:
                     0 [Column[key]]
                     1 [Column[key]]
-                  outputColumnNames: _col0, _col1, _col3, _col4
+                  outputColumnNames: _col0, _col1, _col5, _col6
                   Position of Big Table: 1
                   Select Operator
                     expressions:
@@ -678,15 +678,15 @@ STAGE PLANS:
                           type: int
                           expr: _col1
                           type: string
-                          expr: _col3
+                          expr: _col5
                           type: string
-                          expr: _col4
+                          expr: _col6
                           type: string
-                    outputColumnNames: _col0, _col1, _col3, _col4
+                    outputColumnNames: _col0, _col1, _col5, _col6
                     Filter Operator
                       isSamplingPred: false
                       predicate:
-                          expr: (_col4 = '2008-04-08')
+                          expr: (_col6 = '2008-04-08')
                           type: boolean
                       Select Operator
                         expressions:
@@ -694,13 +694,13 @@ STAGE PLANS:
                               type: int
                               expr: _col1
                               type: string
-                              expr: _col3
+                              expr: _col5
                               type: string
                         outputColumnNames: _col0, _col1, _col2
                         File Output Operator
                           compressed: false
                           GlobalTableId: 1
-                          directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002
+                          directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002
                           NumFilesPerFileSink: 1
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -711,12 +711,12 @@ STAGE PLANS:
                                 columns.types string:string:string
                                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                                 name bucketmapjoin_tmp_result
                                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                                 serialization.format 1
                                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                transient_lastDdlTime 1280083237
+                                transient_lastDdlTime 1280425986
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: bucketmapjoin_tmp_result
                           TotalFiles: 1
@@ -725,17 +725,17 @@ STAGE PLANS:
               Alias Bucket Base File Name Mapping:
                 a {srcbucket20.txt=[srcbucket20.txt], srcbucket21.txt=[srcbucket21.txt], srcbucket22.txt=[srcbucket20.txt], srcbucket23.txt=[srcbucket21.txt]}
               Alias Bucket File Name Mapping:
-                a {pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt], pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt], pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt], pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt=[pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt]}
+                a {pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt], pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt], pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket20.txt], pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt=[pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin/srcbucket21.txt]}
               Alias Bucket Output File Name Mapping:
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt 0
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt 1
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt 2
-                pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt 3
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket20.txt 0
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket21.txt 1
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket22.txt 2
+                pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08/srcbucket23.txt 3
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 [b]
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 [b]
       Path -> Partition:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -749,13 +749,13 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part
+              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part
               name srcbucket_mapjoin_part
               partition_columns ds
               serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280083214
+              transient_lastDdlTime 1280425951
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -767,13 +767,13 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/srcbucket_mapjoin_part
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcbucket_mapjoin_part
                 name srcbucket_mapjoin_part
                 partition_columns ds
                 serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083214
+                transient_lastDdlTime 1280425951
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket_mapjoin_part
             name: srcbucket_mapjoin_part
@@ -785,14 +785,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002
-          destination: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10000
+          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002
+          destination: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10000
+          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -802,20 +802,20 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083237
+                transient_lastDdlTime 1280425986
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
-          tmp directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10001
+          tmp directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10001
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -831,9 +831,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002 [pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002]
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002 [pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002]
       Path -> Partition:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10002 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -844,12 +844,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
               name bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280083237
+              transient_lastDdlTime 1280425986
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -860,12 +860,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280083237
+                transient_lastDdlTime 1280425986
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
             name: bucketmapjoin_tmp_result
@@ -874,7 +874,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-40-45_690_2669369780343064476/-ext-10000
+            directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_10-53-20_871_6244434778770465214/-ext-10000
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -885,12 +885,12 @@ STAGE PLANS:
                   columns.types string:string:string
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                  location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                   name bucketmapjoin_tmp_result
                   serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  transient_lastDdlTime 1280083237
+                  transient_lastDdlTime 1280425986
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: bucketmapjoin_tmp_result
             TotalFiles: 1
@@ -931,11 +931,11 @@ POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_pa
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-54_256_3570445615662799799/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-34_025_6513734302202119872/-mr-10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-40-54_256_3570445615662799799/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-34_025_6513734302202119872/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value1 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value1, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value2 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value2, type:string, comment:null), ]
@@ -1020,11 +1020,11 @@ POSTHOOK: Lineage: bucketmapjoin_tmp_result.value2 SIMPLE [(srcbucket_mapjoin_pa
 PREHOOK: query: select count(1) from bucketmapjoin_tmp_result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_tmp_result
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-41-07_639_6613037422321680239/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-55_525_3771579881834121899/-mr-10000
 POSTHOOK: query: select count(1) from bucketmapjoin_tmp_result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_tmp_result
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-41-07_639_6613037422321680239/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-53-55_525_3771579881834121899/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value1 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value1, type:string, comment:null), ]
@@ -1087,14 +1087,14 @@ on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketmapjoin_hash_result_2
 PREHOOK: Input: default@bucketmapjoin_hash_result_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-41-13_010_6197022944447272166/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-54-04_745_7587716495922580484/-mr-10000
 POSTHOOK: query: select a.key-b.key, a.value1-b.value1, a.value2-b.value2
 from bucketmapjoin_hash_result_1 a left outer join bucketmapjoin_hash_result_2 b
 on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketmapjoin_hash_result_2
 POSTHOOK: Input: default@bucketmapjoin_hash_result_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-41-13_010_6197022944447272166/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_10-54-04_745_7587716495922580484/-mr-10000
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.key EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: bucketmapjoin_hash_result_1.value1 EXPRESSION [(bucketmapjoin_tmp_result)bucketmapjoin_tmp_result.FieldSchema(name:value1, type:string, comment:null), ]

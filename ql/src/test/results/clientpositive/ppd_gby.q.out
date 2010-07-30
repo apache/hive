@@ -34,11 +34,11 @@ STAGE PLANS:
                     type: boolean
                 Select Operator
                   expressions:
-                        expr: key
-                        type: string
                         expr: value
                         type: string
-                  outputColumnNames: key, value
+                        expr: key
+                        type: string
+                  outputColumnNames: value, key
                   Group By Operator
                     aggregations:
                           expr: count(key)
@@ -104,14 +104,14 @@ FROM
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2057520929/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-20_761_1903026936193600765/-mr-10000
 POSTHOOK: query: SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2057520929/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-20_761_1903026936193600765/-mr-10000
 val_201
 val_202
 val_203

@@ -101,20 +101,20 @@ STAGE PLANS:
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
-                  type: string
-                  expr: _col3
-                  type: string
                   expr: _col4
                   type: string
                   expr: _col5
+                  type: string
+                  expr: _col8
+                  type: string
+                  expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             File Output Operator
@@ -127,7 +127,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-30-50_757_6674241851636354509/10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-55-32_633_7919061131989403267/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -174,11 +174,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-30-50_859_8353481196273925065/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-55-32_748_2284918769561934135/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-30-50_859_8353481196273925065/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-55-32_748_2284918769561934135/-mr-10000
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0

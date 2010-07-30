@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
@@ -33,7 +34,10 @@ public class ExecMapperContext {
   private Map<String, FetchOperator> fetchOperators;
   private JobConf jc;
 
+  private IOContext ioCxt;
+  
   public ExecMapperContext() {
+    ioCxt = IOContext.get();
   }
 
   public void processInputFileChangeForLocalWork() throws HiveException {
@@ -56,7 +60,7 @@ public class ExecMapperContext {
    */
   public boolean inputFileChanged() {
     if (!inputFileChecked) {
-      currentInputFile = HiveConf.getVar(jc, HiveConf.ConfVars.HADOOPMAPFILENAME);
+      currentInputFile = this.ioCxt.getInputFile();
       inputFileChecked = true;
     }
     return lastInputFile == null || !lastInputFile.equals(currentInputFile);
@@ -190,4 +194,13 @@ public class ExecMapperContext {
   public void setFetchOperators(Map<String, FetchOperator> fetchOperators) {
     this.fetchOperators = fetchOperators;
   }
+  
+  public IOContext getIoCxt() {
+    return ioCxt;
+  }
+
+  public void setIoCxt(IOContext ioCxt) {
+    this.ioCxt = ioCxt;
+  }
+
 }

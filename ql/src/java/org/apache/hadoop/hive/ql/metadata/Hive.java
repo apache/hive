@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,12 +42,16 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -327,6 +334,198 @@ public class Hive {
   }
 
   /**
+   * 
+   * @param tableName
+   *          table name
+   * @param indexName
+   *          index name
+   * @param indexHandlerClass
+   *          index handler class
+   * @param indexedCols
+   *          index columns
+   * @param indexTblName
+   *          index table's name
+   * @param deferredRebuild
+   *          referred build index table's data
+   * @param inputFormat
+   *          input format
+   * @param outputFormat
+   *          output format
+   * @param serde
+   * @param storageHandler
+   *          index table's storage handler
+   * @param location
+   *          location
+   * @param idxProps
+   *          idx
+   * @param serdeProps
+   *          serde properties
+   * @param collItemDelim
+   * @param fieldDelim
+   * @param fieldEscape
+   * @param lineDelim
+   * @param mapKeyDelim
+   * @throws HiveException
+   */
+  public void createIndex(String tableName, String indexName, String indexHandlerClass,
+      List<String> indexedCols, String indexTblName, boolean deferredRebuild,
+      String inputFormat, String outputFormat, String serde,
+      String storageHandler, String location,
+      Map<String, String> idxProps, Map<String, String> serdeProps,
+      String collItemDelim, String fieldDelim, String fieldEscape,
+      String lineDelim, String mapKeyDelim)
+      throws HiveException {
+
+    try {
+      String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+      Index old_index = null;
+      try {
+        old_index = getIndex(dbName, tableName, indexName);  
+      } catch (Exception e) {
+      }
+      if (old_index != null) {
+        throw new HiveException("Index " + indexName + " already exists on table " + tableName + ", db=" + dbName);
+      }
+      
+      org.apache.hadoop.hive.metastore.api.Table baseTbl = getMSC().getTable(dbName, tableName);
+      if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
+        throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
+      }
+      
+      if (indexTblName == null) {
+        indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);  
+      } else {
+        org.apache.hadoop.hive.metastore.api.Table temp = null;
+        try {
+          temp = getMSC().getTable(dbName, indexTblName);
+        } catch (Exception e) {
+        }
+        if (temp != null) {
+          throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
+        }
+      }
+      
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().clone();
+      SerDeInfo serdeInfo = storageDescriptor.getSerdeInfo();
+      if(serde != null) {
+        serdeInfo.setSerializationLib(serde);        
+      } else {
+        if (storageHandler == null) {
+          serdeInfo.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+        } else {
+          HiveStorageHandler sh = HiveUtils.getStorageHandler(getConf(), storageHandler);
+          String serDeClassName = sh.getSerDeClass().getName();
+          serdeInfo.setSerializationLib(serDeClassName);
+        }
+      }
+
+      if (fieldDelim != null) {
+        serdeInfo.getParameters().put(Constants.FIELD_DELIM, fieldDelim);
+        serdeInfo.getParameters().put(Constants.SERIALIZATION_FORMAT,
+            fieldDelim);
+      }
+      if (fieldEscape != null) {
+        serdeInfo.getParameters().put(Constants.ESCAPE_CHAR, fieldEscape);
+      }
+      if (collItemDelim != null) {
+        serdeInfo.getParameters()
+            .put(Constants.COLLECTION_DELIM, collItemDelim);
+      }
+      if (mapKeyDelim != null) {
+        serdeInfo.getParameters().put(Constants.MAPKEY_DELIM, mapKeyDelim);
+      }
+      if (lineDelim != null) {
+        serdeInfo.getParameters().put(Constants.LINE_DELIM, lineDelim);
+      }
+      
+      if (serdeProps != null) {
+        Iterator<Entry<String, String>> iter = serdeProps.entrySet()
+          .iterator();
+        while (iter.hasNext()) {
+          Entry<String, String> m = iter.next();
+          serdeInfo.getParameters().put(m.getKey(), m.getValue());
+        }
+      }
+      
+      storageDescriptor.setLocation(null);
+      if (location != null) {
+        storageDescriptor.setLocation(location);        
+      }
+      storageDescriptor.setInputFormat(inputFormat);
+      storageDescriptor.setOutputFormat(outputFormat);
+      
+      Map<String, String> params = new HashMap<String,String>();
+      
+      List<FieldSchema> indexTblCols = new ArrayList<FieldSchema>();
+      List<Order> sortCols = new ArrayList<Order>();
+      storageDescriptor.setBucketCols(null);
+      int k = 0;
+      for (int i = 0; i < storageDescriptor.getCols().size(); i++) {
+        FieldSchema col = storageDescriptor.getCols().get(i);
+        if (indexedCols.contains(col.getName())) {
+          indexTblCols.add(col);
+          sortCols.add(new Order(col.getName(), 1));
+          k++;
+        }
+      }
+      if (k != indexedCols.size())
+        throw new RuntimeException(
+            "Check the index columns, they should appear in the table being indexed.");
+      
+      storageDescriptor.setCols(indexTblCols);
+      storageDescriptor.setSortCols(sortCols);
+
+      int time = (int) (System.currentTimeMillis() / 1000);      
+      org.apache.hadoop.hive.metastore.api.Table tt = null;
+      HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
+
+      if (indexHandler.usesIndexTable()) {
+        tt = new org.apache.hadoop.hive.ql.metadata.Table(indexTblName).getTTable();
+        List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
+        tt.setPartitionKeys(partKeys);
+        tt.setTableType(TableType.INDEX_TABLE.toString());
+      }
+
+      if(!deferredRebuild) {
+        throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
+      }
+      
+      Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
+          storageDescriptor, params, deferredRebuild);
+      indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
+      
+      this.getMSC().createIndex(indexDesc, tt);
+      
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+  
+  public Index getIndex(String dbName, String baseTableName,
+      String indexName) throws HiveException {
+    try {
+      return this.getMSC().getIndex(dbName, baseTableName, indexName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+  
+  public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean deleteData) throws HiveException {
+    try {
+      return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData);
+    } catch (NoSuchObjectException e) {
+      throw new HiveException("Partition or table doesn't exist.", e);
+    } catch (Exception e) {
+      throw new HiveException("Unknow error. Please check logs.", e);
+    }
+  }
+  
+  /**
+   * Drops table along with the data in it. If the table doesn't exist
+   * then it is a no-op
+   * @param dbName database where the table lives
+   * @param tableName table to drop
+   * @throws HiveException thrown if the drop fails
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
    *
@@ -1083,7 +1282,8 @@ public class Hive {
             HiveStorageHandler storageHandler =
               HiveUtils.getStorageHandler(
                 conf,
-                tbl.getParameters().get(Constants.META_TABLE_STORAGE));
+                tbl.getParameters().get(
+                    org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE));
             if (storageHandler == null) {
               return null;
             }
@@ -1122,4 +1322,5 @@ public class Hive {
           + e.getMessage(), e);
     }
   }
+
 };

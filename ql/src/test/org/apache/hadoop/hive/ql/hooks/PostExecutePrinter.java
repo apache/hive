@@ -127,6 +127,10 @@ public class PostExecutePrinter implements PostExecute {
         Dependency dep = it.getValue();
         DependencyKey depK = it.getKey();
 
+        if(dep == null) {
+          continue;
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("POSTHOOK: Lineage: ");
         if (depK.getDataContainer().isPartition()) {

@@ -252,14 +252,14 @@ public class Schema implements TBase, java.io.Serializable, Cloneable {
         case FIELDSCHEMAS:
           if (field.type == TType.LIST) {
             {
-              TList _list48 = iprot.readListBegin();
-              this.fieldSchemas = new ArrayList<FieldSchema>(_list48.size);
-              for (int _i49 = 0; _i49 < _list48.size; ++_i49)
+              TList _list49 = iprot.readListBegin();
+              this.fieldSchemas = new ArrayList<FieldSchema>(_list49.size);
+              for (int _i50 = 0; _i50 < _list49.size; ++_i50)
               {
-                FieldSchema _elem50;
-                _elem50 = new FieldSchema();
-                _elem50.read(iprot);
-                this.fieldSchemas.add(_elem50);
+                FieldSchema _elem51;
+                _elem51 = new FieldSchema();
+                _elem51.read(iprot);
+                this.fieldSchemas.add(_elem51);
               }
               iprot.readListEnd();
             }
@@ -270,15 +270,15 @@ public class Schema implements TBase, java.io.Serializable, Cloneable {
         case PROPERTIES:
           if (field.type == TType.MAP) {
             {
-              TMap _map51 = iprot.readMapBegin();
-              this.properties = new HashMap<String,String>(2*_map51.size);
-              for (int _i52 = 0; _i52 < _map51.size; ++_i52)
+              TMap _map52 = iprot.readMapBegin();
+              this.properties = new HashMap<String,String>(2*_map52.size);
+              for (int _i53 = 0; _i53 < _map52.size; ++_i53)
               {
-                String _key53;
-                String _val54;
-                _key53 = iprot.readString();
-                _val54 = iprot.readString();
-                this.properties.put(_key53, _val54);
+                String _key54;
+                String _val55;
+                _key54 = iprot.readString();
+                _val55 = iprot.readString();
+                this.properties.put(_key54, _val55);
               }
               iprot.readMapEnd();
             }
@@ -305,8 +305,8 @@ public class Schema implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(FIELD_SCHEMAS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.fieldSchemas.size()));
-        for (FieldSchema _iter55 : this.fieldSchemas)        {
-          _iter55.write(oprot);
+        for (FieldSchema _iter56 : this.fieldSchemas)        {
+          _iter56.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -316,9 +316,9 @@ public class Schema implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.properties.size()));
-        for (Map.Entry<String, String> _iter56 : this.properties.entrySet())        {
-          oprot.writeString(_iter56.getKey());
-          oprot.writeString(_iter56.getValue());
+        for (Map.Entry<String, String> _iter57 : this.properties.entrySet())        {
+          oprot.writeString(_iter57.getKey());
+          oprot.writeString(_iter57.getValue());
         }
         oprot.writeMapEnd();
       }

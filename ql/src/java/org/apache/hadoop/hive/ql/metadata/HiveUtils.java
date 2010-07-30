@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -146,4 +148,24 @@ public final class HiveUtils {
   private HiveUtils() {
     // prevent instantiation
   }
+
+  public static HiveIndexHandler getIndexHandler(HiveConf conf,
+      String indexHandlerClass) throws HiveException {
+
+    if (indexHandlerClass == null) {
+      return null;
+    }
+    try {
+      Class<? extends HiveIndexHandler> handlerClass =
+        (Class<? extends HiveIndexHandler>)
+        Class.forName(indexHandlerClass, true, JavaUtils.getClassLoader());
+      HiveIndexHandler indexHandler = (HiveIndexHandler)
+        ReflectionUtils.newInstance(handlerClass, conf);
+      return indexHandler;
+    } catch (ClassNotFoundException e) {
+      throw new HiveException("Error in loading index handler."
+          + e.getMessage(), e);
+    }
+  }
+
 }

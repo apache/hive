@@ -222,7 +222,7 @@ public class ReduceSinkDeDuplication implements Transform{
           exprs.add(colDesc);
           outputs.add(internalName);
           outputRS.put(nm[0], nm[1], new ColumnInfo(internalName, valueInfo
-              .getType(), nm[0], valueInfo.getIsPartitionCol()));
+              .getType(), nm[0], valueInfo.getIsVirtualCol(), valueInfo.isHiddenVirtualCol()));
           colExprMap.put(internalName, colDesc);
         }
 

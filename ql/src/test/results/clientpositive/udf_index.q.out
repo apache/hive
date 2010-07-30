@@ -1,10 +1,10 @@
-PREHOOK: query: DESCRIBE FUNCTION index
+PREHOOK: query: DESCRIBE FUNCTION `index`
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION index
+POSTHOOK: query: DESCRIBE FUNCTION `index`
 POSTHOOK: type: DESCFUNCTION
-index(a, n) - Returns the n-th element of a 
-PREHOOK: query: DESCRIBE FUNCTION EXTENDED index
+Function '`index`' does not exist.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED `index`
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION EXTENDED index
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED `index`
 POSTHOOK: type: DESCFUNCTION
-index(a, n) - Returns the n-th element of a 
+Function '`index`' does not exist.

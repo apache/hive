@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
  */
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
-
+  private CreateIndexDesc      createIndexDesc;
+  private DropIndexDesc dropIdxDesc;
   private CreateTableDesc createTblDesc;
   private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
@@ -63,6 +64,10 @@ public class DDLWork implements Serializable {
     this.outputs = outputs;
   }
 
+  public DDLWork(CreateIndexDesc createIndex) {
+    this.createIndexDesc = createIndex;
+  }
+  
   /**
    * @param alterTblDesc
    *          alter table descriptor
@@ -207,6 +212,12 @@ public class DDLWork implements Serializable {
     this.showTblStatusDesc = showTblStatusDesc;
   }
 
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      DropIndexDesc dropIndexDesc) {
+    this(inputs, outputs);
+    this.dropIdxDesc = dropIndexDesc;
+  }
+
   /**
    * @return the createTblDesc
    */
@@ -221,6 +232,14 @@ public class DDLWork implements Serializable {
    */
   public void setCreateTblDesc(CreateTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
+  }
+  
+  public CreateIndexDesc getCreateIndexDesc() {
+    return createIndexDesc;
+  }
+
+  public void setCreateIndexDesc(CreateIndexDesc createIndexDesc) {
+    this.createIndexDesc = createIndexDesc;
   }
 
   /**
@@ -453,6 +472,14 @@ public class DDLWork implements Serializable {
 
   public void setOutputs(HashSet<WriteEntity> outputs) {
     this.outputs = outputs;
+  }
+  
+  public DropIndexDesc getDropIdxDesc() {
+    return dropIdxDesc;
+  }
+
+  public void setDropIdxDesc(DropIndexDesc dropIdxDesc) {
+    this.dropIdxDesc = dropIdxDesc;
   }
 
 }

@@ -172,6 +172,31 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("partition_name_to_spec\n");
   }
 
+  void add_index(Index& _return, const Index& new_index, const Table& index_table) {
+    // Your implementation goes here
+    printf("add_index\n");
+  }
+
+  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) {
+    // Your implementation goes here
+    printf("drop_index_by_name\n");
+  }
+
+  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) {
+    // Your implementation goes here
+    printf("get_index_by_name\n");
+  }
+
+  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
+    // Your implementation goes here
+    printf("get_indexes\n");
+  }
+
+  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
+    // Your implementation goes here
+    printf("get_index_names\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

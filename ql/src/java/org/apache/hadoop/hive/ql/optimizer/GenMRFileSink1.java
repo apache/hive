@@ -143,7 +143,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     ArrayList<ExprNodeDesc> valueCols = new ArrayList<ExprNodeDesc>();
     for (ColumnInfo ci : fsRS.getSignature()) {
       valueCols.add(new ExprNodeColumnDesc(ci.getType(), ci.getInternalName(),
-          ci.getTabAlias(), ci.getIsPartitionCol()));
+          ci.getTabAlias(), ci.getIsVirtualCol()));
     }
 
     // create a dummy tableScan operator
@@ -174,7 +174,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     for (ColumnInfo colInfo : interim_rwsch.getColumnInfos()) {
       String[] info = interim_rwsch.reverseLookup(colInfo.getInternalName());
       out_rwsch.put(info[0], info[1], new ColumnInfo(pos.toString(), colInfo
-          .getType(), info[0], colInfo.getIsPartitionCol()));
+          .getType(), info[0], colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol()));
       pos = Integer.valueOf(pos.intValue() + 1);
     }
 

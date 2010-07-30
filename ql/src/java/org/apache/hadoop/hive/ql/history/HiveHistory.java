@@ -282,7 +282,9 @@ public class HiveHistory {
       sb.append(DELIMITER);
       String key = ent.getKey();
       String val = ent.getValue();
-      val = val.replace('\n', ' ');
+      if(val != null) {
+        val = val.replace('\n', ' ');        
+      }
       sb.append(key + "=\"" + val + "\"");
 
     }

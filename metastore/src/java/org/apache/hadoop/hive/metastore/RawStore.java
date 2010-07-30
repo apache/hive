@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -104,4 +105,18 @@ public interface RawStore extends Configurable {
 
   public abstract void alterPartition(String db_name, String tbl_name,
       Partition new_part) throws InvalidObjectException, MetaException;
+  
+  public abstract boolean addIndex(Index index)
+      throws InvalidObjectException, MetaException;
+  
+  public abstract Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
+
+  public abstract boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
+
+  public abstract List<Index> getIndexes(String dbName,
+      String origTableName, int max) throws MetaException;
+  
+  public abstract List<String> listIndexNames(String dbName,
+      String origTableName, short max) throws MetaException;
+  
 }

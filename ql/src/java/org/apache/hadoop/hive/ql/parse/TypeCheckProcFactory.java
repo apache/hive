@@ -101,7 +101,7 @@ public final class TypeCheckProcFactory {
     if (colInfo != null) {
       desc = new ExprNodeColumnDesc(colInfo.getType(), colInfo
           .getInternalName(), colInfo.getTabAlias(), colInfo
-          .getIsPartitionCol());
+          .getIsVirtualCol());
       ASTNode source = input.getExpressionSource(expr);
       if (source != null) {
         ctx.getUnparseTranslator().addCopyTranslation(expr, source);
@@ -350,7 +350,7 @@ public final class TypeCheckProcFactory {
           // It's a column.
           return new ExprNodeColumnDesc(colInfo.getType(), colInfo
               .getInternalName(), colInfo.getTabAlias(), colInfo
-              .getIsPartitionCol());
+              .getIsVirtualCol());
         }
       }
 
@@ -675,7 +675,7 @@ public final class TypeCheckProcFactory {
         }
         return new ExprNodeColumnDesc(colInfo.getType(), colInfo
             .getInternalName(), colInfo.getTabAlias(), colInfo
-            .getIsPartitionCol());
+            .getIsVirtualCol());
       }
 
       // Return nulls for conversion operators

@@ -34,6 +34,7 @@ case
 ceil
 ceiling
 coalesce
+collect_set
 concat
 concat_ws
 conv
@@ -158,6 +159,7 @@ case
 ceil
 ceiling
 coalesce
+collect_set
 concat
 concat_ws
 conv

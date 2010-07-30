@@ -44,29 +44,36 @@ public class ColumnInfo implements Serializable {
   private String tabAlias;
 
   /**
-   * Indicates whether the column is a partition column.
+   * Indicates whether the column is a virtual column.
    */
-  private boolean isPartitionCol;
+  private boolean isVirtualCol;
 
   private transient TypeInfo type;
+  
+  private boolean isHiddenVirtualCol;
 
   public ColumnInfo() {
   }
 
   public ColumnInfo(String internalName, TypeInfo type, String tabAlias,
-      boolean isPartitionCol) {
-    this.internalName = internalName;
-    this.type = type;
-    this.tabAlias = tabAlias;
-    this.isPartitionCol = isPartitionCol;
+      boolean isVirtualCol) {
+    this(internalName, type, tabAlias, isVirtualCol, false);
   }
 
   public ColumnInfo(String internalName, Class type, String tabAlias,
-      boolean isPartitionCol) {
+      boolean isVirtualCol) {
+    this(internalName, TypeInfoFactory
+        .getPrimitiveTypeInfoFromPrimitiveWritable(type), tabAlias,
+        isVirtualCol, false);
+  }
+  
+  public ColumnInfo(String internalName, TypeInfo type, String tabAlias,
+      boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this.internalName = internalName;
-    this.type = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(type);
+    this.type = type;
     this.tabAlias = tabAlias;
-    this.isPartitionCol = isPartitionCol;
+    this.isVirtualCol = isVirtualCol;
+    this.isHiddenVirtualCol = isHiddenVirtualCol;
   }
 
   public TypeInfo getType() {
@@ -89,8 +96,12 @@ public class ColumnInfo implements Serializable {
     return tabAlias;
   }
 
-  public boolean getIsPartitionCol() {
-    return isPartitionCol;
+  public boolean getIsVirtualCol() {
+    return isVirtualCol;
+  }
+  
+  public boolean isHiddenVirtualCol() {
+    return isHiddenVirtualCol;
   }
 
   /**

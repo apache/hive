@@ -1,0 +1,1697 @@
+PREHOOK: query: select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-31_416_3285590401159523096/-mr-10000
+POSTHOOK: query: select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-31_416_3285590401159523096/-mr-10000
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	238	0
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	86	12
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	311	22
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	27	34
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	165	44
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	409	56
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	255	68
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	278	80
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	98	92
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	484	102
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	265	114
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	193	126
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	138
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	150	150
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	273	162
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	224	174
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	369	186
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	66	198
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	128	208
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	213	220
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	146	232
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	406	244
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	429	256
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	374	268
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	152	280
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	292
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	145	304
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	495	316
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	37	328
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	327	338
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	281	350
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	277	362
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	209	374
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	15	386
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	82	396
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	403	406
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	166	418
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	417	430
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	430	442
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	252	454
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	292	466
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	219	478
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	287	490
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	153	502
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	193	514
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	338	526
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	446	538
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	459	550
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	394	562
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	237	574
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	482	586
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	174	598
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	413	610
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	494	622
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	207	634
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	199	646
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	466	658
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	208	670
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	174	682
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	399	694
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	396	706
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	247	718
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	417	730
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	489	742
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	162	754
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	377	766
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	397	778
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	309	790
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	365	802
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	266	814
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	439	826
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	342	838
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	367	850
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	325	862
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	167	874
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	195	886
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	475	898
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	17	910
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	113	920
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	155	932
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	203	944
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	339	956
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	0	968
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	455	976
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	128	988
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	311	1000
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	316	1012
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	57	1024
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	302	1034
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	205	1046
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	149	1058
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	438	1070
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	345	1082
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	129	1094
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	170	1106
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	20	1118
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	489	1128
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	157	1140
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	378	1152
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	221	1164
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	92	1176
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	111	1186
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	47	1198
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	72	1208
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	4	1218
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	280	1226
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	35	1238
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	427	1248
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	277	1260
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	208	1272
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	356	1284
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	399	1296
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	169	1308
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	382	1320
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	498	1332
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	125	1344
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	386	1356
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	437	1368
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	1380
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	192	1392
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	286	1404
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	187	1416
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	176	1428
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	54	1440
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	459	1450
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	51	1462
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	138	1472
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	103	1484
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	239	1496
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	213	1508
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	216	1520
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	430	1532
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	278	1544
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	176	1556
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	289	1568
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	221	1580
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	65	1592
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	318	1602
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	332	1614
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	311	1626
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	275	1638
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	137	1650
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	241	1662
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	83	1674
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	333	1684
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	180	1696
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	284	1708
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	12	1720
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	1730
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	181	1742
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	67	1754
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	260	1764
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	404	1776
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	384	1788
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	489	1800
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	353	1812
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	373	1824
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	272	1836
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	138	1848
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	217	1860
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	84	1872
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	1882
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	466	1894
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	58	1906
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	8	1916
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	411	1924
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	1936
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	208	1948
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	1960
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	24	1972
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	463	1982
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	431	1994
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	179	2006
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	172	2018
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	42	2030
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	129	2040
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	158	2052
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	119	2064
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	496	2076
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	0	2088
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	322	2096
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	197	2108
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	468	2120
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	393	2132
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	454	2144
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	100	2156
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	298	2168
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	199	2180
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	191	2192
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	418	2204
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	96	2216
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	26	2226
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	165	2236
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	327	2248
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	2260
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	205	2272
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	120	2284
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	131	2296
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	51	2308
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	404	2318
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	43	2330
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	436	2340
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	156	2352
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	2364
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	468	2376
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	308	2388
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	95	2400
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	196	2410
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	288	2422
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	481	2434
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	457	2446
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	98	2458
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	282	2468
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	197	2480
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	187	2492
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	318	2504
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	318	2516
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	409	2528
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	470	2540
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	137	2552
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	369	2564
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	316	2576
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	169	2588
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	413	2600
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	85	2612
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	77	2622
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	0	2632
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	490	2640
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	87	2652
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	364	2662
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	179	2674
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	118	2686
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	134	2698
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	395	2710
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	282	2722
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	138	2734
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	238	2746
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	419	2758
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	15	2770
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	118	2780
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	72	2792
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	90	2802
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	307	2812
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	19	2824
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	435	2834
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	10	2846
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	277	2856
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	273	2868
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	306	2880
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	224	2892
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	309	2904
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	389	2916
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	327	2928
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	242	2940
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	369	2952
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	392	2964
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	272	2976
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	331	2988
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	3000
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	242	3012
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	452	3024
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	177	3036
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	226	3048
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	5	3060
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	497	3068
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	402	3080
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	396	3092
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	317	3104
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	395	3116
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	58	3128
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	35	3138
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	336	3148
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	95	3160
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	11	3170
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	168	3180
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	34	3192
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	229	3202
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	233	3214
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	143	3226
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	472	3238
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	322	3250
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	498	3262
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	160	3274
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	195	3286
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	42	3298
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	321	3308
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	430	3320
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	119	3332
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	489	3344
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	458	3356
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	78	3368
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	76	3378
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	41	3388
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	223	3398
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	492	3410
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	149	3422
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	449	3434
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	218	3446
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	228	3458
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	138	3470
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	453	3482
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	30	3494
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	209	3504
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	64	3516
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	468	3526
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	76	3538
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	74	3548
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	342	3558
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	69	3570
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	3580
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	33	3592
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	368	3602
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	103	3614
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	296	3626
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	113	3638
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	216	3650
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	367	3662
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	344	3674
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	167	3686
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	274	3698
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	219	3710
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	239	3722
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	485	3734
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	116	3746
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	223	3758
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	256	3770
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	263	3782
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	70	3794
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	487	3804
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	480	3816
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	3828
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	288	3840
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	191	3852
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	5	3864
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	244	3872
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	438	3884
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	128	3896
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	467	3908
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	432	3920
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	202	3932
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	316	3944
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	229	3956
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	3968
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	463	3980
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	280	3992
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	2	4004
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	35	4012
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	283	4022
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	331	4034
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	235	4046
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	80	4058
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	44	4068
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	193	4078
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	321	4090
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	335	4102
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	104	4114
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	466	4126
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	366	4138
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	175	4150
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	403	4162
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	483	4174
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	53	4186
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	105	4196
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	257	4208
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	406	4220
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	409	4232
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	190	4244
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	406	4256
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	4268
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	114	4280
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	258	4292
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	90	4304
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	203	4314
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	262	4326
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	4338
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	424	4350
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	12	4362
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	396	4372
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	201	4384
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	217	4396
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	164	4408
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	431	4420
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	454	4432
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	478	4444
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	298	4456
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	125	4468
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	431	4480
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	164	4492
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	424	4504
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	187	4516
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	382	4528
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	5	4540
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	70	4548
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	397	4558
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	480	4570
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	291	4582
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	24	4594
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	351	4604
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	255	4616
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	104	4628
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	70	4640
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	163	4650
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	438	4662
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	119	4674
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	414	4686
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	200	4698
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	491	4710
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	237	4722
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	439	4734
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	360	4746
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	248	4758
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	479	4770
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	305	4782
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	417	4794
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	199	4806
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	444	4818
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	120	4830
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	429	4842
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	169	4854
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	443	4866
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	323	4878
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	325	4890
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	277	4902
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	4914
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	478	4926
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	178	4938
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	468	4950
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	310	4962
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	317	4974
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	333	4986
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	493	4998
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	460	5010
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	207	5022
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	249	5034
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	265	5046
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	480	5058
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	83	5070
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	136	5080
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	353	5092
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	172	5104
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	214	5116
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	462	5128
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	233	5140
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	406	5152
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	133	5164
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	175	5176
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	189	5188
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	454	5200
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	375	5212
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	5224
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	421	5236
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	407	5248
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	384	5260
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	256	5272
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	26	5284
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	134	5294
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	67	5306
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	384	5316
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	379	5328
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	18	5340
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	462	5350
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	492	5362
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	100	5374
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	298	5386
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	9	5398
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	341	5406
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	498	5418
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	146	5430
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	458	5442
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	362	5454
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	186	5466
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	285	5478
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	5490
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	167	5502
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	18	5514
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	273	5524
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	183	5536
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	281	5548
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	344	5560
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	97	5572
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	5582
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	315	5594
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	84	5606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	28	5616
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	37	5626
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	448	5636
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	152	5648
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	5660
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	307	5672
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	194	5684
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	414	5696
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	477	5708
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	222	5720
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	126	5732
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	90	5744
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	169	5754
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	403	5766
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	400	5778
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	200	5790
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	97	5802
+PREHOOK: query: select key, count(INPUT__FILE__NAME) from src group by key order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-39_432_4656304735079359501/-mr-10000
+POSTHOOK: query: select key, count(INPUT__FILE__NAME) from src group by key order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-39_432_4656304735079359501/-mr-10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+116	1
+118	2
+119	3
+12	2
+120	2
+125	2
+126	1
+128	3
+129	2
+131	1
+133	1
+134	2
+136	1
+137	2
+138	4
+143	1
+145	1
+146	2
+149	2
+15	2
+150	1
+152	2
+153	1
+155	1
+156	1
+157	1
+158	1
+160	1
+162	1
+163	1
+164	2
+165	2
+166	1
+167	3
+168	1
+169	4
+17	1
+170	1
+172	2
+174	2
+175	2
+176	2
+177	1
+178	1
+179	2
+18	2
+180	1
+181	1
+183	1
+186	1
+187	3
+189	1
+19	1
+190	1
+191	2
+192	1
+193	3
+194	1
+195	2
+196	1
+197	2
+199	3
+2	1
+20	1
+200	2
+201	1
+202	1
+203	2
+205	2
+207	2
+208	3
+209	2
+213	2
+214	1
+216	2
+217	2
+218	1
+219	2
+221	2
+222	1
+223	2
+224	2
+226	1
+228	1
+229	2
+230	5
+233	2
+235	1
+237	2
+238	2
+239	2
+24	2
+241	1
+242	2
+244	1
+247	1
+248	1
+249	1
+252	1
+255	2
+256	2
+257	1
+258	1
+26	2
+260	1
+262	1
+263	1
+265	2
+266	1
+27	1
+272	2
+273	3
+274	1
+275	1
+277	4
+278	2
+28	1
+280	2
+281	2
+282	2
+283	1
+284	1
+285	1
+286	1
+287	1
+288	2
+289	1
+291	1
+292	1
+296	1
+298	3
+30	1
+302	1
+305	1
+306	1
+307	2
+308	1
+309	2
+310	1
+311	3
+315	1
+316	3
+317	2
+318	3
+321	2
+322	2
+323	1
+325	2
+327	3
+33	1
+331	2
+332	1
+333	2
+335	1
+336	1
+338	1
+339	1
+34	1
+341	1
+342	2
+344	2
+345	1
+348	5
+35	3
+351	1
+353	2
+356	1
+360	1
+362	1
+364	1
+365	1
+366	1
+367	2
+368	1
+369	3
+37	2
+373	1
+374	1
+375	1
+377	1
+378	1
+379	1
+382	2
+384	3
+386	1
+389	1
+392	1
+393	1
+394	1
+395	2
+396	3
+397	2
+399	2
+4	1
+400	1
+401	5
+402	1
+403	3
+404	2
+406	4
+407	1
+409	3
+41	1
+411	1
+413	2
+414	2
+417	3
+418	1
+419	1
+42	2
+421	1
+424	2
+427	1
+429	2
+43	1
+430	3
+431	3
+432	1
+435	1
+436	1
+437	1
+438	3
+439	2
+44	1
+443	1
+444	1
+446	1
+448	1
+449	1
+452	1
+453	1
+454	3
+455	1
+457	1
+458	2
+459	2
+460	1
+462	2
+463	2
+466	3
+467	1
+468	4
+469	5
+47	1
+470	1
+472	1
+475	1
+477	1
+478	2
+479	1
+480	3
+481	1
+482	1
+483	1
+484	1
+485	1
+487	1
+489	4
+490	1
+491	1
+492	2
+493	1
+494	1
+495	1
+496	1
+497	1
+498	3
+5	3
+51	2
+53	1
+54	1
+57	1
+58	2
+64	1
+65	1
+66	1
+67	2
+69	1
+70	3
+72	2
+74	1
+76	2
+77	1
+78	1
+8	1
+80	1
+82	1
+83	2
+84	2
+85	1
+86	1
+87	1
+9	1
+90	3
+92	1
+95	2
+96	1
+97	2
+98	2
+PREHOOK: query: select INPUT__FILE__NAME, key, collect_set(BLOCK__OFFSET__INSIDE__FILE) from src group by INPUT__FILE__NAME, key order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-47_445_5462258972511994024/-mr-10000
+POSTHOOK: query: select INPUT__FILE__NAME, key, collect_set(BLOCK__OFFSET__INSIDE__FILE) from src group by INPUT__FILE__NAME, key order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-47_445_5462258972511994024/-mr-10000
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	0	[968,2632,2088]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	10	[2846]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	100	[5374,2156]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	103	[3614,1484]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	104	[4628,4114]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	105	[4196]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	11	[3170]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	111	[1186]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	113	[920,3638]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	114	[4280]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	116	[3746]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	118	[2780,2686]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	119	[2064,4674,3332]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	12	[4362,1720]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	120	[2284,4830]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	125	[4468,1344]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	126	[5732]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	128	[3896,988,208]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	129	[2040,1094]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	131	[2296]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	133	[5164]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	134	[2698,5294]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	136	[5080]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	137	[2552,1650]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	138	[2734,1848,1472,3470]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	143	[3226]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	145	[304]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	146	[232,5430]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	149	[3422,1058]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	15	[386,2770]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	150	[150]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	152	[280,5648]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	153	[502]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	155	[932]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	156	[2352]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	157	[1140]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	158	[2052]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	160	[3274]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	162	[754]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	163	[4650]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	164	[4492,4408]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	165	[2236,44]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	166	[418]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	167	[5502,874,3686]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	168	[3180]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	169	[5754,1308,2588,4854]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	17	[910]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	170	[1106]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	172	[2018,5104]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	174	[682,598]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	175	[5176,4150]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	176	[1428,1556]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	177	[3036]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	178	[4938]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	179	[2674,2006]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	18	[5514,5340]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	180	[1696]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	181	[1742]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	183	[5536]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	186	[5466]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	187	[2492,1416,4516]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	189	[5188]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	19	[2824]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	190	[4244]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	191	[3852,2192]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	192	[1392]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	193	[514,126,4078]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	194	[5684]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	195	[3286,886]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	196	[2410]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	197	[2480,2108]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	199	[646,2180,4806]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	2	[4004]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	20	[1118]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	200	[4698,5790]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	201	[4384]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	202	[3932]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	203	[4314,944]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	205	[1046,2272]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	207	[5022,634]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	208	[670,1948,1272]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	209	[3504,374]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	213	[220,1508]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	214	[5116]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	216	[1520,3650]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	217	[4396,1860]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	218	[3446]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	219	[478,3710]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	221	[1580,1164]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	222	[5720]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	223	[3398,3758]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	224	[174,2892]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	226	[3048]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	228	[3458]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	229	[3202,3956]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	230	[1730,1936,4914,2260,3580]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	233	[5140,3214]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	235	[4046]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	237	[4722,574]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	238	[0,2746]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	239	[1496,3722]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	24	[1972,4594]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	241	[1662]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	242	[2940,3012]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	244	[3872]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	247	[718]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	248	[4758]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	249	[5034]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	252	[454]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	255	[68,4616]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	256	[5272,3770]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	257	[4208]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	258	[4292]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	26	[5284,2226]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	260	[1764]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	262	[4326]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	263	[3782]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	265	[114,5046]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	266	[814]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	27	[34]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	272	[1836,2976]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	273	[2868,5524,162]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	274	[3698]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	275	[1638]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	277	[4902,1260,2856,362]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	278	[1544,80]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	28	[5616]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	280	[3992,1226]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	281	[350,5548]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	282	[2468,2722]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	283	[4022]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	284	[1708]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	285	[5478]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	286	[1404]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	287	[490]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	288	[2422,3840]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	289	[1568]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	291	[4582]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	292	[466]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	296	[3626]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	298	[5386,4456,2168]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	30	[3494]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	302	[1034]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	305	[4782]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	306	[2880]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	307	[2812,5672]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	308	[2388]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	309	[790,2904]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	310	[4962]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	311	[1000,1626,22]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	315	[5594]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	316	[3944,2576,1012]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	317	[3104,4974]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	318	[2504,1602,2516]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	321	[4090,3308]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	322	[3250,2096]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	323	[4878]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	325	[4890,862]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	327	[2928,338,2248]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	33	[3592]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	331	[2988,4034]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	332	[1614]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	333	[1684,4986]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	335	[4102]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	336	[3148]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	338	[526]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	339	[956]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	34	[3192]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	341	[5406]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	342	[3558,838]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	344	[3674,5560]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	345	[1082]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	348	[5660,1882,1960,4338,5490]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	35	[1238,4012,3138]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	351	[4604]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	353	[1812,5092]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	356	[1284]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	360	[4746]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	362	[5454]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	364	[2662]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	365	[802]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	366	[4138]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	367	[850,3662]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	368	[3602]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	369	[186,2564,2952]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	37	[328,5626]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	373	[1824]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	374	[268]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	375	[5212]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	377	[766]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	378	[1152]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	379	[5328]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	382	[1320,4528]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	384	[5316,5260,1788]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	386	[1356]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	389	[2916]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	392	[2964]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	393	[2132]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	394	[562]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	395	[3116,2710]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	396	[4372,706,3092]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	397	[4558,778]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	399	[694,1296]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	4	[1218]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	400	[5778]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	401	[138,3000,3828,4268,5224]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	402	[3080]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	403	[5766,4162,406]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	404	[1776,2318]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	406	[244,4220,4256,5152]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	407	[5248]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	409	[4232,56,2528]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	41	[3388]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	411	[1924]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	413	[610,2600]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	414	[5696,4686]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	417	[730,4794,430]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	418	[2204]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	419	[2758]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	42	[3298,2030]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	421	[5236]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	424	[4350,4504]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	427	[1248]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	429	[4842,256]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	43	[2330]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	430	[442,1532,3320]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	431	[4420,1994,4480]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	432	[3920]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	435	[2834]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	436	[2340]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	437	[1368]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	438	[3884,4662,1070]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	439	[4734,826]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	44	[4068]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	443	[4866]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	444	[4818]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	446	[538]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	448	[5636]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	449	[3434]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	452	[3024]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	453	[3482]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	454	[2144,4432,5200]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	455	[976]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	457	[2446]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	458	[3356,5442]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	459	[550,1450]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	460	[5010]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	462	[5350,5128]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	463	[1982,3980]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	466	[658,1894,4126]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	467	[3908]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	468	[3526,4950,2120,2376]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	469	[292,3968,1380,5582,2364]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	47	[1198]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	470	[2540]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	472	[3238]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	475	[898]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	477	[5708]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	478	[4444,4926]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	479	[4770]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	480	[4570,5058,3816]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	481	[2434]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	482	[586]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	483	[4174]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	484	[102]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	485	[3734]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	487	[3804]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	489	[1128,1800,3344,742]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	490	[2640]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	491	[4710]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	492	[5362,3410]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	493	[4998]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	494	[622]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	495	[316]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	496	[2076]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	497	[3068]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	498	[5418,3262,1332]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	5	[4540,3864,3060]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	51	[1462,2308]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	53	[4186]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	54	[1440]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	57	[1024]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	58	[3128,1906]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	64	[3516]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	65	[1592]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	66	[198]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	67	[5306,1754]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	69	[3570]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	70	[3794,4640,4548]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	72	[2792,1208]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	74	[3548]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	76	[3538,3378]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	77	[2622]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	78	[3368]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	8	[1916]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	80	[4058]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	82	[396]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	83	[5070,1674]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	84	[5606,1872]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	85	[2612]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	86	[12]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	87	[2652]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	9	[5398]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	90	[2802,5744,4304]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	92	[1176]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	95	[2400,3160]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	96	[2216]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	97	[5572,5802]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src/kv1.txt	98	[2458,92]
+PREHOOK: query: select * from src where BLOCK__OFFSET__INSIDE__FILE > 12000 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-56_070_2477439693269064477/-mr-10000
+POSTHOOK: query: select * from src where BLOCK__OFFSET__INSIDE__FILE > 12000 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-28-56_070_2477439693269064477/-mr-10000
+PREHOOK: query: select * from src where BLOCK__OFFSET__INSIDE__FILE > 5800 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-29-00_068_6021923624383821312/-mr-10000
+POSTHOOK: query: select * from src where BLOCK__OFFSET__INSIDE__FILE > 5800 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-29-00_068_6021923624383821312/-mr-10000
+97	val_97
+PREHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE src_index_test_rc (key int, value string) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_index_test_rc
+PREHOOK: query: INSERT OVERWRITE TABLE src_index_test_rc SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_index_test_rc
+POSTHOOK: query: INSERT OVERWRITE TABLE src_index_test_rc SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_index_test_rc
+POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from src_index_test_rc order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_index_test_rc
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-29-10_218_4483472706835274396/-mr-10000
+POSTHOOK: query: select INPUT__FILE__NAME, key, BLOCK__OFFSET__INSIDE__FILE from src_index_test_rc order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_index_test_rc
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-29-10_218_4483472706835274396/-mr-10000
+POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	0	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	0	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	0	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	2	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	4	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	5	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	5	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	5	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	8	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	9	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	10	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	11	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	12	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	12	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	15	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	15	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	17	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	18	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	18	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	19	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	20	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	24	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	24	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	26	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	26	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	27	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	28	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	30	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	33	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	34	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	35	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	35	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	35	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	37	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	37	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	41	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	42	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	42	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	43	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	44	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	47	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	51	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	51	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	53	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	54	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	57	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	58	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	58	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	64	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	65	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	66	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	67	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	67	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	69	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	70	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	70	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	70	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	72	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	72	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	74	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	76	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	76	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	77	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	78	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	80	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	82	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	83	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	83	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	84	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	84	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	85	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	86	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	87	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	90	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	90	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	90	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	92	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	95	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	95	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	96	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	97	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	97	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	98	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	98	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	100	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	100	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	103	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	103	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	104	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	104	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	105	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	111	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	113	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	113	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	114	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	116	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	118	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	118	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	119	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	119	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	119	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	120	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	120	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	125	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	125	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	126	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	128	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	128	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	128	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	129	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	129	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	131	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	133	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	134	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	134	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	136	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	137	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	137	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	138	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	138	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	138	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	138	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	143	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	145	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	146	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	146	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	149	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	149	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	150	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	152	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	152	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	153	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	155	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	156	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	157	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	158	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	160	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	162	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	163	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	164	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	164	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	165	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	165	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	166	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	167	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	167	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	167	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	168	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	169	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	169	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	169	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	169	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	170	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	172	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	172	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	174	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	174	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	175	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	175	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	176	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	176	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	177	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	178	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	179	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	179	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	180	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	181	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	183	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	186	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	187	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	187	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	187	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	189	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	190	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	191	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	191	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	192	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	193	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	193	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	193	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	194	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	195	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	195	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	196	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	197	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	197	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	199	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	199	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	199	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	200	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	200	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	201	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	202	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	203	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	203	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	205	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	205	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	207	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	207	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	208	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	208	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	208	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	209	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	209	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	213	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	213	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	214	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	216	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	216	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	217	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	217	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	218	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	219	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	219	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	221	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	221	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	222	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	223	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	223	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	224	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	224	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	226	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	228	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	229	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	229	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	230	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	230	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	230	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	230	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	230	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	233	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	233	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	235	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	237	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	237	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	238	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	238	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	239	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	239	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	241	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	242	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	242	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	244	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	247	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	248	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	249	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	252	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	255	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	255	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	256	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	256	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	257	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	258	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	260	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	262	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	263	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	265	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	265	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	266	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	272	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	272	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	273	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	273	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	273	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	274	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	275	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	277	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	277	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	277	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	277	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	278	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	278	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	280	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	280	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	281	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	281	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	282	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	282	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	283	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	284	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	285	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	286	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	287	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	288	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	288	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	289	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	291	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	292	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	296	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	298	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	298	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	298	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	302	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	305	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	306	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	307	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	307	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	308	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	309	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	309	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	310	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	311	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	311	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	311	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	315	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	316	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	316	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	316	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	317	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	317	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	318	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	318	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	318	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	321	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	321	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	322	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	322	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	323	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	325	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	325	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	327	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	327	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	327	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	331	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	331	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	332	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	333	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	333	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	335	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	336	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	338	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	339	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	341	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	342	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	342	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	344	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	344	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	345	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	348	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	348	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	348	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	348	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	348	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	351	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	353	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	353	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	356	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	360	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	362	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	364	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	365	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	366	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	367	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	367	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	368	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	369	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	369	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	369	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	373	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	374	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	375	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	377	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	378	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	379	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	382	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	382	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	384	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	384	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	384	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	386	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	389	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	392	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	393	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	394	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	395	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	395	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	396	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	396	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	396	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	397	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	397	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	399	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	399	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	400	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	401	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	401	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	401	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	401	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	401	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	402	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	403	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	403	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	403	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	404	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	404	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	406	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	406	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	406	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	406	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	407	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	409	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	409	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	409	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	411	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	413	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	413	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	414	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	414	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	417	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	417	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	417	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	418	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	419	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	421	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	424	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	424	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	427	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	429	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	429	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	430	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	430	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	430	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	431	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	431	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	431	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	432	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	435	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	436	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	437	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	438	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	438	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	438	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	439	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	439	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	443	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	444	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	446	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	448	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	449	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	452	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	453	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	454	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	454	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	454	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	455	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	457	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	458	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	458	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	459	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	459	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	460	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	462	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	462	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	463	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	463	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	466	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	466	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	466	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	467	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	468	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	468	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	468	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	468	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	469	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	469	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	469	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	469	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	469	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	470	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	472	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	475	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	477	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	478	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	478	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	479	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	480	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	480	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	480	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	481	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	482	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	483	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	484	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	485	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	487	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	489	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	489	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	489	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	489	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	490	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	491	3606
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	492	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	492	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	493	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	494	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	495	151
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	496	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	497	2433
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	498	1278
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	498	4731
+pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src_index_test_rc/000000_0	498	2433
+PREHOOK: query: DROP TABLE src_index_test_rc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_index_test_rc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@src_index_test_rc
+POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP INDEX src_index on src_index_test_rc
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX src_index on src_index_test_rc
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

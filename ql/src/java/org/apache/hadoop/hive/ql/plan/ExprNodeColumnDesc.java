@@ -45,25 +45,25 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
   /**
    * Is the column a partitioned column.
    */
-  private boolean isPartitionCol;
+  private boolean isPartitionColOrVirtualCol;
 
   public ExprNodeColumnDesc() {
   }
 
   public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
-      boolean isPartitionCol) {
+      boolean isPartitionColOrVirtualCol) {
     super(typeInfo);
     this.column = column;
     this.tabAlias = tabAlias;
-    this.isPartitionCol = isPartitionCol;
+    this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
   }
 
   public ExprNodeColumnDesc(Class<?> c, String column, String tabAlias,
-      boolean isPartitionCol) {
+      boolean isPartitionColOrVirtualCol) {
     super(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c));
     this.column = column;
     this.tabAlias = tabAlias;
-    this.isPartitionCol = isPartitionCol;
+    this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
   }
 
   public String getColumn() {
@@ -82,12 +82,12 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
     this.tabAlias = tabAlias;
   }
 
-  public boolean getIsParititonCol() {
-    return isPartitionCol;
+  public boolean getIsPartitionColOrVirtualCol() {
+    return isPartitionColOrVirtualCol;
   }
 
-  public void setIsPartitionCol(boolean isPartitionCol) {
-    this.isPartitionCol = isPartitionCol;
+  public void setIsPartitionColOrVirtualCol(boolean isPartitionCol) {
+    this.isPartitionColOrVirtualCol = isPartitionCol;
   }
 
   @Override
@@ -110,7 +110,7 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeColumnDesc(typeInfo, column, tabAlias, isPartitionCol);
+    return new ExprNodeColumnDesc(typeInfo, column, tabAlias, isPartitionColOrVirtualCol);
   }
 
   @Override

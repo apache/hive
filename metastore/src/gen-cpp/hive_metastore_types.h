@@ -483,44 +483,60 @@ class Partition {
 class Index {
  public:
 
-  static const char* ascii_fingerprint; // = "3163EDEDA2214D868610157908B1AB7A";
-  static const uint8_t binary_fingerprint[16]; // = {0x31,0x63,0xED,0xED,0xA2,0x21,0x4D,0x86,0x86,0x10,0x15,0x79,0x08,0xB1,0xAB,0x7A};
+  static const char* ascii_fingerprint; // = "5FEE4F7E28935B644F207D74459F6A29";
+  static const uint8_t binary_fingerprint[16]; // = {0x5F,0xEE,0x4F,0x7E,0x28,0x93,0x5B,0x64,0x4F,0x20,0x7D,0x74,0x45,0x9F,0x6A,0x29};
 
-  Index() : indexName(""), indexType(0), tableName(""), dbName(""), partName("") {
+  Index() : indexName(""), indexHandlerClass(""), dbName(""), origTableName(""), createTime(0), lastAccessTime(0), indexTableName(""), deferredRebuild(0) {
   }
 
   virtual ~Index() throw() {}
 
   std::string indexName;
-  int32_t indexType;
-  std::string tableName;
+  std::string indexHandlerClass;
   std::string dbName;
-  std::vector<std::string>  colNames;
-  std::string partName;
+  std::string origTableName;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  std::string indexTableName;
+  StorageDescriptor sd;
+  std::map<std::string, std::string>  parameters;
+  bool deferredRebuild;
 
   struct __isset {
-    __isset() : indexName(false), indexType(false), tableName(false), dbName(false), colNames(false), partName(false) {}
+    __isset() : indexName(false), indexHandlerClass(false), dbName(false), origTableName(false), createTime(false), lastAccessTime(false), indexTableName(false), sd(false), parameters(false), deferredRebuild(false) {}
     bool indexName;
-    bool indexType;
-    bool tableName;
+    bool indexHandlerClass;
     bool dbName;
-    bool colNames;
-    bool partName;
+    bool origTableName;
+    bool createTime;
+    bool lastAccessTime;
+    bool indexTableName;
+    bool sd;
+    bool parameters;
+    bool deferredRebuild;
   } __isset;
 
   bool operator == (const Index & rhs) const
   {
     if (!(indexName == rhs.indexName))
       return false;
-    if (!(indexType == rhs.indexType))
-      return false;
-    if (!(tableName == rhs.tableName))
+    if (!(indexHandlerClass == rhs.indexHandlerClass))
       return false;
     if (!(dbName == rhs.dbName))
       return false;
-    if (!(colNames == rhs.colNames))
+    if (!(origTableName == rhs.origTableName))
       return false;
-    if (!(partName == rhs.partName))
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(indexTableName == rhs.indexTableName))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    if (!(parameters == rhs.parameters))
+      return false;
+    if (!(deferredRebuild == rhs.deferredRebuild))
       return false;
     return true;
   }

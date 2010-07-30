@@ -78,12 +78,14 @@ import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
@@ -145,7 +147,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return createTable(db, crtTbl);
       }
 
+      CreateIndexDesc crtIndex = work.getCreateIndexDesc();
+      if (crtIndex != null) {
+        return createIndex(db, crtIndex);
+      }
+      
+      DropIndexDesc dropIdx = work.getDropIdxDesc();
+      if(dropIdx != null) {
+        return dropIndex(db, dropIdx);
+      }
+
       CreateTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
+
       if (crtTblLike != null) {
         return createTableLike(db, crtTblLike);
       }
@@ -231,6 +244,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return (1);
     }
     assert false;
+    return 0;
+  }
+
+  private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
+    db.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropIdx.getTableName(), 
+        dropIdx.getIndexName(), true);
+    return 0;
+  }
+
+  private int createIndex(Hive db, CreateIndexDesc crtIndex) throws HiveException {
+
+    if( crtIndex.getSerde() != null) {
+      validateSerDe(crtIndex.getSerde());
+    }
+
+    db
+        .createIndex(
+        crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(), 
+        crtIndex.getIndexedCols(), crtIndex.getIndexTableName(), crtIndex.getDeferredRebuild(),
+        crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(), 
+        crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getSerdeProps(),
+        crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
+        crtIndex.getLineDelim(), crtIndex.getMapKeyDelim()
+        );
     return 0;
   }
 

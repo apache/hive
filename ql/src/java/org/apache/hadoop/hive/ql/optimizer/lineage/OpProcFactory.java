@@ -147,7 +147,9 @@ public class OpProcFactory {
         Dependency dep = new Dependency();
         BaseColumnInfo bci = new BaseColumnInfo();
         bci.setTabAlias(tai);
-        bci.setColumn(cols.get(cnt++));
+        if (cnt<cols.size()) {
+          bci.setColumn(cols.get(cnt++));          
+        }
 
         // Populate the dependency
         dep.setType(LineageInfo.DependencyType.SIMPLE);
@@ -248,8 +250,11 @@ public class OpProcFactory {
       else {
         int cnt = cols_size - 1;
         while (cnt >= 0) {
-          lCtx.getIndex().mergeDependency(op, out_cols.get(out_cols_size - cols_size + cnt),
-              lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
+          int count = out_cols_size - cols_size + cnt;
+          if (count >= 0 && count < out_cols.size()) {
+            lCtx.getIndex().mergeDependency(op, out_cols.get(count),
+                lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
+          }
           cnt--;
         }
       }

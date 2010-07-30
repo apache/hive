@@ -24,6 +24,8 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.IndexAlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -329,4 +331,72 @@ public interface IMetaStoreClient {
    */
   public Map<String, String> partitionNameToSpec(String name)
       throws MetaException, TException;
+
+  /**
+   * create an index
+   * @param index the index object
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   * @throws AlreadyExistsException 
+   */
+  public void createIndex(Index index, Table indexTable) throws InvalidObjectException,
+      MetaException, NoSuchObjectException, TException, AlreadyExistsException;
+
+  /**
+   * 
+   * @param dbName
+   * @param tblName
+   * @param indexName
+   * @return
+   * @throws MetaException
+   * @throws UnknownTableException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public Index getIndex(String dbName, String tblName, String indexName)
+      throws MetaException, UnknownTableException, NoSuchObjectException,
+      TException;
+
+
+  /**
+   * list indexes of the give base table
+   * @param db_name
+   * @param tbl_name
+   * @param max
+   * @return
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<Index> listIndexes(String db_name, String tbl_name,
+      short max) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * list all the index names of the give base table.
+   * 
+   * @param db_name
+   * @param tbl_name
+   * @param max
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<String> listIndexNames(String db_name, String tbl_name,
+      short max) throws MetaException, TException;
+  
+  /**
+   * @param db_name
+   * @param tbl_name
+   * @param name index name
+   * @param deleteData
+   * @return
+   * @throws NoSuchObjectException
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean dropIndex(String db_name, String tbl_name,
+      String name, boolean deleteData) throws NoSuchObjectException,
+      MetaException, TException;
 }

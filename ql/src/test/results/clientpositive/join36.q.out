@@ -80,7 +80,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col3
+              outputColumnNames: _col0, _col1, _col5
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -88,16 +88,16 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: int
-                outputColumnNames: _col0, _col1, _col3
+                outputColumnNames: _col0, _col1, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: int
                   outputColumnNames: _col0, _col1, _col2
                   File Output Operator
@@ -128,7 +128,7 @@ STAGE PLANS:
                   keys:
                     0 [Column[key]]
                     1 [Column[key]]
-                  outputColumnNames: _col0, _col1, _col3
+                  outputColumnNames: _col0, _col1, _col5
                   Position of Big Table: 1
                   Select Operator
                     expressions:
@@ -136,16 +136,16 @@ STAGE PLANS:
                           type: int
                           expr: _col1
                           type: int
-                          expr: _col3
+                          expr: _col5
                           type: int
-                    outputColumnNames: _col0, _col1, _col3
+                    outputColumnNames: _col0, _col1, _col5
                     Select Operator
                       expressions:
                             expr: _col0
                             type: int
                             expr: _col1
                             type: int
-                            expr: _col3
+                            expr: _col5
                             type: int
                       outputColumnNames: _col0, _col1, _col2
                       File Output Operator
@@ -164,7 +164,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-34-15_535_6309433655713597513/10000
+          destination: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-59-14_616_4425396855967291614/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-34-15_535_6309433655713597513/10002 
+        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-59-14_616_4425396855967291614/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -229,11 +229,11 @@ POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-34-18_197_2935477618280588903/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-18_888_3224355428368888304/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-34-18_197_2935477618280588903/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-18_888_3224355428368888304/-mr-10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]

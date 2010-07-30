@@ -104,10 +104,10 @@ STAGE PLANS:
             0 
             1 {VALUE._col3}
           handleSkewJoin: false
-          outputColumnNames: _col5
+          outputColumnNames: _col7
           Select Operator
             expressions:
-                  expr: _col5
+                  expr: _col7
                   type: string
             outputColumnNames: _col3
             Select Operator

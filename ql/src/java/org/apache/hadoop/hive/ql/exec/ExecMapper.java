@@ -177,7 +177,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       } else {
         // Since there is no concept of a group, we don't invoke
         // startGroup/endGroup for a mapper
-        mo.process((Writable) value);
+        mo.process((Writable)value);
         if (l4j.isInfoEnabled()) {
           numRows++;
           if (numRows == nextCntr) {

@@ -68,7 +68,7 @@ public final class ExprProcFactory {
       ExprNodeColumnDesc cd = (ExprNodeColumnDesc) nd;
       ExprProcCtx epc = (ExprProcCtx) procCtx;
       if (cd.getTabAlias().equalsIgnoreCase(epc.getTabAlias())
-          && cd.getIsParititonCol()) {
+          && cd.getIsPartitionColOrVirtualCol()) {
         newcd = cd.clone();
       } else {
         newcd = new ExprNodeConstantDesc(cd.getTypeInfo(), null);

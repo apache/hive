@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -30,6 +33,8 @@ public class TableScanDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String alias;
+  
+  private List<VirtualColumn> virtualCols;
 
   @SuppressWarnings("nls")
   public TableScanDesc() {
@@ -37,6 +42,11 @@ public class TableScanDesc implements Serializable {
 
   public TableScanDesc(final String alias) {
     this.alias = alias;
+  }
+  
+  public TableScanDesc(final String alias, List<VirtualColumn> vcs) {
+    this.alias = alias;
+    this.virtualCols = vcs;
   }
 
   @Explain(displayName = "alias")
@@ -47,4 +57,13 @@ public class TableScanDesc implements Serializable {
   public void setAlias(String alias) {
     this.alias = alias;
   }
+
+  public List<VirtualColumn> getVirtualCols() {
+    return virtualCols;
+  }
+
+  public void setVirtualCols(List<VirtualColumn> virtualCols) {
+    this.virtualCols = virtualCols;
+  }
+
 }

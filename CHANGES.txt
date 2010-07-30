@@ -27,6 +27,9 @@ Trunk -  Unreleased
     getColumns and HiveResultSet.get* methods based on column name.
     (Bennie Schut via jvs)
 
+    HIVE-417. Implement Indexing in Hive
+    (He Yongqiang via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
@@ -90,7 +93,7 @@ Trunk -  Unreleased
 
     HIVE-1425. hive.task.progress should be added to conf/hive-default.xml
     (John Sichi via Ning Zhang)
-    
+
     HIVE-1492. FileSinkOperator should remove duplicated files from the same task based on file sizes
     (Ning Zhang via He Yongqiang)
 

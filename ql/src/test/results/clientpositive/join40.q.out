@@ -72,16 +72,16 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2, _col3
+          outputColumnNames: _col0, _col1, _col4, _col5
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
+                  expr: _col4
                   type: string
-                  expr: _col3
+                  expr: _col5
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             File Output Operator
@@ -100,12 +100,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-20_375_8739608897771687968/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-06_210_967311768247652763/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-20_375_8739608897771687968/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-06_210_967311768247652763/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -727,12 +727,12 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col3
+          outputColumnNames: _col0, _col5
           Select Operator
             expressions:
                   expr: _col0
                   type: string
-                  expr: _col3
+                  expr: _col5
                   type: string
             outputColumnNames: _col0, _col1
             File Output Operator
@@ -751,12 +751,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-28_099_8963486530334152093/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-17_142_417700842326185495/-mr-10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-28_099_8963486530334152093/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-17_142_417700842326185495/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1882,20 +1882,20 @@ STAGE PLANS:
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
-                  type: string
-                  expr: _col3
-                  type: string
                   expr: _col4
                   type: string
                   expr: _col5
+                  type: string
+                  expr: _col8
+                  type: string
+                  expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             File Output Operator
@@ -1908,7 +1908,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_615_2133554865043548038/10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-31_857_1059875095406707508/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1956,12 +1956,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_711_5635391210022763694/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-31_970_2552113638239570524/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-35_711_5635391210022763694/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-31_970_2552113638239570524/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2135,20 +2135,20 @@ STAGE PLANS:
             1 {VALUE._col0} {VALUE._col1}
             2 {VALUE._col0} {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
-                  type: string
-                  expr: _col3
-                  type: string
                   expr: _col4
                   type: string
                   expr: _col5
+                  type: string
+                  expr: _col8
+                  type: string
+                  expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             File Output Operator
@@ -2161,7 +2161,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_526_7396170302427973294/10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-48_236_188923787391871879/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2209,12 +2209,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_626_1855366263501057105/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-48_363_6899226935845466819/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-47_626_1855366263501057105/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-00-48_363_6899226935845466819/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2315,7 +2315,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[_col0]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -2323,20 +2323,20 @@ STAGE PLANS:
                       type: string
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: string
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: string
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -2380,7 +2380,7 @@ STAGE PLANS:
                         keys:
                           0 [Column[key]]
                           1 [Column[_col0]]
-                        outputColumnNames: _col0, _col1, _col2, _col3
+                        outputColumnNames: _col0, _col1, _col4, _col5
                         Position of Big Table: 0
                         Select Operator
                           expressions:
@@ -2388,20 +2388,20 @@ STAGE PLANS:
                                 type: string
                                 expr: _col1
                                 type: string
-                                expr: _col2
+                                expr: _col4
                                 type: string
-                                expr: _col3
+                                expr: _col5
                                 type: string
-                          outputColumnNames: _col0, _col1, _col2, _col3
+                          outputColumnNames: _col0, _col1, _col4, _col5
                           Select Operator
                             expressions:
                                   expr: _col0
                                   type: string
                                   expr: _col1
                                   type: string
-                                  expr: _col2
+                                  expr: _col4
                                   type: string
-                                  expr: _col3
+                                  expr: _col5
                                   type: string
                             outputColumnNames: _col0, _col1, _col2, _col3
                             File Output Operator
@@ -2420,12 +2420,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-58_663_5257751854137888714/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-01-00_497_7810479910052206762/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-26-58_663_5257751854137888714/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-01-00_497_7810479910052206762/-mr-10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3059,7 +3059,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_552_3382271159548134599/10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-01-06_156_3096923421519776221/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -3093,9 +3093,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_618_4569452327751615405/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-01-06_237_3766500628681283400/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-27-07_618_4569452327751615405/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-01-06_237_3766500628681283400/-mr-10000
 1028

@@ -85,14 +85,14 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col4
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
+                  expr: _col4
                   type: string
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
@@ -164,14 +164,14 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col4
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: string
-                  expr: _col2
+                  expr: _col4
                   type: string
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
@@ -191,13 +191,13 @@ SELECT a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-07_706_4137842264568073660/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-55_951_7421942426050978131/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-07_706_4137842264568073660/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-55_951_7421942426050978131/-mr-10000
 1	11	0
 1	11	0
 1	11	0
@@ -207,13 +207,13 @@ SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-10_458_6076144350106106313/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-00_878_7390588821971448332/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-10_458_6076144350106106313/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-00_878_7390588821971448332/-mr-10000
 1	11	0
 1	11	0
 1	11	0
@@ -280,7 +280,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col4
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -302,7 +302,7 @@ STAGE PLANS:
                     type: string
               tag: 0
               value expressions:
-                    expr: _col2
+                    expr: _col4
                     type: string
                     expr: _col0
                     type: string
@@ -328,19 +328,19 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {VALUE._col3}
+            0 {VALUE._col0} {VALUE._col4} {VALUE._col5}
             1 {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col2, _col3, _col5
+          outputColumnNames: _col0, _col4, _col5, _col9
           Select Operator
             expressions:
-                  expr: _col2
+                  expr: _col4
                   type: string
                   expr: _col0
                   type: string
-                  expr: _col3
-                  type: string
                   expr: _col5
+                  type: string
+                  expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             File Output Operator
@@ -417,7 +417,7 @@ STAGE PLANS:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col4
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -439,7 +439,7 @@ STAGE PLANS:
                     type: string
               tag: 1
               value expressions:
-                    expr: _col2
+                    expr: _col4
                     type: string
                     expr: _col0
                     type: string
@@ -465,19 +465,19 @@ STAGE PLANS:
           condition map:
                Right Outer Join0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col2} {VALUE._col3}
+            0 {VALUE._col0} {VALUE._col4} {VALUE._col5}
             1 {VALUE._col1}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col2, _col3, _col5
+          outputColumnNames: _col0, _col4, _col5, _col9
           Select Operator
             expressions:
-                  expr: _col2
+                  expr: _col4
                   type: string
                   expr: _col0
                   type: string
-                  expr: _col3
-                  type: string
                   expr: _col5
+                  type: string
+                  expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             File Output Operator
@@ -500,7 +500,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-13_343_7536917868494596794/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-07_262_9113480534666709881/-mr-10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -509,7 +509,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-13_343_7536917868494596794/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-07_262_9113480534666709881/-mr-10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -522,7 +522,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-18_608_5119660399295658126/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-15_685_7005957441622210859/-mr-10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -531,7 +531,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-18_608_5119660399295658126/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-15_685_7005957441622210859/-mr-10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -627,14 +627,14 @@ STAGE PLANS:
             1 {VALUE._col0}
             2 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col2, _col4
+          outputColumnNames: _col0, _col4, _col8
           Select Operator
             expressions:
                   expr: _col0
                   type: string
-                  expr: _col2
-                  type: string
                   expr: _col4
+                  type: string
+                  expr: _col8
                   type: string
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
@@ -739,14 +739,14 @@ STAGE PLANS:
             1 {VALUE._col0}
             2 {VALUE._col0}
           handleSkewJoin: false
-          outputColumnNames: _col0, _col2, _col4
+          outputColumnNames: _col0, _col4, _col8
           Select Operator
             expressions:
                   expr: _col0
                   type: string
-                  expr: _col2
-                  type: string
                   expr: _col4
+                  type: string
+                  expr: _col8
                   type: string
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
@@ -769,7 +769,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-24_350_4665014421054179440/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-24_689_644851301802156755/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -779,7 +779,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-24_350_4665014421054179440/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-24_689_644851301802156755/-mr-10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -800,7 +800,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-34_969_3293491720663599421/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-30_651_4057662598234428262/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -810,7 +810,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-36-34_969_3293491720663599421/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-30_651_4057662598234428262/-mr-10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL

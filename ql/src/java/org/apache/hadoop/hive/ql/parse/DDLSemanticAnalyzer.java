@@ -37,17 +37,31 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.index.HiveIndex;
+import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
@@ -107,6 +121,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE) {
       analyzeDropTable(ast, false);
+    } else if (ast.getToken().getType() == HiveParser.TOK_CREATEINDEX) {
+      analyzeCreateIndex(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_DROPINDEX) {
+      analyzeDropIndex(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescribeTable(ast);
@@ -157,6 +175,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableFileFormat(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
       analyzeAlterTableClusterSort(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_REBUILD) {
+      analyzeUpdateIndex(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
@@ -173,6 +193,162 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropTblDesc), conf));
   }
 
+  private void analyzeCreateIndex(ASTNode ast) throws SemanticException {
+    String indexName = unescapeIdentifier(ast.getChild(0).getText());
+    String typeName = unescapeSQLString(ast.getChild(1).getText());
+    String tableName = unescapeIdentifier(ast.getChild(2).getText());
+    List<String> indexedCols = getColumnNames((ASTNode) ast.getChild(3));
+    
+    IndexType indexType = HiveIndex.getIndexType(typeName);
+    if (indexType != null) {
+      typeName = indexType.getHandlerClsName();
+    } else {
+      try {
+        Class.forName(typeName);
+      } catch (Exception e) {
+        throw new SemanticException("class name provided for index handler not found.", e);
+      }
+    }
+    
+    String indexTableName = null;
+    boolean deferredRebuild = false;
+    String location = null;
+    Map<String, String> idxProps = null;
+    
+    RowFormatParams rowFormatParams = new RowFormatParams();
+    StorageFormat storageFormat = new StorageFormat();
+    AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
+    
+    for (int idx = 4; idx < ast.getChildCount(); idx++) {
+      ASTNode child = (ASTNode) ast.getChild(idx);
+      if (storageFormat.fillStorageFormat(child, shared)) {
+        continue;
+      }
+      switch (child.getToken().getType()) {
+      case HiveParser.TOK_TABLEROWFORMAT:
+        rowFormatParams.analyzeRowFormat(shared, child);
+        break;
+      case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
+        ASTNode ch = (ASTNode) child.getChild(0);
+        indexTableName = unescapeIdentifier(ch.getText());
+        break;
+      case HiveParser.TOK_DEFERRED_REBUILDINDEX:
+        deferredRebuild = true;
+        break;
+      case HiveParser.TOK_TABLELOCATION:
+        location = unescapeSQLString(child.getChild(0).getText());
+        break;
+      case HiveParser.TOK_TABLEPROPERTIES:
+        idxProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
+        break;
+      case HiveParser.TOK_TABLESERIALIZER:
+        child = (ASTNode) child.getChild(0);
+        shared.serde = unescapeSQLString(child.getChild(0).getText());
+        if (child.getChildCount() == 2) {
+          readProps((ASTNode) (child.getChild(1).getChild(0)),
+              shared.serdeProps);
+        }
+        break;
+      }
+    }
+    
+    storageFormat.fillDefaultStorageFormat(shared);
+    
+    CreateIndexDesc crtIndexDesc = new CreateIndexDesc(tableName, indexName,
+        indexedCols, indexTableName, deferredRebuild, storageFormat.inputFormat, storageFormat.outputFormat,
+        storageFormat.storageHandler, typeName, location, idxProps,
+        shared.serde, shared.serdeProps, rowFormatParams.collItemDelim,
+        rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
+        rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim);
+    Task<?> createIndex = TaskFactory.get(new DDLWork(crtIndexDesc), conf);
+    rootTasks.add(createIndex);
+  }
+  
+  private void analyzeDropIndex(ASTNode ast) {
+    String indexName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = unescapeIdentifier(ast.getChild(1).getText());
+    DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        dropIdxDesc), conf));
+  }
+      
+  private void analyzeUpdateIndex(ASTNode ast) throws SemanticException {
+    String baseTableName = unescapeIdentifier(ast.getChild(0).getText());
+    String indexName = unescapeIdentifier(ast.getChild(1).getText());
+    HashMap<String, String> partSpec = null;
+    Tree part = ast.getChild(2);
+    if (part != null)
+      partSpec = extractPartitionSpecs(part);
+    List<Task<?>> indexBuilder = getIndexBuilderMapRed(baseTableName, indexName, partSpec);
+    rootTasks.addAll(indexBuilder);
+  }
+    
+  private List<Task<?>> getIndexBuilderMapRed(String baseTableName, String indexName,
+      HashMap<String, String> partSpec) throws SemanticException {
+    try {
+      Index index = db.getIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, baseTableName, indexName);
+      Table indexTbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,index.getIndexTableName());
+      String baseTblName = index.getOrigTableName();
+      Table baseTbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+          baseTblName);
+     
+      String handlerCls = index.getIndexHandlerClass();
+      HiveIndexHandler handler = HiveUtils.getIndexHandler(conf, handlerCls);
+
+      List<Partition> indexTblPartitions = null;
+      List<Partition> baseTblPartitions = null;
+      if(indexTbl != null) {
+        indexTblPartitions = new ArrayList<Partition>();
+        baseTblPartitions = preparePartitions(baseTbl, partSpec,
+            indexTbl, db, indexTblPartitions);        
+      }
+      
+      List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl, index,
+          indexTblPartitions, baseTblPartitions, indexTbl, db);
+      return ret;
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+  
+  private List<Partition> preparePartitions(
+      org.apache.hadoop.hive.ql.metadata.Table baseTbl,
+      HashMap<String, String> partSpec,
+      org.apache.hadoop.hive.ql.metadata.Table indexTbl, Hive db,
+      List<Partition> indexTblPartitions)
+      throws HiveException, MetaException {
+    List<Partition> baseTblPartitions = new ArrayList<Partition>();
+    if (partSpec != null) {
+      // if partspec is specified, then only producing index for that
+      // partition
+      Partition part = db.getPartition(baseTbl, partSpec, false);
+      if (part == null) {
+        throw new HiveException("Partition "
+            + Warehouse.makePartName(partSpec) + " does not exist in table "
+            + baseTbl.getTableName());
+      }
+      baseTblPartitions.add(part);
+      Partition indexPart = db.getPartition(indexTbl, partSpec, false);
+      if (indexPart == null) {
+        indexPart = db.createPartition(indexTbl, partSpec);
+      }
+      indexTblPartitions.add(indexPart);
+    } else if (baseTbl.isPartitioned()) {
+      // if no partition is specified, create indexes for all partitions one
+      // by one.
+      baseTblPartitions = db.getPartitions(baseTbl);
+      for (Partition basePart : baseTblPartitions) {
+        HashMap<String, String> pSpec = basePart.getSpec();
+        Partition indexPart = db.getPartition(indexTbl, pSpec, false);
+        if (indexPart == null) {
+          indexPart = db.createPartition(indexTbl, pSpec);
+        }
+        indexTblPartitions.add(indexPart);
+      }
+    }
+    return baseTblPartitions;
+  }
+  
   private void analyzeAlterTableProps(ASTNode ast, boolean expectView)
     throws SemanticException {
 

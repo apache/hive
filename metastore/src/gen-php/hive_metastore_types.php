@@ -1695,11 +1695,15 @@ class metastore_Index {
   static $_TSPEC;
 
   public $indexName = null;
-  public $indexType = null;
-  public $tableName = null;
+  public $indexHandlerClass = null;
   public $dbName = null;
-  public $colNames = null;
-  public $partName = null;
+  public $origTableName = null;
+  public $createTime = null;
+  public $lastAccessTime = null;
+  public $indexTableName = null;
+  public $sd = null;
+  public $parameters = null;
+  public $deferredRebuild = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1709,28 +1713,49 @@ class metastore_Index {
           'type' => TType::STRING,
           ),
         2 => array(
-          'var' => 'indexType',
-          'type' => TType::I32,
-          ),
-        3 => array(
-          'var' => 'tableName',
+          'var' => 'indexHandlerClass',
           'type' => TType::STRING,
           ),
-        4 => array(
+        3 => array(
           'var' => 'dbName',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'origTableName',
+          'type' => TType::STRING,
+          ),
         5 => array(
-          'var' => 'colNames',
-          'type' => TType::LST,
-          'etype' => TType::STRING,
-          'elem' => array(
+          'var' => 'createTime',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'lastAccessTime',
+          'type' => TType::I32,
+          ),
+        7 => array(
+          'var' => 'indexTableName',
+          'type' => TType::STRING,
+          ),
+        8 => array(
+          'var' => 'sd',
+          'type' => TType::STRUCT,
+          'class' => 'metastore_StorageDescriptor',
+          ),
+        9 => array(
+          'var' => 'parameters',
+          'type' => TType::MAP,
+          'ktype' => TType::STRING,
+          'vtype' => TType::STRING,
+          'key' => array(
+            'type' => TType::STRING,
+          ),
+          'val' => array(
             'type' => TType::STRING,
             ),
           ),
-        6 => array(
-          'var' => 'partName',
-          'type' => TType::STRING,
+        10 => array(
+          'var' => 'deferredRebuild',
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -1738,20 +1763,32 @@ class metastore_Index {
       if (isset($vals['indexName'])) {
         $this->indexName = $vals['indexName'];
       }
-      if (isset($vals['indexType'])) {
-        $this->indexType = $vals['indexType'];
-      }
-      if (isset($vals['tableName'])) {
-        $this->tableName = $vals['tableName'];
+      if (isset($vals['indexHandlerClass'])) {
+        $this->indexHandlerClass = $vals['indexHandlerClass'];
       }
       if (isset($vals['dbName'])) {
         $this->dbName = $vals['dbName'];
       }
-      if (isset($vals['colNames'])) {
-        $this->colNames = $vals['colNames'];
+      if (isset($vals['origTableName'])) {
+        $this->origTableName = $vals['origTableName'];
       }
-      if (isset($vals['partName'])) {
-        $this->partName = $vals['partName'];
+      if (isset($vals['createTime'])) {
+        $this->createTime = $vals['createTime'];
+      }
+      if (isset($vals['lastAccessTime'])) {
+        $this->lastAccessTime = $vals['lastAccessTime'];
+      }
+      if (isset($vals['indexTableName'])) {
+        $this->indexTableName = $vals['indexTableName'];
+      }
+      if (isset($vals['sd'])) {
+        $this->sd = $vals['sd'];
+      }
+      if (isset($vals['parameters'])) {
+        $this->parameters = $vals['parameters'];
+      }
+      if (isset($vals['deferredRebuild'])) {
+        $this->deferredRebuild = $vals['deferredRebuild'];
       }
     }
   }
@@ -1783,46 +1820,78 @@ class metastore_Index {
           }
           break;
         case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->indexType);
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->indexHandlerClass);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 3:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tableName);
+            $xfer += $input->readString($this->dbName);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 4:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
+            $xfer += $input->readString($this->origTableName);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 5:
-          if ($ftype == TType::LST) {
-            $this->colNames = array();
-            $_size78 = 0;
-            $_etype81 = 0;
-            $xfer += $input->readListBegin($_etype81, $_size78);
-            for ($_i82 = 0; $_i82 < $_size78; ++$_i82)
-            {
-              $elem83 = null;
-              $xfer += $input->readString($elem83);
-              $this->colNames []= $elem83;
-            }
-            $xfer += $input->readListEnd();
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->createTime);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 6:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->lastAccessTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->partName);
+            $xfer += $input->readString($this->indexTableName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRUCT) {
+            $this->sd = new metastore_StorageDescriptor();
+            $xfer += $this->sd->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::MAP) {
+            $this->parameters = array();
+            $_size78 = 0;
+            $_ktype79 = 0;
+            $_vtype80 = 0;
+            $xfer += $input->readMapBegin($_ktype79, $_vtype80, $_size78);
+            for ($_i82 = 0; $_i82 < $_size78; ++$_i82)
+            {
+              $key83 = '';
+              $val84 = '';
+              $xfer += $input->readString($key83);
+              $xfer += $input->readString($val84);
+              $this->parameters[$key83] = $val84;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->deferredRebuild);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1845,41 +1914,65 @@ class metastore_Index {
       $xfer += $output->writeString($this->indexName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->indexType !== null) {
-      $xfer += $output->writeFieldBegin('indexType', TType::I32, 2);
-      $xfer += $output->writeI32($this->indexType);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tableName !== null) {
-      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
-      $xfer += $output->writeString($this->tableName);
+    if ($this->indexHandlerClass !== null) {
+      $xfer += $output->writeFieldBegin('indexHandlerClass', TType::STRING, 2);
+      $xfer += $output->writeString($this->indexHandlerClass);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 4);
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 3);
       $xfer += $output->writeString($this->dbName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->colNames !== null) {
-      if (!is_array($this->colNames)) {
+    if ($this->origTableName !== null) {
+      $xfer += $output->writeFieldBegin('origTableName', TType::STRING, 4);
+      $xfer += $output->writeString($this->origTableName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->createTime !== null) {
+      $xfer += $output->writeFieldBegin('createTime', TType::I32, 5);
+      $xfer += $output->writeI32($this->createTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->lastAccessTime !== null) {
+      $xfer += $output->writeFieldBegin('lastAccessTime', TType::I32, 6);
+      $xfer += $output->writeI32($this->lastAccessTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->indexTableName !== null) {
+      $xfer += $output->writeFieldBegin('indexTableName', TType::STRING, 7);
+      $xfer += $output->writeString($this->indexTableName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->sd !== null) {
+      if (!is_object($this->sd)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('colNames', TType::LST, 5);
+      $xfer += $output->writeFieldBegin('sd', TType::STRUCT, 8);
+      $xfer += $this->sd->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('parameters', TType::MAP, 9);
       {
-        $output->writeListBegin(TType::STRING, count($this->colNames));
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->colNames as $iter84)
+          foreach ($this->parameters as $kiter85 => $viter86)
           {
-            $xfer += $output->writeString($iter84);
+            $xfer += $output->writeString($kiter85);
+            $xfer += $output->writeString($viter86);
           }
         }
-        $output->writeListEnd();
+        $output->writeMapEnd();
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->partName !== null) {
-      $xfer += $output->writeFieldBegin('partName', TType::STRING, 6);
-      $xfer += $output->writeString($this->partName);
+    if ($this->deferredRebuild !== null) {
+      $xfer += $output->writeFieldBegin('deferredRebuild', TType::BOOL, 10);
+      $xfer += $output->writeBool($this->deferredRebuild);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1953,15 +2046,15 @@ class metastore_Schema {
         case 1:
           if ($ftype == TType::LST) {
             $this->fieldSchemas = array();
-            $_size85 = 0;
-            $_etype88 = 0;
-            $xfer += $input->readListBegin($_etype88, $_size85);
-            for ($_i89 = 0; $_i89 < $_size85; ++$_i89)
+            $_size87 = 0;
+            $_etype90 = 0;
+            $xfer += $input->readListBegin($_etype90, $_size87);
+            for ($_i91 = 0; $_i91 < $_size87; ++$_i91)
             {
-              $elem90 = null;
-              $elem90 = new metastore_FieldSchema();
-              $xfer += $elem90->read($input);
-              $this->fieldSchemas []= $elem90;
+              $elem92 = null;
+              $elem92 = new metastore_FieldSchema();
+              $xfer += $elem92->read($input);
+              $this->fieldSchemas []= $elem92;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -1971,17 +2064,17 @@ class metastore_Schema {
         case 2:
           if ($ftype == TType::MAP) {
             $this->properties = array();
-            $_size91 = 0;
-            $_ktype92 = 0;
-            $_vtype93 = 0;
-            $xfer += $input->readMapBegin($_ktype92, $_vtype93, $_size91);
-            for ($_i95 = 0; $_i95 < $_size91; ++$_i95)
+            $_size93 = 0;
+            $_ktype94 = 0;
+            $_vtype95 = 0;
+            $xfer += $input->readMapBegin($_ktype94, $_vtype95, $_size93);
+            for ($_i97 = 0; $_i97 < $_size93; ++$_i97)
             {
-              $key96 = '';
-              $val97 = '';
-              $xfer += $input->readString($key96);
-              $xfer += $input->readString($val97);
-              $this->properties[$key96] = $val97;
+              $key98 = '';
+              $val99 = '';
+              $xfer += $input->readString($key98);
+              $xfer += $input->readString($val99);
+              $this->properties[$key98] = $val99;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -2009,9 +2102,9 @@ class metastore_Schema {
       {
         $output->writeListBegin(TType::STRUCT, count($this->fieldSchemas));
         {
-          foreach ($this->fieldSchemas as $iter98)
+          foreach ($this->fieldSchemas as $iter100)
           {
-            $xfer += $iter98->write($output);
+            $xfer += $iter100->write($output);
           }
         }
         $output->writeListEnd();
@@ -2026,10 +2119,10 @@ class metastore_Schema {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
-          foreach ($this->properties as $kiter99 => $viter100)
+          foreach ($this->properties as $kiter101 => $viter102)
           {
-            $xfer += $output->writeString($kiter99);
-            $xfer += $output->writeString($viter100);
+            $xfer += $output->writeString($kiter101);
+            $xfer += $output->writeString($viter102);
           }
         }
         $output->writeMapEnd();

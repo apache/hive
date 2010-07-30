@@ -289,6 +289,52 @@
         </value>
       </field>
     </class>
-
+    
+    <class name="MIndex" table="IDXS" identity-type="datastore" detachable="true">
+      <index name="UniqueINDEX" unique="true">
+        <column name="INDEX_NAME"/>
+        <column name="ORIG_TBL_ID"/>
+      </index>
+      
+      <datastore-identity>
+        <column name="INDEX_ID"/>
+      </datastore-identity>
+      <field name="indexName">
+        <column name="INDEX_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="origTable">
+        <column name="ORIG_TBL_ID"/>
+      </field>
+      <field name="indexTable">
+        <column name="INDEX_TBL_ID"/>
+      </field>
+      <field name="indexHandlerClass">
+        <column name="INDEX_HANDLER_CLASS"/>
+      </field>
+      <field name="deferredRebuild">
+        <column name="DEFERRED_REBUILD"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="lastAccessTime">
+        <column name="LAST_ACCESS_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="sd" dependent="true">
+        <column name="SD_ID"/>
+      </field>
+      <field name="parameters" table="INDEX_PARAMS">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <join>
+          <column name="INDEX_ID"/>
+        </join>
+        <key>
+           <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
+        </key>
+        <value>
+           <column name="PARAM_VALUE" length="767" jdbc-type="VARCHAR"/>
+        </value>
+      </field>
+    </class>
   </package>
 </jdo>

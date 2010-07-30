@@ -58,7 +58,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -66,20 +66,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -98,12 +98,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-20_114_6729049322478705958/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-02_694_3636391872212461439/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-20_114_6729049322478705958/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-02_694_3636391872212461439/-mr-10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -136,7 +136,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -144,20 +144,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -176,12 +176,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-22_746_1628423413210127007/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-07_018_7301752522071852777/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-22_746_1628423413210127007/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-07_018_7301752522071852777/-mr-10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -217,7 +217,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -225,20 +225,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -257,12 +257,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-25_414_5347137080834424806/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-11_316_7090256510661284902/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-25_414_5347137080834424806/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-11_316_7090256510661284902/-mr-10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -299,7 +299,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -307,20 +307,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -339,12 +339,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-28_070_5426906800620762025/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-15_627_5055331353742537985/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-28_070_5426906800620762025/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-15_627_5055331353742537985/-mr-10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -384,7 +384,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -392,20 +392,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -424,12 +424,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-30_739_59573784104638805/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-20_888_3104242973720820092/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-30_739_59573784104638805/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-20_888_3104242973720820092/-mr-10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -462,7 +462,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -470,20 +470,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -502,12 +502,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-33_409_6668885682210635497/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-25_305_6648820221031980381/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-33_409_6668885682210635497/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-25_305_6648820221031980381/-mr-10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -543,7 +543,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -551,20 +551,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -583,12 +583,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-36_171_6013991795978323279/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-29_574_4161973268171742510/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-36_171_6013991795978323279/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-29_574_4161973268171742510/-mr-10000
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -625,7 +625,7 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0, _col1, _col2, _col3
+              outputColumnNames: _col0, _col1, _col4, _col5
               Position of Big Table: 0
               Select Operator
                 expressions:
@@ -633,20 +633,20 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-                      expr: _col2
+                      expr: _col4
                       type: int
-                      expr: _col3
+                      expr: _col5
                       type: string
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col4, _col5
                 Select Operator
                   expressions:
                         expr: _col0
                         type: int
                         expr: _col1
                         type: string
-                        expr: _col2
+                        expr: _col4
                         type: int
-                        expr: _col3
+                        expr: _col5
                         type: string
                   outputColumnNames: _col0, _col1, _col2, _col3
                   File Output Operator
@@ -665,12 +665,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_3
 PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-38_942_2715973452861735765/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-33_942_7132087148038788477/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_3
 POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-59-38_942_2715973452861735765/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-45-33_942_7132087148038788477/-mr-10000
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4

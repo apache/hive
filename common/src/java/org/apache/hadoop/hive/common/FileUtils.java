@@ -71,6 +71,9 @@ public final class FileUtils {
       // no scheme - use default file system uri
       scheme = fsUri.getScheme();
       authority = fsUri.getAuthority();
+      if(authority == null) {
+        authority = "";
+      }
     } else {
       if(authority == null) {
         // no authority - use default one if it applies

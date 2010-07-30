@@ -37,11 +37,11 @@ STAGE PLANS:
                     type: boolean
                 Select Operator
                   expressions:
-                        expr: key
-                        type: string
                         expr: value
                         type: string
-                  outputColumnNames: key, value
+                        expr: key
+                        type: string
+                  outputColumnNames: value, key
                   Group By Operator
                     aggregations:
                           expr: count(key)
@@ -110,7 +110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1708527216/10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_197_7689399677363243197/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -159,7 +159,7 @@ WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1771662729/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_312_2994304887857298954/-mr-10000
 POSTHOOK: query: SELECT max(src1.c1), src1.c2 
 FROM
 (SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
@@ -167,7 +167,7 @@ WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1771662729/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_312_2994304887857298954/-mr-10000
 val_4	1
 val_399	2
 val_396	3

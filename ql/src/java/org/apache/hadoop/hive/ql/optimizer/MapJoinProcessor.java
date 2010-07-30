@@ -198,11 +198,11 @@ public class MapJoinProcessor implements Transform {
             outputColumnNames.add(outputCol);
             ExprNodeDesc colDesc = new ExprNodeColumnDesc(valueInfo.getType(),
                 valueInfo.getInternalName(), valueInfo.getTabAlias(), valueInfo
-                .getIsPartitionCol());
+                .getIsVirtualCol());
             values.add(colDesc);
             outputRS.put(key, field, new ColumnInfo(outputCol, valueInfo
                 .getType(), valueInfo.getTabAlias(), valueInfo
-                .getIsPartitionCol()));
+                .getIsVirtualCol(),valueInfo.isHiddenVirtualCol()));
             colExprMap.put(outputCol, colDesc);
           }
         }
@@ -309,11 +309,11 @@ public class MapJoinProcessor implements Transform {
       String[] nm = inputRR.reverseLookup(internalName);
       ColumnInfo valueInfo = inputRR.get(nm[0], nm[1]);
       ExprNodeDesc colDesc = new ExprNodeColumnDesc(valueInfo.getType(),
-          valueInfo.getInternalName(), nm[0], valueInfo.getIsPartitionCol());
+          valueInfo.getInternalName(), nm[0], valueInfo.getIsVirtualCol());
       exprs.add(colDesc);
       outputs.add(internalName);
       outputRS.put(nm[0], nm[1], new ColumnInfo(internalName, valueInfo
-          .getType(), nm[0], valueInfo.getIsPartitionCol()));
+          .getType(), nm[0], valueInfo.getIsVirtualCol(), valueInfo.isHiddenVirtualCol()));
       colExprMap.put(internalName, colDesc);
     }
 

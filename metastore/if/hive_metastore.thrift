@@ -88,15 +88,17 @@ struct Partition {
   7: map<string, string> parameters
 }
 
-// index on a hive table is also another table whose columns are the subset of the base table columns along with the offset
-// this will automatically generate table (table_name_index_name)
 struct Index {
   1: string       indexName, // unique with in the whole database namespace
-  2: i32          indexType, // reserved
-  3: string       tableName,
-  4: string       dbName,
-  5: list<string> colNames,  // for now columns will be sorted in the ascending order
-  6: string       partName   // partition name
+  2: string       indexHandlerClass, // reserved
+  3: string       dbName,
+  4: string       origTableName,
+  5: i32          createTime,
+  6: i32          lastAccessTime,
+  7: string       indexTableName,
+  8: StorageDescriptor   sd,
+  9: map<string, string> parameters,
+  10: bool         deferredRebuild
 }
 
 // schema of the table/query results etc.
@@ -243,7 +245,20 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // converts a partition name into a partition specification (a mapping from
   // the partition cols to the values)
   map<string, string> partition_name_to_spec(1: string part_name)
-                          throws(1: MetaException o1)                     
+                          throws(1: MetaException o1)
+  
+  //index
+  Index add_index(1:Index new_index, 2: Table index_table)
+                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  bool drop_index_by_name(1:string db_name, 2:string tbl_name, 3:string index_name, 4:bool deleteData)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2) 
+  Index get_index_by_name(1:string db_name 2:string tbl_name, 3:string index_name)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  list<Index> get_indexes(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
+                       throws(1:MetaException o2)
 }
 
 // For storing info about archived partitions in parameters
