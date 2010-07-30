@@ -1,5 +1,8 @@
 set hive.cli.errors.ignore=true;
 
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19, 0.20)
+-- (this test is flaky so it is currently disabled for all Hadoop versions)
+
 CREATE TABLE loadpart1(a STRING, b STRING) PARTITIONED BY (ds STRING);
 
 INSERT OVERWRITE TABLE loadpart1 PARTITION (ds='2009-01-01')

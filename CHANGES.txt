@@ -97,6 +97,9 @@ Trunk -  Unreleased
     HIVE-1492. FileSinkOperator should remove duplicated files from the same task based on file sizes
     (Ning Zhang via He Yongqiang)
 
+    HIVE-1491. fix or disable loadpart_err.q
+    (John Sichi via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
