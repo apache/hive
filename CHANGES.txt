@@ -19,9 +19,13 @@ Trunk -  Unreleased
     HIVE-1481. ngrams() UDAF for estimating top-k n-gram frequencies
     (Mayank Lahiri via jvs)
 
-    HIVE-1408. add option to let hive automatically run in local mode based on 
+    HIVE-1408. add option to let hive automatically run in local mode based on
     tunable heuristics
     (Joydeep Sen Sarma via Ning Zhang)
+
+    HIVE-1126. Missiong some Jdbc functionality like getTables
+    getColumns and HiveResultSet.get* methods based on column name.
+    (Bennie Schut via jvs)
 
   IMPROVEMENTS
 

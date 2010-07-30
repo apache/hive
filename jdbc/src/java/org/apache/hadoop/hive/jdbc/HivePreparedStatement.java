@@ -48,9 +48,9 @@ import org.apache.hadoop.hive.service.HiveInterface;
  *
  */
 public class HivePreparedStatement implements PreparedStatement {
-  String sql;
-  JdbcSessionState session;
-  HiveInterface client;
+  private String sql;
+  private JdbcSessionState session;
+  private HiveInterface client;
 
   /**
    *
@@ -107,7 +107,7 @@ public class HivePreparedStatement implements PreparedStatement {
     } catch (Exception ex) {
       throw new SQLException(ex.toString());
     }
-    return new HiveResultSet(client);
+    return new HiveQueryResultSet(client);
   }
 
   /*
@@ -263,7 +263,8 @@ public class HivePreparedStatement implements PreparedStatement {
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream, long)
    */
 
-  public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+  public void setBlob(int parameterIndex, InputStream inputStream, long length)
+          throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }

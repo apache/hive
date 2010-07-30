@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import junit.framework.TestCase;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -27,11 +31,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-
-import junit.framework.TestCase;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * TestJdbcDriver.
@@ -39,8 +43,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
  */
 public class TestJdbcDriver extends TestCase {
   private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
-  private static String tableName = "testHiveDriverTable";
-  private static String partitionedTableName = "testHiveDriverPartitionedTable";
+  private static String tableName = "testHiveJdbcDriverTable";
+  private static String tableComment = "Simple table";
+  private static String viewName = "testHiveJdbcDriverView";
+  private static String viewComment = "Simple view";
+  private static String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
+  private static String partitionedTableComment = "Partitioned table";
   private final HiveConf conf;
   private final Path dataFilePath;
   private Connection con;
@@ -75,11 +83,12 @@ public class TestJdbcDriver extends TestCase {
     try {
       stmt.executeQuery("drop table " + tableName);
     } catch (Exception ex) {
+      fail(ex.toString());
     }
 
     // create table
     ResultSet res = stmt.executeQuery("create table " + tableName
-        + " (key int, value string)");
+        + " (key int comment 'the key', value string) comment '"+tableComment+"'");
     assertFalse(res.next());
 
     // load data
@@ -93,10 +102,12 @@ public class TestJdbcDriver extends TestCase {
     try {
       stmt.executeQuery("drop table " + partitionedTableName);
     } catch (Exception ex) {
+      fail(ex.toString());
     }
 
     res = stmt.executeQuery("create table " + partitionedTableName
-        + " (key int, value string) partitioned by (dt STRING)");
+        + " (key int, value string) comment '"+partitionedTableComment
+            +"' partitioned by (dt STRING)");
     assertFalse(res.next());
 
     // load data
@@ -105,6 +116,17 @@ public class TestJdbcDriver extends TestCase {
         + " PARTITION (dt='20090619')");
     assertFalse(res.next());
 
+    // drop view. ignore error.
+    try {
+      stmt.executeQuery("drop view " + viewName);
+    } catch (Exception ex) {
+      fail(ex.toString());
+    }
+
+    // create view
+    res = stmt.executeQuery("create view " + viewName + " comment '"+viewComment
+            +"' as select * from "+ tableName);
+    assertFalse(res.next());
   }
 
   protected void tearDown() throws Exception {
@@ -177,9 +199,9 @@ public class TestJdbcDriver extends TestCase {
     while (moreRow) {
       try {
         i++;
-        res.getInt(1);
-        res.getString(1);
-        res.getString(2);
+        assertEquals(res.getInt(1), res.getInt("key"));
+        assertEquals(res.getString(1), res.getString("key"));
+        assertEquals(res.getString(2), res.getString("value"));
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
             .getWarnings());
@@ -287,6 +309,163 @@ public class TestJdbcDriver extends TestCase {
         + " not found in SHOW TABLES result set", testTableExists);
   }
 
+  public void testMetaDataGetTables() throws SQLException {
+    Map<String, Object[]> tests = new HashMap<String, Object[]>();
+    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
+            , "testhivejdbcdrivertable"
+            , "testhivejdbcdriverview"});
+    tests.put("%jdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
+    tests.put("testhivejdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
+    tests.put("test_ivejdbcdri_ertable", new Object[]{"testhivejdbcdrivertable"});
+    tests.put("%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
+            , "testhivejdbcdrivertable"
+            , "testhivejdbcdriverview"});
+    tests.put("", new Object[]{});
+
+    for (String checkPattern: tests.keySet()) {
+      ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, checkPattern, null);
+      int cnt = 0;
+      while (rs.next()) {
+        String resultTableName = rs.getString("TABLE_NAME");
+        assertEquals("Get by index different from get by name.", rs.getString(3), resultTableName);
+        assertEquals("Excpected a different table.", tests.get(checkPattern)[cnt], resultTableName);
+        String resultTableComment = rs.getString("REMARKS");
+        assertTrue("Missing comment on the table.", resultTableComment.length()>0);
+        String tableType = rs.getString("TABLE_TYPE");
+        if (resultTableName.endsWith("view")) {
+          assertEquals("Expected a tabletype view but got something else.", "VIEW", tableType);
+        }
+        cnt++;
+      }
+      rs.close();
+      assertEquals("Received an incorrect number of tables.", tests.get(checkPattern).length, cnt);
+    }
+
+    // only ask for the views.
+    ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, null
+            , new String[]{"VIEW"});
+    int cnt=0;
+    while (rs.next()) {
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect number of views found.", 1, cnt);
+  }
+
+  public void testMetaDataGetCatalogs() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getCatalogs();
+    int cnt = 0;
+    while (rs.next()) {
+      String catalogname = rs.getString("TABLE_CAT");
+      assertEquals("Get by index different from get by name", rs.getString(1), catalogname);
+      switch(cnt) {
+        case 0:
+          assertEquals("default", catalogname);
+          break;
+        default:
+          fail("More then one catalog found.");
+          break;
+      }
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect schema count", 1, cnt);
+  }
+
+  public void testMetaDataGetTableTypes() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
+    Set<String> tabletypes = new HashSet();
+    tabletypes.add("TABLE");
+    tabletypes.add("EXTERNAL TABLE");
+    tabletypes.add("VIEW");
+
+    int cnt = 0;
+    while (rs.next()) {
+      String tabletype = rs.getString("TABLE_TYPE");
+      assertEquals("Get by index different from get by name", rs.getString(1), tabletype);
+      tabletypes.remove(tabletype);
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect tabletype count.", 0, tabletypes.size());
+    assertTrue("Found less tabletypes then we test for.", cnt >= tabletypes.size());
+  }
+
+  public void testMetaDataGetColumns() throws SQLException {
+    Map<String[], Integer> tests = new HashMap<String[], Integer>();
+    tests.put(new String[]{"testhivejdbcdrivertable", null}, 2);
+    tests.put(new String[]{"testhivejdbc%", null}, 6);
+    tests.put(new String[]{"%jdbcdrivertable", null}, 2);
+    tests.put(new String[]{"%jdbcdrivertable%", "key"}, 1);
+    tests.put(new String[]{"%jdbcdrivertable%", "ke_"}, 1);
+    tests.put(new String[]{"%jdbcdrivertable%", "ke%"}, 1);
+
+    for (String[] checkPattern: tests.keySet()) {
+      ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
+              , checkPattern[0], checkPattern[1]);
+      int cnt = 0;
+      while (rs.next()) {
+        String columnname = rs.getString("COLUMN_NAME");
+        int ordinalPos = rs.getInt("ORDINAL_POSITION");
+        switch(cnt) {
+          case 0:
+            assertEquals("Wrong column name found", "key", columnname);
+            assertEquals("Wrong ordinal position found", ordinalPos, 1);
+            break;
+          case 1:
+            assertEquals("Wrong column name found", "value", columnname);
+            assertEquals("Wrong ordinal position found", ordinalPos, 2);
+            break;
+          default:
+            break;
+        }
+        cnt++;
+      }
+      rs.close();
+      assertEquals("Found less columns then we test for.", tests.get(checkPattern).intValue(), cnt);
+    }
+  }
+
+  public void testConversionsBaseResultSet() throws SQLException {
+    ResultSet rs = new HiveMetaDataResultSet(Arrays.asList("key")
+            , Arrays.asList("long")
+            , Arrays.asList(1234, "1234", "abc")) {
+      private int cnt=1;
+      public boolean next() throws SQLException {
+        if (cnt<data.size()) {
+          row = Arrays.asList(data.get(cnt));
+          cnt++;
+          return true;
+        } else {
+          return false;
+        }
+      }
+    };
+
+    while (rs.next()) {
+      String key = rs.getString("key");
+      if ("1234".equals(key)) {
+        assertEquals("Converting a string column into a long failed.", rs.getLong("key"), 1234L);
+        assertEquals("Converting a string column into a int failed.", rs.getInt("key"), 1234);
+      } else if ("abc".equals(key)) {
+        Object result = null;
+        Exception expectedException = null;
+        try {
+          result = rs.getLong("key");
+        } catch (SQLException e) {
+          expectedException = e;
+        }
+        assertTrue("Trying to convert 'abc' into a long should not work.", expectedException!=null);
+        try {
+          result = rs.getInt("key");
+        } catch (SQLException e) {
+          expectedException = e;
+        }
+        assertTrue("Trying to convert 'abc' into a int should not work.", expectedException!=null);
+      }
+    }
+  }
+
   public void testDescribeTable() throws SQLException {
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
@@ -318,6 +497,7 @@ public class TestJdbcDriver extends TestCase {
     assertFalse(meta.supportsSchemasInDataManipulation());
     assertFalse(meta.supportsMultipleResultSets());
     assertFalse(meta.supportsStoredProcedures());
+    assertTrue(meta.supportsAlterTableWithAddColumn());
   }
 
   public void testResultSetMetaData() throws SQLException {
@@ -364,8 +544,7 @@ public class TestJdbcDriver extends TestCase {
 
       int expectedPrecision = i >= 5 ? -1 : 0;
       int expectedScale = i >= 5 ? -1 : 0;
-      assertEquals("Unexpected precision", expectedPrecision, meta
-          .getPrecision(i));
+      assertEquals("Unexpected precision", expectedPrecision, meta.getPrecision(i));
       assertEquals("Unexpected scale", expectedScale, meta.getScale(i));
     }
   }

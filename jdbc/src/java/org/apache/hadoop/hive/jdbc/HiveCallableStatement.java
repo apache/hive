@@ -1378,7 +1378,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
 
   public ResultSet executeQuery() throws SQLException {
     // TODO Auto-generated method stub
-    return new HiveResultSet(null);
+    return new HiveQueryResultSet(null);
   }
 
   /*
