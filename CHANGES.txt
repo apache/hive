@@ -100,6 +100,10 @@ Trunk -  Unreleased
     HIVE-1491. fix or disable loadpart_err.q
     (John Sichi via He Yongqiang)
 
+    HIVE-1411. DataNucleus throws NucleusException if core-3.1.1 JAR
+    appears more than once on CLASSPATH
+    (Carl Steinbach via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
