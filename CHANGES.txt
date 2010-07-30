@@ -569,6 +569,10 @@ Release 0.6.0 -  Unreleased
     HIVE-1492. FileSinkOperator should remove duplicated files from the same task based on file sizes.
     (Ning Zhang via He Yongqiang)
 
+    HIVE-1411. DataNucleus throws NucleusException if core-3.1.1 JAR
+    appears more than once on CLASSPATH
+    (Carl Steinbach via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

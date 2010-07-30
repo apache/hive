@@ -97,12 +97,6 @@
 </property>
 
 <property>
-  <name>datanucleus.connectionPoolingType</name>
-  <value>DBCP</value>
-  <description>Uses a DBCP connection pool for JDBC metastore</description>
-</property>
-
-<property>
   <name>javax.jdo.option.DetachAllOnCommit</name>
   <value>true</value>
   <description>detaches all objects from session so that they can be used after transaction is committed</description>
@@ -124,6 +118,12 @@
   <name>javax.jdo.option.ConnectionPassword</name>
   <value>mine</value>
   <description>password to use against metastore database</description>
+</property>
+
+<property>
+  <name>datanucleus.connectionPoolingType</name>
+  <value>DBCP</value>
+  <description>Uses a DBCP connection pool for JDBC metastore</description>
 </property>
 
 <property>
@@ -184,6 +184,12 @@
   <name>datanucleus.identifierFactory</name>
   <value>datanucleus</value>
   <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus' is used for backward compatibility</description>
+</property>
+
+<property>
+  <name>datanucleus.plugin.pluginRegistryBundleCheck</name>
+  <value>LOG</value>
+  <description>Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]</description>
 </property>
 
 <property>
