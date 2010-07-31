@@ -163,8 +163,6 @@ public class CompactIndexHandler extends AbstractIndexHandler {
     }
     command.append(" GROUP BY ");
     command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
-    command.append(" SORT BY ");
-    command.append(indexCols);
 
     Driver driver = new Driver(db.getConf());
     driver.compile(command.toString());

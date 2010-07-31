@@ -80,11 +80,22 @@ public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
       // The output of a partial aggregation is a list
       if (m == Mode.PARTIAL1) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
-        return ObjectInspectorFactory.getStandardListObjectInspector(inputOI);
+        return ObjectInspectorFactory
+            .getStandardListObjectInspector((PrimitiveObjectInspector) ObjectInspectorUtils
+                .getStandardObjectInspector(inputOI));
       } else {
-        internalMergeOI = (StandardListObjectInspector) parameters[0];
-        loi = (StandardListObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);
-        return loi;
+        if (!(parameters[0] instanceof StandardListObjectInspector)) {
+          //no map aggregation.
+          inputOI = (PrimitiveObjectInspector)  ObjectInspectorUtils
+          .getStandardObjectInspector(parameters[0]);
+          return (StandardListObjectInspector) ObjectInspectorFactory
+              .getStandardListObjectInspector(inputOI);
+        } else {
+          internalMergeOI = (StandardListObjectInspector) parameters[0];
+          inputOI = (PrimitiveObjectInspector) internalMergeOI.getListElementObjectInspector();
+          loi = (StandardListObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(internalMergeOI);          
+          return loi;
+        }
       }
     }
     

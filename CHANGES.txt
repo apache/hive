@@ -104,6 +104,10 @@ Trunk -  Unreleased
     appears more than once on CLASSPATH
     (Carl Steinbach via jvs)
 
+    HIVE-1494. Index followup:  remove sort by clause and fix a bug in
+    collect_set udaf
+    (He Yongqiang via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
