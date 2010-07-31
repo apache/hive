@@ -1,6 +1,4 @@
-<% String db = request.getParameter("db"); %>
 <%@page errorPage="error_page.jsp" %>
-<jsp:include page="/include/session_credentials.jsp" />
 <%@page import="org.apache.hadoop.hive.metastore.*,
 org.apache.hadoop.hive.metastore.api.*,
 org.apache.hadoop.hive.conf.HiveConf,
@@ -14,7 +12,8 @@ org.apache.hadoop.hive.cli.*" %>
 <%
   HiveConf hiveConf = new HiveConf(SessionState.class); 
   HiveMetaStoreClient client = new HiveMetaStoreClient(hiveConf);
-  Database db2 = client.getDatabase("default");
+  String db = request.getParameter("db");
+  Database db2 = client.getDatabase(db);
   List<String> tables = client.getTables(".*");
   client.close();
 %>
