@@ -687,6 +687,10 @@ Release 0.6.0 -  Unreleased
     appears more than once on CLASSPATH
     (Carl Steinbach via jvs)
 
+    HIVE-1294. HIVE_AUX_JARS_PATH interferes with startup of Hive Web
+    Interface
+    (Edward Capriolo via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
