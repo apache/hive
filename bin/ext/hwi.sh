@@ -24,8 +24,30 @@ hwi() {
     HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
   done
 
+  version=$($HADOOP version | awk '{if (NR == 1) {print $2;}}');
+  # Save the regex to a var to workaround quoting incompatabilities
+  # between Bash 3.1 and 3.2
+  version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
+
+  if [[ "$version" =~ $version_re ]]; then
+      major_ver=${BASH_REMATCH[1]}
+      minor_ver=${BASH_REMATCH[2]}
+      patch_ver=${BASH_REMATCH[4]}
+  else
+      echo "Unable to determine Hadoop version information."
+      echo "'hadoop version' returned:"
+      echo `$HADOOP version`
+      exit 6
+  fi
+
   export HADOOP_CLASSPATH
-  exec $HADOOP jar $AUX_JARS_CMD_LINE ${HWI_JAR_FILE} $CLASS $HIVE_OPTS "$@"
+  
+  if [ $minor_ver -lt 20 ]; then
+    exec $HADOOP jar $AUX_JARS_CMD_LINE ${HWI_JAR_FILE} $CLASS $HIVE_OPTS "$@"
+  else
+    # hadoop 20 or newer - skip the aux_jars option and hiveconf
+    exec $HADOOP jar ${HWI_JAR_FILE} $CLASS $HIVE_OPTS "$@"
+  fi
   #nohup $HADOOP jar $AUX_JARS_CMD_LINE ${HWI_JAR_FILE} $CLASS $HIVE_OPTS "$@" >/dev/null 2>/dev/null &
 
 }
