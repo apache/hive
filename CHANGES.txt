@@ -55,9 +55,6 @@ Trunk -  Unreleased
     HIVE-1229. Replace dependencies on HBase deprecated API.
     (Basab Maulik via jvs)
 
-    HIVE-1401. Web Interface can only browse default
-    (Edward Capriolo via jvs)
-
   OPTIMIZATIONS
 
   BUG FIXES
@@ -358,6 +355,9 @@ Release 0.6.0 -  Unreleased
     (Ning Zhang via jvs)
 
     HIVE-1135. Use Anakia for version controlled documentation
+    (Edward Capriolo via jvs)
+
+    HIVE-1401. Web Interface can only browse default
     (Edward Capriolo via jvs)
 
   OPTIMIZATIONS
