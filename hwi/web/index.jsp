@@ -16,9 +16,8 @@
         <td valign="top">
           <h2>Hive Web Interface</h2>
           <p>The Hive Web Interface (HWI) offers an alternative to the command line interface (CLI). Once authenticated 
-          a user can start HWIWebSessions. A HWIWebSession is roughly equal to the hive shell from the console window. 
-          Users have access to the SetProcessor and QueryProcessor. After initiating a query the state is kept on the 
-          web server. They can return later to view the status of the query and view any results it produced. </p>
+          users can start HWIWebSessions. A HWIWebSession lives on the server users can submit queries and return later 
+          to view the status of the query and view any results it produced. </p>
         </td>
       </tr>
     </table>

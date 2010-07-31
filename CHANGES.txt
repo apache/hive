@@ -55,6 +55,9 @@ Trunk -  Unreleased
     HIVE-1229. Replace dependencies on HBase deprecated API.
     (Basab Maulik via jvs)
 
+    HIVE-1401. Web Interface can only browse default
+    (Edward Capriolo via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

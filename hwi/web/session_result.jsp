@@ -50,14 +50,14 @@
           
           <% if (si!=null) { %>
             <table border=1">
-            <% for (Vector<String> row : si.getResultBucket() ) { %>
+          	<% for (List<String> rows : si.getResultBucket() ) { %>
               <tr>
-	      <% for (String col : row ) { %>  
-		<td><%=col%></td>
-	      <% } %>
+	      		<% for (String row : rows ) { %>  
+					<td><%=row%></td>
+	      		<% } %>
               </tr>
             <% } %>
-	    </table>	
+	    	</table>	
           <% } %>
           
         </td>
