@@ -1,0 +1,5 @@
+PREHOOK: query: select /*+ mapjoin(b) */ * from src a join src b on (a.key=b.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-02_13-41-52_752_1156521578782717030/-mr-10000
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

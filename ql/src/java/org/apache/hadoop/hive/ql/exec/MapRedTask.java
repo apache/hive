@@ -348,30 +348,30 @@ public class MapRedTask extends ExecDriver implements Serializable {
    * @return String null if job is eligible for local mode, reason otherwise
    */
   public static String isEligibleForLocalMode(HiveConf conf,
-                                               ContentSummary inputSummary,
-                                               int numReducers) {
+                                              ContentSummary inputSummary,
+                                              int numReducers) {
 
     long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCALMODEMAXBYTES);
     long maxTasks = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXTASKS);
 
     // check for max input size
     if (inputSummary.getLength() > maxBytes)
-	return "Input Size (= " + maxBytes + ") is larger than " +
-	    HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
+      return "Input Size (= " + inputSummary.getLength() + ") is larger than " +
+        HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
 
     // ideally we would like to do this check based on the number of splits
     // in the absence of an easy way to get the number of splits - do this
     // based on the total number of files (pessimistically assumming that
     // splits are equal to number of files in worst case)
     if (inputSummary.getFileCount() > maxTasks)
-	return "Number of Input Files (= " + inputSummary.getFileCount() +
-	    ") is larger than " + 
-	    HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
+      return "Number of Input Files (= " + inputSummary.getFileCount() +
+        ") is larger than " + 
+        HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
 
     // since local mode only runs with 1 reducers - make sure that the
     // the number of reducers (set by user or inferred) is <=1
     if (numReducers > 1) 
-	return "Number of reducers (= " + numReducers + ") is more than 1";
+      return "Number of reducers (= " + numReducers + ") is more than 1";
 
     return null;
   }

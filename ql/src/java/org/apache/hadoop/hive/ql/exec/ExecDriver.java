@@ -97,7 +97,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   protected transient JobConf job;
   protected transient int mapProgress = 0;
   protected transient int reduceProgress = 0;
-  protected transient boolean success = false; // if job execution is successful
 
   /**
    * Constructor when invoked from QL.
@@ -289,10 +288,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     RunningJob rj = th.getRunningJob();
     try {
       Counters ctrs = th.getCounters();
-      // HIVE-1422
       if (ctrs == null) {
+        // hadoop might return null if it cannot locate the job.
+        // we may still be able to retrieve the job status - so ignore
         return false;
       }
+
       for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
         if (op.checkFatalErrors(ctrs, errMsg)) {
           return true;
@@ -311,7 +312,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
   }
 
-  private void progress(ExecDriverTaskHandle th) throws IOException {
+  private boolean progress(ExecDriverTaskHandle th) throws IOException {
     JobClient jc = th.getJobClient();
     RunningJob rj = th.getRunningJob();
     String lastReport = "";
@@ -339,7 +340,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         // rj.getJobState() again and we do not want to do an extra RPC call
         initializing = false;
       }
-      th.setRunningJob(jc.getJob(rj.getJobID()));
+
+      RunningJob newRj = jc.getJob(rj.getJobID());
+      if (newRj == null) {
+        // under exceptional load, hadoop may not be able to look up status
+        // of finished jobs (because it has purged them from memory). From
+        // hive's perspective - it's equivalent to the job having failed.
+        // So raise a meaningful exception
+        throw new IOException("Could not find status of job: + rj.getJobID()");
+      } else {
+        th.setRunningJob(newRj);
+      }
 
       // If fatal errors happen we should kill the job immediately rather than
       // let the job retry several times, which eventually lead to failure.
@@ -347,7 +358,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         continue; // wait until rj.isComplete
       }
       if (fatal = checkFatalErrors(th, errMsg)) {
-        success = false;
         console.printError("[Fatal Error] " + errMsg.toString()
             + ". Killing the job.");
         rj.killJob();
@@ -382,23 +392,31 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         reportTime = System.currentTimeMillis();
       }
     }
-    // check for fatal error again in case it occurred after the last check
-    // before the job is completed
-    if (!fatal && (fatal = checkFatalErrors(th, errMsg))) {
-      console.printError("[Fatal Error] " + errMsg.toString());
+
+    boolean success;
+    if (fatal) {
       success = false;
     } else {
-      success = rj.isSuccessful();
+      // check for fatal error again in case it occurred after
+      // the last check before the job is completed
+      if (checkFatalErrors(th, errMsg)) {
+        console.printError("[Fatal Error] " + errMsg.toString());
+        success = false;
+      } else  {
+        success = rj.isSuccessful();
+      }
     }
 
     setDone();
-    th.setRunningJob(jc.getJob(rj.getJobID()));
+    // update based on the final value of the counters
     updateCounters(th);
+
     SessionState ss = SessionState.get();
     if (ss != null) {
       ss.getHiveHistory().logPlanProgress(queryPlan);
     }
     // LOG.info(queryPlan);
+    return (success);
   }
 
   /**
@@ -413,8 +431,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     taskCounters.put("CNTR_NAME_" + getId() + "_REDUCE_PROGRESS", Long
         .valueOf(reduceProgress));
     Counters ctrs = th.getCounters();
-    // HIVE-1422
     if (ctrs == null) {
+      // hadoop might return null if it cannot locate the job.
+      // we may still be able to retrieve the job status - so ignore
       return;
     }
     for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
@@ -446,8 +465,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    */
   @Override
   public int execute(DriverContext driverContext) {
-
-    success = true;
+    boolean success = true;
 
     String invalidReason = work.isInvalid();
     if (invalidReason != null) {
@@ -554,7 +572,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     }
 
     int returnVal = 0;
-    RunningJob rj = null, orig_rj = null;
+    RunningJob rj = null;
 
     boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
         HiveConf.ConfVars.HADOOPJOBNAME));
@@ -581,7 +599,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
 
-      orig_rj = rj = jc.submitJob(job);
+      rj = jc.submitJob(job);
       // replace it back
       if (pwd != null) {
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, pwd);
@@ -593,14 +611,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
       ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj);
       jobInfo(rj);
-      progress(th); // success status will be setup inside progress
-
-      if (rj == null) {
-        // in the corner case where the running job has disappeared from JT
-        // memory remember that we did actually submit the job.
-        rj = orig_rj;
-        success = false;
-      }
+      success = progress(th);
 
       String statusMesg = getJobEndMsg(rj.getJobID());
       if (!success) {
@@ -632,10 +643,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         if(ctxCreated)
           ctx.clear();
 
-        if (returnVal != 0 && rj != null) {
-          rj.killJob();
+        if (rj != null) {
+          if (returnVal != 0) {
+            rj.killJob();
+          }
+          runningJobKillURIs.remove(rj.getJobID());
         }
-        runningJobKillURIs.remove(rj.getJobID());
       } catch (Exception e) {
       }
     }

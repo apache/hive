@@ -108,6 +108,11 @@ Trunk -  Unreleased
     collect_set udaf
     (He Yongqiang via jvs)
 
+    HIVE-1422 (2nd trial). skip counter update when RunningJob.getCounters() 
+    returns null 
+    (Joydeep Sen Sarma via Ning Zhang)
+
+
   TESTS
 
     HIVE-1464. improve  test query performance
