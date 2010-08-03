@@ -59,7 +59,9 @@ public class CliDriver {
 
   public static final String prompt = "hive";
   public static final String prompt2 = "    "; // when ';' is not yet seen
-
+  
+  public static final String HIVERCFILE = ".hiverc";
+  
   private final LogHelper console;
   private final Configuration conf;
 
@@ -235,6 +237,26 @@ public class CliDriver {
       int rc = processFile(initFile);
       if (rc != 0) {
         System.exit(rc);
+      }
+    }
+    if (ss.initFiles.size() == 0) {
+      if (System.getenv("HIVE_HOME") != null) {
+        String hivercDefault = System.getenv("HIVE_HOME") + File.separator + "bin" + File.separator + HIVERCFILE;
+        if (new File(hivercDefault).exists()) {
+          int rc = processFile(hivercDefault);
+          if (rc != 0) {
+            System.exit(rc);
+          }
+        }
+      }
+      if (System.getProperty("user.home") != null) {
+        String hivercUser = System.getProperty("user.home") + File.separator + HIVERCFILE;
+        if (new File(hivercUser).exists()) {
+          int rc = processFile(hivercUser);
+          if (rc != 0) {
+            System.exit(rc);
+          }
+        }
       }
     }
     ss.setIsSilent(saveSilent);

@@ -28,6 +28,7 @@
     <menu name="Hive Language Manual">
       <item name="Data Manipulation Statements" href="/language_manual/data-manipulation-statements.html" />
       <item name="Joins" href="/language_manual/joins.html" />
+      <item name="Cli" href="/language_manual/cli.html" />
     </menu>
     <menu name="Developer Guide">
       <item name="Issue Tracking (JIRA)" href="https://issues.apache.org/jira/browse/HIVE"/>
