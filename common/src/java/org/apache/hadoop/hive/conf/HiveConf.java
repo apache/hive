@@ -91,6 +91,7 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict"),
     DYNAMICPARTITIONMAXPARTS("hive.exec.max.dynamic.partitions", 1000),
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
+    MAXCREATEDFILES("hive.exec.max.created.files", 100000L),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
 
 

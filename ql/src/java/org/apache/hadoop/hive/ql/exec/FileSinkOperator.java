@@ -49,10 +49,10 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -463,6 +463,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // buckets of dynamic partitions will be created for each newly created partition
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(
               jc, conf.getTableInfo(), outputClass, conf, fsp.outPaths[filesIdx]);
+        // increment the CREATED_FILES counter
+        if (reporter != null) {
+          reporter.incrCounter(ProgressCounter.CREATED_FILES, 1);
+        }
         filesIdx++;
       }
       assert filesIdx == numFiles;
@@ -517,9 +521,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     try {
-      if (reporter != null) {
-        reporter.progress();
-      }
+      updateProgress();
 
       // if DP is enabled, get the final output writers and prepare the real output row
       assert inputObjInspectors[0].getCategory() == ObjectInspector.Category.STRUCT:

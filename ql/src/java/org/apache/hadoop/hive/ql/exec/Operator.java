@@ -29,7 +29,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -845,6 +844,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * TODO This is a hack for hadoop 0.17 which only supports enum counters.
    */
   public static enum ProgressCounter {
+    CREATED_FILES,
     C1, C2, C3, C4, C5, C6, C7, C8, C9, C10,
     C11, C12, C13, C14, C15, C16, C17, C18, C19, C20,
     C21, C22, C23, C24, C25, C26, C27, C28, C29, C30,

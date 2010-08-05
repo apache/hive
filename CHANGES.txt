@@ -65,6 +65,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1509. Hive should kill query if too many files are created by it
+    (Ning Zhang via jssarma)
+
     HIVE-1471. CTAS should unescape column names in select-clause
     (Ning Zhang via jssarma)
 

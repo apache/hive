@@ -19,14 +19,12 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,22 +36,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
 import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
 import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
@@ -61,9 +58,9 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -77,14 +74,13 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.varia.NullAppender;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.varia.NullAppender;
 
 /**
  * ExecDriver.
@@ -292,6 +288,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         // hadoop might return null if it cannot locate the job.
         // we may still be able to retrieve the job status - so ignore
         return false;
+      }
+      // check for number of created files
+      long numFiles = ctrs.getCounter(ProgressCounter.CREATED_FILES);
+      long upperLimit =  HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
+      if (numFiles > upperLimit) {
+        errMsg.append("total number of created files exceeds ").append(upperLimit);
+        return true;
       }
 
       for (Operator<? extends Serializable> op : work.getAliasToWork().values()) {
@@ -640,8 +643,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     } finally {
       Utilities.clearMapRedWork(job);
       try {
-        if(ctxCreated)
+        if(ctxCreated) {
           ctx.clear();
+        }
 
         if (rj != null) {
           if (returnVal != 0) {
@@ -895,9 +899,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   private static void setupChildLog4j(Configuration conf) {
     URL hive_l4j = ExecDriver.class.getClassLoader().getResource
       (SessionState.HIVE_EXEC_L4J);
-    if(hive_l4j == null)
+    if(hive_l4j == null) {
       hive_l4j = ExecDriver.class.getClassLoader().getResource
       (SessionState.HIVE_L4J);
+    }
 
     if (hive_l4j != null) {
         // setting queryid so that log4j configuration can use it to generate
@@ -1072,13 +1077,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         sb.append(URLEncoder.encode(hconf.get(hadoopWorkDir) + "/"
             + Utilities.randGen.nextInt(), "UTF-8"));
       }
-      
+
       return sb.toString();
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
   }
-  
+
   @Override
   public boolean isMapRedTask() {
     return true;
@@ -1244,8 +1249,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       if (m != null) {
         for (FetchWork fw: m.values()) {
           String s = fw.getTblDir();
-          if ((s != null) && ctx.isMRTmpFileURI(s))
+          if ((s != null) && ctx.isMRTmpFileURI(s)) {
             fw.setTblDir(ctx.localizeMRTmpFileURI(s));
+          }
         }
       }
     }
@@ -1253,27 +1259,30 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     // fix up outputs
     Map<String, ArrayList<String>> pa = work.getPathToAliases();
     if (pa != null) {
-      for (List<String> ls: pa.values())
+      for (List<String> ls: pa.values()) {
         for (String a: ls) {
           ArrayList<Operator<? extends Serializable>> opList = new
             ArrayList<Operator<? extends Serializable>> ();
           opList.add(work.getAliasToWork().get(a));
-          
+
           while (!opList.isEmpty()) {
             Operator<? extends Serializable> op = opList.remove(0);
 
             if (op instanceof FileSinkOperator) {
               FileSinkDesc fdesc = ((FileSinkOperator)op).getConf();
               String s = fdesc.getDirName();
-              if ((s != null) && ctx.isMRTmpFileURI(s))
+              if ((s != null) && ctx.isMRTmpFileURI(s)) {
                 fdesc.setDirName(ctx.localizeMRTmpFileURI(s));
+              }
               ((FileSinkOperator)op).setConf(fdesc);
             }
 
-            if (op.getChildOperators() != null)
+            if (op.getChildOperators() != null) {
               opList.addAll(op.getChildOperators());
+            }
           }
         }
+      }
     }
   }
 }

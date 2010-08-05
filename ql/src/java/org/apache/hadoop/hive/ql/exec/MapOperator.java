@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -185,7 +185,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
    * Initializes this map op as the root of the tree. It sets JobConf &
    * MapRedWork and starts initialization of the operator tree rooted at this
    * op.
-   * 
+   *
    * @param hconf
    * @param mrwork
    * @throws HiveException
@@ -292,7 +292,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           Operator<? extends Serializable> op = conf.getAliasToWork().get(
               onealias);
           LOG.info("Adding alias " + onealias + " to work list for file "
-              + fpath.toUri().getPath());
+              + onefile);
           MapInputPath inp = new MapInputPath(onefile, onealias, op);
           opCtxMap.put(inp, opCtx);
           if (operatorToPaths.get(op) == null) {
@@ -449,15 +449,15 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       try {
         rawRowString = value.toString();
       } catch (Exception e2) {
-        rawRowString = "[Error getting row data with exception " + 
+        rawRowString = "[Error getting row data with exception " +
             StringUtils.stringifyException(e2) + " ]";
       }
-      
+
       // TODO: policy on deserialization errors
       deserialize_error_count.set(deserialize_error_count.get() + 1);
       throw new HiveException("Hive Runtime Error while processing writable " + rawRowString, e);
     }
-    
+
     try {
       if (this.hasVC) {
         forward(this.rowWithPartAndVC, this.rowObjectInspector);
@@ -478,7 +478,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           rowString = SerDeUtils.getJSONString(rowWithPart, rowObjectInspector);
         }
       } catch (Exception e2) {
-        rowString = "[Error getting row data with exception " + 
+        rowString = "[Error getting row data with exception " +
             StringUtils.stringifyException(e2) + " ]";
       }
       throw new HiveException("Hive Runtime Error while processing row " + rowString, e);

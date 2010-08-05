@@ -1,0 +1,9 @@
+PREHOOK: query: create table nzhang_part( key string) partitioned by (value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table nzhang_part( key string) partitioned by (value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@nzhang_part
+PREHOOK: query: insert overwrite table nzhang_part partition(value) select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
