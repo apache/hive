@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -470,5 +471,53 @@ public class Partition implements Serializable {
 
   public void setLocation(String location) {
     tPartition.getSd().setLocation(location);
+  }
+
+  /**
+   * @param protectMode
+   */
+  public void setProtectMode(ProtectMode protectMode){
+    Map<String, String> parameters = tPartition.getParameters();
+    parameters.put(ProtectMode.PARAMETER_NAME, protectMode.toString());
+    tPartition.setParameters(parameters);
+  }
+
+  /**
+   * @return protect mode
+   */
+  public ProtectMode getProtectMode(){
+    Map<String, String> parameters = tPartition.getParameters();
+
+    if (!parameters.containsKey(ProtectMode.PARAMETER_NAME)) {
+      return new ProtectMode();
+    } else {
+      return ProtectMode.getProtectModeFromString(
+          parameters.get(ProtectMode.PARAMETER_NAME));
+    }
+  }
+
+  /**
+   * @return True protect mode indicates the partition if offline.
+   */
+  public boolean isOffline(){
+    return getProtectMode().offline;
+  }
+
+  /**
+   * @return True if protect mode attribute of the partition indicate
+   * that it is OK to drop the table
+   */
+  public boolean canDrop() {
+    ProtectMode mode = getProtectMode();
+    return (!mode.noDrop && !mode.offline && !mode.readOnly);
+  }
+
+  /**
+   * @return True if protect mode attribute of the partition indicate
+   * that it is OK to write to the table
+   */
+  public boolean canWrite() {
+    ProtectMode mode = getProtectMode();
+    return (!mode.offline && !mode.readOnly);
   }
 }

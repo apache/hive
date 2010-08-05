@@ -1,0 +1,38 @@
+PREHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl_protectmode__no_drop
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl_protectmode__no_drop
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl_protectmode__no_drop  (col string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl_protectmode__no_drop  (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl_protectmode__no_drop
+PREHOOK: query: select * from tbl_protectmode__no_drop
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode__no_drop
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-03_19-02-13_062_1358034933662934792/-mr-10000
+POSTHOOK: query: select * from tbl_protectmode__no_drop
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode__no_drop
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-03_19-02-13_062_1358034933662934792/-mr-10000
+PREHOOK: query: alter table tbl_protectmode__no_drop enable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl_protectmode__no_drop enable no_drop
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl_protectmode__no_drop
+POSTHOOK: Output: default@tbl_protectmode__no_drop
+PREHOOK: query: desc extended tbl_protectmode__no_drop
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl_protectmode__no_drop
+POSTHOOK: type: DESCTABLE
+col	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl_protectmode__no_drop, dbName:default, owner:sdong, createTime:1280887333, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl_protectmode__no_drop, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=sdong, last_modified_time=1280887333, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1280887333}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: drop table tbl_protectmode__no_drop
+PREHOOK: type: DROPTABLE
+FAILED: Error in metadata: Table tbl_protectmode__no_drop is protected from being dropped
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

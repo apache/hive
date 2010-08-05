@@ -1,0 +1,71 @@
+PREHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl_protectmode5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl_protectmode5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl_protectmode5_1 (col string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl_protectmode5_1 (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl_protectmode5_1
+PREHOOK: query: create table tbl_protectmode5  (col string) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl_protectmode5  (col string) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl_protectmode5
+PREHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tbl_protectmode5@p=p1
+PREHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tbl_protectmode5@p=p2
+PREHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5@p=p1
+PREHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5@p=p1
+POSTHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5@p=p2
+PREHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5@p=p2
+POSTHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+PREHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
+POSTHOOK: type: null
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_protectmode5@p=p2
+PREHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: query: insert overwrite table tbl_protectmode5_1
+select col from tbl_protectmode5 where p='p2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_protectmode5@p=p2
+POSTHOOK: Output: default@tbl_protectmode5_1
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode5 Partition p=p1

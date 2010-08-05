@@ -1,0 +1,286 @@
+PREHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+
+drop table tbl1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tbl2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl1  (col string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl1  (col string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: select * from tbl1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-16_084_5868788449948187519/-mr-10000
+POSTHOOK: query: select * from tbl1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-16_084_5868788449948187519/-mr-10000
+PREHOOK: query: select col from tbl1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-16_303_5881584661921655666/-mr-10000
+POSTHOOK: query: select col from tbl1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-16_303_5881584661921655666/-mr-10000
+PREHOOK: query: alter table tbl1 enable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl1 enable offline
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: desc extended tbl1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl1
+POSTHOOK: type: DESCTABLE
+col	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:sdong, createTime:1280962816, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=sdong, last_modified_time=1280962819, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1280962819}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table tbl1 disable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl1 disable offline
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: desc extended tbl1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl1
+POSTHOOK: type: DESCTABLE
+col	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:sdong, createTime:1280962816, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=sdong, last_modified_time=1280962819, transient_lastDdlTime=1280962819}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: select * from tbl1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-19_785_3387037181104157417/-mr-10000
+POSTHOOK: query: select * from tbl1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-19_785_3387037181104157417/-mr-10000
+PREHOOK: query: select col from tbl1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-19_991_7208412460463641915/-mr-10000
+POSTHOOK: query: select col from tbl1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-19_991_7208412460463641915/-mr-10000
+PREHOOK: query: create table tbl2  (col string) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl2  (col string) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: alter table tbl2 add partition (p='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tbl2 add partition (p='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tbl2@p=p1
+PREHOOK: query: alter table tbl2 add partition (p='p2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tbl2 add partition (p='p2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tbl2@p=p2
+PREHOOK: query: alter table tbl2 drop partition (p='not_exist')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: query: alter table tbl2 drop partition (p='not_exist')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: query: select * from tbl2 where p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-23_396_4211977439004283750/-mr-10000
+POSTHOOK: query: select * from tbl2 where p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-23_396_4211977439004283750/-mr-10000
+PREHOOK: query: select * from tbl2 where p='p2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p2
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-23_617_4676355123590038305/-mr-10000
+POSTHOOK: query: select * from tbl2 where p='p2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p2
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-23_617_4676355123590038305/-mr-10000
+PREHOOK: query: alter table tbl2 partition (p='p1') enable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p1') enable offline
+POSTHOOK: type: null
+PREHOOK: query: desc extended tbl2 partition (p='p1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2 partition (p='p1')
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1280962823, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{PROTECT_MODE=OFFLINE, transient_lastDdlTime=1280962823})	
+PREHOOK: query: alter table tbl2 enable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 enable offline
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: desc extended tbl2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:sdong, createTime:1280962823, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=sdong, last_modified_time=1280962824, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1280962824}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table tbl2 enable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 enable no_drop
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: desc extended tbl2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:sdong, createTime:1280962823, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=sdong, last_modified_time=1280962824, PROTECT_MODE=OFFLINE,NO_DROP, transient_lastDdlTime=1280962824}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table tbl2 disable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 disable offline
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: desc extended tbl2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:sdong, createTime:1280962823, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=sdong, last_modified_time=1280962824, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1280962824}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table tbl2 disable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 disable no_drop
+POSTHOOK: type: null
+POSTHOOK: Input: default@tbl2
+POSTHOOK: Output: default@tbl2
+PREHOOK: query: desc extended tbl2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:sdong, createTime:1280962823, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=sdong, last_modified_time=1280962824, transient_lastDdlTime=1280962824}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: select * from tbl2 where p='p2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p2
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-24_808_6663194749606163260/-mr-10000
+POSTHOOK: query: select * from tbl2 where p='p2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p2
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-24_808_6663194749606163260/-mr-10000
+PREHOOK: query: select col from tbl2 where p='p2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p2
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-24_975_1396047242551851951/-mr-10000
+POSTHOOK: query: select col from tbl2 where p='p2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p2
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-24_975_1396047242551851951/-mr-10000
+PREHOOK: query: alter table tbl2 partition (p='p1') disable offline
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p1') disable offline
+POSTHOOK: type: null
+PREHOOK: query: desc extended tbl2 partition (p='p1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended tbl2 partition (p='p1')
+POSTHOOK: type: DESCTABLE
+col	string	
+p	string	
+	 	 
+Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1280962823, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/sdong/hive-vendor-trunk-git/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1280962828})	
+PREHOOK: query: select * from tbl2 where p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-28_142_3955301982627210591/-mr-10000
+POSTHOOK: query: select * from tbl2 where p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-28_142_3955301982627210591/-mr-10000
+PREHOOK: query: select col from tbl2 where p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p1
+PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-28_295_5354583470260616394/-mr-10000
+POSTHOOK: query: select col from tbl2 where p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p1
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_16-00-28_295_5354583470260616394/-mr-10000
+PREHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2@p=p1
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2@p=p1
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table tbl1 select col from tbl1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: insert overwrite table tbl1 select col from tbl1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: alter table tbl2 partition (p='p1') enable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p1') enable no_drop
+POSTHOOK: type: null
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: alter table tbl2 partition (p='p1') disable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p1') disable no_drop
+POSTHOOK: type: null
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: alter table tbl2 partition (p='p2') enable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p2') enable no_drop
+POSTHOOK: type: null
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: alter table tbl2 drop partition (p='p1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: query: alter table tbl2 drop partition (p='p1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Output: default@tbl2@p=p1
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: alter table tbl2 partition (p='p2') disable no_drop
+PREHOOK: type: null
+POSTHOOK: query: alter table tbl2 partition (p='p2') disable no_drop
+POSTHOOK: type: null
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: drop table tbl1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tbl1
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: drop table tbl2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl2)tbl2.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1.col SIMPLE [(tbl1)tbl1.FieldSchema(name:col, type:string, comment:null), ]

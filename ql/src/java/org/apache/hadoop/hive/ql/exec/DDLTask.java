@@ -50,6 +50,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -70,8 +71,10 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.AlterPartitionProtectModeDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -85,7 +88,6 @@ import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
-import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
@@ -151,7 +153,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (crtIndex != null) {
         return createIndex(db, crtIndex);
       }
-      
+
       DropIndexDesc dropIdx = work.getDropIdxDesc();
       if(dropIdx != null) {
         return dropIndex(db, dropIdx);
@@ -181,6 +183,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
+      }
+
+      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc =
+        work.getAlterPartitionProtectModeDesc();
+      if (alterPartitionProtectModeDesc != null) {
+        return alterPartitionProtectMode(db, alterPartitionProtectModeDesc);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -248,7 +256,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-    db.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropIdx.getTableName(), 
+    db.dropIndex(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropIdx.getTableName(),
         dropIdx.getIndexName(), true);
     return 0;
   }
@@ -261,9 +269,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     db
         .createIndex(
-        crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(), 
+        crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(),
         crtIndex.getIndexedCols(), crtIndex.getIndexTableName(), crtIndex.getDeferredRebuild(),
-        crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(), 
+        crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(),
         crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getSerdeProps(),
         crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
         crtIndex.getLineDelim(), crtIndex.getMapKeyDelim()
@@ -306,6 +314,53 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Partition part = db
         .getPartition(tbl, addPartitionDesc.getPartSpec(), false);
     work.getOutputs().add(new WriteEntity(part));
+
+    return 0;
+  }
+
+  private int alterPartitionProtectMode(Hive db,
+      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc)
+      throws HiveException {
+
+    Table tbl = db.getTable(alterPartitionProtectModeDesc.getDbName(),
+        alterPartitionProtectModeDesc.getTableName());
+
+    validateAlterTableType(
+        tbl, AlterTableDesc.AlterTableTypes.ALTERPARTITIONPROTECTMODE);
+
+    Partition oldPart = db.getPartition(
+        tbl, alterPartitionProtectModeDesc.getPartSpec(), false);
+    if (oldPart == null) {
+      console.printError("Cannot modify protect mode of not existing partition");
+    }
+
+    ProtectMode mode = oldPart.getProtectMode();
+
+    if (alterPartitionProtectModeDesc.isProtectModeEnable() &&
+        alterPartitionProtectModeDesc.getProtectModeType() ==
+          AlterPartitionProtectModeDesc.ProtectModeType.OFFLINE) {
+      mode.offline = true;
+    } else if (alterPartitionProtectModeDesc.isProtectModeEnable() &&
+        alterPartitionProtectModeDesc.getProtectModeType() ==
+          AlterPartitionProtectModeDesc.ProtectModeType.NO_DROP) {
+      mode.noDrop = true;
+    } else if (!alterPartitionProtectModeDesc.isProtectModeEnable()&&
+        alterPartitionProtectModeDesc.getProtectModeType() ==
+          AlterPartitionProtectModeDesc.ProtectModeType.OFFLINE) {
+      mode.offline = false;
+    } else if (!alterPartitionProtectModeDesc.isProtectModeEnable() &&
+        alterPartitionProtectModeDesc.getProtectModeType() ==
+          AlterPartitionProtectModeDesc.ProtectModeType.NO_DROP) {
+      mode.noDrop = false;
+    }
+
+    oldPart.setProtectMode(mode);
+
+    try{
+      db.alterPartition(alterPartitionProtectModeDesc.getTableName(), oldPart);
+    } catch(InvalidOperationException e){
+      throw new HiveException(e);
+    }
 
     return 0;
   }
@@ -1729,6 +1784,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl.getSerdeName() != null) {
         tbl.setSerializationLib(alterTbl.getSerdeName());
       }
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
+      ProtectMode mode = tbl.getProtectMode();
+
+      if (alterTbl.isProtectModeEnable() &&
+          alterTbl.getProtectModeType() ==
+            AlterTableDesc.ProtectModeType.OFFLINE) {
+        mode.offline = true;
+      } else if (alterTbl.isProtectModeEnable() &&
+          alterTbl.getProtectModeType() ==
+            AlterTableDesc.ProtectModeType.NO_DROP) {
+        mode.noDrop = true;
+      } else if (!alterTbl.isProtectModeEnable()&&
+          alterTbl.getProtectModeType() ==
+            AlterTableDesc.ProtectModeType.OFFLINE) {
+        mode.offline = false;
+      } else if (!alterTbl.isProtectModeEnable() &&
+          alterTbl.getProtectModeType() ==
+            AlterTableDesc.ProtectModeType.NO_DROP) {
+        mode.noDrop = false;
+      }
+
+      tbl.setProtectMode(mode);
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
@@ -1819,6 +1896,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl
           .getTableName());
+      if (!tbl.canDrop()) {
+        throw new HiveException("Table " + tbl.getTableName() +
+            " is protected from being dropped");
+      }
     } catch (InvalidTableException e) {
       // drop table is idempotent
     }
@@ -1836,6 +1917,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (dropTbl.getPartSpecs() == null) {
+      // We should check that all the partitions of the table can be dropped
+      if (tbl != null && tbl.isPartitioned()) {
+        List<Partition> listPartitions = db.getPartitions(tbl);
+        for (Partition p: listPartitions) {
+            if (!p.canDrop()) {
+              throw new HiveException("Table " + tbl.getTableName() +
+                  " Partition" + p.getName() +
+                  " is protected from being dropped");
+            }
+        }
+      }
+
       // drop the table
       db
           .dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl
@@ -1848,6 +1941,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<String> partitionNames = db.getPartitionNames(
           MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName(),
           (short) -1);
+
       Set<Map<String, String>> partitions = new HashSet<Map<String, String>>();
       for (int i = 0; i < partitionNames.size(); i++) {
         try {
@@ -1872,7 +1966,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             }
           }
           if (match) {
-            partsToDelete.add(db.getPartition(tbl, part, false));
+            Partition p = db.getPartition(tbl, part, false);
+            if (!p.canDrop()) {
+              throw new HiveException("Table " + tbl.getTableName() +
+                  " Partition " + p.getName() +
+                  " is protected from being dropped");
+            }
+
+            partsToDelete.add(p);
             it.remove();
           }
         }

@@ -42,8 +42,13 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public static enum AlterTableTypes {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
-    TOUCH, ARCHIVE, UNARCHIVE,
+    TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
   };
+
+  public static enum ProtectModeType {
+    NO_DROP, OFFLINE, READ_ONLY
+  };
+
 
   AlterTableTypes op;
   String oldName;
@@ -65,6 +70,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   boolean first;
   String afterCol;
   boolean expectView;
+  boolean protectModeEnable;
+  ProtectModeType protectModeType;
 
   public AlterTableDesc() {
   }
@@ -472,5 +479,21 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public void setExpectView(boolean expectView) {
     this.expectView = expectView;
+  }
+
+  public boolean isProtectModeEnable() {
+    return protectModeEnable;
+  }
+
+  public void setProtectModeEnable(boolean protectModeEnable) {
+    this.protectModeEnable = protectModeEnable;
+  }
+
+  public ProtectModeType getProtectModeType() {
+    return protectModeType;
+  }
+
+  public void setProtectModeType(ProtectModeType protectModeType) {
+    this.protectModeType = protectModeType;
   }
 }

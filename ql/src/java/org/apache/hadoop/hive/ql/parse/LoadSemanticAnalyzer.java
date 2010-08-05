@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -192,6 +195,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize destination table/partition
     tableSpec ts = new tableSpec(db, conf, (ASTNode) tableTree);
 
+    if (ts.tableHandle.isOffline()){
+      throw new SemanticException(
+          ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(":Table " + ts.tableName));
+    }
+
     if (ts.tableHandle.isView()) {
       throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
     }
@@ -231,7 +239,21 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
       partSpec = new LinkedHashMap<String, String>();
+    } else {
+      try{
+        Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
+        if (part != null) {
+          if (part.isOffline()) {
+            throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
+                getMsg(ts.tableName + ":" + part.getName()));
+          }
+        }
+      } catch(HiveException e) {
+        throw new SemanticException(e);
+      }
     }
+
+
     LoadTableDesc loadTableWork = new LoadTableDesc(fromURI.toString(),
         loadTmpPath, Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
 

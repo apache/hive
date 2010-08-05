@@ -99,6 +99,7 @@ TOK_ALTERTABLE_RENAMECOL;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
+TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE;
 TOK_ALTERTABLE_TOUCH;
 TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
@@ -106,6 +107,7 @@ TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_PROPERTIES;
+TOK_ALTERTABLE_PROTECTMODE;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERINDEX_REBUILD;
 TOK_MSCK;
@@ -128,6 +130,11 @@ TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
+TOK_OFFLINE;
+TOK_ENABLE;
+TOK_DISABLE;
+TOK_READONLY;
+TOK_NO_DROP;
 TOK_STORAGEHANDLER;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_TABCOLNAME;
@@ -346,12 +353,14 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
+    | alterStatementSuffixAlterPartitionsProtectMode
     | alterStatementSuffixTouch
     | alterStatementSuffixArchive
     | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
     | alterStatementSuffixFileFormat
+    | alterStatementSuffixProtectMode
     | alterStatementSuffixClusterbySortby
     ;
 
@@ -394,6 +403,13 @@ alterStatementSuffixAddPartitions
 @after { msgs.pop(); }
     : Identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
     -> ^(TOK_ALTERTABLE_ADDPARTS Identifier ifNotExists? (partitionSpec partitionLocation?)+)
+    ;
+    
+alterStatementSuffixAlterPartitionsProtectMode
+@init { msgs.push("alter partition protect mode statement"); }
+@after { msgs.pop(); }
+    : Identifier partitionSpec alterProtectMode
+    -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE Identifier partitionSpec alterProtectMode)
     ;
 
 alterStatementSuffixTouch
@@ -460,6 +476,29 @@ alterStatementSuffixFileFormat
 	:name=Identifier KW_SET KW_FILEFORMAT fileFormat
 	-> ^(TOK_ALTERTABLE_FILEFORMAT $name fileFormat)
 	;
+
+alterStatementSuffixProtectMode
+@init {msgs.push("alter protectmode statement"); }
+@after {msgs.pop(); }
+	:name=Identifier alterProtectMode
+	-> ^(TOK_ALTERTABLE_PROTECTMODE $name alterProtectMode)
+	;
+	
+alterProtectMode
+@init { msgs.push("protect mode specification enable"); }
+@after { msgs.pop(); }
+    : KW_ENABLE alterProtectModeMode  -> ^(TOK_ENABLE alterProtectModeMode)
+    | KW_DISABLE alterProtectModeMode  -> ^(TOK_DISABLE alterProtectModeMode)
+    ;
+
+alterProtectModeMode
+@init { msgs.push("protect mode specification enable"); }
+@after { msgs.pop(); }
+    : KW_OFFLINE  -> ^(TOK_OFFLINE)
+    | KW_NO_DROP  -> ^(TOK_NO_DROP)
+    | KW_READONLY  -> ^(TOK_READONLY)
+    ;
+
 
 alterStatementSuffixClusterbySortby
 @init {msgs.push("alter cluster by sort by statement");}
@@ -1651,6 +1690,11 @@ KW_TEXTFILE: 'TEXTFILE';
 KW_RCFILE: 'RCFILE';
 KW_INPUTFORMAT: 'INPUTFORMAT';
 KW_OUTPUTFORMAT: 'OUTPUTFORMAT';
+KW_OFFLINE: 'OFFLINE';
+KW_ENABLE: 'ENABLE';
+KW_DISABLE: 'DISABLE';
+KW_READONLY: 'READONLY';
+KW_NO_DROP: 'NO_DROP';
 KW_LOCATION: 'LOCATION';
 KW_TABLESAMPLE: 'TABLESAMPLE';
 KW_BUCKET: 'BUCKET';

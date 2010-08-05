@@ -43,6 +43,7 @@ public class DDLWork implements Serializable {
   private ShowPartitionsDesc showPartsDesc;
   private DescTableDesc descTblDesc;
   private AddPartitionDesc addPartitionDesc;
+  private AlterPartitionProtectModeDesc alterPartitionProtectModeDesc;
   private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
   private ShowTableStatusDesc showTblStatusDesc;
@@ -181,6 +182,17 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.addPartitionDesc = addPartitionDesc;
+  }
+
+  /**
+   * @param addPartitionDesc
+   *          information about the partitions we want to add.
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc) {
+    this(inputs, outputs);
+
+    this.alterPartitionProtectModeDesc = alterPartitionProtectModeDesc;
   }
 
   /**
@@ -480,6 +492,15 @@ public class DDLWork implements Serializable {
 
   public void setDropIdxDesc(DropIndexDesc dropIdxDesc) {
     this.dropIdxDesc = dropIdxDesc;
+  }
+
+  public AlterPartitionProtectModeDesc getAlterPartitionProtectModeDesc() {
+    return alterPartitionProtectModeDesc;
+  }
+
+  public void setAlterPartitionProtectModeDesc(
+      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc) {
+    this.alterPartitionProtectModeDesc = alterPartitionProtectModeDesc;
   }
 
 }

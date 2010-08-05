@@ -33,6 +33,9 @@ Trunk -  Unreleased
     HIVE-1414. Automatically invoke .hiverc init script
     (Edward Capriolo via jvs)
 
+    HIVE-1413. Ability to take a table offline
+    (Siying Dong via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
