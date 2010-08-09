@@ -61,6 +61,10 @@ Trunk -  Unreleased
     HIVE-1229. Replace dependencies on HBase deprecated API.
     (Basab Maulik via jvs)
 
+    HIVE-1513. hive starter scripts should load admin/user supplied script for 
+    configurability
+    (Joydeep Sen Sarma via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

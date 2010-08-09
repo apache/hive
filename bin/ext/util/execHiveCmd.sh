@@ -29,10 +29,6 @@ execHiveCmd () {
       exit 6
   fi
 
-  # increase the threashold for large queries
-  HADOOP_HEAPSIZE=4096 
-  HADOOP_OPTS="$HADOOP_OPTS -XX:-UseGCOverheadLimit"
-
   if [ $minor_ver -lt 20 ]; then
       exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive-cli-*.jar $CLASS $HIVE_OPTS "$@"
   else

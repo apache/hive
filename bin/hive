@@ -25,6 +25,41 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/hive-config.sh
 
+SERVICE=""
+HELP=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --service)
+      shift
+      SERVICE=$1
+      shift
+      ;;
+    --rcfilecat)
+      SERVICE=rcfilecat
+      shift
+      ;;
+    --help)
+      HELP=_help
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [ "$SERVICE" = "" ] ; then
+  if [ "$HELP" = "_help" ] ; then
+    SERVICE="help"
+  else
+    SERVICE="cli"
+  fi
+fi
+
+if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
+  . "${HIVE_CONF_DIR}/hive-env.sh"
+fi
+
 CLASSPATH="${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib
@@ -134,37 +169,6 @@ done
 for i in "$bin"/ext/util/*.sh ; do
   . $i
 done
-
-SERVICE=""
-HELP=""
-while [ $# -gt 0 ]; do
-  case "$1" in
-    --service)
-      shift
-      SERVICE=$1
-      shift
-      ;;
-    --rcfilecat)
-      SERVICE=rcfilecat
-      shift
-      ;;
-    --help)
-      HELP=_help
-      shift
-      ;;
-    *)
-      break
-      ;;
-  esac
-done
-
-if [ "$SERVICE" = "" ] ; then
-  if [ "$HELP" = "_help" ] ; then
-    SERVICE="help"
-  else
-    SERVICE="cli"
-  fi
-fi
 
 TORUN=""
 for j in $SERVICE_LIST ; do

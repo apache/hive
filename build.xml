@@ -256,7 +256,10 @@
       </filterset>
     </copy>
     <copy todir="${target.conf.dir}">
-     <fileset dir="${basedir}/conf" includes="*.properties"/>
+     <fileset dir="${basedir}/conf">
+       <include name="*.properties"/>
+       <include name="*.template"/>
+     </fileset>
     </copy>
     <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
