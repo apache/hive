@@ -22,7 +22,9 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' OVERWRITE INTO T
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tbl_protectmode6@p=p1
 PREHOOK: query: alter table tbl_protectmode6 partition (p='p1') enable offline
-PREHOOK: type: null
+PREHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: query: alter table tbl_protectmode6 partition (p='p1') enable offline
-POSTHOOK: type: null
+POSTHOOK: type: ALTERPARTITION_PROTECTMODE
+POSTHOOK: Input: default@tbl_protectmode6@p=p1
+POSTHOOK: Output: default@tbl_protectmode6@p=p1
 FAILED: Error in semantic analysis: org.apache.hadoop.hive.ql.parse.SemanticException: Query against an offline table or partition tbl_protectmode6:p=p1

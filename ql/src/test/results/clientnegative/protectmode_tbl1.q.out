@@ -14,15 +14,15 @@ POSTHOOK: Output: default@tbl_protectmode_1
 PREHOOK: query: select * from tbl_protectmode_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode_1
-PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_15-57-58_359_6963528649235778507/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-21_331_4986102848710196881/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode_1
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_15-57-58_359_6963528649235778507/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-21_331_4986102848710196881/-mr-10000
 PREHOOK: query: alter table tbl_protectmode_1 enable offline
-PREHOOK: type: null
+PREHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: query: alter table tbl_protectmode_1 enable offline
-POSTHOOK: type: null
+POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode_1
 POSTHOOK: Output: default@tbl_protectmode_1
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode_1

@@ -24,29 +24,31 @@ POSTHOOK: Output: default@tbl_protectmode3@p=p2
 PREHOOK: query: select * from tbl_protectmode3 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p1
-PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_213_4026025765027262797/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_048_1130501594201675939/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode3 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p1
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_213_4026025765027262797/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_048_1130501594201675939/-mr-10000
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p2
-PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_634_5692215991604023907/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_269_993918999524192390/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_634_5692215991604023907/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_269_993918999524192390/-mr-10000
 PREHOOK: query: alter table tbl_protectmode3 partition (p='p1') enable offline
-PREHOOK: type: null
+PREHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: query: alter table tbl_protectmode3 partition (p='p1') enable offline
-POSTHOOK: type: null
+POSTHOOK: type: ALTERPARTITION_PROTECTMODE
+POSTHOOK: Input: default@tbl_protectmode3@p=p1
+POSTHOOK: Output: default@tbl_protectmode3@p=p1
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p2
-PREHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_941_1201439944216339610/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_610_5521102361534273246/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-08-04_12-59-33_941_1201439944216339610/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-03_610_5521102361534273246/-mr-10000
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode3 Partition p=p1

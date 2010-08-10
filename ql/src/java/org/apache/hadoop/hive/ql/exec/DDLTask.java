@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterPartitionProtectModeDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -183,12 +182,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
-      }
-
-      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc =
-        work.getAlterPartitionProtectModeDesc();
-      if (alterPartitionProtectModeDesc != null) {
-        return alterPartitionProtectMode(db, alterPartitionProtectModeDesc);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -314,53 +307,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Partition part = db
         .getPartition(tbl, addPartitionDesc.getPartSpec(), false);
     work.getOutputs().add(new WriteEntity(part));
-
-    return 0;
-  }
-
-  private int alterPartitionProtectMode(Hive db,
-      AlterPartitionProtectModeDesc alterPartitionProtectModeDesc)
-      throws HiveException {
-
-    Table tbl = db.getTable(alterPartitionProtectModeDesc.getDbName(),
-        alterPartitionProtectModeDesc.getTableName());
-
-    validateAlterTableType(
-        tbl, AlterTableDesc.AlterTableTypes.ALTERPARTITIONPROTECTMODE);
-
-    Partition oldPart = db.getPartition(
-        tbl, alterPartitionProtectModeDesc.getPartSpec(), false);
-    if (oldPart == null) {
-      console.printError("Cannot modify protect mode of not existing partition");
-    }
-
-    ProtectMode mode = oldPart.getProtectMode();
-
-    if (alterPartitionProtectModeDesc.isProtectModeEnable() &&
-        alterPartitionProtectModeDesc.getProtectModeType() ==
-          AlterPartitionProtectModeDesc.ProtectModeType.OFFLINE) {
-      mode.offline = true;
-    } else if (alterPartitionProtectModeDesc.isProtectModeEnable() &&
-        alterPartitionProtectModeDesc.getProtectModeType() ==
-          AlterPartitionProtectModeDesc.ProtectModeType.NO_DROP) {
-      mode.noDrop = true;
-    } else if (!alterPartitionProtectModeDesc.isProtectModeEnable()&&
-        alterPartitionProtectModeDesc.getProtectModeType() ==
-          AlterPartitionProtectModeDesc.ProtectModeType.OFFLINE) {
-      mode.offline = false;
-    } else if (!alterPartitionProtectModeDesc.isProtectModeEnable() &&
-        alterPartitionProtectModeDesc.getProtectModeType() ==
-          AlterPartitionProtectModeDesc.ProtectModeType.NO_DROP) {
-      mode.noDrop = false;
-    }
-
-    oldPart.setProtectMode(mode);
-
-    try{
-      db.alterPartition(alterPartitionProtectModeDesc.getTableName(), oldPart);
-    } catch(InvalidOperationException e){
-      throw new HiveException(e);
-    }
 
     return 0;
   }
@@ -1638,6 +1584,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // alter the table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl
         .getOldName());
+    
+    Partition part = null;
+    if(alterTbl.getPartSpec() != null) {
+      part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
+    }
 
     validateAlterTableType(tbl, alterTbl.getOp());
 
@@ -1779,33 +1730,51 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl
           .getDeserializer()));
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
-      tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
-      tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
-      if (alterTbl.getSerdeName() != null) {
-        tbl.setSerializationLib(alterTbl.getSerdeName());
+      if(part != null) {
+        part.getTPartition().getSd().setInputFormat(alterTbl.getInputFormat());
+        part.getTPartition().getSd().setOutputFormat(alterTbl.getOutputFormat());
+        if (alterTbl.getSerdeName() != null) {
+          part.getTPartition().getSd().getSerdeInfo().setSerializationLib(
+              alterTbl.getSerdeName());
+        }
+      } else {
+        tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
+        tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
+        if (alterTbl.getSerdeName() != null) {
+          tbl.setSerializationLib(alterTbl.getSerdeName());
+        }
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERPROTECTMODE) {
-      ProtectMode mode = tbl.getProtectMode();
+      boolean protectModeEnable = alterTbl.isProtectModeEnable();
+      AlterTableDesc.ProtectModeType protectMode = alterTbl.getProtectModeType();
 
-      if (alterTbl.isProtectModeEnable() &&
-          alterTbl.getProtectModeType() ==
-            AlterTableDesc.ProtectModeType.OFFLINE) {
+      ProtectMode mode = null;
+      if(part != null) {
+        mode = part.getProtectMode();
+      } else {
+        mode = tbl.getProtectMode();
+      }
+
+      if (protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
         mode.offline = true;
-      } else if (alterTbl.isProtectModeEnable() &&
-          alterTbl.getProtectModeType() ==
-            AlterTableDesc.ProtectModeType.NO_DROP) {
+      } else if (protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
         mode.noDrop = true;
-      } else if (!alterTbl.isProtectModeEnable()&&
-          alterTbl.getProtectModeType() ==
-            AlterTableDesc.ProtectModeType.OFFLINE) {
+      } else if (!protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
         mode.offline = false;
-      } else if (!alterTbl.isProtectModeEnable() &&
-          alterTbl.getProtectModeType() ==
-            AlterTableDesc.ProtectModeType.NO_DROP) {
+      } else if (!protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
         mode.noDrop = false;
       }
 
-      tbl.setProtectMode(mode);
+      if (part != null) {
+        part.setProtectMode(mode);
+      } else {
+        tbl.setProtectMode(mode);        
+      }
+
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
       // validate sort columns and bucket columns
       List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl
@@ -1833,32 +1802,63 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.getTTable().getSd().setBucketCols(bucketCols);
       tbl.getTTable().getSd().setNumBuckets(numBuckets);
       tbl.getTTable().getSd().setSortCols(sortCols);
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
+      String newLocation = alterTbl.getNewLocation();
+      try {
+        URI locURI = new URI(newLocation);
+        if (!locURI.isAbsolute() || locURI.getScheme() == null
+            || locURI.getScheme().trim().equals("")) {
+          throw new HiveException(
+              newLocation
+                  + " is not absolute or has no scheme information. "
+                  + "Please specify a complete absolute uri with scheme information.");
+        }
+        if (part != null) {
+          part.setLocation(newLocation);
+        } else {
+          tbl.setDataLocation(locURI);
+        }
+      } catch (URISyntaxException e) {
+        throw new HiveException(e);
+      }
     } else {
       console.printError("Unsupported Alter commnad");
       return 1;
     }
 
     // set last modified by properties
+    String user = null;
     try {
-      tbl.setProperty("last_modified_by", conf.getUser());
+      user = conf.getUser();
     } catch (IOException e) {
       console.printError("Unable to get current user: " + e.getMessage(),
           stringifyException(e));
       return 1;
     }
-    tbl.setProperty("last_modified_time", Long.toString(System
-        .currentTimeMillis() / 1000));
 
-    try {
-      tbl.checkValidity();
-    } catch (HiveException e) {
-      console.printError("Invalid table columns : " + e.getMessage(),
-          stringifyException(e));
-      return 1;
+    if(part == null) {
+      tbl.setProperty("last_modified_by", user);
+      tbl.setProperty("last_modified_time", Long.toString(System
+          .currentTimeMillis() / 1000));
+      try {
+        tbl.checkValidity();
+      } catch (HiveException e) {
+        console.printError("Invalid table columns : " + e.getMessage(),
+            stringifyException(e));
+        return 1;
+      }
+    } else {
+      part.getParameters().put("last_modified_by", user);
+      part.getParameters().put("last_modified_time", Long.toString(System
+          .currentTimeMillis() / 1000));
     }
-
+    
     try {
-      db.alterTable(alterTbl.getOldName(), tbl);
+      if (part == null) {
+        db.alterTable(alterTbl.getOldName(), tbl);
+      } else {
+        db.alterPartition(tbl.getTableName(), part);        
+      }
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
       LOG.info("alter table: " + stringifyException(e));
@@ -1872,8 +1872,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // contains the new table. This is needed for rename - both the old and the
     // new table names are
     // passed
-    work.getInputs().add(new ReadEntity(oldTbl));
-    work.getOutputs().add(new WriteEntity(tbl));
+    if(part != null) {
+      work.getInputs().add(new ReadEntity(part));
+      work.getOutputs().add(new WriteEntity(part));
+    } else {
+      work.getInputs().add(new ReadEntity(oldTbl));
+      work.getOutputs().add(new WriteEntity(tbl));
+    }
     return 0;
   }
 

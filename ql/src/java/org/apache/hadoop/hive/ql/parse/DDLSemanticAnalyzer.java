@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterPartitionProtectModeDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -108,6 +107,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return TokenToTypeName.get(token);
   }
 
+  static class TablePartition {
+    String tableName;
+    HashMap<String, String> partSpec = null;
+    
+    public TablePartition(){
+    }
+    
+    public TablePartition (ASTNode tblPart) throws SemanticException {
+      tableName = unescapeIdentifier(tblPart.getChild(0).getText());
+      if (tblPart.getChildCount() > 1) {
+        ASTNode part = (ASTNode) tblPart.getChild(1);
+        if (part.getToken().getType() == HiveParser.TOK_PARTSPEC) {
+         this.partSpec = DDLSemanticAnalyzer.getPartSpec(part);
+        }
+      }
+    }
+  }
+  
   public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
     // Partition can't have this name
@@ -120,7 +137,20 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE) {
+    
+    if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PARTITION) {
+      TablePartition tblPart = new TablePartition((ASTNode)ast.getChild(0));
+      String tableName = tblPart.tableName;
+      HashMap<String, String> partSpec = tblPart.partSpec;
+      ast = (ASTNode)ast.getChild(1);
+      if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
+        analyzeAlterTableFileFormat(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE) {
+        analyzeAlterTableProtectMode(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
+        analyzeAlterTableLocation(ast, tableName, partSpec);
+      } 
+    } else if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE) {
       analyzeDropTable(ast, false);
     } else if (ast.getToken().getType() == HiveParser.TOK_CREATEINDEX) {
       analyzeCreateIndex(ast);
@@ -166,18 +196,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableAddParts(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
       analyzeAlterTableDropParts(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE) {
-      analyzeAlterTableAlterPartsProtectMode(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
       analyzeAlterTableProps(ast, false);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
       analyzeAlterTableSerdeProps(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
       analyzeAlterTableSerde(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT) {
-      analyzeAlterTableFileFormat(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROTECTMODE) {
-      analyzeAlterTableProtectMode(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
       analyzeAlterTableClusterSort(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_REBUILD) {
@@ -397,14 +421,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
-  private void analyzeAlterTableFileFormat(ASTNode ast)
+  private void analyzeAlterTableFileFormat(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+
     String inputFormat = null;
     String outputFormat = null;
     String storageHandler = null;
     String serde = null;
-    ASTNode child = (ASTNode) ast.getChild(1);
+    ASTNode child = (ASTNode) ast.getChild(0);
 
     switch (child.getToken().getType()) {
     case HiveParser.TOK_TABLEFILEFORMAT:
@@ -442,22 +467,34 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       serde = COLUMNAR_SERDE;
       break;
     }
+    
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, inputFormat,
-        outputFormat, serde, storageHandler);
+        outputFormat, serde, storageHandler, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
 
-  private void analyzeAlterTableProtectMode(ASTNode ast)
+  private void analyzeAlterTableLocation(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec) throws SemanticException {
+
+    String newLocation = unescapeSQLString(ast.getChild(0).getText());
+
+    AlterTableDesc alterTblDesc = new AlterTableDesc (tableName, newLocation, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        alterTblDesc), conf));
+  }
+
+  private void analyzeAlterTableProtectMode(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
 
     AlterTableDesc alterTblDesc =
       new AlterTableDesc(AlterTableTypes.ALTERPROTECTMODE);
 
     alterTblDesc.setOldName(tableName);
+    alterTblDesc.setPartSpec(partSpec);
 
-    ASTNode child = (ASTNode) ast.getChild(1);
+    ASTNode child = (ASTNode) ast.getChild(0);
 
     switch (child.getToken().getType()) {
     case HiveParser.TOK_ENABLE:
@@ -589,7 +626,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("analyzeDescribeTable done");
   }
 
-  private HashMap<String, String> getPartSpec(ASTNode partspec)
+  private static HashMap<String, String> getPartSpec(ASTNode partspec)
       throws SemanticException {
     HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
     for (int i = 0; i < partspec.getChildCount(); ++i) {
@@ -829,60 +866,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           addPartitionDesc), conf));
     }
-  }
-
-  /**
-   * Alter protect mode of a table or partition
-   *
-   * @param ast
-   *          The parsed command tree.
-   * @throws SemanticException
-   *           Parsin failed
-   */
-  private void analyzeAlterTableAlterPartsProtectMode(CommonTree ast)
-      throws SemanticException {
-
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
-
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
-    Map<String, String> partSpec = partSpecs.get(0);
-    AlterPartitionProtectModeDesc desc = new AlterPartitionProtectModeDesc(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, partSpec);
-
-    CommonTree child = (CommonTree) ast.getChild(2);
-
-    switch (child.getToken().getType()) {
-    case HiveParser.TOK_ENABLE:
-      desc.setProtectModeEnable(true);
-      break;
-    case HiveParser.TOK_DISABLE:
-      desc.setProtectModeEnable(false);
-      break;
-    default:
-      throw new SemanticException(
-          "Set Protect mode Syntax parsing error.");
-    }
-
-    ASTNode grandChild = (ASTNode) child.getChild(0);
-    switch (grandChild.getToken().getType()) {
-    case HiveParser.TOK_OFFLINE:
-      desc.setProtectModeType(
-          AlterPartitionProtectModeDesc.ProtectModeType.OFFLINE);
-      break;
-    case HiveParser.TOK_NO_DROP:
-      desc.setProtectModeType(
-          AlterPartitionProtectModeDesc.ProtectModeType.NO_DROP);
-      break;
-    case HiveParser.TOK_READONLY:
-      throw new SemanticException(
-          "Potect mode READONLY is not implemented");
-    default:
-      throw new SemanticException(
-          "Only protect mode NO_DROP or OFFLINE supported");
-    }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc
-        ), conf));
   }
 
   /**

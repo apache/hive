@@ -50,9 +50,11 @@ POSTHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
 PREHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
-PREHOOK: type: null
+PREHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
-POSTHOOK: type: null
+POSTHOOK: type: ALTERPARTITION_PROTECTMODE
+POSTHOOK: Input: default@tbl_protectmode5@p=p1
+POSTHOOK: Output: default@tbl_protectmode5@p=p1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table tbl_protectmode5_1

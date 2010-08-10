@@ -93,6 +93,7 @@ TOK_DROPINDEX;
 TOK_LIKETABLE;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
+TOK_ALTERTABLE_PARTITION;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
 TOK_ALTERTABLE_RENAMECOL;
@@ -105,9 +106,10 @@ TOK_ALTERTABLE_ARCHIVE;
 TOK_ALTERTABLE_UNARCHIVE;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_TABLE_PARTITION;
 TOK_ALTERTABLE_FILEFORMAT;
+TOK_ALTERTABLE_LOCATION;
 TOK_ALTERTABLE_PROPERTIES;
-TOK_ALTERTABLE_PROTECTMODE;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERINDEX_REBUILD;
 TOK_MSCK;
@@ -353,14 +355,12 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
-    | alterStatementSuffixAlterPartitionsProtectMode
     | alterStatementSuffixTouch
     | alterStatementSuffixArchive
     | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
-    | alterStatementSuffixFileFormat
-    | alterStatementSuffixProtectMode
+    | alterTblPartitionStatement
     | alterStatementSuffixClusterbySortby
     ;
 
@@ -405,13 +405,6 @@ alterStatementSuffixAddPartitions
     -> ^(TOK_ALTERTABLE_ADDPARTS Identifier ifNotExists? (partitionSpec partitionLocation?)+)
     ;
     
-alterStatementSuffixAlterPartitionsProtectMode
-@init { msgs.push("alter partition protect mode statement"); }
-@after { msgs.pop(); }
-    : Identifier partitionSpec alterProtectMode
-    -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE Identifier partitionSpec alterProtectMode)
-    ;
-
 alterStatementSuffixTouch
 @init { msgs.push("touch statement"); }
 @after { msgs.pop(); }
@@ -470,20 +463,49 @@ alterStatementSuffixSerdeProperties
     -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
     ;
 
+tablePartitionPrefix
+@init {msgs.push("table partition prefix");}
+@after {msgs.pop();}
+  :name=Identifier partitionSpec? 
+  ->^(TOK_TABLE_PARTITION $name partitionSpec?)
+  ;
+
+alterTblPartitionStatement
+@init {msgs.push("alter table partition statement");}
+@after {msgs.pop();}
+  :  tablePartitionPrefix alterTblPartitionStatementSuffix
+  -> ^(TOK_ALTERTABLE_PARTITION tablePartitionPrefix alterTblPartitionStatementSuffix)
+  ;
+
+alterTblPartitionStatementSuffix
+@init {msgs.push("alter table partition statement suffix");}
+@after {msgs.pop();}
+  : alterStatementSuffixFileFormat
+  | alterStatementSuffixLocation
+  | alterStatementSuffixProtectMode
+  ;
+
 alterStatementSuffixFileFormat
 @init {msgs.push("alter fileformat statement"); }
-@after {msgs.pop(); }
-	:name=Identifier KW_SET KW_FILEFORMAT fileFormat
-	-> ^(TOK_ALTERTABLE_FILEFORMAT $name fileFormat)
+@after {msgs.pop();}
+	: KW_SET KW_FILEFORMAT fileFormat
+	-> ^(TOK_ALTERTABLE_FILEFORMAT fileFormat)
 	;
 
+alterStatementSuffixLocation
+@init {msgs.push("alter location");}
+@after {msgs.pop();}
+  : KW_SET KW_LOCATION newLoc=StringLiteral
+  -> ^(TOK_ALTERTABLE_LOCATION $newLoc)
+  ;
+
 alterStatementSuffixProtectMode
-@init {msgs.push("alter protectmode statement"); }
-@after {msgs.pop(); }
-	:name=Identifier alterProtectMode
-	-> ^(TOK_ALTERTABLE_PROTECTMODE $name alterProtectMode)
-	;
-	
+@init { msgs.push("alter partition protect mode statement"); }
+@after { msgs.pop(); }
+    : alterProtectMode
+    -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE alterProtectMode)
+    ;
+
 alterProtectMode
 @init { msgs.push("protect mode specification enable"); }
 @after { msgs.pop(); }
