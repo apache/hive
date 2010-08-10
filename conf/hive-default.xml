@@ -622,7 +622,7 @@
 
 <property>
   <name>hive.exec.mode.local.auto</name>
-  <value>true</value>
+  <value>false</value>
   <description> Let hive determine whether to run in local mode automatically </description>
 </property>
 

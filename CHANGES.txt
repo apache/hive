@@ -72,6 +72,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1524. Parallel Execution fails if mapred.job.name is set
+    (Ning Zhang via jssarma)
+
     HIVE-1509. Hive should kill query if too many files are created by it
     (Ning Zhang via jssarma)
 

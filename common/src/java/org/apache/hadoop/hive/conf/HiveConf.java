@@ -96,7 +96,7 @@ public class HiveConf extends Configuration {
 
 
     // should hive determine whether to run in local mode automatically ?
-    LOCALMODEAUTO("hive.exec.mode.local.auto", true),
+    LOCALMODEAUTO("hive.exec.mode.local.auto", false),
     // if yes:
     // run in local mode only if input bytes is less than this. 128MB by default
     LOCALMODEMAXBYTES("hive.exec.mode.local.auto.inputbytes.max", 134217728L),
