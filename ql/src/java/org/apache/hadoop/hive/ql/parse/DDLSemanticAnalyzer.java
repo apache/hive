@@ -333,8 +333,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             indexTbl, db, indexTblPartitions);
       }
 
-      List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl, index,
-          indexTblPartitions, baseTblPartitions, indexTbl, db);
+      List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl, 
+          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs());
       return ret;
     } catch (Exception e) {
       throw new SemanticException(e);

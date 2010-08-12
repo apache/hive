@@ -68,6 +68,10 @@ Trunk -  Unreleased
     configurability
     (Joydeep Sen Sarma via Ning Zhang)
 
+    HIVE-1495. supply correct information to hooks and lineage for
+    index rebuild
+    (He Yongqiang via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

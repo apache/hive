@@ -19,12 +19,15 @@
 package org.apache.hadoop.hive.ql.index.compact;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -33,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.AbstractIndexHandler;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -66,10 +71,9 @@ public class CompactIndexHandler extends AbstractIndexHandler {
   public List<Task<?>> generateIndexBuildTaskList(
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
       org.apache.hadoop.hive.metastore.api.Index index,
-      List<Partition> indexTblPartitions,
-      List<Partition> baseTblPartitions,
+      List<Partition> indexTblPartitions, List<Partition> baseTblPartitions,
       org.apache.hadoop.hive.ql.metadata.Table indexTbl,
-      Hive db) throws HiveException {
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws HiveException {
     try {
 
       TableDesc desc = Utilities.getTableDesc(indexTbl);
@@ -81,10 +85,10 @@ public class CompactIndexHandler extends AbstractIndexHandler {
       if (!baseTbl.isPartitioned()) {
         // the table does not have any partition, then create index for the
         // whole table
-        Task<?> indexBuilder = getIndexBuilderMapRedTask(index.getSd().getCols(), false,
+        Task<?> indexBuilder = getIndexBuilderMapRedTask(inputs, outputs, index.getSd().getCols(), false,
             new PartitionDesc(desc, null), indexTbl.getTableName(),
             new PartitionDesc(Utilities.getTableDesc(baseTbl), null), 
-            baseTbl.getTableName(), db, indexTbl.getDbName());
+            baseTbl.getTableName(), indexTbl.getDbName());
         indexBuilderTasks.add(indexBuilder);
       } else {
 
@@ -104,10 +108,9 @@ public class CompactIndexHandler extends AbstractIndexHandler {
             throw new RuntimeException(
                 "Partitions of base table and index table are inconsistent.");
           // for each partition, spawn a map reduce task.
-          Task<?> indexBuilder = getIndexBuilderMapRedTask(index.getSd().getCols(), true,
+          Task<?> indexBuilder = getIndexBuilderMapRedTask(inputs, outputs, index.getSd().getCols(), true,
               new PartitionDesc(indexPart), indexTbl.getTableName(),
-              new PartitionDesc(basePart), baseTbl.getTableName(), db, indexTbl.getDbName());
-          
+              new PartitionDesc(basePart), baseTbl.getTableName(), indexTbl.getDbName());
           indexBuilderTasks.add(indexBuilder);
         }
       }
@@ -117,9 +120,10 @@ public class CompactIndexHandler extends AbstractIndexHandler {
     }
   }
 
-  private Task<?> getIndexBuilderMapRedTask(List<FieldSchema> indexField, boolean partitioned,
+  private Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs, 
+      List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, Hive db, String dbName) {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
     
     String indexCols = MetaStoreUtils.getColumnNamesFromFieldSchema(indexField);
 
@@ -164,10 +168,12 @@ public class CompactIndexHandler extends AbstractIndexHandler {
     command.append(" GROUP BY ");
     command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
 
-    Driver driver = new Driver(db.getConf());
+    Driver driver = new Driver(new HiveConf(getConf(), CompactIndexHandler.class));
     driver.compile(command.toString());
 
     Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
+    inputs.addAll(driver.getPlan().getInputs());
+    outputs.addAll(driver.getPlan().getOutputs());
     
     IndexMetadataChangeWork indexMetaChange = new IndexMetadataChangeWork(partSpec, indexTableName, dbName);
     IndexMetadataChangeTask indexMetaChangeTsk = new IndexMetadataChangeTask(); 

@@ -21,23 +21,27 @@ POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:k
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX src_index ON src_index_test_rc REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@src_index_test_rc
+PREHOOK: Output: default@default__src_index_test_rc_src_index__
 POSTHOOK: query: ALTER INDEX src_index ON src_index_test_rc REBUILD
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Input: default@src_index_test_rc
+POSTHOOK: Output: default@default__src_index_test_rc_src_index__
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT x.* FROM default__src_index_test_rc_src_index__ x ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_index_test_rc_src_index__
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-14_097_8897266603819186105/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-33_565_4058277721862330993/-mr-10000
 POSTHOOK: query: SELECT x.* FROM default__src_index_test_rc_src_index__ x ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_index_test_rc_src_index__
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-14_097_8897266603819186105/-mr-10000
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-33_565_4058277721862330993/-mr-10000
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -358,21 +362,21 @@ POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" SELECT `_bucketn
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_index_test_rc_src_index__
 POSTHOOK: Output: /tmp/index_result
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM src_index_test_rc WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_index_test_rc
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-22_004_5248612851991903403/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-42_370_7638561645212178718/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src_index_test_rc WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_index_test_rc
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-22_004_5248612851991903403/-mr-10000
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-42_370_7638561645212178718/-mr-10000
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -381,13 +385,13 @@ POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: SELECT key, value FROM src_index_test_rc WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_index_test_rc
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-27_158_5348505986630674711/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-47_257_8363671238566643614/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src_index_test_rc WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_index_test_rc
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-44-27_158_5348505986630674711/-mr-10000
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-11_15-23-47_257_8363671238566643614/-mr-10000
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -397,8 +401,8 @@ PREHOOK: query: DROP INDEX src_index on src_index_test_rc
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX src_index on src_index_test_rc
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -407,8 +411,8 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE src_index_test_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@src_index_test_rc
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.null, ]
-POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.null, ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._bucketname SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_index_test_rc_src_index__._offsets EXPRESSION [(src_index_test_rc)src_index_test_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_index_test_rc_src_index__.key SIMPLE [(src_index_test_rc)src_index_test_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: src_index_test_rc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_index_test_rc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -48,6 +51,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -138,18 +142,27 @@ public class OpProcFactory {
       // Generate the mappings
       RowSchema rs = top.getSchema();
       List<FieldSchema> cols = t.getAllCols();
+      Map<String, FieldSchema> fieldSchemaMap = new HashMap<String, FieldSchema>();
+      for(FieldSchema col : cols) {
+        fieldSchemaMap.put(col.getName(), col);
+      }
+      
+      Iterator<VirtualColumn> vcs = VirtualColumn.registry.values().iterator();
+      while (vcs.hasNext()) {
+        VirtualColumn vc = vcs.next();
+        fieldSchemaMap.put(vc.getName(), new FieldSchema(vc.getName(),
+            vc.getTypeInfo().getTypeName(), ""));
+      }
+      
       TableAliasInfo tai = new TableAliasInfo();
       tai.setAlias(top.getConf().getAlias());
       tai.setTable(tab);
-      int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
         // Create a dependency
         Dependency dep = new Dependency();
         BaseColumnInfo bci = new BaseColumnInfo();
         bci.setTabAlias(tai);
-        if (cnt<cols.size()) {
-          bci.setColumn(cols.get(cnt++));          
-        }
+        bci.setColumn(fieldSchemaMap.get(ci.getInternalName()));          
 
         // Populate the dependency
         dep.setType(LineageInfo.DependencyType.SIMPLE);
@@ -250,11 +263,8 @@ public class OpProcFactory {
       else {
         int cnt = cols_size - 1;
         while (cnt >= 0) {
-          int count = out_cols_size - cols_size + cnt;
-          if (count >= 0 && count < out_cols.size()) {
-            lCtx.getIndex().mergeDependency(op, out_cols.get(count),
-                lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
-          }
+          lCtx.getIndex().mergeDependency(op, out_cols.get(out_cols_size - cols_size + cnt),
+              lCtx.getIndex().getDependency(inpOp, cols.get(cnt)));
           cnt--;
         }
       }

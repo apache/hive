@@ -11,8 +11,8 @@ POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
@@ -21,10 +21,10 @@ POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -33,12 +33,12 @@ POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=11
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
@@ -47,60 +47,76 @@ POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', h
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX srcpart_rc_index ON srcpart_rc REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER INDEX srcpart_rc_index ON srcpart_rc REBUILD
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-17_364_3794390100854234941/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-50-48_118_4728406597593308369/-mr-10000
 POSTHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-17_364_3794390100854234941/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-50-48_118_4728406597593308369/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	[151]	2008-04-08	11
 2	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	[151]	2008-04-08	11
 4	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	[151]	2008-04-08	11
@@ -420,38 +436,38 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
 POSTHOOK: Output: /tmp/index_test_index_result
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-31_106_6419996530730224002/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-03_795_4905246329400062712/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-31_106_6419996530730224002/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-03_795_4905246329400062712/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 100	val_100
@@ -464,91 +480,91 @@ POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_test_index_result" SELEC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
 POSTHOOK: Output: /tmp/index_test_index_result
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-40_430_63700946893395470/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-14_391_454627680550191034/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-40_430_63700946893395470/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-14_391_454627680550191034/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-47_322_4765705198079579433/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-19_311_4408274107595517243/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-42-47_322_4765705198079579433/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-19_311_4408274107595517243/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 PREHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: EXPLAIN
 CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_CREATEINDEX srcpart_rc_index 'COMPACT' srcpart_rc (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
 
@@ -563,63 +579,79 @@ PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPA
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER  INDEX srcpart_rc_index ON srcpart_rc REBUILD
 PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER  INDEX srcpart_rc_index ON srcpart_rc REBUILD
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
 PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
 PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
 PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-31_920_4095898479421247484/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-50_286_1184206066153983224/-mr-10000
 POSTHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-31_920_4095898479421247484/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-51-50_286_1184206066153983224/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	[151]	2008-04-08	11
 0	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=12/000000_0	[151]	2008-04-08	12
 0	pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-09/hr=12/000000_0	[151]	2008-04-09	12
@@ -1870,48 +1902,48 @@ POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
 POSTHOOK: Output: /tmp/index_result
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-46_633_5896872755545556078/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-52-07_841_6319107445189885682/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-46_633_5896872755545556078/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-52-07_841_6319107445189885682/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 100	val_100
@@ -1926,28 +1958,28 @@ PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-52_815_6873111664910776812/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-52-14_032_6274185278534018512/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-43-52_815_6873111664910776812/-mr-10000
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-10_21-52-14_032_6274185278534018512/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
 100	val_100
@@ -1960,36 +1992,36 @@ PREHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DROP TABLE srcpart_rc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE srcpart_rc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@srcpart_rc
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.null, ]
-POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

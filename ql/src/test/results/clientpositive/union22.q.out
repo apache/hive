@@ -118,7 +118,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002
+                    directory: file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002
                     NumFilesPerFileSink: 1
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -173,7 +173,7 @@ STAGE PLANS:
                         File Output Operator
                           compressed: false
                           GlobalTableId: 0
-                          directory: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002
+                          directory: file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002
                           NumFilesPerFileSink: 1
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -186,9 +186,9 @@ STAGE PLANS:
                           MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
       Path -> Partition:
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22/ds=1 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22/ds=1 
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -201,13 +201,13 @@ STAGE PLANS:
               columns.types string:string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22
+              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22
               name dst_union22
               partition_columns ds
               serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280438704
+              transient_lastDdlTime 1281478813
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -218,13 +218,13 @@ STAGE PLANS:
                 columns.types string:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22
+                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22
                 name dst_union22
                 partition_columns ds
                 serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280438704
+                transient_lastDdlTime 1281478813
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dst_union22
             name: dst_union22
@@ -232,7 +232,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002 
+        file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -275,7 +275,7 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_14-25-13_054_7356623950971731725/-ext-10000
+                      directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_15-20-19_225_1224246482641447263/-ext-10000
                       NumFilesPerFileSink: 1
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -286,13 +286,13 @@ STAGE PLANS:
                             columns.types string:string:string:string
                             file.inputformat org.apache.hadoop.mapred.TextInputFormat
                             file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22
+                            location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22
                             name dst_union22
                             partition_columns ds
                             serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            transient_lastDdlTime 1280438704
+                            transient_lastDdlTime 1281478813
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: dst_union22
                       TotalFiles: 1
@@ -336,7 +336,7 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
-                        directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_14-25-13_054_7356623950971731725/-ext-10000
+                        directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_15-20-19_225_1224246482641447263/-ext-10000
                         NumFilesPerFileSink: 1
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -347,23 +347,23 @@ STAGE PLANS:
                               columns.types string:string:string:string
                               file.inputformat org.apache.hadoop.mapred.TextInputFormat
                               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22
+                              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22
                               name dst_union22
                               partition_columns ds
                               serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              transient_lastDdlTime 1280438704
+                              transient_lastDdlTime 1281478813
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: dst_union22
                         TotalFiles: 1
                         MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002 [file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002]
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22_delta/ds=1 [null-subquery1:subq-subquery1:dst_union22_delta]
+        file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002 [file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002]
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22_delta/ds=1 [null-subquery1:subq-subquery1:dst_union22_delta]
       Path -> Partition:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-13_054_7356623950971731725/-mr-10002 
+        file:/tmp/heyongqiang/hive_2010-08-10_15-20-19_225_1224246482641447263/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -379,7 +379,7 @@ STAGE PLANS:
                 columns _col0,_col1,_col10,_col11
                 columns.types string,string,string,string
                 escape.delim \
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22_delta/ds=1 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22_delta/ds=1 
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -392,13 +392,13 @@ STAGE PLANS:
               columns.types string:string:string:string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22_delta
+              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22_delta
               name dst_union22_delta
               partition_columns ds
               serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280438704
+              transient_lastDdlTime 1281478813
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -409,13 +409,13 @@ STAGE PLANS:
                 columns.types string:string:string:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22_delta
+                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22_delta
                 name dst_union22_delta
                 partition_columns ds
                 serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280438704
+                transient_lastDdlTime 1281478813
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dst_union22_delta
             name: dst_union22_delta
@@ -426,7 +426,7 @@ STAGE PLANS:
           partition:
             ds 2
           replace: true
-          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_14-25-13_054_7356623950971731725/-ext-10000
+          source: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_15-20-19_225_1224246482641447263/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -436,16 +436,16 @@ STAGE PLANS:
                 columns.types string:string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/dst_union22
+                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/dst_union22
                 name dst_union22
                 partition_columns ds
                 serialization.ddl struct dst_union22 { string k1, string k2, string k3, string k4}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280438704
+                transient_lastDdlTime 1281478813
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dst_union22
-          tmp directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_14-25-13_054_7356623950971731725/-ext-10001
+          tmp directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_15-20-19_225_1224246482641447263/-ext-10001
 
 
 PREHOOK: query: insert overwrite table dst_union22 partition (ds='2')
@@ -482,10 +482,10 @@ POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(n
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k0, type:string, comment:null), (dst_union22)a.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22)a.FieldSchema(name:k2, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -495,19 +495,19 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSc
 PREHOOK: query: select * from dst_union22 where ds = '2' order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22@ds=2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-23_974_6657587171725092506/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_15-20-24_642_7811595587149170257/-mr-10000
 POSTHOOK: query: select * from dst_union22 where ds = '2' order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dst_union22@ds=2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_14-25-23_974_6657587171725092506/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_15-20-24_642_7811595587149170257/-mr-10000
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k0, type:string, comment:null), (dst_union22)a.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), ]
-POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k1 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k1, type:string, comment:null), (dst_union22)a.FieldSchema(name:k1, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k2 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k2, type:string, comment:null), (dst_union22)a.FieldSchema(name:k2, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k3 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k3, type:string, comment:null), ]
+POSTHOOK: Lineage: dst_union22 PARTITION(ds=2).k4 EXPRESSION [(dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), (dst_union22_delta)dst_union22_delta.FieldSchema(name:k4, type:string, comment:null), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

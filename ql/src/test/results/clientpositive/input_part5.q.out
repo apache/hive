@@ -63,7 +63,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-30-18_979_6381759242501013340/10000
+          destination: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-29-18_433_6760065815418980050/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -78,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-30-18_979_6381759242501013340/10002 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-29-18_433_6760065815418980050/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -118,22 +118,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable
-POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-24_165_4575568288735476319/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-29-23_713_830361483202634852/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-24_165_4575568288735476319/10000
-POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-29-23_713_830361483202634852/-mr-10000
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

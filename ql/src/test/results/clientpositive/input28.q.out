@@ -20,15 +20,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tst@d=2009-01-01
-POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from tst where tst.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-41_262_4407769166268455742/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-26-36_361_4144428300067091522/-mr-10000
 POSTHOOK: query: select * from tst where tst.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-41_262_4407769166268455742/10000
-POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-26-36_361_4144428300067091522/-mr-10000
+POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

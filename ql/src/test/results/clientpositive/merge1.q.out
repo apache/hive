@@ -94,7 +94,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-35_891_8961223626140768169/10000
+          destination: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-11_754_2355902204761904023/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -109,7 +109,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-35_891_8961223626140768169/10002 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-11_754_2355902204761904023/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -148,11 +148,11 @@ POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-01-38_782_3169792692854776166/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-41-14_599_1474799090825578288/-mr-10000
 POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-01-38_782_3169792692854776166/10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-41-14_599_1474799090825578288/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 0	3
@@ -561,7 +561,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-44_324_4141481189577468/10000
+          destination: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-20_436_8449567630117985977/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -576,7 +576,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-44_324_4141481189577468/10002 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-20_436_8449567630117985977/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -609,7 +609,7 @@ POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -622,7 +622,7 @@ POSTHOOK: query: explain
 insert overwrite table dest1 select key from test_src
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -666,7 +666,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-49_887_6167797302674604272/10000
+          destination: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-25_717_6823551420020401280/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -681,7 +681,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-01-49_887_6167797302674604272/10002 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-41-25_717_6823551420020401280/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -714,8 +714,8 @@ POSTHOOK: Input: default@test_src@ds=101
 POSTHOOK: Input: default@test_src@ds=102
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

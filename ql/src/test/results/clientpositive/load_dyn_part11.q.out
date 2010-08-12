@@ -20,7 +20,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part, dbName:default, owner:null, createTime:1279737506, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/nzhang_part, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279737506}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part, dbName:default, owner:null, createTime:1281476234, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1281476234}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table nzhang_part partition (ds="2010-03-03", hr) select key, value, hr from srcpart where ds is not null and hr is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -35,22 +35,22 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@nzhang_part@ds=2010-03-03/hr=11
 POSTHOOK: Output: default@nzhang_part@ds=2010-03-03/hr=12
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from nzhang_part where ds = '2010-03-03' and hr = '11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-03-03/hr=11
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-29_671_8910076593286729265/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-37-18_354_6978262658088865883/-mr-10000
 POSTHOOK: query: select * from nzhang_part where ds = '2010-03-03' and hr = '11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-03-03/hr=11
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-29_671_8910076593286729265/10000
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-37-18_354_6978262658088865883/-mr-10000
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2010-03-03	11
 86	val_86	2010-03-03	11
 311	val_311	2010-03-03	11
@@ -1054,15 +1054,15 @@ POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(src
 PREHOOK: query: select * from nzhang_part where ds = '2010-03-03' and hr = '12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-03-03/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-29_767_8476842886490876328/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-37-18_617_2558795484384863356/-mr-10000
 POSTHOOK: query: select * from nzhang_part where ds = '2010-03-03' and hr = '12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-03-03/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-29_767_8476842886490876328/10000
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-37-18_617_2558795484384863356/-mr-10000
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2010-03-03	12
 86	val_86	2010-03-03	12
 311	val_311	2010-03-03	12

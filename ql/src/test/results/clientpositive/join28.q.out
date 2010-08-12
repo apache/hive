@@ -218,7 +218,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-53_953_3029870996442907172/10000
+          destination: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-31-59_733_3100044098612736247/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -233,7 +233,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-53_953_3029870996442907172/10002 
+        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-31-59_733_3100044098612736247/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -280,17 +280,17 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-32-56_855_199027769742346440/10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-32-02_694_3733061191942055005/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-32-56_855_199027769742346440/10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-32-02_694_3733061191942055005/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 128	val_128
 128	val_128
 128	val_128

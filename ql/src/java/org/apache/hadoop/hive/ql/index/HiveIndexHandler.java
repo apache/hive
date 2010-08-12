@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.ql.index;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -71,6 +74,9 @@ public interface HiveIndexHandler extends Configurable {
    * Requests that the handler generate a plan for building the index; the plan
    * should read the base table and write out the index representation.
    * 
+   * @param outputs
+   * @param inputs
+   * 
    * @param baseTable
    *          the definition of the table being indexed
    * 
@@ -88,7 +94,13 @@ public interface HiveIndexHandler extends Configurable {
    *          the definition of the index table, or null if usesIndexTable()
    *          returns null
    * 
-   * @param db
+   * @param inputs
+   *          inputs for hooks, supplemental outputs going 
+   *          along with the return value
+   * 
+   * @param outputs
+   *          outputs for hooks, supplemental outputs going 
+   *          along with the return value
    * 
    * @return list of tasks to be executed in parallel for building the index
    * 
@@ -98,7 +110,8 @@ public interface HiveIndexHandler extends Configurable {
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
       org.apache.hadoop.hive.metastore.api.Index index,
       List<Partition> indexTblPartitions, List<Partition> baseTblPartitions,
-      org.apache.hadoop.hive.ql.metadata.Table indexTbl, Hive db)
+      org.apache.hadoop.hive.ql.metadata.Table indexTbl,
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws HiveException;
 
 }

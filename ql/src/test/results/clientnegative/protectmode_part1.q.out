@@ -36,7 +36,7 @@ select col from tbl_protectmode5 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode5@p=p1
 POSTHOOK: Output: default@tbl_protectmode5_1
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 PREHOOK: type: QUERY
@@ -47,16 +47,16 @@ select col from tbl_protectmode5 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode5@p=p2
 POSTHOOK: Output: default@tbl_protectmode5_1
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
 POSTHOOK: type: ALTERPARTITION_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode5@p=p1
 POSTHOOK: Output: default@tbl_protectmode5@p=p1
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p2'
 PREHOOK: type: QUERY
@@ -67,7 +67,7 @@ select col from tbl_protectmode5 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode5@p=p2
 POSTHOOK: Output: default@tbl_protectmode5_1
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
-POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:p, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode5 Partition p=p1
