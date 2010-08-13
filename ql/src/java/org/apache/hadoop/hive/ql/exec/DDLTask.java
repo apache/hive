@@ -1588,6 +1588,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Partition part = null;
     if(alterTbl.getPartSpec() != null) {
       part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
+      if(part == null) {
+        console.printError("Partition : " + alterTbl.getPartSpec().toString()
+            + " does not exist.");
+        return 1;
+      }
     }
 
     validateAlterTableType(tbl, alterTbl.getOp());

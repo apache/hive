@@ -138,6 +138,8 @@ Trunk -  Unreleased
     returns null
     (Joydeep Sen Sarma via Ning Zhang)
 
+    HIVE-1535 Dont change table metadata while changing partition metadata
+    (He Yongqiang via namit)
 
   TESTS
 
