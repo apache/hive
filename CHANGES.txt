@@ -39,6 +39,9 @@ Trunk -  Unreleased
     HIVE-1514. API to change fileformat and location of a partition
     (He Yongqiang via namit)
 
+    HIVE-1528. JSON UDTF function
+    (Ning Zhang via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

@@ -130,13 +130,12 @@ import org.apache.hadoop.hive.ql.udf.UDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFHistogramNumeric;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo;
@@ -148,6 +147,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
@@ -173,6 +173,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFJSONTuple;
 import org.apache.hadoop.hive.ql.udf.generic.SimpleGenericUDAFParameterInfo;
 import org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathBoolean;
@@ -394,6 +395,7 @@ public final class FunctionRegistry {
 
     // Generic UDTF's
     registerGenericUDTF("explode", GenericUDTFExplode.class);
+    registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
   }
 
   public static void registerTemporaryUDF(String functionName,
@@ -734,8 +736,9 @@ public final class FunctionRegistry {
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
-    if (LOG.isDebugEnabled())
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Looking up GenericUDAF: " + functionName);
+    }
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
     if (finfo == null) {
       return null;
@@ -873,10 +876,11 @@ public final class FunctionRegistry {
           conversionCost += cost;
         }
       }
-      if (LOG.isDebugEnabled())
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Method " + (match ? "did" : "didn't") + " match: passed = "
                   + argumentsPassed + " accepted = " + argumentsAccepted +
                   " method = " + m);
+      }
       if (match) {
         // Always choose the function with least implicit conversions.
         if (conversionCost < leastConversionCost) {

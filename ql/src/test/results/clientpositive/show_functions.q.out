@@ -69,6 +69,7 @@ instr
 int
 isnotnull
 isnull
+json_tuple
 lcase
 length
 like
@@ -175,6 +176,7 @@ double
 e
 explode
 from_unixtime
+json_tuple
 lcase
 like
 locate
