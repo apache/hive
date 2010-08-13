@@ -393,6 +393,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1401. Web Interface can only browse default
     (Edward Capriolo via jvs)
 
+    HIVE-1531. Make Hive build work with Ivy versions < 2.1.0
+    (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed

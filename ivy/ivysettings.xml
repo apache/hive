@@ -83,6 +83,13 @@
 
   <caches default="${ivy.cache.name}">
     <cache name="online"/>
-    <cache name="offline" defaultTTL="eternal"/>
+    <!--
+         Set the defaultTTL to 1000 days. Ivy 2.1.0 allows you to
+         set this to "eternal", but we want to maintain backwards
+         compatibility with older versions of Ivy which are likely
+         to get picked up automatically from a user's $ANT_HOME
+         directory.
+      -->
+    <cache name="offline" defaultTTL="1000d"/>
   </caches>
 </ivysettings>
