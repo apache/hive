@@ -104,10 +104,6 @@ Trunk -  Unreleased
     HIVE-1056. Predicate push down does not work with UDTF's
     (Paul Yang via He Yongqiang)
 
-    HIVE-1428. ALTER TABLE ADD PARTITION failes with a remote Thrift
-    metastore
-    (Pradeep Kamath via jvs)
-
     HIVE-1385. UDF field() doesn't work
     (Siying Dong via He Yongqiang)
 
@@ -726,6 +722,10 @@ Release 0.6.0 -  Unreleased
     HIVE-1294. HIVE_AUX_JARS_PATH interferes with startup of Hive Web
     Interface
     (Edward Capriolo via jvs)
+
+    HIVE-1428. ALTER TABLE ADD PARTITION failes with a remote Thrift
+    metastore
+    (Pradeep Kamath via jvs)
 
 Release 0.5.0 -  Unreleased
 
