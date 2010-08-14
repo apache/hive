@@ -583,6 +583,10 @@ Release 0.6.0 -  Unreleased
     Interface
     (Edward Capriolo via jvs)
 
+    HIVE-1428. ALTER TABLE ADD PARTITION failes with a remote Thrift
+    metastore
+    (Pradeep Kamath via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -2392,11 +2392,13 @@ class ThriftHiveMetastore_get_partition_result {
 
   Partition success;
   MetaException o1;
+  NoSuchObjectException o2;
 
   struct __isset {
-    __isset() : success(false), o1(false) {}
+    __isset() : success(false), o1(false), o2(false) {}
     bool success;
     bool o1;
+    bool o2;
   } __isset;
 
   bool operator == (const ThriftHiveMetastore_get_partition_result & rhs) const
@@ -2404,6 +2406,8 @@ class ThriftHiveMetastore_get_partition_result {
     if (!(success == rhs.success))
       return false;
     if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -2426,11 +2430,13 @@ class ThriftHiveMetastore_get_partition_presult {
 
   Partition* success;
   MetaException o1;
+  NoSuchObjectException o2;
 
   struct __isset {
-    __isset() : success(false), o1(false) {}
+    __isset() : success(false), o1(false), o2(false) {}
     bool success;
     bool o1;
+    bool o2;
   } __isset;
 
   uint32_t read(apache::thrift::protocol::TProtocol* iprot);

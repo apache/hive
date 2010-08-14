@@ -511,7 +511,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    *      java.lang.String, java.util.List)
    */
   public Partition getPartition(String db_name, String tbl_name,
-      List<String> part_vals) throws MetaException, TException {
+      List<String> part_vals) throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_partition(db_name, tbl_name, part_vals));
   }
 
