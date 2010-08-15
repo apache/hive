@@ -1210,7 +1210,7 @@ public class Hive {
       Path tmppath) throws HiveException {
     FileStatus[] srcs;
     try {
-      srcs = fs.globStatus(srcf);
+      srcs = fs.listStatus(srcf);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
