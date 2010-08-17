@@ -587,6 +587,9 @@ Release 0.6.0 -  Unreleased
     metastore
     (Pradeep Kamath via jvs)
 
+    HIVE-1543. Abort if record reader's next throws an exception
+    (Ning Zhang via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

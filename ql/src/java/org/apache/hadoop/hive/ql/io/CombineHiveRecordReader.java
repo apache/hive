@@ -92,6 +92,11 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     if (ExecMapper.getDone()) {
       return false;
     }
-    return recordReader.next(key, value);
+    try {
+      return recordReader.next(key, value);
+    } catch (IOException e) {
+      ExecMapper.setAbort(true);
+      throw e;
+    }
   }
 }

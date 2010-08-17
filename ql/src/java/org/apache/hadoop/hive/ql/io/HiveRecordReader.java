@@ -28,7 +28,7 @@ import org.apache.hadoop.mapred.RecordReader;
 /**
  * HiveRecordReader is a simple wrapper on RecordReader.
  * It allows us to stop reading the data when some global flag
- * ExecMapper.getDone() is set. 
+ * ExecMapper.getDone() is set.
  */
 public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     implements RecordReader<K, V> {
@@ -63,6 +63,11 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     if (ExecMapper.getDone()) {
       return false;
     }
-    return recordReader.next(key, value);
+    try {
+      return recordReader.next(key, value);
+    } catch (IOException e) {
+      ExecMapper.setAbort(true);
+      throw e;
+    }
   }
 }

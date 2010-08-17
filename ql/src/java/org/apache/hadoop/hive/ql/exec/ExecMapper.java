@@ -51,7 +51,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private Map<String, FetchOperator> fetchOperators;
   private OutputCollector oc;
   private JobConf jc;
-  private boolean abort = false;
+  private static boolean abort = false;
   private Reporter rp;
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
@@ -213,6 +213,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
       reportStats rps = new reportStats(rp);
       mo.preorderMap(rps);
+
+      // reset abort flag so that ExecMapper instance can be potentially reused
+      setAbort(false);
       return;
     } catch (Exception e) {
       if (!abort) {
@@ -231,8 +234,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     return abort;
   }
 
-  public void setAbort(boolean abort) {
-    this.abort = abort;
+  public static void setAbort(boolean abrt) {
+    abort = abrt;
   }
 
   public static void setDone(boolean done) {
