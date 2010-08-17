@@ -40,6 +40,8 @@ concat_ws
 conv
 cos
 count
+covar_pop
+covar_samp
 date_add
 date_sub
 datediff
@@ -166,6 +168,8 @@ concat_ws
 conv
 cos
 count
+covar_pop
+covar_samp
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'
