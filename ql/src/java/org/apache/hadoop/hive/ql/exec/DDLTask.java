@@ -726,7 +726,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // Verify that there are no files in the tmp dir, because if there are, it
       // would be copied to the partition
       FileStatus [] filesInTmpDir = fs.listStatus(tmpDir);
-      if (filesInTmpDir.length != 0) {
+      if (filesInTmpDir != null && filesInTmpDir.length != 0) {
         for (FileStatus file : filesInTmpDir) {
           console.printInfo(file.getPath().toString());
         }
@@ -1584,7 +1584,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // alter the table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl
         .getOldName());
-    
+
     Partition part = null;
     if(alterTbl.getPartSpec() != null) {
       part = db.getPartition(tbl, alterTbl.getPartSpec(), false);
@@ -1777,7 +1777,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (part != null) {
         part.setProtectMode(mode);
       } else {
-        tbl.setProtectMode(mode);        
+        tbl.setProtectMode(mode);
       }
 
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDCLUSTERSORTCOLUMN) {
@@ -1857,12 +1857,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       part.getParameters().put("last_modified_time", Long.toString(System
           .currentTimeMillis() / 1000));
     }
-    
+
     try {
       if (part == null) {
         db.alterTable(alterTbl.getOldName(), tbl);
       } else {
-        db.alterPartition(tbl.getTableName(), part);        
+        db.alterPartition(tbl.getTableName(), part);
       }
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());

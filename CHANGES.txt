@@ -147,6 +147,9 @@ Trunk -  Unreleased
     HIVE-1543 Abort in ExecMapper when record reader's next gets a exception
     (Ning Zhang via namit)
 
+    HIVE-1547 Unarchiving operation throws NPE
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
