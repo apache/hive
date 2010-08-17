@@ -144,6 +144,9 @@ Trunk -  Unreleased
     HIVE-1532 Replace globStatus with listStatus inside Hive.java's replaceFiles
     (He Yongqiang via namit)
 
+    HIVE-1543 Abort in ExecMapper when record reader's next gets a exception
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -29,10 +29,10 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 
 public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader<K, V> {
-  
+
   private boolean initDone = false;
-  
-  /** 
+
+  /**
    * Reads the next key/value pair from the input for processing.
    *
    * @param key the key to read data into
@@ -40,32 +40,37 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
    * @return true if a key/value was read, false if at EOF
    */
   public abstract boolean doNext(K key, V value) throws IOException;
-  
-  /** 
+
+  /**
    * Close this {@link InputSplit} to future operations.
-   * 
+   *
    * @throws IOException
-   */ 
+   */
   public abstract void doClose() throws IOException;
-  
+
   private IOContext ioCxtRef =  null;
-  
+
   @Override
   public void close() throws IOException {
     doClose();
     initDone = false;
     ioCxtRef = null;
   }
-  
+
   @Override
   public boolean next(K key, V value) throws IOException {
     if(!initDone) {
       throw new IOException("Hive IOContext is not inited.");
     }
     updateIOContext();
-    return doNext(key, value);
+    try {
+      return doNext(key, value);
+    } catch (IOException e) {
+      ioCxtRef.setIOExceptions(true);
+      throw e;
+    }
   }
-  
+
   protected void updateIOContext()
       throws IOException {
     long pointerPos = this.getPos();
@@ -85,11 +90,11 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       ioCxtRef.nextBlockStart = pointerPos;
     }
   }
-  
+
   public IOContext getIOContext() {
     return IOContext.get();
   }
-  
+
   public void initIOContext(long startPos, boolean isBlockPointer, String inputFile) {
     ioCxtRef = this.getIOContext();
     ioCxtRef.currentBlockStart = startPos;
@@ -101,7 +106,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   public void initIOContext(FileSplit split, JobConf job,
       Class inputFormatClass) throws IOException {
     boolean blockPointer = false;
-    long blockStart = -1;    
+    long blockStart = -1;
     FileSplit fileSplit = (FileSplit) split;
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(job);

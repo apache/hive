@@ -28,14 +28,14 @@ package org.apache.hadoop.hive.ql.io;
  * nextBlockStart refers the end of current row and beginning of next row.
  */
 public class IOContext {
-  
+
   private static ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>();
   static {
     if (threadLocal.get() == null) {
-      threadLocal.set(new IOContext());      
+      threadLocal.set(new IOContext());
     }
   }
-  
+
   public static IOContext get() {
     return IOContext.threadLocal.get();
   }
@@ -43,13 +43,15 @@ public class IOContext {
   long currentBlockStart;
   long nextBlockStart;
   boolean isBlockPointer;
-  
+  boolean ioExceptions;
+
   String inputFile;
-  
+
   public IOContext() {
     this.currentBlockStart = 0;
     this.nextBlockStart = -1;
     this.isBlockPointer = true;
+    this.ioExceptions = false;
   }
 
   public long getCurrentBlockStart() {
@@ -75,12 +77,20 @@ public class IOContext {
   public void setBlockPointer(boolean isBlockPointer) {
     this.isBlockPointer = isBlockPointer;
   }
-  
+
   public String getInputFile() {
     return inputFile;
   }
 
   public void setInputFile(String inputFile) {
     this.inputFile = inputFile;
+  }
+
+  public void setIOExceptions(boolean ioe) {
+    this.ioExceptions = ioe;
+  }
+
+  public boolean getIOExceptions() {
+    return ioExceptions;
   }
 }
