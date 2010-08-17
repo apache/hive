@@ -148,7 +148,7 @@ Trunk -  Unreleased
     (Ning Zhang via namit)
 
     HIVE-1547 Unarchiving operation throws NPE
-    (He Yongqiang via namit)
+    (Paul Yang via namit)
 
   TESTS
 
