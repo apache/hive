@@ -13,23 +13,31 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tbl_protectmode2
 PREHOOK: query: alter table tbl_protectmode2 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tbl_protectmode2
 POSTHOOK: query: alter table tbl_protectmode2 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tbl_protectmode2
 POSTHOOK: Output: default@tbl_protectmode2@p=p1
 PREHOOK: query: alter table tbl_protectmode2 enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode2
+PREHOOK: Output: default@tbl_protectmode2
 POSTHOOK: query: alter table tbl_protectmode2 enable no_drop
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode2
 POSTHOOK: Output: default@tbl_protectmode2
 PREHOOK: query: alter table tbl_protectmode2 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode2
+PREHOOK: Output: default@tbl_protectmode2
 POSTHOOK: query: alter table tbl_protectmode2 enable offline
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode2
 POSTHOOK: Output: default@tbl_protectmode2
 PREHOOK: query: alter table tbl_protectmode2 disable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode2
+PREHOOK: Output: default@tbl_protectmode2
 POSTHOOK: query: alter table tbl_protectmode2 disable no_drop
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode2
@@ -41,5 +49,5 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_protectmode2, dbName:default, owner:njain, createTime:1281469941, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/tbl_protectmode2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1281469942, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1281469942}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:tbl_protectmode2, dbName:default, owner:njain, createTime:1282025357, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/tbl_protectmode2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1282025358, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1282025358}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode2

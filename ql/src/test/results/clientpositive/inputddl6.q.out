@@ -27,7 +27,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl6, dbName:default, owner:jssarma, createTime:1279737060, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/inputddl6, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737060}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:inputddl6, dbName:default, owner:njain, createTime:1282028549, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/inputddl6, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1282028549}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-08')
@@ -36,7 +36,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-08], dbName:default, tableName:inputddl6, createTime:1279737060, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/inputddl6/ds=2008-04-08, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279737060})	
+Detailed Partition Information	Partition(values:[2008-04-08], dbName:default, tableName:inputddl6, createTime:1282028551, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/inputddl6/ds=2008-04-08, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1282028551})	
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS INPUTDDL6
@@ -45,8 +45,11 @@ ds=2008-04-08
 ds=2008-04-09
 PREHOOK: query: ALTER TABLE INPUTDDL6 DROP PARTITION (ds='2008-04-08')
 PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@inputddl6
+PREHOOK: Output: default@inputddl6@ds=2008-04-08
 POSTHOOK: query: ALTER TABLE INPUTDDL6 DROP PARTITION (ds='2008-04-08')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@inputddl6
 POSTHOOK: Output: default@inputddl6@ds=2008-04-08
 PREHOOK: query: SHOW PARTITIONS INPUTDDL6
 PREHOOK: type: SHOWPARTITIONS
@@ -55,8 +58,11 @@ POSTHOOK: type: SHOWPARTITIONS
 ds=2008-04-09
 PREHOOK: query: DROP TABLE INPUTDDL6
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inputddl6
+PREHOOK: Output: default@inputddl6
 POSTHOOK: query: DROP TABLE INPUTDDL6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inputddl6
 POSTHOOK: Output: default@inputddl6
 PREHOOK: query: EXPLAIN
 DESCRIBE EXTENDED INPUTDDL6 PARTITION (ds='2008-04-09')

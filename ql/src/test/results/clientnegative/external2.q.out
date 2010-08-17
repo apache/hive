@@ -5,6 +5,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@external2
 PREHOOK: query: alter table external2 add partition (ds='2008-01-01') location 'invalidscheme://data.s3ndemo.hive/pkv/2008-01-01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@external2
 FAILED: Error in metadata: MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
 PREHOOK: query: describe external2 partition (ds='2008-01-01')

@@ -36,38 +36,38 @@ where neither x nor y is null.
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-32-57_079_1117526904113027917/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-35_725_9220435062879687360/-mr-10000
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-32-57_079_1117526904113027917/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-35_725_9220435062879687360/-mr-10000
 NULL
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-00_492_6431652878883191819/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-39_060_5804491211864153160/-mr-10000
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-00_492_6431652878883191819/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-39_060_5804491211864153160/-mr-10000
 NULL
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-03_895_3704658650575135394/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-43_110_8178433514900125768/-mr-10000
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-03_895_3704658650575135394/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-43_110_8178433514900125768/-mr-10000
 0.0
 PREHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-06_957_9138283116312967779/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-46_833_2681562938221634943/-mr-10000
 POSTHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-06_957_9138283116312967779/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-46_833_2681562938221634943/-mr-10000
 1	NULL
 2	NULL
 3	0.0
@@ -77,14 +77,17 @@ POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-06_957_9138283116312967
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-12_804_1964811148333306251/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-54_062_1334234285764687063/-mr-10000
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/hadoop/hive_2010-08-13_13-33-12_804_1964811148333306251/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-00-54_062_1334234285764687063/-mr-10000
 3.624999999999999
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: default@covar_tab
 POSTHOOK: query: DROP TABLE covar_tab
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@covar_tab
 POSTHOOK: Output: default@covar_tab

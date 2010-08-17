@@ -14,13 +14,15 @@ POSTHOOK: Output: default@tbl_protectmode_4
 PREHOOK: query: select col from tbl_protectmode_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode_4
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-22_797_804698083585859425/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-18_644_2317445421479072812/-mr-10000
 POSTHOOK: query: select col from tbl_protectmode_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode_4
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-22_797_804698083585859425/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-18_644_2317445421479072812/-mr-10000
 PREHOOK: query: alter table tbl_protectmode_4 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode_4
+PREHOOK: Output: default@tbl_protectmode_4
 POSTHOOK: query: alter table tbl_protectmode_4 enable offline
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode_4
@@ -31,5 +33,5 @@ POSTHOOK: query: desc extended tbl_protectmode_4
 POSTHOOK: type: DESCTABLE
 col	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_protectmode_4, dbName:default, owner:njain, createTime:1281469942, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/tbl_protectmode_4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1281469945, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1281469945}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:tbl_protectmode_4, dbName:default, owner:njain, createTime:1282025358, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/tbl_protectmode_4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1282025361, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1282025361}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode_4

@@ -18,13 +18,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tbl_protectmode5
 PREHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tbl_protectmode5
 POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Output: default@tbl_protectmode5@p=p1
 PREHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tbl_protectmode5
 POSTHOOK: query: alter table tbl_protectmode5 add partition (p='p2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Output: default@tbl_protectmode5@p=p2
 PREHOOK: query: insert overwrite table tbl_protectmode5_1
 select col from tbl_protectmode5 where p='p1'
@@ -51,9 +55,13 @@ POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectm
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 PREHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode5
+PREHOOK: Output: default@tbl_protectmode5
 POSTHOOK: query: alter table tbl_protectmode5 partition (p='p1') enable offline
 POSTHOOK: type: ALTERPARTITION_PROTECTMODE
+POSTHOOK: Input: default@tbl_protectmode5
 POSTHOOK: Input: default@tbl_protectmode5@p=p1
+POSTHOOK: Output: default@tbl_protectmode5
 POSTHOOK: Output: default@tbl_protectmode5@p=p1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]

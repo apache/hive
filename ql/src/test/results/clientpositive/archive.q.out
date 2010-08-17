@@ -1,212 +1,573 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-19_808_5920190331482198474/10000
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-19_808_5920190331482198474/10000
-48479881068
-PREHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
-PREHOOK: type: ALTERTABLE_ARCHIVE
-POSTHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
-POSTHOOK: type: ALTERTABLE_ARCHIVE
-PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-24_163_645957732896284359/10000
-POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-24_163_645957732896284359/10000
-48479881068
-PREHOOK: query: SELECT key, count(1) FROM srcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-27_091_7903410270275371868/10000
-POSTHOOK: query: SELECT key, count(1) FROM srcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-27_091_7903410270275371868/10000
-0	3
-PREHOOK: query: SELECT * FROM srcpart a JOIN src b ON a.key=b.key 
-WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
+PREHOOK: query: drop table tstsrc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstsrc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tstsrcpart
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstsrcpart
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tstsrc like src
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrc like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstsrc
+PREHOOK: query: insert overwrite table tstsrc select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-30_052_8857134521946599131/10000
-POSTHOOK: query: SELECT * FROM srcpart a JOIN src b ON a.key=b.key 
-WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: insert overwrite table tstsrc select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-30_052_8857134521946599131/10000
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-0	val_0	2008-04-08	12	0	val_0
-PREHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
-PREHOOK: type: ALTERTABLE_UNARCHIVE
-POSTHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
-POSTHOOK: type: ALTERTABLE_UNARCHIVE
-PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: Output: default@tstsrc
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table tstsrcpart like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrcpart like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstsrcpart
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-33_403_2031008368522834404/10000
-POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
-FROM (SELECT * FROM srcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from srcpart where ds='2008-04-08' and hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from srcpart where ds='2008-04-08' and hr='12'
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-33_403_2031008368522834404/10000
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='11')
+select key, value from srcpart where ds='2008-04-09' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=11
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='11')
+select key, value from srcpart where ds='2008-04-09' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12')
+select key, value from srcpart where ds='2008-04-09' and hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=12
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-09', hr='12')
+select key, value from srcpart where ds='2008-04-09' and hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-41-57_236_7094587945850687486/-mr-10000
+POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
+
+SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-41-57_236_7094587945850687486/-mr-10000
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 48479881068
-PREHOOK: query: CREATE TABLE harbucket(key INT) 
+PREHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Input: default@tstsrcpart
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-05_285_507626451298228865/-mr-10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-05_285_507626451298228865/-mr-10000
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+48479881068
+PREHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-10_049_6066385213850923753/-mr-10000
+POSTHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-10_049_6066385213850923753/-mr-10000
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+0	3
+PREHOOK: query: SELECT * FROM tstsrcpart a JOIN tstsrc b ON a.key=b.key
+WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstsrc
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-13_594_7068481220028250163/-mr-10000
+POSTHOOK: query: SELECT * FROM tstsrcpart a JOIN tstsrc b ON a.key=b.key
+WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstsrc
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-13_594_7068481220028250163/-mr-10000
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+0	val_0	2008-04-08	12	0	val_0
+PREHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_UNARCHIVE
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_UNARCHIVE
+POSTHOOK: Input: default@tstsrcpart
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-18_911_7638636591676197332/-mr-10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
+FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-18_911_7638636591676197332/-mr-10000
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+48479881068
+PREHOOK: query: CREATE TABLE harbucket(key INT)
 PARTITIONED by (ds STRING)
 CLUSTERED BY (key) INTO 10 BUCKETS
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE harbucket(key INT) 
+POSTHOOK: query: CREATE TABLE harbucket(key INT)
 PARTITIONED by (ds STRING)
 CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@harbucket
-PREHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@harbucket@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tstsrc
 POSTHOOK: Output: default@harbucket@ds=1
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-39_158_8278614490047409485/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-27_341_4171791869922370959/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-39_158_8278614490047409485/10000
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-27_341_4171791869922370959/-mr-10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0
 0
 0
 10
 20
 30
-PREHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_ARCHIVE
-POSTHOOK: query: ALTER TABLE srcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
 POSTHOOK: type: ALTERTABLE_ARCHIVE
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@tstsrcpart
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-43_343_1319156393955499510/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-33_554_4982150859229878793/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-43_343_1319156393955499510/10000
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-33_554_4982150859229878793/-mr-10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0
 0
 0
 10
 20
 30
-PREHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_UNARCHIVE
-POSTHOOK: query: ALTER TABLE srcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
 POSTHOOK: type: ALTERTABLE_UNARCHIVE
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Input: default@tstsrcpart
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-46_534_5753932776517458176/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-37_492_8334218564133786220/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-46_534_5753932776517458176/10000
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-37_492_8334218564133786220/-mr-10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 0
 0
 0
 10
 20
 30
-PREHOOK: query: CREATE TABLE old_name(key INT) 
+PREHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE old_name(key INT) 
+POSTHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@old_name
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@old_name@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM src WHERE key < 50
+POSTHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tstsrc
 POSTHOOK: Output: default@old_name@ds=1
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER TABLE old_name ARCHIVE PARTITION (ds='1')
 PREHOOK: type: ALTERTABLE_ARCHIVE
+PREHOOK: Input: default@old_name
+PREHOOK: Output: default@old_name@ds=1
 POSTHOOK: query: ALTER TABLE old_name ARCHIVE PARTITION (ds='1')
 POSTHOOK: type: ALTERTABLE_ARCHIVE
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+POSTHOOK: Input: default@old_name
+POSTHOOK: Output: default@old_name@ds=1
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@old_name@ds=1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-53_532_5887928415090778760/10000
-POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-47_944_3509519100083434350/-mr-10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@old_name@ds=1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-53_532_5887928415090778760/10000
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-47_944_3509519100083434350/-mr-10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 48656137
 PREHOOK: query: ALTER TABLE old_name RENAME TO new_name
 PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@old_name
+PREHOOK: Output: default@old_name
 POSTHOOK: query: ALTER TABLE old_name RENAME TO new_name
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@old_name
+POSTHOOK: Output: default@old_name
 POSTHOOK: Output: default@new_name
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@new_name@ds=1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-56_372_476351158155800671/10000
-POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col 
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-51_806_7196728345940154423/-mr-10000
+POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@new_name@ds=1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-56_372_476351158155800671/10000
-POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-51_806_7196728345940154423/-mr-10000
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 NULL
+PREHOOK: query: drop table tstsrc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstsrc
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: drop table tstsrc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstsrc
+POSTHOOK: Output: default@tstsrc
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table tstsrcpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart
+POSTHOOK: query: drop table tstsrcpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstsrcpart
+POSTHOOK: Output: default@tstsrcpart
+POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

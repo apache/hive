@@ -107,11 +107,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT dest1.* FROM dest1 DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-47_206_1738690132485609113/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-36_002_6394574811571020120/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1 DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-47_206_1738690132485609113/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-36_002_6394574811571020120/-mr-10000
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -131,11 +131,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-49_829_7164503488670177874/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-39_505_1202718209239610725/-mr-10000
 POSTHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-49_829_7164503488670177874/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-39_505_1202718209239610725/-mr-10000
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -154,8 +154,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 NULL	NULL	NULL	0	NULL
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
 POSTHOOK: query: DROP TABLE dest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
@@ -189,11 +192,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-54_936_8554551256357567949/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-47_026_3993263922773820549/-mr-10000
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-54_936_8554551256357567949/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-47_026_3993263922773820549/-mr-10000
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
@@ -213,8 +216,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 null
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
 POSTHOOK: query: DROP TABLE dest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
@@ -251,11 +257,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-57_561_6501047538497175840/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-51_790_8751887109831886457/-mr-10000
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-29-57_561_6501047538497175840/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-00-51_790_8751887109831886457/-mr-10000
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tst
 PREHOOK: query: alter table tst add partition (d='2009-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tst
 POSTHOOK: query: alter table tst add partition (d='2009-01-01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tst
 POSTHOOK: Output: default@tst@d=2009-01-01
 PREHOOK: query: explain
 select count(1) from tst x where x.d='2009-01-01'
@@ -76,9 +78,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-18_997_2954899292364767462/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-56-45_768_7028292387059522662/-mr-10000
 POSTHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-18_997_2954899292364767462/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-56-45_768_7028292387059522662/-mr-10000
 0

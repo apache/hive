@@ -15,6 +15,8 @@ POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.Fie
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_vs_table add columns (newcol string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partition_vs_table
+PREHOOK: Output: default@partition_vs_table
 POSTHOOK: query: alter table partition_vs_table add columns (newcol string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partition_vs_table
@@ -39,13 +41,13 @@ order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_vs_table@ds=100
 PREHOOK: Input: default@partition_vs_table@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-45-18_342_8996179008267998708/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-35_949_706393903088310087/-mr-10000
 POSTHOOK: query: select key, value, newcol from partition_vs_table
 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_vs_table@ds=100
 POSTHOOK: Input: default@partition_vs_table@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-45-18_342_8996179008267998708/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-35_949_706393903088310087/-mr-10000
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

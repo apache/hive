@@ -30,11 +30,11 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE
 PREHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-15_543_4992541295505544702/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-23-57_980_3959366436597643277/-mr-10000
 POSTHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-15_543_4992541295505544702/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-23-57_980_3959366436597643277/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
@@ -44,9 +44,12 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE
 6	test_part	test_part
 PREHOOK: query: alter table alter3 rename to alter3_renamed
 PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@alter3
+PREHOOK: Output: default@alter3
 POSTHOOK: query: alter table alter3 rename to alter3_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@alter3
+POSTHOOK: Output: default@alter3
 POSTHOOK: Output: default@alter3_renamed
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: describe extended alter3_renamed
@@ -58,7 +61,7 @@ col1	string
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:jssarma, createTime:1279735692, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=jssarma, last_modified_time=1279735695, transient_lastDdlTime=1279735695}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:njain, createTime:1282026233, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1282026238, transient_lastDdlTime=1282026238}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
@@ -68,15 +71,15 @@ col1	string
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:1279735695, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279735695})	
+Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:1282026237, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1282026237})	
 PREHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-15_958_1754525751517388753/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-23-58_985_8799413873165106617/-mr-10000
 POSTHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-08-15_958_1754525751517388753/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-23-58_985_8799413873165106617/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
@@ -100,9 +103,12 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: alter table alter3_like rename to alter3_like_renamed
 PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@alter3_like
+PREHOOK: Output: default@alter3_like
 POSTHOOK: query: alter table alter3_like rename to alter3_like_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@alter3_like
+POSTHOOK: Output: default@alter3_like
 POSTHOOK: Output: default@alter3_like_renamed
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -116,4 +122,4 @@ col1	string
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Table Information	Table(tableName:alter3_like_renamed, dbName:default, owner:jssarma, createTime:1279735692, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter3_like_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{EXTERNAL=FALSE, last_modified_by=jssarma, last_modified_time=1279735698, transient_lastDdlTime=1279735698}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:alter3_like_renamed, dbName:default, owner:njain, createTime:1282026233, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter3_like_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{EXTERNAL=FALSE, last_modified_by=njain, last_modified_time=1282026243, transient_lastDdlTime=1282026243}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

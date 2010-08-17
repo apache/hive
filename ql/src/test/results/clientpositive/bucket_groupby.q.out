@@ -11,7 +11,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:jssarma, createTime:1279735772, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1279735772}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:njain, createTime:1282026301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1282026301}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='100') select key, value from src sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -111,11 +111,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-35_534_8185562718357069120/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-06_117_3516628234049015278/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-35_534_8185562718357069120/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-06_117_3516628234049015278/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	3
@@ -130,6 +130,8 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 114	1
 PREHOOK: query: alter table clustergroupby clustered by (key) into 1 buckets
 PREHOOK: type: null
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: alter table clustergroupby clustered by (key) into 1 buckets
 POSTHOOK: type: null
 POSTHOOK: Input: default@clustergroupby
@@ -146,7 +148,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:jssarma, createTime:1279735772, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=jssarma, last_modified_time=1279735778, transient_lastDdlTime=1279735778}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:njain, createTime:1282026301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1282026309, transient_lastDdlTime=1282026309}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -252,11 +254,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-41_016_7689771879965686688/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-14_506_815268093072098247/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-41_016_7689771879965686688/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-14_506_815268093072098247/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -364,11 +366,11 @@ STAGE PLANS:
 PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-43_849_707604862542797827/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-18_160_4335390200640129815/-mr-10000
 POSTHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-43_849_707604862542797827/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-18_160_4335390200640129815/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -467,11 +469,11 @@ STAGE PLANS:
 PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-46_664_3688496316777330614/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-21_878_5026950205921135545/-mr-10000
 POSTHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-46_664_3688496316777330614/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-21_878_5026950205921135545/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -580,11 +582,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-49_481_9074398325986135965/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-25_514_6575764351835928588/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-49_481_9074398325986135965/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-25_514_6575764351835928588/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -697,11 +699,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-52_312_6910555695381377185/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-29_243_7969631123014086614/-mr-10000
 POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-52_312_6910555695381377185/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-29_243_7969631123014086614/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -799,12 +801,12 @@ PREHOOK: query: select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-55_221_4522384383217894505/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-32_816_7218592769385609493/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-09-55_221_4522384383217894505/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-32_816_7218592769385609493/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1208,6 +1210,8 @@ STAGE PLANS:
 PREHOOK: query: --sort columns--
 alter table clustergroupby clustered by (value) sorted by (key, value) into 1 buckets
 PREHOOK: type: null
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: --sort columns--
 alter table clustergroupby clustered by (value) sorted by (key, value) into 1 buckets
 POSTHOOK: type: null
@@ -1229,7 +1233,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:jssarma, createTime:1279735772, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value], sortCols:[Order(col:key, order:1), Order(col:value, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=jssarma, last_modified_time=1279735798, transient_lastDdlTime=1279735798}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:njain, createTime:1282026301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value], sortCols:[Order(col:key, order:1), Order(col:value, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1282026337, transient_lastDdlTime=1282026337}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='102') select key, value from src distribute by value sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1337,11 +1341,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-01_215_2690537963790427608/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-41_941_4589365586294869179/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-01_215_2690537963790427608/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-41_941_4589365586294869179/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1451,11 +1455,11 @@ STAGE PLANS:
 PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-04_135_3923631383708910626/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-45_637_8989066681127992098/-mr-10000
 POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-04_135_3923631383708910626/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-45_637_8989066681127992098/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1575,11 +1579,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-07_055_4285817181416116197/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-49_394_1528437188025104915/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-07_055_4285817181416116197/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-49_394_1528437188025104915/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1598,6 +1602,8 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 114	1
 PREHOOK: query: alter table clustergroupby clustered by (value, key) sorted by (key) into 1 buckets
 PREHOOK: type: null
+PREHOOK: Input: default@clustergroupby
+PREHOOK: Output: default@clustergroupby
 POSTHOOK: query: alter table clustergroupby clustered by (value, key) sorted by (key) into 1 buckets
 POSTHOOK: type: null
 POSTHOOK: Input: default@clustergroupby
@@ -1622,7 +1628,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:jssarma, createTime:1279735772, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value, key], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=jssarma, last_modified_time=1279735809, transient_lastDdlTime=1279735809}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:njain, createTime:1282026301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value, key], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1282026352, transient_lastDdlTime=1282026352}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='103') select key, value from src distribute by value, key sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1734,11 +1740,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-12_709_7466980661091036250/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-57_175_2846459155686454102/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-12_709_7466980661091036250/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-25-57_175_2846459155686454102/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1862,11 +1868,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-15_551_6887415689280301293/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-26-00_886_2823592381346138464/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-10-15_551_6887415689280301293/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-26-00_886_2823592381346138464/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

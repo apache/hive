@@ -1,4 +1,27 @@
-PREHOOK: query: alter table src change src_not_exist key_value string
+PREHOOK: query: drop table tstsrc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstsrc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tstsrc like src
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrc like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstsrc
+PREHOOK: query: insert overwrite table tstsrc
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: insert overwrite table tstsrc
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tstsrc
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table tstsrc change src_not_exist key_value string
 PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@tstsrc
+PREHOOK: Output: default@tstsrc
 Column 'src_not_exist' does not exist
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

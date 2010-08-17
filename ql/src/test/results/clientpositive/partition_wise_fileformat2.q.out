@@ -15,6 +15,8 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
 POSTHOOK: query: alter table partition_test_partitioned set fileformat rcfile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@partition_test_partitioned
@@ -35,6 +37,8 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
 POSTHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@partition_test_partitioned
@@ -62,13 +66,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-19_214_8947184382877860008/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-43_260_5442200232343655466/-mr-10000
 POSTHOOK: query: select * from partition_test_partitioned where dt >=100 and dt <= 102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-19_214_8947184382877860008/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-43_260_5442200232343655466/-mr-10000
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@addpart1
 PREHOOK: query: alter table addpart1 add partition (b='f', c='s')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@addpart1
 POSTHOOK: query: alter table addpart1 add partition (b='f', c='s')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@addpart1
 POSTHOOK: Output: default@addpart1@b=f/c=s
 PREHOOK: query: show partitions addpart1
 PREHOOK: type: SHOWPARTITIONS
@@ -15,5 +17,6 @@ POSTHOOK: type: SHOWPARTITIONS
 b=f/c=s
 PREHOOK: query: alter table addpart1 add partition (b='f', c='')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@addpart1
 FAILED: Error in metadata: get partition: Value for key c is null or empty
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

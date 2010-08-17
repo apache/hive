@@ -11,15 +11,17 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026229, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1282026229}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -29,7 +31,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026229, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1282026229}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -37,8 +39,10 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -48,7 +52,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026229, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1282026229}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -57,8 +61,11 @@ insertdate=2008-01-01
 insertdate=2008-01-02
 PREHOOK: query: drop table alter2
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter2
+PREHOOK: Output: default@alter2
 POSTHOOK: query: drop table alter2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2
 PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
@@ -73,15 +80,17 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026231, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1282026231}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
 POSTHOOK: type: SHOWPARTITIONS
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-01
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -91,7 +100,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026231, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1282026231}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -99,8 +108,10 @@ POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
 PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@alter2
 POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2@insertdate=2008-01-02
 PREHOOK: query: describe extended alter2
 PREHOOK: type: DESCTABLE
@@ -110,7 +121,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:jssarma, createTime:1279735690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1279735690}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+Detailed Table Information	Table(tableName:alter2, dbName:default, owner:njain, createTime:1282026231, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1282026231}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2

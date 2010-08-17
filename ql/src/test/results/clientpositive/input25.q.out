@@ -5,13 +5,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tst
 PREHOOK: query: alter table tst add partition (d='2009-01-01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tst
 POSTHOOK: query: alter table tst add partition (d='2009-01-01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tst
 POSTHOOK: Output: default@tst@d=2009-01-01
 PREHOOK: query: alter table tst add partition (d='2009-02-02')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@tst
 POSTHOOK: query: alter table tst add partition (d='2009-02-02')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@tst
 POSTHOOK: Output: default@tst@d=2009-02-02
 PREHOOK: query: explain
 select * from (
@@ -84,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-27-21_972_4570921732718376646/10002 
+        file:/tmp/njain/hive_2010-08-16_23-56-49_823_7692673513825081302/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -101,7 +105,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/jssarma/hive_2010-07-21_11-27-21_972_4570921732718376646/10003 
+        file:/tmp/njain/hive_2010-08-16_23-56-49_823_7692673513825081302/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -176,7 +180,7 @@ PREHOOK: query: select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-22_116_2207462845190114193/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-56-50_024_5566870331686556996/-mr-10000
 POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
@@ -185,4 +189,4 @@ POSTHOOK: query: select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-22_116_2207462845190114193/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-56-50_024_5566870331686556996/-mr-10000

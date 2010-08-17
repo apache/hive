@@ -5,18 +5,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@mp
 PREHOOK: query: alter table mp add partition (b='1', c='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
 POSTHOOK: query: alter table mp add partition (b='1', c='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
 POSTHOOK: Output: default@mp@b=1/c=1
 PREHOOK: query: alter table mp add partition (b='1', c='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
 POSTHOOK: query: alter table mp add partition (b='1', c='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
 POSTHOOK: Output: default@mp@b=1/c=2
 PREHOOK: query: alter table mp add partition (b='2', c='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
 POSTHOOK: query: alter table mp add partition (b='2', c='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
 POSTHOOK: Output: default@mp@b=2/c=2
 PREHOOK: query: show partitions mp
 PREHOOK: type: SHOWPARTITIONS
@@ -44,8 +50,10 @@ STAGE PLANS:
 
 PREHOOK: query: alter table mp drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@mp
 POSTHOOK: query: alter table mp drop partition (b='1')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@mp
 POSTHOOK: Output: default@mp@b=1/c=1
 POSTHOOK: Output: default@mp@b=1/c=2
 PREHOOK: query: show partitions mp

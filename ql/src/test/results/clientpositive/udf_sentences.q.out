@@ -34,11 +34,11 @@ POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val
 PREHOOK: query: SELECT hex(val) FROM sent_tmp2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sent_tmp2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-24_836_5713772058297109062/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-11_515_4137923996878514227/-mr-10000
 POSTHOOK: query: SELECT hex(val) FROM sent_tmp2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sent_tmp2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-24_836_5713772058297109062/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-11_515_4137923996878514227/-mr-10000
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
 48697665
@@ -93,15 +93,21 @@ POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val
 6175746F6D617469717565
 PREHOOK: query: DROP TABLE sent_tmp
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sent_tmp
+PREHOOK: Output: default@sent_tmp
 POSTHOOK: query: DROP TABLE sent_tmp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sent_tmp
 POSTHOOK: Output: default@sent_tmp
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
 PREHOOK: query: DROP TABLE sent_tmp2
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sent_tmp2
+PREHOOK: Output: default@sent_tmp2
 POSTHOOK: query: DROP TABLE sent_tmp2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sent_tmp2
 POSTHOOK: Output: default@sent_tmp2
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
@@ -149,11 +155,11 @@ POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val
 PREHOOK: query: SELECT hex(val) FROM sent_tmp2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sent_tmp2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-32_599_1161655294457683255/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-24_219_4337186937954414417/-mr-10000
 POSTHOOK: query: SELECT hex(val) FROM sent_tmp2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sent_tmp2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-32_599_1161655294457683255/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-24_219_4337186937954414417/-mr-10000
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
@@ -192,11 +198,11 @@ C39C6265727365747A756E67
 PREHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-35_087_8096865744921319071/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-27_435_7157960617048129310/-mr-10000
 POSTHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-34-35_087_8096865744921319071/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-27_435_7157960617048129310/-mr-10000
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]

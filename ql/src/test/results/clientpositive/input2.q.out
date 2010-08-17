@@ -43,8 +43,11 @@ test2a
 test2b
 PREHOOK: query: DROP TABLE TEST2a
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test2a
+PREHOOK: Output: default@test2a
 POSTHOOK: query: DROP TABLE TEST2a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test2a
 POSTHOOK: Output: default@test2a
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
@@ -61,8 +64,11 @@ srcpart
 test2b
 PREHOOK: query: DROP TABLE TEST2b
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test2b
+PREHOOK: Output: default@test2b
 POSTHOOK: query: DROP TABLE TEST2b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test2b
 POSTHOOK: Output: default@test2b
 PREHOOK: query: EXPLAIN
 SHOW TABLES

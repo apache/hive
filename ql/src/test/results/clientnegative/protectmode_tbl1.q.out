@@ -14,13 +14,15 @@ POSTHOOK: Output: default@tbl_protectmode_1
 PREHOOK: query: select * from tbl_protectmode_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode_1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-21_331_4986102848710196881/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-17_086_5927096345092925728/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode_1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-10_12-52-21_331_4986102848710196881/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-17_086_5927096345092925728/-mr-10000
 PREHOOK: query: alter table tbl_protectmode_1 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
+PREHOOK: Input: default@tbl_protectmode_1
+PREHOOK: Output: default@tbl_protectmode_1
 POSTHOOK: query: alter table tbl_protectmode_1 enable offline
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode_1

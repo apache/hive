@@ -150,6 +150,9 @@ Trunk -  Unreleased
     HIVE-1547 Unarchiving operation throws NPE
     (Paul Yang via namit)
 
+    HIVE-1548 populate inputs and outputs for all statement
+    (namit via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

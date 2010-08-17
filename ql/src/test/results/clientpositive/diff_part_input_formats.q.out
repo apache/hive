@@ -11,24 +11,30 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part_test
 PREHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@part_test
 POSTHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@part_test
 POSTHOOK: Output: default@part_test@ds=1
 PREHOOK: query: ALTER TABLE part_test SET FILEFORMAT RCFILE
 PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@part_test
+PREHOOK: Output: default@part_test
 POSTHOOK: query: ALTER TABLE part_test SET FILEFORMAT RCFILE
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@part_test
 POSTHOOK: Output: default@part_test
 PREHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@part_test
 POSTHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@part_test
 POSTHOOK: Output: default@part_test@ds=2
 PREHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-57-45_916_425825309143884801/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-20_804_4303139756059433128/-mr-10000
 POSTHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-57-45_916_425825309143884801/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-20_804_4303139756059433128/-mr-10000
 0

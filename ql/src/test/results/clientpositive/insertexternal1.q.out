@@ -3,10 +3,12 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@texternal
-PREHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'file:///tmp/texternal/2008-01-01'
+PREHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'pfile:///tmp/texternal/2008-01-01'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'file:///tmp/texternal/2008-01-01'
+PREHOOK: Input: default@texternal
+POSTHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'pfile:///tmp/texternal/2008-01-01'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@texternal
 POSTHOOK: Output: default@texternal@insertdate=2008-01-01
 PREHOOK: query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
 PREHOOK: type: QUERY
@@ -21,11 +23,11 @@ POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)s
 PREHOOK: query: select * from texternal where insertdate='2008-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@texternal@insertdate=2008-01-01
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-18_438_8696467469328137226/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-03-00_762_9033730690799638856/-mr-10000
 POSTHOOK: query: select * from texternal where insertdate='2008-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@texternal@insertdate=2008-01-01
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-18_438_8696467469328137226/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-03-00_762_9033730690799638856/-mr-10000
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: texternal PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-01-01

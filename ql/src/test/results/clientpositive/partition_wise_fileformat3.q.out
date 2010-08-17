@@ -5,6 +5,8 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@partition_test_partitioned
 PREHOOK: query: alter table partition_test_partitioned set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
 POSTHOOK: query: alter table partition_test_partitioned set fileformat rcfile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@partition_test_partitioned
@@ -26,8 +28,8 @@ POSTHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:heyongqiang
-location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+owner:njain
+location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -38,10 +40,12 @@ totalFileSize:370
 maxFileSize:370
 minFileSize:370
 lastAccessTime:0
-lastUpdateTime:1281167964000
+lastUpdateTime:1282030189000
 
 PREHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@partition_test_partitioned
+PREHOOK: Output: default@partition_test_partitioned
 POSTHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@partition_test_partitioned
@@ -69,8 +73,8 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:heyongqiang
-location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
+owner:njain
+location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
@@ -81,16 +85,16 @@ totalFileSize:888
 maxFileSize:888
 minFileSize:888
 lastAccessTime:0
-lastUpdateTime:1281167969000
+lastUpdateTime:1282030193000
 
 PREHOOK: query: select key from partition_test_partitioned where dt=102
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-29_952_4034031846702868123/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-54_035_3465387967141592899/-mr-10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-29_952_4034031846702868123/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-54_035_3465387967141592899/-mr-10000
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -145,8 +149,8 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:heyongqiang
-location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+owner:njain
+location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
@@ -157,16 +161,16 @@ totalFileSize:888
 maxFileSize:888
 minFileSize:888
 lastAccessTime:0
-lastUpdateTime:1281167979000
+lastUpdateTime:1282030201000
 
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-39_288_1071363340396075185/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-30-01_709_7422795570962759074/-mr-10000
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-07_00-59-39_288_1071363340396075185/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-30-01_709_7422795570962759074/-mr-10000
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

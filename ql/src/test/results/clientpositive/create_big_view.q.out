@@ -242,7 +242,7 @@ CREATE VIEW big_view AS SELECT
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/1783035610/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-39-19_128_869448595601139030/-mr-10000
 POSTHOOK: query: -- Define a view with long SQL text to test metastore and other limits.
 
 CREATE VIEW big_view AS SELECT 
@@ -483,21 +483,24 @@ CREATE VIEW big_view AS SELECT
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 FROM src
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/1783035610/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-39-19_128_869448595601139030/-mr-10000
 POSTHOOK: Output: default@big_view
 PREHOOK: query: SELECT a FROM big_view
 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/1415767029/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-39-19_409_7695214363822873995/-mr-10000
 POSTHOOK: query: SELECT a FROM big_view
 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/scratchdir/1415767029/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-39-19_409_7695214363822873995/-mr-10000
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 PREHOOK: query: DROP VIEW big_view
 PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@big_view
+PREHOOK: Output: default@big_view
 POSTHOOK: query: DROP VIEW big_view
 POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@big_view
 POSTHOOK: Output: default@big_view
