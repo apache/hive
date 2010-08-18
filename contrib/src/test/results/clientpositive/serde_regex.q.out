@@ -109,15 +109,18 @@ POSTHOOK: Output: default@serde_regex
 PREHOOK: query: SELECT * FROM serde_regex ORDER BY time
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
-PREHOOK: Output: file:/data/users/njain/hive_commit1/build/contrib/scratchdir/hive_2010-03-23_10-51-32_975_4099501759274816446/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-46_113_976898686262514416/-mr-10000
 POSTHOOK: query: SELECT * FROM serde_regex ORDER BY time
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/build/contrib/scratchdir/hive_2010-03-23_10-51-32_975_4099501759274816446/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-46_113_976898686262514416/-mr-10000
 127.0.0.1	-	frank	[10/Oct/2000:13:55:36 -0700]	"GET /apache_pb.gif HTTP/1.0"	200	2326	NULL	NULL
 127.0.0.1	-	-	[26/May/2009:00:00:00 +0000]	"GET /someurl/?track=Blabla(Main) HTTP/1.1"	200	5864	-	"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19"
 PREHOOK: query: DROP TABLE serde_regex
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@serde_regex
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: DROP TABLE serde_regex
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@serde_regex
 POSTHOOK: Output: default@serde_regex

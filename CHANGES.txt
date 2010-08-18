@@ -153,6 +153,9 @@ Trunk -  Unreleased
     HIVE-1548 populate inputs and outputs for all statement
     (namit via He Yongqiang)
 
+    HIVE-1556. tests broken
+    (namit via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
