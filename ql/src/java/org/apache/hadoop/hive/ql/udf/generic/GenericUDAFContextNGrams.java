@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Map;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,23 +49,25 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.io.Text;
 
 /**
- * Estimates the top-k n-grams in arbitrary sequential data using a heuristic.
+ * Estimates the top-k contextual n-grams in arbitrary sequential data using a heuristic.
  */
-@Description(name = "ngrams",
-    value = "_FUNC_(expr, n, k, pf) - Estimates the top-k n-grams in rows that consist of "
-            + "sequences of strings, represented as arrays of strings, or arrays of arrays of "
-            + "strings. 'pf' is an optional precision factor that controls memory usage.",
-    extended = "The parameter 'n' specifies what type of n-grams are being estimated. Unigrams "
-             + "are n = 1, and bigrams are n = 2. Generally, n will not be greater than about 5. "
-             + "The 'k' parameter specifies how many of the highest-frequency n-grams will be "
-             + "returned by the UDAF. The optional precision factor 'pf' specifies how much "
-             + "memory to use for estimation; more memory will give more accurate frequency "
-             + "counts, but could crash the JVM. The default value is 20, which internally "
-             + "maintains 20*k n-grams, but only returns the k highest frequency ones. "
-             + "The output is an array of structs with the top-k n-grams. It might be convenient "
-             + "to explode() the output of this UDAF.")
-public class GenericUDAFnGrams implements GenericUDAFResolver {
-  static final Log LOG = LogFactory.getLog(GenericUDAFnGrams.class.getName());
+@Description(name = "context_ngrams",
+    value = "_FUNC_(expr, array<string1, string2, ...>, k, pf) estimates the top-k most " +
+      "frequent n-grams that fit into the specified context. The second parameter specifies " +
+      "a string of words that specify the positions of the n-gram elements, with a null value " +
+      "standing in for a 'blank' that must be filled by an n-gram element.",
+    extended = "The primary expression must be an array of strings, or an array of arrays of " +
+      "strings, such as the return type of the sentences() UDF. The second parameter specifies " +
+      "the context -- for example, array(\"i\", \"love\", null) -- which would estimate the top " +
+      "'k' words that follow the phrase \"i love\" in the primary expression. The optional " +
+      "fourth parameter 'pf' controls the memory used by the heuristic. Larger values will " +
+      "yield better accuracy, but use more memory. Example usage:\n" +
+      "  SELECT context_ngrams(sentences(lower(review)), array(\"i\", \"love\", null, null), 10)" +
+      " FROM movies\n" +
+      "would attempt to determine the 10 most common two-word phrases that follow \"i love\" " +
+      "in a database of free-form natural language movie reviews.")
+public class GenericUDAFContextNGrams implements GenericUDAFResolver {
+  static final Log LOG = LogFactory.getLog(GenericUDAFContextNGrams.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -103,24 +109,20 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
           + parameters[0].getTypeName() + " was passed as parameter 1.");
     }
 
-    // Validate the second parameter, which should be an integer
-    if(parameters[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(1, "Only integers are accepted but "
+    // Validate the second parameter, which should be an array of strings
+    if(parameters[1].getCategory() != ObjectInspector.Category.LIST ||
+       ((ListTypeInfo) parameters[1]).getListElementTypeInfo().getCategory() !=
+         ObjectInspector.Category.PRIMITIVE) {
+      throw new UDFArgumentTypeException(1, "Only arrays of strings are accepted but "
           + parameters[1].getTypeName() + " was passed as parameter 2.");
     } 
-    switch(((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory()) {
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-      break;
-
-    default:
-      throw new UDFArgumentTypeException(1, "Only integers are accepted but "
+    if(((PrimitiveTypeInfo) ((ListTypeInfo)parameters[1]).getListElementTypeInfo()).
+        getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.STRING) {
+      throw new UDFArgumentTypeException(1, "Only arrays of strings are accepted but "
           + parameters[1].getTypeName() + " was passed as parameter 2.");
     }
 
-    // Validate the third parameter, which should also be an integer
+    // Validate the third parameter, which should be an integer to represent 'k'
     if(parameters[2].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentTypeException(2, "Only integers are accepted but "
             + parameters[2].getTypeName() + " was passed as parameter 3.");
@@ -137,7 +139,8 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
             + parameters[2].getTypeName() + " was passed as parameter 3.");
     }
 
-    // If we have the optional fourth parameter, make sure it's also an integer
+    // If the fourth parameter -- precision factor 'pf' -- has been specified, make sure it's
+    // an integer.
     if(parameters.length == 4) {
       if(parameters[3].getCategory() != ObjectInspector.Category.PRIMITIVE) {
         throw new UDFArgumentTypeException(3, "Only integers are accepted but "
@@ -156,18 +159,19 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
       }
     }
 
-    return new GenericUDAFnGramEvaluator();
+    return new GenericUDAFContextNGramEvaluator();
   }
 
   /**
-   * A constant-space heuristic to estimate the top-k n-grams.
+   * A constant-space heuristic to estimate the top-k contextual n-grams.
    */
-  public static class GenericUDAFnGramEvaluator extends GenericUDAFEvaluator {
+  public static class GenericUDAFContextNGramEvaluator extends GenericUDAFEvaluator {
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
     private StandardListObjectInspector outerInputOI;
     private StandardListObjectInspector innerInputOI;
+    private StandardListObjectInspector contextListOI;
+    private PrimitiveObjectInspector contextOI;
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector nOI;
     private PrimitiveObjectInspector kOI;
     private PrimitiveObjectInspector pOI;
 
@@ -191,7 +195,8 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
           inputOI = (PrimitiveObjectInspector) outerInputOI.getListElementObjectInspector();
           innerInputOI = null;
         }
-        nOI = (PrimitiveObjectInspector) parameters[1];
+        contextListOI = (StandardListObjectInspector) parameters[1];
+        contextOI = (PrimitiveObjectInspector) contextListOI.getListElementObjectInspector();
         kOI = (PrimitiveObjectInspector) parameters[2];
         if(parameters.length == 4) {
           pOI = (PrimitiveObjectInspector) parameters[3];
@@ -228,38 +233,81 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     }
 
     @Override
-    public void merge(AggregationBuffer agg, Object partial) throws HiveException {
-      if(partial == null) { 
+    public void merge(AggregationBuffer agg, Object obj) throws HiveException {
+      if(obj == null) { 
         return;
       }
       NGramAggBuf myagg = (NGramAggBuf) agg;
-      List<Text> partialNGrams = (List<Text>) loi.getList(partial);
-      int n = Integer.parseInt(partialNGrams.get(partialNGrams.size()-1).toString());
-      if(myagg.n > 0 && myagg.n != n) {
-        throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'" 
-            + ", which usually is caused by a non-constant expression. Found '"+n+"' and '"
-            + myagg.n + "'.");
+      List<Text> partial = (List<Text>) loi.getList(obj);
+
+      // remove the context words from the end of the list
+      int contextSize = Integer.parseInt( ((Text)partial.get(partial.size()-1)).toString() );
+      partial.remove(partial.size()-1);
+      if(myagg.context.size() > 0)  {
+        if(contextSize != myagg.context.size()) {
+          throw new HiveException(getClass().getSimpleName() + ": found a mismatch in the" +
+              " context string lengths. This is usually caused by passing a non-constant" +
+              " expression for the context.");
+        }
+      } else {
+        for(int i = partial.size()-contextSize; i < partial.size(); i++) {
+          String word = partial.get(i).toString();
+          if(word.equals("")) {
+            myagg.context.add( null );
+          } else {
+            myagg.context.add( word );
+          } 
+        }
+        partial.subList(partial.size()-contextSize, partial.size()).clear();
+        myagg.nge.merge(partial);
       }
-      myagg.n = n;
-      partialNGrams.remove(partialNGrams.size()-1);
-      myagg.nge.merge(partialNGrams);
     }
 
     @Override
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
       NGramAggBuf myagg = (NGramAggBuf) agg;
       ArrayList<Text> result = myagg.nge.serialize();
-      result.add(new Text(Integer.toString(myagg.n)));
+
+      // push the context on to the end of the serialized n-gram estimation
+      for(int i = 0; i < myagg.context.size(); i++) {
+        if(myagg.context.get(i) == null) {
+          result.add(new Text(""));
+        } else {
+          result.add(new Text(myagg.context.get(i)));
+        }
+      }
+      result.add(new Text(Integer.toString(myagg.context.size())));
+
       return result;
     }
 
+    // Finds all contextual n-grams in a sequence of words, and passes the n-grams to the
+    // n-gram estimator object
     private void processNgrams(NGramAggBuf agg, ArrayList<String> seq) throws HiveException {
-      for(int i = seq.size()-agg.n; i >= 0; i--) {
-        ArrayList<String> ngram = new ArrayList<String>();
-        for(int j = 0; j < agg.n; j++)  {
-          ngram.add(seq.get(i+j));
+      // generate n-grams wherever the context matches
+      assert(agg.context.size() > 0);
+      ArrayList<String> ng = new ArrayList<String>();
+      for(int i = seq.size() - agg.context.size(); i >= 0; i--) {
+        // check if the context matches
+        boolean contextMatches = true;
+        ng.clear();
+        for(int j = 0; j < agg.context.size(); j++) {
+          String contextWord = agg.context.get(j);
+          if(contextWord == null) {
+            ng.add(seq.get(i+j));
+          } else {
+            if(!contextWord.equals(seq.get(i+j))) {
+              contextMatches = false;
+              break;
+            }
+          }
         }
-        agg.nge.add(ngram);
+
+        // add to n-gram estimation only if the context matches
+        if(contextMatches) {
+          agg.nge.add(ng);
+          ng = new ArrayList<String>();
+        }
       }
     }
 
@@ -271,16 +319,11 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
       }
       NGramAggBuf myagg = (NGramAggBuf) agg;
     
-      // Parse out 'n' and 'k' if we haven't already done so, and while we're at it,
+      // Parse out the context and 'k' if we haven't already done so, and while we're at it,
       // also parse out the precision factor 'pf' if the user has supplied one.
       if(!myagg.nge.isInitialized()) {
-        int n = PrimitiveObjectInspectorUtils.getInt(parameters[1], nOI);
         int k = PrimitiveObjectInspectorUtils.getInt(parameters[2], kOI);
         int pf = 0;
-        if(n < 1) {
-          throw new HiveException(getClass().getSimpleName() + " needs 'n' to be at least 1, "
-                                  + "but you supplied " + n);
-        }
         if(k < 1) {
           throw new HiveException(getClass().getSimpleName() + " needs 'k' to be at least 1, "
                                   + "but you supplied " + k);
@@ -295,9 +338,28 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
           pf = 1; // placeholder; minimum pf value is enforced in NGramEstimator
         }
 
-        // Set the parameters
-        myagg.n = n;
-        myagg.nge.initialize(k, pf, n);
+        // Parse out the context and make sure it isn't empty
+        myagg.context.clear();
+        List<Text> context = (List<Text>) contextListOI.getList(parameters[1]);
+        int contextNulls = 0;
+        for(int i = 0; i < context.size(); i++) {
+          String word = PrimitiveObjectInspectorUtils.getString(context.get(i), contextOI);
+          if(word == null) {
+            contextNulls++;
+          }
+          myagg.context.add(word);
+        }
+        if(context.size() == 0) {
+          throw new HiveException(getClass().getSimpleName() + " needs a context array " +
+            "with at least one element.");
+        }
+        if(contextNulls == 0) {
+          throw new HiveException(getClass().getSimpleName() + " the context array needs to " +
+            "contain at least one 'null' value to indicate what should be counted.");
+        }
+
+        // Set parameters in the n-gram estimator object
+        myagg.nge.initialize(k, pf, contextNulls);
       }
 
       // get the input expression
@@ -334,16 +396,18 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
       return myagg.nge.getNGrams();
     }
 
+
     // Aggregation buffer methods. 
     static class NGramAggBuf implements AggregationBuffer {
+      ArrayList<String> context;
       NGramEstimator nge;
-      int n;
     };
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
       NGramAggBuf result = new NGramAggBuf();
       result.nge = new NGramEstimator();
+      result.context = new ArrayList<String>();
       reset(result);
       return result;
     }
@@ -351,8 +415,8 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       NGramAggBuf result = (NGramAggBuf) agg;
+      result.context.clear();
       result.nge.reset();
-      result.n = 0;
     }
   }
 }

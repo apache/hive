@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -283,7 +284,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
         return;
       }
       PercentileAggBuf myagg = (PercentileAggBuf) agg;
-      ArrayList<DoubleWritable> partialHistogram = (ArrayList<DoubleWritable>) loi.getList(partial);
+      List<DoubleWritable> partialHistogram = (List<DoubleWritable>) loi.getList(partial);
 
       // remove requested quantiles from the head of the list
       int nquantiles = (int) partialHistogram.get(0).get();

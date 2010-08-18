@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Random;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -124,7 +125,7 @@ public class NumericHistogram {
    * @param other A serialized histogram created by the serialize() method
    * @see merge
    */
-  public void merge(ArrayList<DoubleWritable> other) {
+  public void merge(List<DoubleWritable> other) {
     if(other == null) {
       return;
     }
@@ -132,7 +133,7 @@ public class NumericHistogram {
     if(nbins == 0 || nusedbins == 0)  {
       // Our aggregation buffer has nothing in it, so just copy over 'other' 
       // by deserializing the ArrayList of (x,y) pairs into an array of Coord objects
-      nbins = (int) (other.get(0).get());
+      nbins = (int) other.get(0).get();
       nusedbins = (other.size()-1)/2; 
       bins = new Coord[nbins+1]; // +1 to hold a temporary bin for insert()
       for(int i = 1; i < other.size(); i+=2) {

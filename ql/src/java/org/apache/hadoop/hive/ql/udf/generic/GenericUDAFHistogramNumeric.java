@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
@@ -60,8 +60,8 @@ import org.apache.hadoop.util.StringUtils;
              + "histogram bins appear to work well, with more bins being required for skewed or "
              + "smaller datasets. Note that this function creates a histogram with non-uniform "
              + "bin widths. It offers no guarantees in terms of the mean-squared-error of the "
-             + "histogram, but in practice is comparable to the histograms produced by the R/S-Plus "
-             + "statistical computing packages." )
+             + "histogram, but in practice is comparable to the histograms produced by the R/S-Plus"
+             + "statistical computing packages.")
 public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
   // class static variables
   static final Log LOG = LogFactory.getLog(GenericUDAFHistogramNumeric.class.getName());
@@ -199,7 +199,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
       if(partial == null) {
         return;
       }
-      ArrayList partialHistogram = (ArrayList) loi.getList(partial);
+      List<DoubleWritable> partialHistogram = (List<DoubleWritable>) loi.getList(partial);
       StdAgg myagg = (StdAgg) agg;
       myagg.histogram.merge(partialHistogram);
     }

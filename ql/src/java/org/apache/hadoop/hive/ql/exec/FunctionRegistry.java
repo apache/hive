@@ -133,6 +133,7 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFContextNGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovarianceSample;
@@ -376,6 +377,7 @@ public final class FunctionRegistry {
     registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
 
     registerGenericUDAF("ngrams", new GenericUDAFnGrams());
+    registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
     registerUDAF("percentile", UDAFPercentile.class);
 

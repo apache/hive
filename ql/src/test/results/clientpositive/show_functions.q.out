@@ -37,6 +37,7 @@ coalesce
 collect_set
 concat
 concat_ws
+context_ngrams
 conv
 cos
 count
@@ -165,6 +166,7 @@ coalesce
 collect_set
 concat
 concat_ws
+context_ngrams
 conv
 cos
 count

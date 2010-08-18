@@ -46,6 +46,10 @@ Trunk -  Unreleased
     and covar_samp
     (Pierre Huyn via jvs)
 
+    HIVE-1518. context_ngrams() UDAF for estimating top-k contextual
+    n-grams
+    (Mayank Lahiri via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
