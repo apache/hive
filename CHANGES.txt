@@ -160,6 +160,9 @@ Trunk -  Unreleased
     HIVE-1556. tests broken
     (namit via Ning Zhang)
 
+    HIVE-1563. tests broken
+    (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
