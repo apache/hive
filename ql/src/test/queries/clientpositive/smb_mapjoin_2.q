@@ -11,7 +11,8 @@ load data local inpath '../data/files/smbbucket_2.rc' overwrite into table smb_b
 load data local inpath '../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3;
  
 set hive.optimize.bucketmapjoin = true;
-set hive.optimize.bucketmapjoin.sortedmerge = true; 
+set hive.optimize.bucketmapjoin.sortedmerge = true;
+set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
  
 explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key;

@@ -166,6 +166,9 @@ Trunk -  Unreleased
     HIVE-1564. bucketizedhiveinputformat does not work in minimr mode
     (He Yongqiang via namit)
 
+    HIVE-1561. test bug: smb_mapjoin*.q should use bucketizedhiveinputformat
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
