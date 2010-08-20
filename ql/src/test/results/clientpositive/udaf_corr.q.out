@@ -1,0 +1,97 @@
+PREHOOK: query: DROP TABLE covar_tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE covar_tab
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@covar_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@covar_tab
+PREHOOK: query: DESCRIBE FUNCTION corr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION corr
+POSTHOOK: type: DESCFUNCTION
+corr(x,y) - Returns the Pearson coefficient of correlation
+between a set of number pairs
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED corr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED corr
+POSTHOOK: type: DESCFUNCTION
+corr(x,y) - Returns the Pearson coefficient of correlation
+between a set of number pairs
+The function takes as arguments any pair of numeric types and returns a double.
+Any pair with a NULL is ignored. If the function is applied to an empty set or
+a singleton set, NULL will be returned. Otherwise, it computes the following:
+   COVAR_POP(x,y)/(STDDEV_POP(x)*STDDEV_POP(y))
+where neither x nor y is null,
+COVAR_POP is the population covariance,
+and STDDEV_POP is the population standard deviation.
+PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-44-58_681_3541590287509550544/-mr-10000
+POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-44-58_681_3541590287509550544/-mr-10000
+NULL
+PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-03_289_9041510910213817151/-mr-10000
+POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-03_289_9041510910213817151/-mr-10000
+NULL
+PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-06_480_8481295633393615585/-mr-10000
+POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-06_480_8481295633393615585/-mr-10000
+NULL
+PREHOOK: query: SELECT a, corr(b, c) FROM covar_tab GROUP BY a ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-09_655_4572224946166536614/-mr-10000
+POSTHOOK: query: SELECT a, corr(b, c) FROM covar_tab GROUP BY a ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-09_655_4572224946166536614/-mr-10000
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+5	NULL
+6	NULL
+PREHOOK: query: SELECT corr(b, c) FROM covar_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-20_421_6697314491903913524/-mr-10000
+POSTHOOK: query: SELECT corr(b, c) FROM covar_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-20_421_6697314491903913524/-mr-10000
+0.6633880657639323
+PREHOOK: query: DROP TABLE covar_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: default@covar_tab
+POSTHOOK: query: DROP TABLE covar_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: default@covar_tab

@@ -134,6 +134,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFContextNGrams;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovarianceSample;
@@ -371,7 +372,7 @@ public final class FunctionRegistry {
     registerGenericUDAF("var_samp", new GenericUDAFVarianceSample());
     registerGenericUDAF("covar_pop", new GenericUDAFCovariance());
     registerGenericUDAF("covar_samp", new GenericUDAFCovarianceSample());
-
+    registerGenericUDAF("corr", new GenericUDAFCorrelation());
     registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     registerGenericUDAF("collect_set", new GenericUDAFCollectSet());

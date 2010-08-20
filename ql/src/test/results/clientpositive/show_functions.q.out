@@ -39,6 +39,7 @@ concat
 concat_ws
 context_ngrams
 conv
+corr
 cos
 count
 covar_pop
@@ -168,6 +169,7 @@ concat
 concat_ws
 context_ngrams
 conv
+corr
 cos
 count
 covar_pop
