@@ -178,6 +178,10 @@ Trunk -  Unreleased
     HIVE-1561. test bug: smb_mapjoin*.q should use bucketizedhiveinputformat
     (He Yongqiang via namit)
 
+    HIVE-1510. HiveCombineInputFormat should not use prefix matching to find 
+    the partitionDesc for a given path
+    (He Yongqiang via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

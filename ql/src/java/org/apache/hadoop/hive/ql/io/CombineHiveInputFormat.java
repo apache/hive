@@ -97,7 +97,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         if (ipaths.length > 0) {
-          PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[0]);
+          PartitionDesc part = HiveFileFormatUtils
+              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+                  ipaths[0], IOPrepareCache.get().getPartitionDescMap());
           inputFormatClassName = part.getInputFileFormatClass().getName();
         }
       }
@@ -198,8 +200,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo,
-            inputSplitShim.getPath(0));
+        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(pathToPartitionInfo,
+            inputSplitShim.getPath(0), IOPrepareCache.get().getPartitionDescMap());
 
         // create a new InputFormat instance if this is the first time to see
         // this class
@@ -209,7 +211,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       out.writeUTF(inputFormatClassName);
     }
   }
-
+  
   /**
    * Create Hive splits based on CombineFileSplit.
    */
@@ -235,7 +237,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Set<Path> poolSet = new HashSet<Path>();
     for (Path path : paths) {
 
-      PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, path);
+      PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+          pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
       if ((tableDesc != null) && tableDesc.isNonNative()) {
         return super.getSplits(job, numSplits);
@@ -344,64 +347,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         .getRecordReader(job,
         ((CombineHiveInputSplit) split).getInputSplitShim(), reporter,
         CombineHiveRecordReader.class);
-  }
-
-  protected static PartitionDesc getPartitionDescFromPath(
-      Map<String, PartitionDesc> pathToPartitionInfo, Path dir) throws IOException {
-
-    // We first do exact match, and then do prefix matching. The latter is due to input dir
-    // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
-    String dirPath = dir.toUri().getPath();
-    PartitionDesc part = pathToPartitionInfo.get(dir.toString());
-    if (part == null) {
-      //      LOG.warn("exact match not found, try ripping input path's theme and authority");
-      part = pathToPartitionInfo.get(dirPath);
-    }
-    if (part == null) {
-
-      //      LOG.warn("still does not found just the path part: " + dirPath + " in pathToPartitionInfo."
-      //          + " Will try prefix matching");
-      for (Map.Entry<String, PartitionDesc> entry : pathToPartitionInfo.entrySet()) {
-        String keyPath = entry.getKey();
-        String dirStr = dir.toString();
-        // keyPath could start with hdfs:// or not, so we need to match both cases.
-        if (dirStr.startsWith(keyPath)) {
-          part = entry.getValue();
-          break;
-        } else {
-          Path p = new Path(keyPath);
-          String newP = p.toUri().getPath().toString();
-          if (dirStr.startsWith(newP)) {
-            part = entry.getValue();
-            break;
-          }
-          // This case handles the situation where dir is a fully qualified
-          // subdirectory of a path in pathToPartitionInfo. e.g.
-          // dir = hdfs://host:9000/user/warehouse/tableName/abc
-          // pathToPartitionInfo = {/user/warehouse/tableName : myPart}
-          // In such a case, just compare the path components.
-
-          // This could result in aliasing if we have a case where
-          // two entries in pathToPartitionInfo differ only by scheme
-          // or authority, but this problem exists anyway in the above checks.
-
-          // This check was precipitated by changes that allow recursive dirs
-          // in the input path, and an upcoming change to CombineFileInputFormat
-          // where the paths in splits no longer have the scheme and authority
-          // stripped out.
-          if (dirPath.startsWith(newP)) {
-            part = entry.getValue();
-            break;
-          }
-        }
-      }
-    }
-    if (part != null) {
-      return part;
-    } else {
-      throw new IOException("cannot find dir = " + dir.toString()
-                          + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
-    }
   }
 
   static class CombineFilter implements PathFilter {

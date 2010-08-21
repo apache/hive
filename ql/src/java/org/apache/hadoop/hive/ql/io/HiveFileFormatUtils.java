@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
@@ -241,6 +243,86 @@ public final class HiveFileFormatUtils {
           isCompressed, tableProp, null);
     }
     return null;
+  }
+  
+  public static PartitionDesc getPartitionDescFromPathRecursively(
+      Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
+      Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap)
+      throws IOException {
+
+    PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
+    if (part == null
+        && (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
+            .equals(""))) {
+
+      Map<String, PartitionDesc> newPathToPartitionInfo = null;
+      if (cacheMap != null) {
+        newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
+      }
+      
+      if (newPathToPartitionInfo == null) { // still null
+        newPathToPartitionInfo = new HashMap<String, PartitionDesc>();
+        populateNewPartitionDesc(pathToPartitionInfo, newPathToPartitionInfo);
+        
+        if (cacheMap != null) {
+          cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
+        }
+      }
+      part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
+    }
+
+    if (part != null) {
+      return part;
+    } else {
+      throw new IOException("cannot find dir = " + dir.toString()
+                          + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
+    }
+  }
+
+  private static void populateNewPartitionDesc(
+      Map<String, PartitionDesc> pathToPartitionInfo,
+      Map<String, PartitionDesc> newPathToPartitionInfo) {
+    for (Map.Entry<String, PartitionDesc> entry: pathToPartitionInfo.entrySet()) {
+      String entryKey = entry.getKey();
+      PartitionDesc partDesc = entry.getValue();
+      Path newP = new Path(entryKey);
+      String pathOnly = newP.toUri().getPath();
+      newPathToPartitionInfo.put(pathOnly, partDesc);
+    }
+  }
+
+  private static PartitionDesc doGetPartitionDescFromPath(
+      Map<String, PartitionDesc> pathToPartitionInfo, Path dir) {
+    // We first do exact match, and then do prefix matching. The latter is due to input dir
+    // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
+    String dirPath = dir.toUri().getPath();
+    PartitionDesc part = pathToPartitionInfo.get(dir.toString());
+    if (part == null) {
+      //      LOG.warn("exact match not found, try ripping input path's theme and authority");
+      part = pathToPartitionInfo.get(dirPath);
+    }
+    
+    if (part == null) {
+      String dirStr = dir.toString();
+      int dirPathIndex = dirPath.lastIndexOf(File.separator);
+      int dirStrIndex = dirStr.lastIndexOf(File.separator);
+      while (dirPathIndex >= 0 && dirStrIndex >= 0) {
+        dirStr = dirStr.substring(0, dirStrIndex);
+        dirPath = dirPath.substring(0, dirPathIndex);
+        //first try full match
+        part = pathToPartitionInfo.get(dirStr);
+        if (part == null) {
+          // LOG.warn("exact match not found, try ripping input path's theme and authority");
+          part = pathToPartitionInfo.get(dirPath);
+        }
+        if (part != null) {
+          break;
+        }
+        dirPathIndex = dirPath.lastIndexOf(File.separator);
+        dirStrIndex = dirStr.lastIndexOf(File.separator);
+      }
+    }
+    return part;
   }
 
   private HiveFileFormatUtils() {

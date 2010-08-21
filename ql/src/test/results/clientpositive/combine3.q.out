@@ -1,0 +1,258 @@
+PREHOOK: query: drop table combine_3_srcpart_seq_rc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table combine_3_srcpart_seq_rc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table combine_3_srcpart_seq_rc (key int , value string) partitioned by (ds string, hr string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc
+PREHOOK: query: insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="00") select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
+POSTHOOK: query: insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="00") select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table combine_3_srcpart_seq_rc set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@combine_3_srcpart_seq_rc
+PREHOOK: Output: default@combine_3_srcpart_seq_rc
+POSTHOOK: query: alter table combine_3_srcpart_seq_rc set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="001") select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
+POSTHOOK: query: insert overwrite table combine_3_srcpart_seq_rc partition (ds="2010-08-03", hr="001") select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="00")
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="00")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+key	int	
+value	string	
+ds	string	
+hr	string	
+	 	 
+Detailed Partition Information	Partition(values:[2010-08-03, 00], dbName:default, tableName:combine_3_srcpart_seq_rc, createTime:1282111568, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-Index/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1282111568})	
+PREHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+key	int	
+value	string	
+ds	string	
+hr	string	
+	 	 
+Detailed Partition Information	Partition(values:[2010-08-03, 001], dbName:default, tableName:combine_3_srcpart_seq_rc, createTime:1282111572, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-Index/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1282111572})	
+PREHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
+PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-17_23-06-13_344_3763300927102183566/-mr-10000
+POSTHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-17_23-06-13_344_3763300927102183566/-mr-10000
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2010-08-03	00
+0	val_0	2010-08-03	00
+0	val_0	2010-08-03	00
+0	val_0	2010-08-03	001
+0	val_0	2010-08-03	001
+0	val_0	2010-08-03	001
+2	val_2	2010-08-03	00
+2	val_2	2010-08-03	001
+4	val_4	2010-08-03	00
+4	val_4	2010-08-03	001
+5	val_5	2010-08-03	00
+5	val_5	2010-08-03	00
+5	val_5	2010-08-03	00
+5	val_5	2010-08-03	001
+5	val_5	2010-08-03	001
+5	val_5	2010-08-03	001
+8	val_8	2010-08-03	00
+8	val_8	2010-08-03	001
+9	val_9	2010-08-03	00
+9	val_9	2010-08-03	001
+10	val_10	2010-08-03	00
+10	val_10	2010-08-03	001
+11	val_11	2010-08-03	00
+11	val_11	2010-08-03	001
+12	val_12	2010-08-03	00
+12	val_12	2010-08-03	00
+12	val_12	2010-08-03	001
+12	val_12	2010-08-03	001
+15	val_15	2010-08-03	00
+15	val_15	2010-08-03	00
+PREHOOK: query: drop table bucket3_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table bucket3_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE combine_3_srcpart_seq_rc_bucket(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='1')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket@ds=1
+POSTHOOK: query: insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='1')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket@ds=1
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table combine_3_srcpart_seq_rc_bucket set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: query: alter table combine_3_srcpart_seq_rc_bucket set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='11')
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket@ds=11
+POSTHOOK: query: insert overwrite table combine_3_srcpart_seq_rc_bucket partition (ds='11')
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket@ds=11
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
+PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-17_23-06-32_345_4538839581357678799/-mr-10000
+POSTHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-08-17_23-06-32_345_4538839581357678799/-mr-10000
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	1
+0	1
+0	1
+0	11
+0	11
+0	11
+2	1
+2	11
+4	1
+4	11
+8	1
+8	11
+10	1
+10	11
+12	1
+12	1
+12	11
+12	11
+18	1
+18	1
+18	11
+18	11
+20	1
+20	11
+24	1
+24	1
+24	11
+24	11
+26	1
+26	1
+PREHOOK: query: drop table combine_3_srcpart_seq_rc_bucket
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+PREHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: query: drop table combine_3_srcpart_seq_rc_bucket
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc_bucket
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table combine_3_srcpart_seq_rc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@combine_3_srcpart_seq_rc
+PREHOOK: Output: default@combine_3_srcpart_seq_rc
+POSTHOOK: query: drop table combine_3_srcpart_seq_rc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@combine_3_srcpart_seq_rc
+POSTHOOK: Output: default@combine_3_srcpart_seq_rc
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine_3_srcpart_seq_rc_bucket PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
