@@ -56,6 +56,9 @@ Trunk -  Unreleased
     HIVE-1307. More generic and efficient merge
     (Ning Zhang via namit)
 
+    HIVE-1578. Add conf. variable for displaying link to task
+    with most failures (Paul Yang via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

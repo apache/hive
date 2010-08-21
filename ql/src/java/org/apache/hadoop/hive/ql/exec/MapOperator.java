@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -287,7 +286,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
         MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile);
         Path onepath = new Path(new Path(onefile).toUri().getPath());
         List<String> aliases = conf.getPathToAliases().get(onefile);
-        
+
         for (String onealias : aliases) {
           Operator<? extends Serializable> op = conf.getAliasToWork().get(
               onealias);
@@ -346,7 +345,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
                     if(partObjectInspector == null) {
                       this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                           .asList(new StructObjectInspector[] {
-                              rowObjectInspector, vcStructObjectInspector }));  
+                              rowObjectInspector, vcStructObjectInspector }));
                     } else {
                       this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                           .asList(new StructObjectInspector[] {

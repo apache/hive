@@ -1,0 +1,131 @@
+PREHOOK: query: CREATE TABLE DEST1(Key INT, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DEST1(Key INT, VALUE STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DEST1
+PREHOOK: query: EXPLAIN
+FROM SRC_THRIFT
+INSERT OVERWRITE TABLE dest1 SELECT src_Thrift.LINT[1], src_thrift.lintstring[0].MYSTRING where src_thrift.liNT[0] > 0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM SRC_THRIFT
+INSERT OVERWRITE TABLE dest1 SELECT src_Thrift.LINT[1], src_thrift.lintstring[0].MYSTRING where src_thrift.liNT[0] > 0
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC_THRIFT)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_Thrift) LINT) 1)) (TOK_SELEXPR (. ([ (. (TOK_TABLE_OR_COL src_thrift) lintstring) 0) MYSTRING))) (TOK_WHERE (> ([ (. (TOK_TABLE_OR_COL src_thrift) liNT) 0) 0))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_thrift 
+          TableScan
+            alias: src_thrift
+            Filter Operator
+              predicate:
+                  expr: (lint[0] > 0)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (lint[0] > 0)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: lint[1]
+                        type: int
+                        expr: lintstring[0].MYSTRING
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
+
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-00_239_4537311833367597717/10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-00_239_4537311833367597717/10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+
+PREHOOK: query: FROM SRC_THRIFT
+INSERT OVERWRITE TABLE dest1 SELECT src_Thrift.LINT[1], src_thrift.lintstring[0].MYSTRING where src_thrift.liNT[0] > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM SRC_THRIFT
+INSERT OVERWRITE TABLE dest1 SELECT src_Thrift.LINT[1], src_thrift.lintstring[0].MYSTRING where src_thrift.liNT[0] > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+PREHOOK: query: SELECT DEST1.* FROM Dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-04_690_3780627545370836869/10000
+POSTHOOK: query: SELECT DEST1.* FROM Dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-07-04_690_3780627545370836869/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+2	1
+4	8
+6	27
+8	64
+10	125
+12	216
+14	343
+16	512
+18	729

@@ -17,9 +17,9 @@ POSTHOOK: query: INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key)
 SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@load_dyn_part15_test@part_key={2
+POSTHOOK: Output: default@load_dyn_part15_test@part_key=%7B2
 POSTHOOK: Output: default@load_dyn_part15_test@part_key=1
-POSTHOOK: Output: default@load_dyn_part15_test@part_key=3]
+POSTHOOK: Output: default@load_dyn_part15_test@part_key=3%5D
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=1).key SCRIPT []
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=3]).key SCRIPT []
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key={2).key SCRIPT []
@@ -30,6 +30,6 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=1).key SCRIPT []
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key=3]).key SCRIPT []
 POSTHOOK: Lineage: load_dyn_part15_test PARTITION(part_key={2).key SCRIPT []
+part_key=%7B2
 part_key=1
-part_key=3]
-part_key={2
+part_key=3%5D

@@ -1,0 +1,400 @@
+PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
+FROM
+(SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
+ FROM src1 x JOIN src y ON (x.key = y.key)) subq
+ JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
+FROM
+(SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
+ FROM src1 x JOIN src y ON (x.key = y.key)) subq
+ JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value) value2)))) subq) (TOK_TABREF srcpart z) (and (and (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST z))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq:y 
+          TableScan
+            alias: y
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                  outputColumnNames: _col0
+                  Common Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col0}
+                      1 {value}
+                    handleSkewJoin: false
+                    keys:
+                      0 [Column[_col0]]
+                      1 [Column[key]]
+                    outputColumnNames: _col0, _col5
+                    Position of Big Table: 0
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col5
+                            type: string
+                      outputColumnNames: _col0, _col5
+                      Select Operator
+                        expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col5
+                              type: string
+                        outputColumnNames: _col0, _col1
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: dest_j1
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            subq:x 
+              Fetch Operator
+                limit: -1
+            z 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            subq:x 
+              TableScan
+                alias: x
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {key}
+                    1 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[key]]
+                    1 [Column[key]]
+                  outputColumnNames: _col0
+                  Position of Big Table: 1
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                      outputColumnNames: _col0
+                      Common Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0}
+                          1 {value}
+                        handleSkewJoin: false
+                        keys:
+                          0 [Column[_col0]]
+                          1 [Column[key]]
+                        outputColumnNames: _col0, _col5
+                        Position of Big Table: 0
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col5
+                                type: string
+                          outputColumnNames: _col0, _col5
+                          Select Operator
+                            expressions:
+                                  expr: _col0
+                                  type: string
+                                  expr: _col5
+                                  type: string
+                            outputColumnNames: _col0, _col1
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: dest_j1
+            z 
+              TableScan
+                alias: z
+                Filter Operator
+                  predicate:
+                      expr: ((ds = '2008-04-08') and (hr = 11))
+                      type: boolean
+                  Filter Operator
+                    predicate:
+                        expr: (ds = '2008-04-08')
+                        type: boolean
+                    Filter Operator
+                      predicate:
+                          expr: (hr = 11)
+                          type: boolean
+                      Common Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0}
+                          1 {value}
+                        handleSkewJoin: false
+                        keys:
+                          0 [Column[_col0]]
+                          1 [Column[key]]
+                        outputColumnNames: _col0, _col5
+                        Position of Big Table: 0
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col5
+                                type: string
+                          outputColumnNames: _col0, _col5
+                          Select Operator
+                            expressions:
+                                  expr: _col0
+                                  type: string
+                                  expr: _col5
+                                  type: string
+                            outputColumnNames: _col0, _col1
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: dest_j1
+
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-00-30_668_6907132877729345606/-ext-10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_j1
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-00-30_668_6907132877729345606/-ext-10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
+FROM
+(SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
+ FROM src1 x JOIN src y ON (x.key = y.key)) subq
+ JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@dest_j1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
+FROM
+(SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
+ FROM src1 x JOIN src y ON (x.key = y.key)) subq
+ JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@dest_j1
+POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_j1
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-00-36_865_2820753628257767618/-mr-10000
+POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_j1
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-00-36_865_2820753628257767618/-mr-10000
+POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+128	val_128
+146	val_146
+146	val_146
+146	val_146
+146	val_146
+150	val_150
+213	val_213
+213	val_213
+213	val_213
+213	val_213
+224	val_224
+224	val_224
+224	val_224
+224	val_224
+238	val_238
+238	val_238
+238	val_238
+238	val_238
+255	val_255
+255	val_255
+255	val_255
+255	val_255
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+273	val_273
+278	val_278
+278	val_278
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+311	val_311
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+369	val_369
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+66	val_66
+98	val_98
+98	val_98
+98	val_98
+98	val_98

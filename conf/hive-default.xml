@@ -444,6 +444,12 @@
 </property>
 
 <property>
+  <name>hive.mergejob.maponly</name>
+  <value>true</value>
+  <description>Try to generate a map-only job for merging files if CombineHiveInputFormat is supported.</description>
+</property>
+
+<property>
   <name>hive.heartbeat.interval</name>
   <value>1000</value>
   <description>Send a heartbeat after this interval - used by mapjoin and filter operators</description>

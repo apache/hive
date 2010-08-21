@@ -27,8 +27,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -148,6 +148,17 @@ public abstract class Task<T extends Serializable> implements Serializable,
 
   public List<Task<? extends Serializable>> getParentTasks() {
     return parentTasks;
+  }
+
+  /**
+   * The default dependent tasks are just child tasks, but different types
+   * could implement their own (e.g. ConditionalTask will use the listTasks
+   * as dependents).
+   *
+   * @return a list of tasks that are dependent on this task.
+   */
+  public List<Task<? extends Serializable>> getDependentTasks() {
+    return getChildTasks();
   }
 
   /**
@@ -297,8 +308,9 @@ public abstract class Task<T extends Serializable> implements Serializable,
   public final void localizeMRTmpFiles(Context ctx) {
     localizeMRTmpFilesImpl(ctx);
 
-    if (childTasks == null)
+    if (childTasks == null) {
       return;
+    }
 
     for (Task<? extends Serializable> t: childTasks) {
       t.localizeMRTmpFiles(ctx);
@@ -306,4 +318,3 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
 }
- 

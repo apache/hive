@@ -334,7 +334,7 @@ public class Hive {
   }
 
   /**
-   * 
+   *
    * @param tableName
    *          table name
    * @param indexName
@@ -380,20 +380,20 @@ public class Hive {
       String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
       Index old_index = null;
       try {
-        old_index = getIndex(dbName, tableName, indexName);  
+        old_index = getIndex(dbName, tableName, indexName);
       } catch (Exception e) {
       }
       if (old_index != null) {
         throw new HiveException("Index " + indexName + " already exists on table " + tableName + ", db=" + dbName);
       }
-      
+
       org.apache.hadoop.hive.metastore.api.Table baseTbl = getMSC().getTable(dbName, tableName);
       if (baseTbl.getTableType() == TableType.VIRTUAL_VIEW.toString()) {
         throw new HiveException("tableName="+ tableName +" is a VIRTUAL VIEW. Index on VIRTUAL VIEW is not supported.");
       }
-      
+
       if (indexTblName == null) {
-        indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);  
+        indexTblName = MetaStoreUtils.getIndexTableName(dbName, tableName, indexName);
       } else {
         org.apache.hadoop.hive.metastore.api.Table temp = null;
         try {
@@ -404,11 +404,11 @@ public class Hive {
           throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
         }
       }
-      
+
       org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().clone();
       SerDeInfo serdeInfo = storageDescriptor.getSerdeInfo();
       if(serde != null) {
-        serdeInfo.setSerializationLib(serde);        
+        serdeInfo.setSerializationLib(serde);
       } else {
         if (storageHandler == null) {
           serdeInfo.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
@@ -437,7 +437,7 @@ public class Hive {
       if (lineDelim != null) {
         serdeInfo.getParameters().put(Constants.LINE_DELIM, lineDelim);
       }
-      
+
       if (serdeProps != null) {
         Iterator<Entry<String, String>> iter = serdeProps.entrySet()
           .iterator();
@@ -446,16 +446,16 @@ public class Hive {
           serdeInfo.getParameters().put(m.getKey(), m.getValue());
         }
       }
-      
+
       storageDescriptor.setLocation(null);
       if (location != null) {
-        storageDescriptor.setLocation(location);        
+        storageDescriptor.setLocation(location);
       }
       storageDescriptor.setInputFormat(inputFormat);
       storageDescriptor.setOutputFormat(outputFormat);
-      
+
       Map<String, String> params = new HashMap<String,String>();
-      
+
       List<FieldSchema> indexTblCols = new ArrayList<FieldSchema>();
       List<Order> sortCols = new ArrayList<Order>();
       storageDescriptor.setBucketCols(null);
@@ -468,14 +468,15 @@ public class Hive {
           k++;
         }
       }
-      if (k != indexedCols.size())
+      if (k != indexedCols.size()) {
         throw new RuntimeException(
             "Check the index columns, they should appear in the table being indexed.");
-      
+      }
+
       storageDescriptor.setCols(indexTblCols);
       storageDescriptor.setSortCols(sortCols);
 
-      int time = (int) (System.currentTimeMillis() / 1000);      
+      int time = (int) (System.currentTimeMillis() / 1000);
       org.apache.hadoop.hive.metastore.api.Table tt = null;
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
@@ -489,18 +490,18 @@ public class Hive {
       if(!deferredRebuild) {
         throw new RuntimeException("Please specify deferred rebuild using \" WITH DEFERRED REBUILD \".");
       }
-      
+
       Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
           storageDescriptor, params, deferredRebuild);
       indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
-      
+
       this.getMSC().createIndex(indexDesc, tt);
-      
+
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
-  
+
   public Index getIndex(String dbName, String baseTableName,
       String indexName) throws HiveException {
     try {
@@ -509,7 +510,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean deleteData) throws HiveException {
     try {
       return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData);
@@ -519,7 +520,7 @@ public class Hive {
       throw new HiveException("Unknow error. Please check logs.", e);
     }
   }
-  
+
   /**
    * Drops table along with the data in it. If the table doesn't exist
    * then it is a no-op
@@ -812,6 +813,9 @@ public class Hive {
 
       FileSystem fs = loadPath.getFileSystem(conf);
       FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDP, fs);
+      if (status.length == 0) {
+        LOG.warn("No partition is genereated by dynamic partitioning");
+      }
 
       if (status.length > conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)) {
         throw new HiveException("Number of dynamic partitions created is " + status.length

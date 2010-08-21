@@ -58,7 +58,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-53-48_203_6058550366021037210/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -73,28 +73,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: int
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest4_sequencefile
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-53-48_203_6058550366021037210/-ext-10002 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest4_sequencefile
 
 
 PREHOOK: query: FROM src
@@ -112,11 +99,11 @@ POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:va
 PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest4_sequencefile
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-53-52_054_1678193855449019517/-mr-10000
 POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-53-52_054_1678193855449019517/-mr-10000
 POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

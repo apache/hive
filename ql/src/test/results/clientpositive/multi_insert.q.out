@@ -114,11 +114,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-21_712_5062335963199774462/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-26_585_7062984907777099434/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-21_712_5062335963199774462/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-26_585_7062984907777099434/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -136,11 +136,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-24_226_5046921944761310383/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-29_855_7237865230311355980/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-24_226_5046921944761310383/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-29_855_7237865230311355980/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -235,7 +235,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-26_695_7647953576858754386/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-33_328_2488770448970587011/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -250,28 +250,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-26_695_7647953576858754386/10004 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-33_328_2488770448970587011/-ext-10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi1
 
   Stage: Stage-8
     Conditional Operator
@@ -280,7 +267,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-26_695_7647953576858754386/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-33_328_2488770448970587011/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -295,28 +282,15 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-26_695_7647953576858754386/10005 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-33_328_2488770448970587011/-ext-10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi2
 
 
 PREHOOK: query: from src
@@ -344,11 +318,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-29_398_374250277965899089/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-37_686_3497447837335838641/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-29_398_374250277965899089/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-37_686_3497447837335838641/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -370,11 +344,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-31_972_5943245082125077624/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-40_903_8138497954444523923/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-31_972_5943245082125077624/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-40_903_8138497954444523923/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -514,11 +488,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-37_232_5055054932535323703/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-48_278_6551952599833046968/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-37_232_5055054932535323703/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-48_278_6551952599833046968/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -544,11 +518,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-39_724_5919666556486138657/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-51_519_5112664897229715826/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-39_724_5919666556486138657/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-51_519_5112664897229715826/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -659,7 +633,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-42_204_3144075225672991179/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-54_819_7280026365714941347/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -674,28 +648,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-42_204_3144075225672991179/10004 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-54_819_7280026365714941347/-ext-10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi1
 
   Stage: Stage-8
     Conditional Operator
@@ -704,7 +665,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-42_204_3144075225672991179/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-54_819_7280026365714941347/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -719,28 +680,15 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-41-42_204_3144075225672991179/10005 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-56-54_819_7280026365714941347/-ext-10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi2
 
 
 PREHOOK: query: from src
@@ -776,11 +724,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-44_892_3027065579813818242/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-59_335_5805006242053448401/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-44_892_3027065579813818242/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-56-59_335_5805006242053448401/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -810,11 +758,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-47_356_9057856219474591094/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-03_563_3139826999127039850/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-47_356_9057856219474591094/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-03_563_3139826999127039850/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -980,7 +928,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-41-49_873_5452620989462977001/10004 
+        file:/tmp/nzhang/hive_2010-08-17_22-57-06_813_6503552756819430103/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1068,11 +1016,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-55_158_3039517705245630432/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-14_388_7344452730412942447/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-55_158_3039517705245630432/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-14_388_7344452730412942447/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1102,11 +1050,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-57_720_498471983118793979/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-17_791_1471719234231660660/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-41-57_720_498471983118793979/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-17_791_1471719234231660660/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1277,7 +1225,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-00_181_6805544255394938954/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-21_039_3786514637394123600/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -1292,7 +1240,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-00_181_6805544255394938954/10004 
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-21_039_3786514637394123600/-ext-10004 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -1318,7 +1266,7 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-42-00_181_6805544255394938954/10005 
+        file:/tmp/nzhang/hive_2010-08-17_22-57-21_039_3786514637394123600/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1365,7 +1313,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-00_181_6805544255394938954/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-21_039_3786514637394123600/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -1380,7 +1328,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-00_181_6805544255394938954/10006 
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-21_039_3786514637394123600/-ext-10006 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -1445,11 +1393,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-05_457_2938335370779332907/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-28_920_700954237231927578/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-05_457_2938335370779332907/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-28_920_700954237231927578/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1483,11 +1431,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-07_979_1197234407834858516/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-32_318_7076622065680688760/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-07_979_1197234407834858516/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-32_318_7076622065680688760/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1666,7 +1614,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-42-10_540_8287802089011554187/10004 
+        file:/tmp/nzhang/hive_2010-08-17_22-57-35_568_5668515889509258573/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1762,11 +1710,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-15_956_8233613409144913424/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-43_273_1006878872083743769/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-15_956_8233613409144913424/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-43_273_1006878872083743769/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1804,11 +1752,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-18_525_6028070244185370122/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-46_513_2443526604434599677/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-18_525_6028070244185370122/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-46_513_2443526604434599677/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1995,7 +1943,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-21_003_5167136917621088373/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-49_826_1827980113796407575/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -2010,33 +1958,20 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-21_003_5167136917621088373/10004 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-49_826_1827980113796407575/-ext-10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi1
 
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-42-21_003_5167136917621088373/10005 
+        file:/tmp/nzhang/hive_2010-08-17_22-57-49_826_1827980113796407575/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2083,7 +2018,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-21_003_5167136917621088373/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-49_826_1827980113796407575/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -2098,28 +2033,15 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-21_003_5167136917621088373/10006 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-57-49_826_1827980113796407575/-ext-10006 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi2
 
 
 PREHOOK: query: from src
@@ -2171,11 +2093,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-26_240_3559046036845532/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-58_059_8032577405312510986/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-26_240_3559046036845532/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-57-58_059_8032577405312510986/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2217,11 +2139,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-28_796_451544540094033007/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-01_347_6020666371340921134/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-28_796_451544540094033007/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-01_347_6020666371340921134/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2487,11 +2409,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-34_097_7757454628091368486/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-08_774_4546462201936974076/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-34_097_7757454628091368486/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-08_774_4546462201936974076/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2551,11 +2473,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-36_786_8996732990789151375/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-13_022_821442089976470111/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-36_786_8996732990789151375/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-13_022_821442089976470111/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2780,7 +2702,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-39_255_2282025271684185143/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-16_273_7611279327659254187/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -2795,28 +2717,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-39_255_2282025271684185143/10004 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-16_273_7611279327659254187/-ext-10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi1
 
   Stage: Stage-8
     Conditional Operator
@@ -2825,7 +2734,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-39_255_2282025271684185143/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-16_273_7611279327659254187/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -2840,28 +2749,15 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-39_255_2282025271684185143/10005 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-16_273_7611279327659254187/-ext-10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -2921,11 +2817,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-42_021_1773614549788907879/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-20_758_8049663464735280689/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-42_021_1773614549788907879/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-20_758_8049663464735280689/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2989,11 +2885,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-44_498_2123904018906456758/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-24_002_9038273304711556584/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-44_498_2123904018906456758/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-24_002_9038273304711556584/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3295,11 +3191,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-49_805_7878050643299431709/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-31_552_3785685174355217935/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-49_805_7878050643299431709/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-31_552_3785685174355217935/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3367,11 +3263,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-52_268_1999896450202641016/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-34_794_6718886110856561482/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-52_268_1999896450202641016/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-34_794_6718886110856561482/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3612,7 +3508,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-54_799_7180997344452135463/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-38_304_6070049678551009376/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -3627,28 +3523,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-54_799_7180997344452135463/10004 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-38_304_6070049678551009376/-ext-10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi1
 
   Stage: Stage-8
     Conditional Operator
@@ -3657,7 +3540,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-54_799_7180997344452135463/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-38_304_6070049678551009376/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -3672,28 +3555,15 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-42-54_799_7180997344452135463/10005 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: src_multi2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-58-38_304_6070049678551009376/-ext-10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -3761,11 +3631,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-57_592_4817069631526155036/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-42_988_2723219009626595461/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-42-57_592_4817069631526155036/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-42_988_2723219009626595461/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3837,11 +3707,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-00_113_6879485217176937186/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-46_459_3639633790369527585/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-00_113_6879485217176937186/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-58-46_459_3639633790369527585/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -1,0 +1,304 @@
+PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: EXPLAIN
+insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL x) key) 100)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (key < 100))
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (key < 100))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: tmptable
+
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-00-04_446_4618719138122182282/-ext-10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: tmptable
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-00-04_446_4618719138122182282/-ext-10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: hr
+                    type: string
+                    expr: ds
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: tmptable
+
+
+PREHOOK: query: insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-00-15_403_8205955260338045253/-mr-10000
+POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-00-15_403_8205955260338045253/-mr-10000
+POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+10	val_10	2008-04-08	11
+10	val_10	2008-04-08	12
+11	val_11	2008-04-08	11
+11	val_11	2008-04-08	12
+12	val_12	2008-04-08	11
+12	val_12	2008-04-08	11
+12	val_12	2008-04-08	12
+12	val_12	2008-04-08	12
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	12
+15	val_15	2008-04-08	12
+17	val_17	2008-04-08	11
+17	val_17	2008-04-08	12
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	12
+18	val_18	2008-04-08	12
+19	val_19	2008-04-08	11
+19	val_19	2008-04-08	12
+2	val_2	2008-04-08	11
+2	val_2	2008-04-08	12
+20	val_20	2008-04-08	11
+20	val_20	2008-04-08	12
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	12
+24	val_24	2008-04-08	12
+26	val_26	2008-04-08	11
+26	val_26	2008-04-08	11
+26	val_26	2008-04-08	12
+26	val_26	2008-04-08	12
+27	val_27	2008-04-08	11
+27	val_27	2008-04-08	12
+28	val_28	2008-04-08	11
+28	val_28	2008-04-08	12
+30	val_30	2008-04-08	11
+30	val_30	2008-04-08	12
+33	val_33	2008-04-08	11
+33	val_33	2008-04-08	12
+34	val_34	2008-04-08	11
+34	val_34	2008-04-08	12
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	12
+37	val_37	2008-04-08	12
+4	val_4	2008-04-08	11
+4	val_4	2008-04-08	12
+41	val_41	2008-04-08	11
+41	val_41	2008-04-08	12
+42	val_42	2008-04-08	11
+42	val_42	2008-04-08	11
+42	val_42	2008-04-08	12
+42	val_42	2008-04-08	12
+43	val_43	2008-04-08	11
+43	val_43	2008-04-08	12
+44	val_44	2008-04-08	11
+44	val_44	2008-04-08	12
+47	val_47	2008-04-08	11
+47	val_47	2008-04-08	12
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	12
+51	val_51	2008-04-08	12
+53	val_53	2008-04-08	11
+53	val_53	2008-04-08	12
+54	val_54	2008-04-08	11
+54	val_54	2008-04-08	12
+57	val_57	2008-04-08	11
+57	val_57	2008-04-08	12
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	12
+58	val_58	2008-04-08	12
+64	val_64	2008-04-08	11
+64	val_64	2008-04-08	12
+65	val_65	2008-04-08	11
+65	val_65	2008-04-08	12
+66	val_66	2008-04-08	11
+66	val_66	2008-04-08	12
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	12
+67	val_67	2008-04-08	12
+69	val_69	2008-04-08	11
+69	val_69	2008-04-08	12
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+72	val_72	2008-04-08	11
+72	val_72	2008-04-08	11
+72	val_72	2008-04-08	12
+72	val_72	2008-04-08	12
+74	val_74	2008-04-08	11
+74	val_74	2008-04-08	12
+76	val_76	2008-04-08	11
+76	val_76	2008-04-08	11
+76	val_76	2008-04-08	12
+76	val_76	2008-04-08	12
+77	val_77	2008-04-08	11
+77	val_77	2008-04-08	12
+78	val_78	2008-04-08	11
+78	val_78	2008-04-08	12
+8	val_8	2008-04-08	11
+8	val_8	2008-04-08	12
+80	val_80	2008-04-08	11
+80	val_80	2008-04-08	12
+82	val_82	2008-04-08	11
+82	val_82	2008-04-08	12
+83	val_83	2008-04-08	11
+83	val_83	2008-04-08	11
+83	val_83	2008-04-08	12
+83	val_83	2008-04-08	12
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	12
+84	val_84	2008-04-08	12
+85	val_85	2008-04-08	11
+85	val_85	2008-04-08	12
+86	val_86	2008-04-08	11
+86	val_86	2008-04-08	12
+87	val_87	2008-04-08	11
+87	val_87	2008-04-08	12
+9	val_9	2008-04-08	11
+9	val_9	2008-04-08	12
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+92	val_92	2008-04-08	11
+92	val_92	2008-04-08	12
+95	val_95	2008-04-08	11
+95	val_95	2008-04-08	11
+95	val_95	2008-04-08	12
+95	val_95	2008-04-08	12
+96	val_96	2008-04-08	11
+96	val_96	2008-04-08	12
+97	val_97	2008-04-08	11
+97	val_97	2008-04-08	11
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	12
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	12
+98	val_98	2008-04-08	12

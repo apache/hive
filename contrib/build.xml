@@ -93,7 +93,9 @@
               clusterMode="${clustermode}"
               resultsDirectory="${contrib.test.results.dir}/clientpositive" className="TestContribCliDriver"
               logFile="${test.log.dir}/testcontribclidrivergen.log"
-              logDirectory="${test.log.dir}/contribclientpositive"/>
+              logDirectory="${test.log.dir}/contribclientpositive"
+              hadoopVersion="${hadoopVersion}"
+    />
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 

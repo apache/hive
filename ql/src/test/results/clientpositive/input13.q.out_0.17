@@ -1,0 +1,888 @@
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+PREHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest3
+PREHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 100) (< (. (TOK_TABLE_OR_COL src) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest3 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/dest4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL src) key) 300))))
+
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-7 depends on stages: Stage-4 , consists of Stage-6, Stage-5
+  Stage-6
+  Stage-0 depends on stages: Stage-6, Stage-5
+  Stage-5
+  Stage-10 depends on stages: Stage-4 , consists of Stage-9, Stage-8
+  Stage-9
+  Stage-1 depends on stages: Stage-9, Stage-8
+  Stage-8
+  Stage-13 depends on stages: Stage-4 , consists of Stage-12, Stage-11
+  Stage-12
+  Stage-2 depends on stages: Stage-12, Stage-11
+  Stage-11
+  Stage-16 depends on stages: Stage-4 , consists of Stage-15, Stage-14
+  Stage-15
+  Stage-3 depends on stages: Stage-15, Stage-14
+  Stage-14
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < 100)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(_col0)
+                        type: int
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
+            Filter Operator
+              predicate:
+                  expr: ((key >= 100) and (key < 200))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(_col0)
+                        type: int
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 2
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest2
+            Filter Operator
+              predicate:
+                  expr: ((key >= 200) and (key < 300))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(_col0)
+                        type: int
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 3
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest3
+            Filter Operator
+              predicate:
+                  expr: (key >= 300)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: value
+                      type: string
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 4
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10007 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+  Stage: Stage-10
+    Conditional Operator
+
+  Stage: Stage-9
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10002
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest2
+
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10008 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest2
+
+  Stage: Stage-13
+    Conditional Operator
+
+  Stage: Stage-12
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10004
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 12
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest3
+
+  Stage: Stage-11
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10009 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest3
+
+  Stage: Stage-16
+    Conditional Operator
+
+  Stage: Stage-15
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10006
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ../build/ql/test/data/warehouse/dest4.out
+
+  Stage: Stage-14
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-37_525_6254739333945514341/10010 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_182_8623658788484294220/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_182_8623658788484294220/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+86	val_86
+27	val_27
+98	val_98
+66	val_66
+37	val_37
+15	val_15
+82	val_82
+17	val_17
+0	val_0
+57	val_57
+20	val_20
+92	val_92
+47	val_47
+72	val_72
+4	val_4
+35	val_35
+54	val_54
+51	val_51
+65	val_65
+83	val_83
+12	val_12
+67	val_67
+84	val_84
+58	val_58
+8	val_8
+24	val_24
+42	val_42
+0	val_0
+96	val_96
+26	val_26
+51	val_51
+43	val_43
+95	val_95
+98	val_98
+85	val_85
+77	val_77
+0	val_0
+87	val_87
+15	val_15
+72	val_72
+90	val_90
+19	val_19
+10	val_10
+5	val_5
+58	val_58
+35	val_35
+95	val_95
+11	val_11
+34	val_34
+42	val_42
+78	val_78
+76	val_76
+41	val_41
+30	val_30
+64	val_64
+76	val_76
+74	val_74
+69	val_69
+33	val_33
+70	val_70
+5	val_5
+2	val_2
+35	val_35
+80	val_80
+44	val_44
+53	val_53
+90	val_90
+12	val_12
+5	val_5
+70	val_70
+24	val_24
+70	val_70
+83	val_83
+26	val_26
+67	val_67
+18	val_18
+9	val_9
+18	val_18
+97	val_97
+84	val_84
+28	val_28
+37	val_37
+90	val_90
+97	val_97
+PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_250_6958627549079394486/10000
+POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_250_6958627549079394486/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+165	val_165
+193	val_193
+150	val_150
+128	val_128
+146	val_146
+152	val_152
+145	val_145
+166	val_166
+153	val_153
+193	val_193
+174	val_174
+199	val_199
+174	val_174
+162	val_162
+167	val_167
+195	val_195
+113	val_113
+155	val_155
+128	val_128
+149	val_149
+129	val_129
+170	val_170
+157	val_157
+111	val_111
+169	val_169
+125	val_125
+192	val_192
+187	val_187
+176	val_176
+138	val_138
+103	val_103
+176	val_176
+137	val_137
+180	val_180
+181	val_181
+138	val_138
+179	val_179
+172	val_172
+129	val_129
+158	val_158
+119	val_119
+197	val_197
+100	val_100
+199	val_199
+191	val_191
+165	val_165
+120	val_120
+131	val_131
+156	val_156
+196	val_196
+197	val_197
+187	val_187
+137	val_137
+169	val_169
+179	val_179
+118	val_118
+134	val_134
+138	val_138
+118	val_118
+177	val_177
+168	val_168
+143	val_143
+160	val_160
+195	val_195
+119	val_119
+149	val_149
+138	val_138
+103	val_103
+113	val_113
+167	val_167
+116	val_116
+191	val_191
+128	val_128
+193	val_193
+104	val_104
+175	val_175
+105	val_105
+190	val_190
+114	val_114
+164	val_164
+125	val_125
+164	val_164
+187	val_187
+104	val_104
+163	val_163
+119	val_119
+199	val_199
+120	val_120
+169	val_169
+178	val_178
+136	val_136
+172	val_172
+133	val_133
+175	val_175
+189	val_189
+134	val_134
+100	val_100
+146	val_146
+186	val_186
+167	val_167
+183	val_183
+152	val_152
+194	val_194
+126	val_126
+169	val_169
+PREHOOK: query: SELECT dest3.* FROM dest3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_319_42913572748613484/10000
+POSTHOOK: query: SELECT dest3.* FROM dest3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_2/build/ql/scratchdir/hive_2010-04-05_18-11-44_319_42913572748613484/10000
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+238	2008-04-08	12
+255	2008-04-08	12
+278	2008-04-08	12
+265	2008-04-08	12
+273	2008-04-08	12
+224	2008-04-08	12
+213	2008-04-08	12
+281	2008-04-08	12
+277	2008-04-08	12
+209	2008-04-08	12
+252	2008-04-08	12
+292	2008-04-08	12
+219	2008-04-08	12
+287	2008-04-08	12
+237	2008-04-08	12
+207	2008-04-08	12
+208	2008-04-08	12
+247	2008-04-08	12
+266	2008-04-08	12
+203	2008-04-08	12
+205	2008-04-08	12
+221	2008-04-08	12
+280	2008-04-08	12
+277	2008-04-08	12
+208	2008-04-08	12
+286	2008-04-08	12
+239	2008-04-08	12
+213	2008-04-08	12
+216	2008-04-08	12
+278	2008-04-08	12
+289	2008-04-08	12
+221	2008-04-08	12
+275	2008-04-08	12
+241	2008-04-08	12
+284	2008-04-08	12
+230	2008-04-08	12
+260	2008-04-08	12
+272	2008-04-08	12
+217	2008-04-08	12
+230	2008-04-08	12
+208	2008-04-08	12
+298	2008-04-08	12
+230	2008-04-08	12
+205	2008-04-08	12
+288	2008-04-08	12
+282	2008-04-08	12
+282	2008-04-08	12
+238	2008-04-08	12
+277	2008-04-08	12
+273	2008-04-08	12
+224	2008-04-08	12
+242	2008-04-08	12
+272	2008-04-08	12
+242	2008-04-08	12
+226	2008-04-08	12
+229	2008-04-08	12
+233	2008-04-08	12
+223	2008-04-08	12
+218	2008-04-08	12
+228	2008-04-08	12
+209	2008-04-08	12
+230	2008-04-08	12
+296	2008-04-08	12
+216	2008-04-08	12
+274	2008-04-08	12
+219	2008-04-08	12
+239	2008-04-08	12
+223	2008-04-08	12
+256	2008-04-08	12
+263	2008-04-08	12
+288	2008-04-08	12
+244	2008-04-08	12
+202	2008-04-08	12
+229	2008-04-08	12
+280	2008-04-08	12
+283	2008-04-08	12
+235	2008-04-08	12
+257	2008-04-08	12
+258	2008-04-08	12
+203	2008-04-08	12
+262	2008-04-08	12
+201	2008-04-08	12
+217	2008-04-08	12
+298	2008-04-08	12
+291	2008-04-08	12
+255	2008-04-08	12
+200	2008-04-08	12
+237	2008-04-08	12
+248	2008-04-08	12
+277	2008-04-08	12
+230	2008-04-08	12
+207	2008-04-08	12
+249	2008-04-08	12
+265	2008-04-08	12
+214	2008-04-08	12
+233	2008-04-08	12
+256	2008-04-08	12
+298	2008-04-08	12
+285	2008-04-08	12
+273	2008-04-08	12
+281	2008-04-08	12
+222	2008-04-08	12
+200	2008-04-08	12
+val_311
+val_409
+val_484
+val_401
+val_369
+val_406
+val_429
+val_374
+val_469
+val_495
+val_327
+val_403
+val_417
+val_430
+val_338
+val_446
+val_459
+val_394
+val_482
+val_413
+val_494
+val_466
+val_399
+val_396
+val_417
+val_489
+val_377
+val_397
+val_309
+val_365
+val_439
+val_342
+val_367
+val_325
+val_475
+val_339
+val_455
+val_311
+val_316
+val_302
+val_438
+val_345
+val_489
+val_378
+val_427
+val_356
+val_399
+val_382
+val_498
+val_386
+val_437
+val_469
+val_459
+val_430
+val_318
+val_332
+val_311
+val_333
+val_404
+val_384
+val_489
+val_353
+val_373
+val_348
+val_466
+val_411
+val_348
+val_463
+val_431
+val_496
+val_322
+val_468
+val_393
+val_454
+val_418
+val_327
+val_404
+val_436
+val_469
+val_468
+val_308
+val_481
+val_457
+val_318
+val_318
+val_409
+val_470
+val_369
+val_316
+val_413
+val_490
+val_364
+val_395
+val_419
+val_307
+val_435
+val_306
+val_309
+val_389
+val_327
+val_369
+val_392
+val_331
+val_401
+val_452
+val_497
+val_402
+val_396
+val_317
+val_395
+val_336
+val_472
+val_322
+val_498
+val_321
+val_430
+val_489
+val_458
+val_492
+val_449
+val_453
+val_468
+val_342
+val_368
+val_367
+val_344
+val_485
+val_487
+val_480
+val_401
+val_438
+val_467
+val_432
+val_316
+val_469
+val_463
+val_331
+val_321
+val_335
+val_466
+val_366
+val_403
+val_483
+val_406
+val_409
+val_406
+val_401
+val_348
+val_424
+val_396
+val_431
+val_454
+val_478
+val_431
+val_424
+val_382
+val_397
+val_480
+val_351
+val_438
+val_414
+val_491
+val_439
+val_360
+val_479
+val_305
+val_417
+val_444
+val_429
+val_443
+val_323
+val_325
+val_478
+val_468
+val_310
+val_317
+val_333
+val_493
+val_460
+val_480
+val_353
+val_462
+val_406
+val_454
+val_375
+val_401
+val_421
+val_407
+val_384
+val_384
+val_379
+val_462
+val_492
+val_341
+val_498
+val_458
+val_362
+val_348
+val_344
+val_469
+val_315
+val_448
+val_348
+val_307
+val_414
+val_477
+val_403
+val_400

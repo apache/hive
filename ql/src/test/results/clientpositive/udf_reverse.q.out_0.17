@@ -1,0 +1,177 @@
+PREHOOK: query: DESCRIBE FUNCTION reverse
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION reverse
+POSTHOOK: type: DESCFUNCTION
+reverse(str) - reverse str
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED reverse
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED reverse
+POSTHOOK: type: DESCFUNCTION
+reverse(str) - reverse str
+Example:
+  > SELECT reverse('Facebook') FROM src LIMIT 1;
+  'koobecaF'
+PREHOOK: query: CREATE TABLE dest1(len STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(len STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reverse (. (TOK_TABLE_OR_COL src1) value))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-2
+  Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Select Operator
+              expressions:
+                    expr: reverse(value)
+                    type: string
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
+
+  Stage: Stage-4
+    Conditional Operator
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-03-14_995_869171074390535180/-ext-10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-18_12-03-14_995_869171074390535180/-ext-10002 
+            Reduce Output Operator
+              sort order: 
+              Map-reduce partition columns:
+                    expr: rand()
+                    type: double
+              tag: -1
+              value expressions:
+                    expr: len
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+
+PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-03-19_004_6417962732702330578/-mr-10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-03-19_004_6417962732702330578/-mr-10000
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+832_lav
+
+113_lav
+72_lav
+561_lav
+904_lav
+552_lav
+872_lav
+89_lav
+484_lav
+562_lav
+391_lav
+104_lav
+051_lav
+372_lav
+
+
+66_lav
+
+312_lav
+641_lav
+604_lav
+
+
+
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- Test with non-ascii characters
+-- kv4.txt contains the text 0xE982B5E993AE, which should be reversed to
+-- 0xE993AEE982B5
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test with non-ascii characters
+-- kv4.txt contains the text 0xE982B5E993AE, which should be reversed to
+-- 0xE993AEE982B5
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-03-20_202_5715101206513526870/-mr-10000
+POSTHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-18_12-03-20_202_5715101206513526870/-mr-10000
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+1

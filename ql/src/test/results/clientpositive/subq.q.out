@@ -63,7 +63,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/802453741/10000
+          destination: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-55_872_4777473968057853028/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -74,26 +74,13 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_1/build/ql/tmp/295446122/10001 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-55_872_4777473968057853028/-ext-10001 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
 
 PREHOOK: query: FROM (

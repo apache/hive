@@ -62,7 +62,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-46-27_316_7397975593428086505/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-05_879_2735844338849084089/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -77,30 +77,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-46-27_316_7397975593428086505/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: c1
-                    type: string
-                    expr: c2
-                    type: int
-                    expr: c3
-                    type: double
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: ppd_constant_expr
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-05_879_2735844338849084089/-ext-10002 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: ppd_constant_expr
 
 
 PREHOOK: query: FROM src1 
@@ -119,11 +104,11 @@ POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-29_875_7776179823012704510/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-59-09_777_9157981275279385779/-mr-10000
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-29_875_7776179823012704510/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-59-09_777_9157981275279385779/-mr-10000
 POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
 POSTHOOK: Lineage: ppd_constant_expr.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []

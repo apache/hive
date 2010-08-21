@@ -240,6 +240,7 @@ public class HiveConf extends Configuration {
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432), //32M
     MAPREDMINSPLITSIZE("mapred.min.split.size", 1),
+    HIVEMERGEMAPONLY("hive.mergejob.maponly", true),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),

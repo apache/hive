@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.common;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -78,10 +77,11 @@ public final class FileUtils {
       if(authority == null) {
         // no authority - use default one if it applies
         if(scheme.equals(fsUri.getScheme()) &&
-           fsUri.getAuthority() != null)
+           fsUri.getAuthority() != null) {
           authority = fsUri.getAuthority();
-        else
+        } else {
           authority = "";
+        }
       }
     }
 
@@ -123,7 +123,7 @@ public final class FileUtils {
       charToEscape.set(c);
     }
     char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':', '=', '?',
-        '\\', '\u007F' };
+        '\\', '\u007F', '{', ']' };
     for (char c : clist) {
       charToEscape.set(c);
     }

@@ -87,7 +87,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10002 
+        file:/tmp/nzhang/hive_2010-08-17_22-54-18_745_3735170774347695260/-mr-10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -138,11 +138,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
+            file:/tmp/nzhang/hive_2010-08-17_22-54-18_745_3735170774347695260/-mr-10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
+            file:/tmp/nzhang/hive_2010-08-17_22-54-18_745_3735170774347695260/-mr-10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -198,7 +198,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-54-18_745_3735170774347695260/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -213,30 +213,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10003 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: cnt1
-                    type: int
-                    expr: cnt2
-                    type: int
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-54-18_745_3735170774347695260/-ext-10003 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest_j1
 
   Stage: Stage-6
     Map Reduce
@@ -317,11 +302,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-54-30_633_9036208287661562782/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-54-30_633_9036208287661562782/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

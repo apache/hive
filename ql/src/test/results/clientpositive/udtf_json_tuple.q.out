@@ -40,15 +40,15 @@ POSTHOOK: Output: default@json_t
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 PREHOOK: query: explain 
-select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF b)))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF b))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,12 +81,25 @@ STAGE PLANS:
                           expr: _col6
                           type: string
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
+                            expr: _col4
+                            type: string
+                            expr: _col5
+                            type: string
               Select Operator
                 expressions:
                       expr: jstring
@@ -121,43 +134,64 @@ STAGE PLANS:
                             expr: _col6
                             type: string
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
+                              expr: _col4
+                              type: string
+                              expr: _col5
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+PREHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-09_840_8200365876234855592/-mr-10000
-POSTHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-40_635_1281135763793637833/-mr-10000
+POSTHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-09_840_8200365876234855592/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-40_635_1281135763793637833/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
-4	NULL	NULL	NULL	NULL	NULL
-3	value13	2	value33	value44	5.01
-2	value12	2	value3	4.01	NULL
 1	value1	value2	3	NULL	5.23
+2	value12	2	value3	4.01	NULL
+3	value13	2	value33	value44	5.01
+4	NULL	NULL	NULL	NULL	NULL
 5		NULL	NULL	NULL	NULL
 PREHOOK: query: explain 
-select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a
+select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a
+select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF json_t a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF json_t a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL f1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL f2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL f3)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -187,43 +221,66 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               UDTF Operator
                 function name: json_tuple
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Reduce Output Operator
+                  key expressions:
+                        expr: c0
+                        type: string
+                        expr: c1
+                        type: string
+                        expr: c2
+                        type: string
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: c0
+                        type: string
+                        expr: c1
+                        type: string
+                        expr: c2
+                        type: string
+                        expr: c3
+                        type: string
+                        expr: c4
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a
+PREHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-13_794_8613454555471840841/-mr-10000
-POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-45_180_2708614101544289634/-mr-10000
+POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-13_794_8613454555471840841/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-45_180_2708614101544289634/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	NULL	NULL	NULL	NULL
-value13	2	value33	value44	5.01
-value12	2	value3	4.01	NULL
-value1	value2	3	NULL	5.23
 	NULL	NULL	NULL	NULL
+value1	value2	3	NULL	5.23
+value12	2	value3	4.01	NULL
+value13	2	value33	value44	5.01
 PREHOOK: query: explain 
-select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) f2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) f5)))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) f2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) f5))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -250,12 +307,19 @@ STAGE PLANS:
                           expr: _col6
                           type: string
                     outputColumnNames: _col0, _col1, _col2
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: string
               Select Operator
                 expressions:
                       expr: jstring
@@ -284,46 +348,62 @@ STAGE PLANS:
                             expr: _col6
                             type: string
                       outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+PREHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-17_260_2655690577880014370/-mr-10000
-POSTHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-49_816_21621192409300726/-mr-10000
+POSTHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-17_260_2655690577880014370/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-49_816_21621192409300726/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
-4	NULL	NULL
-3	2	5.01
-2	2	NULL
 1	value2	5.23
+2	2	NULL
+3	2	5.01
+4	NULL	NULL
 5	NULL	NULL
 PREHOOK: query: explain 
-select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2
+select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2
+select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL f2)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL f1))) (TOK_GROUPBY (TOK_TABLE_OR_COL f2))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION json_tuple (. (TOK_TABLE_OR_COL a) jstring) 'f1' 'f2' 'f3' 'f4' 'f5') f1 f2 f3 f4 f5 (TOK_TABALIAS b))) (TOK_TABREF json_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL f2)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL f1))) (TOK_GROUPBY (TOK_TABLE_OR_COL f2)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL f2)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -438,22 +518,46 @@ STAGE PLANS:
               compressed: false
               GlobalTableId: 0
               table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/tmp/nzhang/hive_2010-08-19_15-38-54_247_4884440383284422625/-mr-10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
-PREHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2
+PREHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-20_835_55486591128179740/-mr-10000
-POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-54_422_4487534965862546924/-mr-10000
+POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-12_17-58-20_835_55486591128179740/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-54_422_4487534965862546924/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	1

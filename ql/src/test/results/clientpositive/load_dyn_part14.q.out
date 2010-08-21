@@ -12,7 +12,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:jssarma, createTime:1279737517, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737517}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:nzhang, createTime:1282110931, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null)], location:pfile:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1282110931}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
@@ -38,10 +38,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
-  Stage-0 depends on stages: Stage-2
-  Stage-3 is a root stage
-  Stage-4 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-6 is a root stage
+  Stage-7 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -79,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-38-37_310_8056013693306794455/10002 
+        file:/tmp/nzhang/hive_2010-08-17_22-55-31_422_151733406622948035/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -96,7 +99,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/jssarma/hive_2010-07-21_11-38-37_310_8056013693306794455/10003 
+        file:/tmp/nzhang/hive_2010-08-17_22-55-31_422_151733406622948035/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -113,7 +116,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/jssarma/hive_2010-07-21_11-38-37_310_8056013693306794455/10004 
+        file:/tmp/nzhang/hive_2010-08-17_22-55-31_422_151733406622948035/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -130,6 +133,15 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
+
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-55-31_422_151733406622948035/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -144,6 +156,19 @@ STAGE PLANS:
               name: nzhang_part14
 
   Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-55-31_422_151733406622948035/-ext-10003 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: nzhang_part14
+
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:t-subquery2:src 
@@ -175,7 +200,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-4
+  Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1:t-subquery1-subquery1:src 
@@ -245,13 +270,13 @@ order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-47_899_258856640110284282/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-55-51_200_1847190634089339991/-mr-10000
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-47_899_258856640110284282/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-55-51_200_1847190634089339991/-mr-10000
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__

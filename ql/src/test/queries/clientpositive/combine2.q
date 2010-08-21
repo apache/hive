@@ -5,6 +5,8 @@ set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
+set mapred.cache.shared.enabled=false;
+set hive.merge.smallfiles.avgsize=0;
 
 create table combine2(key string) partitioned by (value string);
 

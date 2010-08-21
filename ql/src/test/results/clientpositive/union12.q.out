@@ -80,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10002 
+        file:/tmp/nzhang/hive_2010-08-19_12-11-56_585_9167992291340891691/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -104,7 +104,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10004 
+        file:/tmp/nzhang/hive_2010-08-19_12-11-56_585_9167992291340891691/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -128,7 +128,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/tmp/jssarma/hive_2010-07-21_13-39-13_146_6578228270380339492/10005 
+        file:/tmp/nzhang/hive_2010-08-19_12-11-56_585_9167992291340891691/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -160,7 +160,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-39-13_146_6578228270380339492/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-11-56_585_9167992291340891691/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -175,28 +175,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-39-13_146_6578228270380339492/10003 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: int
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: tmptable
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-11-56_585_9167992291340891691/-ext-10003 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: tmptable
 
   Stage: Stage-6
     Map Reduce
@@ -306,11 +293,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcb
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-39-25_864_5858813916026518675/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-16_058_6174007562140968530/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-39-25_864_5858813916026518675/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-16_058_6174007562140968530/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500

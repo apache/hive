@@ -13,6 +13,22 @@ import org.apache.hadoop.hive.ql.exec.Task;
 public class $className extends TestCase {
 
   private QTestUtil qt;
+  static boolean miniMR = false;
+  static String hadoopVer;
+
+  static {
+    try {
+      if ("$clusterMode".equals("miniMR"))
+        miniMR = true;
+      hadoopVer = "$hadoopVersion";
+    } catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in static initialization");
+    }
+  }
+
 
   public $className(String name) {
     super(name);
@@ -22,7 +38,7 @@ public class $className extends TestCase {
   @Override
   protected void setUp() {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR, hadoopVer);
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());

@@ -578,8 +578,7 @@ public class QTestUtil {
   public int checkNegativeResults(String tname, Exception e) throws Exception {
 
     File qf = new File(outDir, tname);
-    File expf = new File(outDir);
-    expf = new File(expf, qf.getName().concat(".out"));
+    String expf = outPath(outDir.toString(), tname.concat(".out"));
 
     File outf = null;
     outf = new File(logDir);
@@ -597,7 +596,7 @@ public class QTestUtil {
     outfd.write(e.getMessage());
     outfd.close();
 
-    String cmdLine = "diff " + outf.getPath() + " " + expf.getPath();
+    String cmdLine = "diff " + outf.getPath() + " " + expf;
     System.out.println(cmdLine);
 
     Process executor = Runtime.getRuntime().exec(cmdLine);
@@ -614,7 +613,7 @@ public class QTestUtil {
 
     if (exitVal != 0 && overWrite) {
       System.out.println("Overwriting results");
-      cmdLine = "cp " + outf.getPath() + " " + expf.getPath();
+      cmdLine = "cp " + outf.getPath() + " " + expf;
       executor = Runtime.getRuntime().exec(cmdLine);
       exitVal = executor.waitFor();
     }
@@ -626,7 +625,7 @@ public class QTestUtil {
 
     if (tree != null) {
       File parseDir = new File(outDir, "parse");
-      File expf = new File(parseDir, tname.concat(".out"));
+      String expf = outPath(parseDir.toString(), tname.concat(".out"));
 
       File outf = null;
       outf = new File(logDir);
@@ -636,7 +635,7 @@ public class QTestUtil {
       outfd.write(tree.toStringTree());
       outfd.close();
 
-      String cmdLine = "diff " + outf.getPath() + " " + expf.getPath();
+      String cmdLine = "diff " + outf.getPath() + " " + expf;
       System.out.println(cmdLine);
 
       Process executor = Runtime.getRuntime().exec(cmdLine);
@@ -653,7 +652,7 @@ public class QTestUtil {
 
       if (exitVal != 0 && overWrite) {
         System.out.println("Overwriting results");
-        cmdLine = "cp " + outf.getPath() + " " + expf.getPath();
+        cmdLine = "cp " + outf.getPath() + " " + expf;
         executor = Runtime.getRuntime().exec(cmdLine);
         exitVal = executor.waitFor();
       }
@@ -668,7 +667,7 @@ public class QTestUtil {
 
     if (tasks != null) {
       File planDir = new File(outDir, "plan");
-      File planFile = new File(planDir, tname.concat(".xml"));
+      String planFile = outPath(planDir.toString(), tname + ".xml");
 
       File outf = null;
       outf = new File(logDir);
@@ -690,7 +689,7 @@ public class QTestUtil {
           + "\\|\\(<string>[0-9]\\{10\\}</string>\\)"
           + "\\|\\(<string>/.*/warehouse/.*</string>\\)\\)";
       cmdArray[4] = outf.getPath();
-      cmdArray[5] = planFile.getPath();
+      cmdArray[5] = planFile;
       System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2]
           + "\'" + cmdArray[3] + "\'" + " " + cmdArray[4] + " " + cmdArray[5]);
 
@@ -708,7 +707,7 @@ public class QTestUtil {
 
       if (exitVal != 0 && overWrite) {
         System.out.println("Overwriting results");
-        String cmdLine = "cp " + outf.getPath() + " " + planFile.getPath();
+        String cmdLine = "cp " + outf.getPath() + " " + planFile;
         executor = Runtime.getRuntime().exec(cmdLine);
         exitVal = executor.waitFor();
       }
@@ -721,6 +720,7 @@ public class QTestUtil {
   }
 
 
+  /* This seems unused. Comment out first in case it is used somewhere.
   public int checkResults(String tname) throws Exception {
     Path warehousePath = new Path(FileSystem.get(conf).getUri().getPath());
     warehousePath = new Path(warehousePath, (new URI(testWarehouse)).getPath());
@@ -797,6 +797,7 @@ public class QTestUtil {
 
     return exitVal;
   }
+  */
 
   /**
    * Given the current configurations (e.g., hadoop version and execution mode), return
@@ -887,9 +888,15 @@ public class QTestUtil {
   }
 
   public ASTNode parseQuery(String tname) throws Exception {
-
     return pd.parse(qMap.get(tname));
   }
+
+  public void resetParser() throws SemanticException {
+    drv.init();
+    pd = new ParseDriver();
+    sem = new SemanticAnalyzer(conf);
+  }
+
 
   public List<Task<? extends Serializable>> analyzeAST(ASTNode ast) throws Exception {
 

@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -1416,13 +1417,13 @@ public final class Utilities {
         mrTasks.add((ExecDriver)task);
       }
 
-      if (task instanceof ConditionalTask) {
-        getMRTasks(((ConditionalTask)task).getListTasks(), mrTasks);
-      }
-
-      if (task.getChildTasks() != null) {
-        getMRTasks(task.getChildTasks(), mrTasks);
+      if (task.getDependentTasks() != null) {
+        getMRTasks(task.getDependentTasks(), mrTasks);
       }
     }
+  }
+
+  public static boolean supportCombineFileInputFormat() {
+    return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
   }
 }

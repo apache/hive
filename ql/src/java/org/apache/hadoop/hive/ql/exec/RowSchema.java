@@ -43,4 +43,14 @@ public class RowSchema implements Serializable {
   public ArrayList<ColumnInfo> getSignature() {
     return signature;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder('(');
+    for (ColumnInfo col: signature) {
+      sb.append(col.toString());
+    }
+    sb.append(')');
+    return sb.toString();
+  }
 }

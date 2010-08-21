@@ -86,7 +86,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-40-07_550_3826183924486924788/10004 
+        file:/tmp/nzhang/hive_2010-08-19_12-12-19_985_2304811563647905709/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -120,7 +120,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        file:/tmp/jssarma/hive_2010-07-21_13-40-07_550_3826183924486924788/10007 
+        file:/tmp/nzhang/hive_2010-08-19_12-12-19_985_2304811563647905709/-mr-10007 
           Union
             Select Operator
               expressions:
@@ -162,7 +162,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-40-07_550_3826183924486924788/10000
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-12-19_985_2304811563647905709/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -177,28 +177,15 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-40-07_550_3826183924486924788/10005 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-12-19_985_2304811563647905709/-ext-10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest1
 
   Stage: Stage-9
     Conditional Operator
@@ -207,7 +194,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-40-07_550_3826183924486924788/10002
+          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-12-19_985_2304811563647905709/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -222,30 +209,15 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-40-07_550_3826183924486924788/10006 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: val1
-                    type: string
-                    expr: val2
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest2
+        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-12-19_985_2304811563647905709/-ext-10006 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest2
 
   Stage: Stage-10
     Map Reduce
@@ -294,11 +266,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name
 PREHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-20_062_6577181830322101134/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-38_957_568387192306866959/-mr-10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-20_062_6577181830322101134/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-38_957_568387192306866959/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
@@ -808,11 +780,11 @@ tst1	500
 PREHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-22_623_1808569051501536701/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-43_612_5396388280176830607/-mr-10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-22_623_1808569051501536701/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-12-43_612_5396388280176830607/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
