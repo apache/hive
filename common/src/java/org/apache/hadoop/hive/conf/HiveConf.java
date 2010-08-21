@@ -93,7 +93,8 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
-
+    // Whether to show a link to the most failed task + debugging tips
+    SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
 
     // should hive determine whether to run in local mode automatically ?
     LOCALMODEAUTO("hive.exec.mode.local.auto", false),

@@ -626,6 +626,16 @@
   <description> Let hive determine whether to run in local mode automatically </description>
 </property>
 
+<property>
+  <name>hive.exec.show.job.failure.debug.info</name>
+  <value>false</value>
+  <description>
+  	If a job fails, whether to provide a link in the CLI to the task with the
+  	most failures, along with debugging hints if applicable.
+  </description>
+</property>
+
+
 <!-- HBase Storage Handler Parameters -->
 
 <property>

@@ -621,7 +621,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         statusMesg += " with errors";
         returnVal = 2;
         console.printError(statusMesg);
-        showJobFailDebugInfo(job, rj);
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO)) {
+          showJobFailDebugInfo(job, rj);
+        }
       } else {
         console.printInfo(statusMesg);
       }

@@ -53,6 +53,9 @@ Trunk -  Unreleased
     HIVE-1549. Add ANSI SQL correlation function CORR(X,Y).
     (Pierre Huyn via jvs)
 
+    HIVE-1307. More generic and efficient merge
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
