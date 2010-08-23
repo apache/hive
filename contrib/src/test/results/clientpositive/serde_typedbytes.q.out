@@ -88,7 +88,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/nzhang/work/870/apache-hive/build/contrib/scratchdir/hive_2010-07-15_19-05-52_338_6708048456580076375/10000
+          destination: pfile:/data/users/njain/hive1/hive1/build/contrib/scratchdir/hive_2010-08-23_13-24-05_576_565846532461197178/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -103,7 +103,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/870/apache-hive/build/contrib/scratchdir/hive_2010-07-15_19-05-52_338_6708048456580076375/10002 
+        pfile:/data/users/njain/hive1/hive1/build/contrib/scratchdir/hive_2010-08-23_13-24-05_576_565846532461197178/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -143,11 +143,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-07-15_19-05-55_767_2139590313568926675/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-08-23_13-24-09_661_6867439153629672720/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-07-15_19-05-55_767_2139590313568926675/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-08-23_13-24-09_661_6867439153629672720/-mr-10000
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -652,8 +652,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 97	val_97
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
 POSTHOOK: query: drop table dest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
