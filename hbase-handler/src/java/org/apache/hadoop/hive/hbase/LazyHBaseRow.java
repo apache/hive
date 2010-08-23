@@ -42,8 +42,10 @@ public class LazyHBaseRow extends LazyStruct {
    * The HBase columns mapping of the row.
    */
   private Result result;
-  private List<String> hbaseColumns;
-  private List<byte []> hbaseColumnsBytes;
+  private List<String> hbaseColumnFamilies;
+  private List<byte []> hbaseColumnFamiliesBytes;
+  private List<String> hbaseColumnQualifiers;
+  private List<byte []> hbaseColumnQualifiersBytes;
   private ArrayList<Object> cachedList;
 
   /**
@@ -57,10 +59,18 @@ public class LazyHBaseRow extends LazyStruct {
    * Set the HBase row data(a Result writable) for this LazyStruct.
    * @see LazyHBaseRow#init(Result)
    */
-  public void init(Result r, List<String> hbaseColumns, List<byte []> hbaseColumnsBytes) {
+  public void init(
+      Result r,
+      List<String> hbaseColumnFamilies,
+      List<byte []> hbaseColumnFamiliesBytes,
+      List<String> hbaseColumnQualifiers,
+      List<byte []> hbaseColumnQualifiersBytes) {
+
     result = r;
-    this.hbaseColumns = hbaseColumns;
-    this.hbaseColumnsBytes = hbaseColumnsBytes;
+    this.hbaseColumnFamilies = hbaseColumnFamilies;
+    this.hbaseColumnFamiliesBytes = hbaseColumnFamiliesBytes;
+    this.hbaseColumnQualifiers = hbaseColumnQualifiers;
+    this.hbaseColumnQualifiersBytes = hbaseColumnQualifiersBytes;
     setParsed(false);
   }
 
@@ -74,18 +84,17 @@ public class LazyHBaseRow extends LazyStruct {
         ((StructObjectInspector)getInspector()).getAllStructFieldRefs();
       setFields(new LazyObject[fieldRefs.size()]);
       for (int i = 0; i < getFields().length; i++) {
-        String hbaseColumn = hbaseColumns.get(i);
-        if (hbaseColumn.endsWith(":")) {
+        String hbaseColumnFamily = hbaseColumnFamilies.get(i);
+        String hbaseColumnQualifier = hbaseColumnQualifiers.get(i);
+
+        if (hbaseColumnQualifier == null && !HBaseSerDe.isSpecialColumn(hbaseColumnFamily)) {
           // a column family
-          getFields()[i] =
-            new LazyHBaseCellMap(
-              (LazyMapObjectInspector)
-              fieldRefs.get(i).getFieldObjectInspector());
+          getFields()[i] = new LazyHBaseCellMap(
+              (LazyMapObjectInspector) fieldRefs.get(i).getFieldObjectInspector());
           continue;
         }
 
-        getFields()[i] = LazyFactory.createLazyObject(
-          fieldRefs.get(i).getFieldObjectInspector());
+        getFields()[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
       }
       setFieldInited(new boolean[getFields().length]);
     }
@@ -124,19 +133,23 @@ public class LazyHBaseRow extends LazyStruct {
     if (!getFieldInited()[fieldID]) {
       getFieldInited()[fieldID] = true;
       ByteArrayRef ref = null;
-      String columnName = hbaseColumns.get(fieldID);
-      byte [] columnNameBytes = hbaseColumnsBytes.get(fieldID);
+      String columnFamily = hbaseColumnFamilies.get(fieldID);
+      String columnQualifier = hbaseColumnQualifiers.get(fieldID);
+      byte [] columnFamilyBytes = hbaseColumnFamiliesBytes.get(fieldID);
+      byte [] columnQualifierBytes = hbaseColumnQualifiersBytes.get(fieldID);
 
-      if (columnName.equals(HBaseSerDe.HBASE_KEY_COL)) {
+      if (HBaseSerDe.isSpecialColumn(columnFamily)) {
+        assert(columnQualifier == null);
         ref = new ByteArrayRef();
         ref.setData(result.getRow());
       } else {
-        if (columnName.endsWith(":")) {
+        if (columnQualifier == null) {
           // it is a column family
-          ((LazyHBaseCellMap) getFields()[fieldID]).init(result, columnNameBytes);
+          ((LazyHBaseCellMap) getFields()[fieldID]).init(result, columnFamilyBytes);
         } else {
-          // it is a column
-          byte [] res = result.getValue(columnNameBytes);
+          // it is a column i.e. a column-family with column-qualifier
+          byte [] res = result.getValue(columnFamilyBytes, columnQualifierBytes);
+
           if (res == null) {
             return null;
           } else {

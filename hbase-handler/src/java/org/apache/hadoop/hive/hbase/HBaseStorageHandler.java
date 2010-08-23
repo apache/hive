@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
@@ -49,8 +51,7 @@ import org.apache.hadoop.util.StringUtils;
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
  */
-public class HBaseStorageHandler
-  implements HiveStorageHandler, HiveMetaHook {
+public class HBaseStorageHandler implements HiveStorageHandler, HiveMetaHook {
 
   private HBaseConfiguration hbaseConf;
   private HBaseAdmin admin;
@@ -120,77 +121,71 @@ public class HBaseStorageHandler
     }
 
     try {
-      String tblName = getHBaseTableName(tbl);
-
-      // Build the mapping schema
-      Set<String> columnFamilies = new HashSet<String>();
-      // Check the hbase columns and get all the families
-      Map<String, String> serdeParam =
-        tbl.getSd().getSerdeInfo().getParameters();
+      String tableName = getHBaseTableName(tbl);
+      Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
       String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+
       if (hbaseColumnsMapping == null) {
         throw new MetaException("No hbase.columns.mapping defined in Serde.");
       }
-      List<String> hbaseColumns =
-        HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
-      int iKeyFirst = hbaseColumns.indexOf(HBaseSerDe.HBASE_KEY_COL);
-      int iKeyLast = hbaseColumns.lastIndexOf(HBaseSerDe.HBASE_KEY_COL);
-      if (iKeyFirst != iKeyLast) {
-        throw new MetaException("Multiple key columns defined in hbase.columns.mapping.");
-      }
-      for (String hbaseColumn : hbaseColumns) {
-        if (HBaseSerDe.isSpecialColumn(hbaseColumn)) {
-          continue;
-        }
-        int idx = hbaseColumn.indexOf(":");
-        if (idx < 0) {
-          throw new MetaException(
-            hbaseColumn + " is not a qualified hbase column.");
-        }
-        columnFamilies.add(hbaseColumn.substring(0, idx));
-      }
 
-      // Check if the given hbase table exists
-      HTableDescriptor tblDesc;
+      List<String> hbaseColumnFamilies = new ArrayList<String>();
+      List<String> hbaseColumnQualifiers = new ArrayList<String>();
+      List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
+      List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
+      int iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
+          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
 
-      if (!getHBaseAdmin().tableExists(tblName)) {
+      HTableDescriptor tableDesc;
+
+      if (!getHBaseAdmin().tableExists(tableName)) {
         // if it is not an external table then create one
         if (!isExternal) {
-          // Create the all column descriptors
-          tblDesc = new HTableDescriptor(tblName);
-          for (String cf : columnFamilies) {
-            tblDesc.addFamily(new HColumnDescriptor(cf + ":"));
+          // Create the column descriptors
+          tableDesc = new HTableDescriptor(tableName);
+          Set<String> uniqueColumnFamilies = new HashSet<String>(hbaseColumnFamilies);
+          uniqueColumnFamilies.remove(hbaseColumnFamilies.get(iKey));
+
+          for (String columnFamily : uniqueColumnFamilies) {
+            tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes(columnFamily)));
           }
 
-          getHBaseAdmin().createTable(tblDesc);
+          getHBaseAdmin().createTable(tableDesc);
         } else {
           // an external table
-          throw new MetaException("HBase table " + tblName +
+          throw new MetaException("HBase table " + tableName +
               " doesn't exist while the table is declared as an external table.");
         }
 
       } else {
         if (!isExternal) {
-          throw new MetaException("Table " + tblName + " already exists"
+          throw new MetaException("Table " + tableName + " already exists"
             + " within HBase; use CREATE EXTERNAL TABLE instead to"
             + " register it in Hive.");
         }
         // make sure the schema mapping is right
-        tblDesc = getHBaseAdmin().getTableDescriptor(Bytes.toBytes(tblName));
-        for (String cf : columnFamilies) {
-          if (!tblDesc.hasFamily(Bytes.toBytes(cf))) {
-            throw new MetaException("Column Family " + cf
-              + " is not defined in hbase table " + tblName);
+        tableDesc = getHBaseAdmin().getTableDescriptor(Bytes.toBytes(tableName));
+
+        for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
+          if (i == iKey) {
+            continue;
+          }
+
+          if (!tableDesc.hasFamily(hbaseColumnFamiliesBytes.get(i))) {
+            throw new MetaException("Column Family " + hbaseColumnFamilies.get(i)
+                + " is not defined in hbase table " + tableName);
           }
         }
-
       }
+
       // ensure the table is online
-      new HTable(hbaseConf, tblDesc.getName());
+      new HTable(hbaseConf, tableDesc.getName());
     } catch (MasterNotRunningException mnre) {
       throw new MetaException(StringUtils.stringifyException(mnre));
     } catch (IOException ie) {
       throw new MetaException(StringUtils.stringifyException(ie));
+    } catch (SerDeException se) {
+      throw new MetaException(StringUtils.stringifyException(se));
     }
   }
 
@@ -200,7 +195,7 @@ public class HBaseStorageHandler
     String tableName = getHBaseTableName(table);
     try {
       if (!isExternal && getHBaseAdmin().tableExists(tableName)) {
-        // we have create an hbase table, so we delete it to roll back;
+        // we have created an HBase table, so we delete it to roll back;
         if (getHBaseAdmin().isTableEnabled(tableName)) {
           getHBaseAdmin().disableTable(tableName);
         }

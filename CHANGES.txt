@@ -92,6 +92,10 @@ Trunk -  Unreleased
     index rebuild
     (He Yongqiang via jvs)
 
+    HIVE-1512. Need to get hive_hbase-handler to work with hbase
+    versions 0.20.4 0.20.5 and cloudera CDH3 version
+    (Basab Maulik via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
@@ -178,7 +182,7 @@ Trunk -  Unreleased
     HIVE-1561. test bug: smb_mapjoin*.q should use bucketizedhiveinputformat
     (He Yongqiang via namit)
 
-    HIVE-1510. HiveCombineInputFormat should not use prefix matching to find 
+    HIVE-1510. HiveCombineInputFormat should not use prefix matching to find
     the partitionDesc for a given path
     (He Yongqiang via Ning Zhang)
 

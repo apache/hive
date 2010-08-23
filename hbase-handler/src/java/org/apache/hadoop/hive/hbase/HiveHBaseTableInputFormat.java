@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Writables;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -65,39 +66,69 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     HBaseSplit hbaseSplit = (HBaseSplit) split;
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
-
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
+    List<String> hbaseColumnFamilies = new ArrayList<String>();
+    List<String> hbaseColumnQualifiers = new ArrayList<String>();
+    List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
+    List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
+
+    int iKey;
+    try {
+      iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
+          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+    } catch (SerDeException se) {
+      throw new IOException(se);
+    }
     List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
 
-    if (columns.size() < readColIDs.size()) {
+    if (hbaseColumnFamilies.size() < readColIDs.size()) {
       throw new IOException("Cannot read more columns than the given table contains.");
     }
 
-    List<byte []> scanColumns = new ArrayList<byte []>();
     boolean addAll = (readColIDs.size() == 0);
+    Scan scan = new Scan();
+    boolean empty = true;
+
     if (!addAll) {
-      for (int iColumn : readColIDs) {
-        String column = columns.get(iColumn);
-        if (HBaseSerDe.isSpecialColumn(column)) {
+      for (int i : readColIDs) {
+        if (i == iKey) {
           continue;
         }
-        scanColumns.add(Bytes.toBytes(column));
+
+        if (hbaseColumnQualifiers.get(i) == null) {
+          scan.addFamily(hbaseColumnFamiliesBytes.get(i));
+        } else {
+          scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
+        }
+
+        empty = false;
       }
     }
-    if (scanColumns.isEmpty()) {
-      for (String column : columns) {
-        if (HBaseSerDe.isSpecialColumn(column)) {
+
+    // The HBase table's row key maps to an Hive table column. In the corner case when only the
+    // row key column is selected in Hive, the HBase Scan will be empty i.e. no column family/
+    // column qualifier will have been added to the scan. We arbitrarily add at least one column
+    // to the HBase scan so that we can retrieve all of the row keys and return them as the Hive
+    // tables column projection.
+    if (empty) {
+      for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
+        if (i == iKey) {
           continue;
         }
-        scanColumns.add(Bytes.toBytes(column));
+
+        if (hbaseColumnQualifiers.get(i) == null) {
+          scan.addFamily(hbaseColumnFamiliesBytes.get(i));
+        } else {
+          scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
+        }
+
         if (!addAll) {
           break;
         }
       }
     }
 
-    setScan(new Scan().addColumns(scanColumns.toArray(new byte[0][])));
+    setScan(scan);
     org.apache.hadoop.hbase.mapreduce.TableSplit tableSplit = hbaseSplit.getSplit();
 
     Job job = new Job(jobConf);
@@ -175,22 +206,41 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+
     if (hbaseColumnsMapping == null) {
       throw new IOException("hbase.columns.mapping required for HBase Table.");
     }
 
-    // REVIEW:  are we supposed to be applying the getReadColumnIDs
-    // same as in getRecordReader?
-    List<String> columns = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping);
-    List<byte []> inputColumns = new ArrayList<byte []>();
-    for (String column : columns) {
-      if (HBaseSerDe.isSpecialColumn(column)) {
-        continue;
-      }
-      inputColumns.add(Bytes.toBytes(column));
+    List<String> hbaseColumnFamilies = new ArrayList<String>();
+    List<String> hbaseColumnQualifiers = new ArrayList<String>();
+    List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
+    List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
+
+    int iKey;
+    try {
+      iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
+          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+    } catch (SerDeException se) {
+      throw new IOException(se);
     }
 
-    setScan(new Scan().addColumns(inputColumns.toArray(new byte[0][])));
+    Scan scan = new Scan();
+
+    // REVIEW:  are we supposed to be applying the getReadColumnIDs
+    // same as in getRecordReader?
+    for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
+      if (i == iKey) {
+        continue;
+      }
+
+      if (hbaseColumnQualifiers.get(i) == null) {
+        scan.addFamily(hbaseColumnFamiliesBytes.get(i));
+      } else {
+        scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
+      }
+    }
+
+    setScan(scan);
     Job job = new Job(jobConf);
     JobContext jobContext = new JobContext(job.getConfiguration(), job.getJobID());
     Path [] tablePaths = FileInputFormat.getInputPaths(jobContext);

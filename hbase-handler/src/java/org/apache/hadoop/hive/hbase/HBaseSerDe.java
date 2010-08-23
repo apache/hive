@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -66,8 +65,11 @@ public class HBaseSerDe implements SerDe {
   public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
   private ObjectInspector cachedObjectInspector;
-  private List<String> hbaseColumnNames;
-  private List<byte []> hbaseColumnNamesBytes;
+  private String hbaseColumnsMapping;
+  private List<String> hbaseColumnFamilies;
+  private List<byte []> hbaseColumnFamiliesBytes;
+  private List<String> hbaseColumnQualifiers;
+  private List<byte []> hbaseColumnQualifiersBytes;
   private SerDeParameters serdeParams;
   private boolean useJSONSerialize;
   private LazyHBaseRow cachedHBaseRow;
@@ -85,7 +87,7 @@ public class HBaseSerDe implements SerDe {
   public String toString() {
     return getClass().toString()
         + "["
-        + hbaseColumnNames
+        + hbaseColumnsMapping
         + ":"
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
             .getAllStructFieldNames()
@@ -126,36 +128,117 @@ public class HBaseSerDe implements SerDe {
         + " columnTypes = "
         + serdeParams.getColumnTypes()
         + " hbaseColumnMapping = "
-        + hbaseColumnNames);
+        + hbaseColumnsMapping);
     }
   }
 
-  public static List<String> parseColumnMapping(String columnMapping) {
-    String [] columnArray = columnMapping.split(",");
-    List<String> columnList = Arrays.asList(columnArray);
-    int iKey = columnList.indexOf(HBASE_KEY_COL);
-    if (iKey == -1) {
-      columnList = new ArrayList<String>(columnList);
-      columnList.add(0, HBASE_KEY_COL);
+  /**
+   * Parses the HBase columns mapping to identify the column families, qualifiers
+   * and also caches the byte arrays corresponding to them. One of the Hive table
+   * columns maps to the HBase row key, by default the first column.
+   *
+   * @param columnMapping - the column mapping specification to be parsed
+   * @param colFamilies - the list of HBase column family names
+   * @param colFamiliesBytes - the corresponding byte array
+   * @param colQualifiers - the list of HBase column qualifier names
+   * @param colQualifiersBytes - the corresponding byte array
+   * @return the row key index in the column names list
+   * @throws SerDeException
+   */
+  public static int parseColumnMapping(
+      String columnMapping,
+      List<String> colFamilies,
+      List<byte []> colFamiliesBytes,
+      List<String> colQualifiers,
+      List<byte []> colQualifiersBytes) throws SerDeException {
+
+    int rowKeyIndex = -1;
+
+    if (colFamilies == null || colQualifiers == null) {
+      throw new SerDeException("Error: caller must pass in lists for the column families " +
+          "and qualifiers.");
     }
-    return columnList;
-  }
 
-  public static List<byte []> initColumnNamesBytes(List<String> columnNames) {
-    List<byte []> columnBytes = new ArrayList<byte []>();
-    String column = null;
+    colFamilies.clear();
+    colQualifiers.clear();
 
-    for (int i = 0; i < columnNames.size(); i++) {
-      column = columnNames.get(i);
+    if (columnMapping == null) {
+      throw new SerDeException("Error: hbase.columns.mapping missing for this HBase table.");
+    }
 
-      if (column.endsWith(":")) {
-        columnBytes.add(Bytes.toBytes(column.split(":")[0]));
+    if (columnMapping.equals("") || columnMapping.equals(HBASE_KEY_COL)) {
+      throw new SerDeException("Error: hbase.columns.mapping specifies only the HBase table"
+          + " row key. A valid Hive-HBase table must specify at least one additional column.");
+    }
+
+    String [] mapping = columnMapping.split(",");
+
+    for (int i = 0; i < mapping.length; i++) {
+      String elem = mapping[i];
+      int idxFirst = elem.indexOf(":");
+      int idxLast = elem.lastIndexOf(":");
+
+      if (idxFirst < 0 || !(idxFirst == idxLast)) {
+        throw new SerDeException("Error: the HBase columns mapping contains a badly formed " +
+            "column family, column qualifier specification.");
+      }
+
+      if (elem.equals(HBASE_KEY_COL)) {
+        rowKeyIndex = i;
+        colFamilies.add(elem);
+        colQualifiers.add(null);
       } else {
-        columnBytes.add(Bytes.toBytes(column));
+        String [] parts = elem.split(":");
+        assert(parts.length > 0 && parts.length <= 2);
+        colFamilies.add(parts[0]);
+
+        if (parts.length == 2) {
+          colQualifiers.add(parts[1]);
+        } else {
+          colQualifiers.add(null);
+        }
       }
     }
 
-    return columnBytes;
+    if (rowKeyIndex == -1) {
+      colFamilies.add(0, HBASE_KEY_COL);
+      colQualifiers.add(0, null);
+      rowKeyIndex = 0;
+    }
+
+    if (colFamilies.size() != colQualifiers.size()) {
+      throw new SerDeException("Error in parsing the hbase columns mapping.");
+    }
+
+    // populate the corresponding byte [] if the client has passed in a non-null list
+    if (colFamiliesBytes != null) {
+      colFamiliesBytes.clear();
+
+      for (String fam : colFamilies) {
+        colFamiliesBytes.add(Bytes.toBytes(fam));
+      }
+    }
+
+    if (colQualifiersBytes != null) {
+      colQualifiersBytes.clear();
+
+      for (String qual : colQualifiers) {
+        if (qual == null) {
+          colQualifiersBytes.add(null);
+        } else {
+          colQualifiersBytes.add(Bytes.toBytes(qual));
+        }
+      }
+    }
+
+    if (colFamiliesBytes != null && colQualifiersBytes != null) {
+      if (colFamiliesBytes.size() != colQualifiersBytes.size()) {
+        throw new SerDeException("Error in caching the bytes for the hbase column families " +
+            "and qualifiers.");
+      }
+    }
+
+    return rowKeyIndex;
   }
 
   public static boolean isSpecialColumn(String hbaseColumnName) {
@@ -167,31 +250,31 @@ public class HBaseSerDe implements SerDe {
     throws SerDeException {
 
     // Read configuration parameters
-    String hbaseColumnNameProperty =
-      tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    String columnTypeProperty =
-      tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    hbaseColumnsMapping = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
 
-    // Initialize the HBase column list
-    hbaseColumnNames = parseColumnMapping(hbaseColumnNameProperty);
-    iKey = hbaseColumnNames.indexOf(HBASE_KEY_COL);
-
-    // initialize the byte [] corresponding to each column name
-    hbaseColumnNamesBytes = initColumnNamesBytes(hbaseColumnNames);
+    // Parse the HBase columns mapping and initialize the col family & qualifiers
+    hbaseColumnFamilies = new ArrayList<String>();
+    hbaseColumnFamiliesBytes = new ArrayList<byte []>();
+    hbaseColumnQualifiers = new ArrayList<String>();
+    hbaseColumnQualifiersBytes = new ArrayList<byte []>();
+    iKey = parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
+        hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
 
     // Build the type property string if not supplied
     if (columnTypeProperty == null) {
       StringBuilder sb = new StringBuilder();
 
-      for (int i = 0; i < hbaseColumnNames.size(); i++) {
+      for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
         if (sb.length() > 0) {
           sb.append(":");
         }
-        String colName = hbaseColumnNames.get(i);
-        if (isSpecialColumn(colName)) {
-            // a special column becomes a STRING
+        String colFamily = hbaseColumnFamilies.get(i);
+        String colQualifier = hbaseColumnQualifiers.get(i);
+        if (isSpecialColumn(colFamily)) {
+            // the row key column becomes a STRING
             sb.append(Constants.STRING_TYPE_NAME);
-        } else if (colName.endsWith(":"))  {
+        } else if (colQualifier == null)  {
           // a column family become a MAP
           sb.append(
             Constants.MAP_TYPE_NAME + "<"
@@ -207,11 +290,11 @@ public class HBaseSerDe implements SerDe {
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
 
-    if (hbaseColumnNames.size() != serdeParams.getColumnNames().size()) {
+    if (hbaseColumnFamilies.size() != serdeParams.getColumnNames().size()) {
       throw new SerDeException(serdeName + ": columns has " +
         serdeParams.getColumnNames().size() +
         " elements while hbase.columns.mapping has " +
-        hbaseColumnNames.size() + " elements" +
+        hbaseColumnFamilies.size() + " elements" +
         " (counting the key if implicit)");
     }
 
@@ -221,10 +304,11 @@ public class HBaseSerDe implements SerDe {
     needsEscape = serdeParams.getNeedsEscape();
 
     // check that the mapping schema is right;
-    // we just can make sure that "column-family:" is mapped to MAP<String,?>
-    for (int i = 0; i < hbaseColumnNames.size(); i++) {
-      String hbaseColName = hbaseColumnNames.get(i);
-      if (hbaseColName.endsWith(":")) {
+    // check that the "column-family:" is mapped to MAP<String,?>
+    for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
+      String colFamily = hbaseColumnFamilies.get(i);
+      String colQualifier = hbaseColumnQualifiers.get(i);
+      if (colQualifier == null && !isSpecialColumn(colFamily)) {
         TypeInfo typeInfo = serdeParams.getColumnTypes().get(i);
         if ((typeInfo.getCategory() != Category.MAP) ||
           (((MapTypeInfo) typeInfo).getMapKeyTypeInfo().getTypeName()
@@ -232,8 +316,8 @@ public class HBaseSerDe implements SerDe {
 
           throw new SerDeException(
             serdeName + ": hbase column family '"
-            + hbaseColName
-            + "' should be mapped to map<string,?> but is mapped to "
+            + colFamily
+            + "' should be mapped to Map<String,?> but is mapped to "
             + typeInfo.getTypeName());
         }
       }
@@ -253,8 +337,9 @@ public class HBaseSerDe implements SerDe {
       throw new SerDeException(getClass().getName() + ": expects Result!");
     }
 
-    Result r = (Result)result;
-    cachedHBaseRow.init(r, hbaseColumnNames, hbaseColumnNamesBytes);
+    cachedHBaseRow.init((Result) result, hbaseColumnFamilies, hbaseColumnFamiliesBytes,
+        hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+
     return cachedHBaseRow;
   }
 
@@ -322,7 +407,8 @@ public class HBaseSerDe implements SerDe {
     List<? extends StructField> declaredFields) throws IOException {
 
     // column name
-    String hbaseColumn = hbaseColumnNames.get(i);
+    String hbaseColumnFamily = hbaseColumnFamilies.get(i);
+    String hbaseColumnQualifier = hbaseColumnQualifiers.get(i);
 
     // Get the field objectInspector and the field object.
     ObjectInspector foi = fields.get(i).getFieldObjectInspector();
@@ -333,8 +419,8 @@ public class HBaseSerDe implements SerDe {
       return null;
     }
 
-    // If the field corresponds to a column family in hbase
-    if (hbaseColumn.endsWith(":")) {
+    // If the field corresponds to a column family in HBase
+    if (hbaseColumnQualifier == null && !isSpecialColumn(hbaseColumnFamily)) {
       MapObjectInspector moi = (MapObjectInspector)foi;
       ObjectInspector koi = moi.getMapKeyObjectInspector();
       ObjectInspector voi = moi.getMapValueObjectInspector();
@@ -349,8 +435,9 @@ public class HBaseSerDe implements SerDe {
           serialize(entry.getKey(), koi, 3);
 
           // Get the column-qualifier
-          byte [] columnQualifier = new byte[serializeStream.getCount()];
-          System.arraycopy(serializeStream.getData(), 0, columnQualifier, 0, serializeStream.getCount());
+          byte [] columnQualifierBytes = new byte[serializeStream.getCount()];
+          System.arraycopy(
+              serializeStream.getData(), 0, columnQualifierBytes, 0, serializeStream.getCount());
 
           // Get the Value
           serializeStream.reset();
@@ -360,7 +447,7 @@ public class HBaseSerDe implements SerDe {
           }
           byte [] value = new byte[serializeStream.getCount()];
           System.arraycopy(serializeStream.getData(), 0, value, 0, serializeStream.getCount());
-          put.add(hbaseColumnNamesBytes.get(i), columnQualifier, value);
+          put.add(hbaseColumnFamiliesBytes.get(i), columnQualifierBytes, value);
         }
       }
     } else {
@@ -391,7 +478,7 @@ public class HBaseSerDe implements SerDe {
       if (i == iKey) {
         return key;
       }
-      put.add(hbaseColumnNamesBytes.get(i), 0, key);
+      put.add(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i), key);
     }
 
     return null;
