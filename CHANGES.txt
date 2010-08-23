@@ -96,6 +96,9 @@ Trunk -  Unreleased
     versions 0.20.4 0.20.5 and cloudera CDH3 version
     (Basab Maulik via jvs)
 
+    HIVE-1581. CompactIndexInputFormat should create split only for files in the index output file
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
