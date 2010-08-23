@@ -148,7 +148,7 @@
     <ivy:settings id="${ant.project.name}.ivy.settings" file="${ivysettings.xml}"/>
   </target>
 
-  <target name="ivy-resolve" depends="ivy-init">
+  <target name="ivy-resolve" depends="ivy-init" unless="offline">
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
       log="${ivyresolvelog}"/>
   </target>
@@ -158,7 +158,7 @@
       log="${ivyresolvelog}"/>
   </target>
 
-  <target name="ivy-retrieve" depends="ivy-resolve"
+  <target name="ivy-retrieve" depends="ivy-resolve" unless="offline"
     description="Retrieve Ivy-managed artifacts">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"

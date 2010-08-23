@@ -99,6 +99,9 @@ Trunk -  Unreleased
     HIVE-1581. CompactIndexInputFormat should create split only for files in the index output file
     (He Yongqiang via namit)
 
+    HIVE-1441. Extend ivy offline mode to cover metastore downloads
+    (John Sichi via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
