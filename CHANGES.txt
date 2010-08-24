@@ -201,6 +201,9 @@ Trunk -  Unreleased
     HIVE-1589. Add HBase/ZK JARs to Eclipse classpath
     (Carl Steinbach via jvs)
 
+    HIVE-741. NULL is not handled correctly in join
+    (Amareshwari Sriramadasu via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

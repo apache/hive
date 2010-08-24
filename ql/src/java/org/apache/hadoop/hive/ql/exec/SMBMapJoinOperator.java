@@ -68,6 +68,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private transient final HashMap<Byte, Boolean> foundNextKeyGroup = new HashMap<Byte, Boolean>();
   transient boolean firstFetchHappened = false;
   transient boolean localWorkInited = false;
+  private Map<ArrayList<Object>, Boolean> keyToHasNullsMap;
 
   public SMBMapJoinOperator() {
   }
@@ -109,6 +110,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       foundNextKeyGroup.put(alias, Boolean.FALSE);
     }
+    keyToHasNullsMap = new HashMap<ArrayList<Object>, Boolean>();
   }
 
   @Override
@@ -200,6 +202,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         joinKeysObjectInspectors.get(alias));
     ArrayList<Object> value = computeValues(row, joinValues.get(alias),
         joinValuesObjectInspectors.get(alias));
+    keyToHasNullsMap.put(key, hasAllNulls(key));
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);
@@ -383,6 +386,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   private int compareKeys (ArrayList<Object> k1, ArrayList<Object> k2) {
     int ret = 0;
+    if (keyToHasNullsMap.get(k1) && keyToHasNullsMap.get(k2)) {
+      return -1; // just return k1 is smaller than k2
+    } else if (keyToHasNullsMap.get(k1)) {
+      return (0 - k2.size());
+    } else if (keyToHasNullsMap.get(k2)) {
+      return k1.size();
+    }
     for (int i = 0; i < k1.size() && i < k1.size(); i++) {
       WritableComparable key_1 = (WritableComparable) k1.get(i);
       WritableComparable key_2 = (WritableComparable) k2.get(i);

@@ -282,7 +282,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
           MapJoinObjectValue o = mapJoinTables.get(pos).get(keyMap);
 
-          if (o == null) {
+          // there is no join-value or join-key has all null elements
+          if (o == null || (hasAllNulls(key))) {
             if (noOuterJoin) {
               storage.put(pos, emptyList);
             } else {
