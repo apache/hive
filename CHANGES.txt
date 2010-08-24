@@ -198,6 +198,9 @@ Trunk -  Unreleased
     HIVE-1584. wrong log files in contrib client positive
     (namit via He Yongqiang)
 
+    HIVE-1589. Add HBase/ZK JARs to Eclipse classpath
+    (Carl Steinbach via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
