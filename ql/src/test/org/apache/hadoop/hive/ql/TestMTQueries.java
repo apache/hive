@@ -46,7 +46,7 @@ public class TestMTQueries extends TestCase {
       qfiles[i] = new File(inpDir, testNames[i]);
     }
 
-    boolean success = QTestUtil.queryListRunner(qfiles, resDirs, logDirs, true);
+    boolean success = QTestUtil.queryListRunner(qfiles, resDirs, logDirs, true, this);
     if (!success) {
       fail("One or more queries failed");
     }

@@ -28,7 +28,7 @@ public class $className extends TestCase {
       fail("Unexpected exception in static initialization");
     }
   }
- 
+
   public $className(String name) {
     super(name);
     qt = null;
@@ -37,7 +37,7 @@ public class $className extends TestCase {
   @Override
   protected void setUp() {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", 
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()",
                          miniMR, hadoopVer);
     }
     catch (Exception e) {
@@ -48,14 +48,38 @@ public class $className extends TestCase {
     }
   }
 
+  @Override
+  protected void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+      if (getName().equals("testParseNegative_shutdown"))
+        qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
+  /**
+   * Dummy last test. This is only meant to shutdown qt
+   */
+  public void testParseNegative_shutdown() {
+    System.out.println ("Cleaning up " + "$className");
+  }
+
   public static Test suite() {
     TestSuite suite = new TestSuite();
+
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.length() - 2)
   #set ($tname = $fname.substring(0, $eidx))
     suite.addTest(new $className("testParseNegative_$tname"));
 #end
+    suite.addTest(new $className("testParseNegative_shutdown"));
     return suite;
   }
 

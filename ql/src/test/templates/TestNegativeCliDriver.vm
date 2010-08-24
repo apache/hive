@@ -16,13 +16,13 @@ import org.antlr.runtime.tree.*;
 public class $className extends TestCase {
 
   private static QTestUtil qt;
+
   static {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", false, "0.20");
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
-
     } catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -47,6 +47,21 @@ public class $className extends TestCase {
     }
   }
 
+  @Override
+  protected void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+      if (getName().equals("testNegativeCliDriver_shutdown"))
+        qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
   public static Test suite() {
     TestSuite suite = new TestSuite();
 #foreach ($qf in $qfiles)
@@ -55,7 +70,15 @@ public class $className extends TestCase {
   #set ($tname = $fname.substring(0, $eidx))
     suite.addTest(new $className("testNegativeCliDriver_$tname"));
 #end
+    suite.addTest(new $className("testNegativeCliDriver_shutdown"));
     return suite;
+  }
+
+  /**
+   * Dummy last test. This is only meant to shutdown qt
+   */
+  public void testNegativeCliDriver_shutdown() {
+    System.out.println ("Cleaning up " + "$className");
   }
 
   static String debugHint = "\nSee build/ql/tmp/hive.log, "
@@ -75,7 +98,7 @@ public class $className extends TestCase {
         System.out.println("Test $fname skipped");
         return;
       }
-      
+
       qt.cliInit("$fname", false);
       int ecode = qt.executeClient("$fname");
       if (ecode == 0) {

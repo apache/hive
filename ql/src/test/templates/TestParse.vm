@@ -48,15 +48,39 @@ public class $className extends TestCase {
     }
   }
 
+  @Override
+  protected void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+      if (getName().equals("testParse_shutdown"))
+        qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
   public static Test suite() {
     TestSuite suite = new TestSuite();
+
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.length() - 2)
   #set ($tname = $fname.substring(0, $eidx))
     suite.addTest(new $className("testParse_$tname"));
 #end
+    suite.addTest(new $className("testParse_shutdown"));
     return suite;
+  }
+
+  /**
+   * Dummy last test. This is only meant to shutdown qt
+   */
+  public void testParse_shutdown() {
+    System.out.println ("Cleaning up " + "$className");
   }
 
   static String debugHint = "\nSee build/ql/tmp/hive.log, "

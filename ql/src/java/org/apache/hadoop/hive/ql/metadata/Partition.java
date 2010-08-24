@@ -520,4 +520,12 @@ public class Partition implements Serializable {
     ProtectMode mode = getProtectMode();
     return (!mode.offline && !mode.readOnly);
   }
+
+  /**
+   * @return include the db name
+   */
+  public String getCompleteName() {
+    return getTable().getCompleteName() + "@" + getName();
+  }
+
 }

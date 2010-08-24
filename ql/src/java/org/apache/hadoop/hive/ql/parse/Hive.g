@@ -117,6 +117,9 @@ TOK_SHOWTABLES;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
 TOK_SHOW_TABLESTATUS;
+TOK_SHOWLOCKS;
+TOK_LOCKTABLE;
+TOK_UNLOCKTABLE;
 TOK_DROPTABLE;
 TOK_TABCOLLIST;
 TOK_TABCOL;
@@ -237,6 +240,8 @@ ddlStatement
     | dropIndexStatement
     | alterIndexRebuild
     | dropFunctionStatement
+    | lockStatement
+    | unlockStatement
     ;
 
 ifNotExists
@@ -577,6 +582,25 @@ showStatement
     | KW_SHOW KW_PARTITIONS Identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS Identifier partitionSpec?)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
+    | KW_SHOW KW_LOCKS -> ^(TOK_SHOWLOCKS)
+    ;
+
+lockStatement
+@init { msgs.push("lock statement"); }
+@after { msgs.pop(); }
+    : KW_LOCK KW_TABLE Identifier partitionSpec? lockMode -> ^(TOK_LOCKTABLE Identifier lockMode partitionSpec?)
+    ;
+
+lockMode
+@init { msgs.push("lock mode"); }
+@after { msgs.pop(); }
+    : KW_SHARED | KW_EXCLUSIVE
+    ;
+
+unlockStatement
+@init { msgs.push("unlock statement"); }
+@after { msgs.pop(); }
+    : KW_UNLOCK KW_TABLE Identifier partitionSpec?  -> ^(TOK_UNLOCKTABLE Identifier partitionSpec?)
     ;
 
 metastoreCheck
@@ -1012,7 +1036,7 @@ selectClause
 @init { msgs.push("select clause"); }
 @after { msgs.pop(); }
     :
-    KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList) 
+    KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList)
                           | (transform=KW_TRANSFORM selectTrfmClause))
      -> {$transform == null && $dist == null}? ^(TOK_SELECT hintClause? selectList)
      -> {$transform == null && $dist != null}? ^(TOK_SELECTDI hintClause? selectList)
@@ -1027,7 +1051,7 @@ selectList
     :
     selectItem ( COMMA  selectItem )* -> selectItem+
     ;
-    
+
 selectTrfmClause
 @init { msgs.push("transform clause"); }
 @after { msgs.pop(); }
@@ -1770,7 +1794,10 @@ KW_REVOKE: 'REVOKE';
 KW_SSL: 'SSL';
 KW_UNDO: 'UNDO';
 KW_LOCK: 'LOCK';
+KW_LOCKS: 'LOCKS';
 KW_UNLOCK: 'UNLOCK';
+KW_SHARED: 'SHARED';
+KW_EXCLUSIVE: 'EXCLUSIVE';
 KW_PROCEDURE: 'PROCEDURE';
 KW_UNSIGNED: 'UNSIGNED';
 KW_WHILE: 'WHILE';

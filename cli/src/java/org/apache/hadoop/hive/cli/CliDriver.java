@@ -59,9 +59,9 @@ public class CliDriver {
 
   public static final String prompt = "hive";
   public static final String prompt2 = "    "; // when ';' is not yet seen
-  
+
   public static final String HIVERCFILE = ".hiverc";
-  
+
   private final LogHelper console;
   private final Configuration conf;
 
@@ -130,7 +130,7 @@ public class CliDriver {
       }
 
     } else {
-      CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+      CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf)conf);
       if (proc != null) {
         if (proc instanceof Driver) {
           Driver qp = (Driver) proc;
@@ -201,9 +201,11 @@ public class CliDriver {
       lastRet = ret;
       boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
       if (ret != 0 && !ignoreErrors) {
+        CommandProcessorFactory.clean((HiveConf)conf);
         return ret;
       }
     }
+    CommandProcessorFactory.clean((HiveConf)conf);
     return lastRet;
   }
 
@@ -261,7 +263,7 @@ public class CliDriver {
     }
     ss.setIsSilent(saveSilent);
   }
-  
+
   public static void main(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
@@ -311,7 +313,7 @@ public class CliDriver {
 
     // Execute -i init files (always in silent mode)
     cli.processInitFiles(ss);
-    
+
     if (ss.execString != null) {
       System.exit(cli.processLine(ss.execString));
     }

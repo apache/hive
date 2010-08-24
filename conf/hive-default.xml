@@ -607,6 +607,48 @@
 </property>
 
 <property>
+  <name>hive.support.concurrency</name>
+  <value>false</value>
+  <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>hive.concurrency.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.ZooKeeperLockMgr</value>
+  <description>The concurrency manager for hive.</description>
+</property>
+
+<property>
+  <name>hive.lock.numretries</name>
+  <value>100</value>
+  <description>The number of times you want to try to get all the locks</description>
+</property>
+
+<property>
+  <name>hive.lock.sleep.between.retries</name>
+  <value>60</value>
+  <description>The sleep time (in seconds) between various retries</description>
+</property>
+
+<property>
+  <name>hive.zookeeper.quorum</name>
+  <value></value>
+  <description>The list of zookeeper servers to talk to. This is only needed for read/write locks.</description>
+</property>
+
+<property>
+  <name>hive.zookeeper.client.port</name>
+  <value>2181</value>
+  <description>The port of zookeeper servers to talk to. This is only needed for read/write locks.</description>
+</property>
+
+<property>
+  <name>hive.zookeeper.session.timeout</name>
+  <value></value>
+  <description>Zookeeper client's session timeout. The client is disconnected, and as a result, all locks released, if a heartbeat is not sent in the timeout.</description>
+</property>
+
+<property>
   <name>fs.har.impl</name>
   <value>org.apache.hadoop.hive.shims.HiveHarFileSystem</value>
   <description>The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop vers less than 0.20</description>

@@ -24,6 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -53,6 +55,14 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -72,6 +82,10 @@ import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UnixUserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class Driver implements CommandProcessor {
 
@@ -86,6 +100,7 @@ public class Driver implements CommandProcessor {
   private Context ctx;
   private QueryPlan plan;
   private Schema schema;
+  private HiveLockManager hiveLockMgr;
 
   private String errorMessage;
   private String SQLState;
@@ -93,6 +108,40 @@ public class Driver implements CommandProcessor {
   // A limit on the number of threads that can be launched
   private int maxthreads;
   private final int sleeptime = 2000;
+
+  private int checkLockManager() {
+    boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    if (supportConcurrency && (hiveLockMgr == null)) {
+      try {
+        setLockManager();
+      } catch (SemanticException e) {
+        errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
+        SQLState = ErrorMsg.findSQLState(e.getMessage());
+        console.printError(errorMessage, "\n"
+                           + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        return (12);
+      }
+    }
+    return (0);
+  }
+
+  private void setLockManager() throws SemanticException {
+    boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    if (supportConcurrency) {
+      String lockMgr = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER);
+      if ((lockMgr == null) || (lockMgr.isEmpty())) {
+        throw new SemanticException(ErrorMsg.LOCKMGR_NOT_SPECIFIED.getMsg());
+      }
+
+      try {
+        hiveLockMgr = (HiveLockManager)
+          ReflectionUtils.newInstance(conf.getClassByName(lockMgr), conf);
+        hiveLockMgr.setContext(new HiveLockManagerCtx(conf));
+      } catch (Exception e) {
+        throw new SemanticException(ErrorMsg.LOCKMGR_NOT_INITIALIZED.getMsg() + e.getMessage());
+      }
+    }
+  }
 
   public void init() {
     Operator.resetId();
@@ -345,20 +394,256 @@ public class Driver implements CommandProcessor {
     return plan;
   }
 
+  public static class LockObject {
+    HiveLockObject obj;
+    HiveLockMode   mode;
+
+    public LockObject(HiveLockObject obj, HiveLockMode mode) {
+      this.obj  = obj;
+      this.mode = mode;
+    }
+
+    public HiveLockObject getObj() {
+      return obj;
+    }
+
+    public HiveLockMode getMode() {
+      return mode;
+    }
+
+    public String getName() {
+      return obj.getName();
+    }
+  }
+
+  /**
+   * @param t     The table to be locked
+   * @param p     The partition to be locked
+   * @param mode  The mode of the lock (SHARED/EXCLUSIVE)
+   * Get the list of objects to be locked. If a partition needs to be locked (in any mode), all its parents
+   * should also be locked in SHARED mode.
+   **/
+  private List<LockObject> getLockObjects(Table t, Partition p, HiveLockMode mode) {
+    List<LockObject> locks = new LinkedList<LockObject>();
+
+    if (t != null) {
+      locks.add(new LockObject(new HiveLockObject(t), mode));
+      return locks;
+    }
+
+    if (p != null) {
+      locks.add(new LockObject(new HiveLockObject(p), mode));
+
+      // All the parents are locked in shared mode
+      mode = HiveLockMode.SHARED;
+
+      String partName = p.getName();
+      String partialName = "";
+      String[] partns = p.getName().split("/");
+      for (int idx = 0; idx < partns.length -1; idx++) {
+        String partn = partns[idx];
+        partialName += partialName + partn;
+        locks.add(new LockObject(new HiveLockObject(new DummyPartition(p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@" + partialName)), mode));
+        partialName += "/";
+      }
+
+      locks.add(new LockObject(new HiveLockObject(p.getTable()), mode));
+    }
+    return locks;
+  }
+
+  /**
+   * Acquire read and write locks needed by the statement. The list of objects to be locked are obtained
+   * from he inputs and outputs populated by the compiler. The lock acuisition scheme is pretty simple.
+   * If all the locks cannot be obtained, error out. Deadlock is avoided by making sure that the locks
+   * are lexicographically sorted.
+   **/
+  public int acquireReadWriteLocks() {
+    try {
+      int tryNum = 1;
+      int sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
+      int numRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
+
+      boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+      if (!supportConcurrency) {
+        return 0;
+      }
+
+      List<LockObject> lockObjects = new ArrayList<LockObject>();
+
+      // Sort all the inputs, outputs.
+      // If a lock needs to be acquired on any partition, a read lock needs to be acquired on all its parents also
+      for (ReadEntity input : plan.getInputs()) {
+        if (input.getType() == ReadEntity.Type.TABLE) {
+          lockObjects.addAll(getLockObjects(input.getTable(), null, HiveLockMode.SHARED));
+        }
+        else {
+          lockObjects.addAll(getLockObjects(null, input.getPartition(), HiveLockMode.SHARED));
+        }
+      }
+
+      for (WriteEntity output : plan.getOutputs()) {
+        if (output.getTyp() == WriteEntity.Type.TABLE) {
+          lockObjects.addAll(getLockObjects(output.getTable(), null, HiveLockMode.EXCLUSIVE));
+        }
+        else if (output.getTyp() == WriteEntity.Type.PARTITION) {
+          lockObjects.addAll(getLockObjects(null, output.getPartition(), HiveLockMode.EXCLUSIVE));
+        }
+      }
+
+      if (lockObjects.isEmpty() && !ctx.isNeedLockMgr()) {
+        return 0;
+      }
+
+      int ret = checkLockManager();
+      if (ret != 0) {
+        return ret;
+      }
+
+
+      ctx.setHiveLockMgr(hiveLockMgr);
+
+      Collections.sort(lockObjects, new Comparator<LockObject>() {
+
+          @Override
+            public int compare(LockObject o1, LockObject o2) {
+            int cmp = o1.getName().compareTo(o2.getName());
+            if (cmp == 0) {
+              if (o1.getMode() == o2.getMode()) {
+                return cmp;
+              }
+              // EXCLUSIVE locks occur before SHARED locks
+              if (o1.getMode() == HiveLockMode.EXCLUSIVE) {
+                return -1;
+              }
+              return +1;
+            }
+            return cmp;
+          }
+
+        });
+
+      // walk the list and acquire the locks - if any lock cant be acquired, release all locks, sleep and retry
+      while (true) {
+        List<HiveLock> hiveLocks = acquireLocks(lockObjects);
+
+        if (hiveLocks == null) {
+          if (tryNum == numRetries) {
+            throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
+          }
+          tryNum++;
+
+          try {
+            Thread.sleep(sleepTime);
+          } catch (InterruptedException e) {
+          }
+        }
+        else {
+          ctx.setHiveLocks(hiveLocks);
+          break;
+        }
+      }
+      return (0);
+    } catch (SemanticException e) {
+      errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage, "\n"
+                         + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return (10);
+    }
+  }
+
+  /**
+   * @param lockObjects   The list of objects to be locked
+   * Lock the objects specified in the list. The same object is not locked twice, and the list passed is sorted
+   * such that EXCLUSIVE locks occur before SHARED locks.
+   **/
+  private List<HiveLock> acquireLocks(List<LockObject> lockObjects) throws SemanticException {
+    // walk the list and acquire the locks - if any lock cant be acquired, release all locks, sleep and retry
+    LockObject prevLockObj = null;
+    List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
+
+    for (LockObject lockObject: lockObjects) {
+      // No need to acquire a lock twice on the same object
+      // It is ensured that EXCLUSIVE locks occur before SHARED locks on the same object
+      if ((prevLockObj != null) && (prevLockObj.getName().equals(lockObject.getName()))) {
+        prevLockObj = lockObject;
+        continue;
+      }
+
+      HiveLock lock = null;
+      try {
+        lock = ctx.getHiveLockMgr().lock(lockObject.getObj(), lockObject.getMode(), false);
+      } catch (LockException e) {
+        lock = null;
+      }
+
+      if (lock == null) {
+        releaseLocks(hiveLocks);
+        return null;
+      }
+
+      hiveLocks.add(lock);
+      prevLockObj = lockObject;
+    }
+
+    return hiveLocks;
+  }
+
+  /**
+   * Release all the locks acquired implicitly by the statement. Note that the locks acquired
+   * with 'keepAlive' set to True are not released.
+   **/
+  private void releaseLocks() {
+    if (ctx != null && ctx.getHiveLockMgr() != null) {
+      try {
+        ctx.getHiveLockMgr().close();
+        ctx.setHiveLocks(null);
+      } catch (LockException e) {
+      }
+    }
+  }
+
+  /**
+   * @param hiveLocks  list of hive locks to be released
+   * Release all the locks specified. If some of the locks have already been released, ignore them
+   **/
+  private void releaseLocks(List<HiveLock> hiveLocks) {
+    if (hiveLocks != null) {
+      for (HiveLock hiveLock: hiveLocks) {
+        try {
+          ctx.getHiveLockMgr().unlock(hiveLock);
+        } catch (LockException e) {
+          // The lock may have been released. Ignore and continue
+        }
+      }
+      ctx.setHiveLocks(null);
+    }
+  }
+
   public CommandProcessorResponse run(String command) {
     errorMessage = null;
     SQLState = null;
 
     int ret = compile(command);
     if (ret != 0) {
+      releaseLocks(ctx.getHiveLocks());
+      return new CommandProcessorResponse(ret, errorMessage, SQLState);
+    }
+
+    ret = acquireReadWriteLocks();
+    if (ret != 0) {
+      releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
     ret = execute();
     if (ret != 0) {
+      releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
+    releaseLocks(ctx.getHiveLocks());
     return new CommandProcessorResponse(ret);
   }
 
@@ -720,6 +1005,10 @@ public class Driver implements CommandProcessor {
     }
 
     return 0;
+  }
+
+  public void destroy() {
+    releaseLocks();
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan()

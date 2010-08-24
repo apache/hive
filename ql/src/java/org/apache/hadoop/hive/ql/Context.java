@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
@@ -41,6 +42,8 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -67,13 +70,18 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, String> fsScratchDirs = new HashMap<String, String>();
 
-
   private Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
   private TokenRewriteStream tokenRewriteStream;
 
   String executionId;
+
+  // List of Locks for this query
+  protected List<HiveLock> hiveLocks;
+  protected HiveLockManager hiveLockMgr;
+
+  private boolean needLockMgr;
 
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
@@ -86,7 +94,7 @@ public class Context {
   public Context(Configuration conf, String executionId)  {
     this.conf = conf;
     this.executionId = executionId;
-    
+
     // non-local tmp location is configurable. however it is the same across
     // all external file systems
     nonLocalScratchPath =
@@ -106,7 +114,7 @@ public class Context {
   public void setExplain(boolean value) {
     explain = value;
   }
-  
+
   /**
    * Find whether the current query is an explain query
    * @return true if the query is an explain query, false if not
@@ -119,7 +127,7 @@ public class Context {
   /**
    * Get a tmp directory on specified URI
    *
-   * @param scheme Scheme of the target FS 
+   * @param scheme Scheme of the target FS
    * @param authority Authority of the target FS
    * @param mkdir create the directory if true
    * @param scratchdir path of tmp directory
@@ -166,7 +174,7 @@ public class Context {
 
   /**
    * Create a map-reduce scratch directory on demand and return it.
-   * 
+   *
    */
   public String getMRScratchDir() {
 
@@ -231,7 +239,7 @@ public class Context {
 
   /**
    * Get a path to store map-reduce intermediate data in.
-   * 
+   *
    * @return next available path for map-red intermediate data
    */
   public String getMRTmpFileURI() {
@@ -241,8 +249,8 @@ public class Context {
 
 
   /**
-   * Given a URI for mapreduce intermediate output, swizzle the 
-   * it to point to the local file system. This can be called in 
+   * Given a URI for mapreduce intermediate output, swizzle the
+   * it to point to the local file system. This can be called in
    * case the caller decides to run in local mode (in which case
    * all intermediate data can be stored locally)
    *
@@ -259,7 +267,7 @@ public class Context {
         ("Invalid URI: " + originalURI + ", cannot relativize against" +
          mrbase.toString());
 
-    return getLocalScratchDir(!explain) + Path.SEPARATOR + 
+    return getLocalScratchDir(!explain) + Path.SEPARATOR +
       relURI.getPath();
   }
 
@@ -343,6 +351,7 @@ public class Context {
     }
     removeScratchDir();
     originalTracker = null;
+    setNeedLockMgr(false);
   }
 
   public DataInput getStream() {
@@ -458,6 +467,22 @@ public class Context {
     return HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPJT).equals("local");
   }
 
+  public List<HiveLock> getHiveLocks() {
+    return hiveLocks;
+  }
+
+  public void setHiveLocks(List<HiveLock> hiveLocks) {
+    this.hiveLocks = hiveLocks;
+  }
+
+  public HiveLockManager getHiveLockMgr() {
+    return hiveLockMgr;
+  }
+
+  public void setHiveLockMgr(HiveLockManager hiveLockMgr) {
+    this.hiveLockMgr = hiveLockMgr;
+  }
+
   public void setOriginalTracker(String originalTracker) {
     this.originalTracker = originalTracker;
   }
@@ -474,7 +499,7 @@ public class Context {
       pathToCS = new HashMap<String, ContentSummary> ();
     pathToCS.put(path, cs);
   }
-  
+
   public ContentSummary getCS(String path) {
     if(pathToCS == null)
       pathToCS = new HashMap<String, ContentSummary> ();
@@ -516,5 +541,13 @@ public class Context {
       }
     }
     paths.addAll(toAdd);
+  }
+
+  public boolean isNeedLockMgr() {
+    return needLockMgr;
+  }
+
+  public void setNeedLockMgr(boolean needLockMgr) {
+    this.needLockMgr = needLockMgr;
   }
 }

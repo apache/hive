@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -59,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -84,11 +87,18 @@ import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
+import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -223,6 +233,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
       if (showFuncs != null) {
         return showFunctions(showFuncs);
+      }
+
+      ShowLocksDesc showLocks = work.getShowLocksDesc();
+      if (showLocks != null) {
+        return showLocks(showLocks);
+      }
+
+      LockTableDesc lockTbl = work.getLockTblDesc();
+      if (lockTbl != null) {
+        return lockTable(lockTbl);
+      }
+
+      UnlockTableDesc unlockTbl = work.getUnlockTblDesc();
+      if (unlockTbl != null) {
+        return unlockTable(unlockTbl);
       }
 
       ShowPartitionsDesc showParts = work.getShowPartsDesc();
@@ -1126,6 +1151,163 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.toString());
     }
+    return 0;
+  }
+
+  /**
+   * Write a list of the current locks to a file.
+   *
+   * @param showLocks
+   *          the locks we're interested in.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int showLocks(ShowLocksDesc showLocks) throws HiveException {
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    if (lockMgr == null) {
+      throw new HiveException("show Locks LockManager not specified");
+    }
+
+    // write the results in the file
+    try {
+      Path resFile = new Path(showLocks.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = fs.create(resFile);
+      List<HiveLock> locks = lockMgr.getLocks();
+
+      Collections.sort(locks, new Comparator<HiveLock>() {
+
+          @Override
+            public int compare(HiveLock o1, HiveLock o2) {
+            int cmp = o1.getHiveLockObject().getName().compareTo(o2.getHiveLockObject().getName());
+            if (cmp == 0) {
+              if (o1.getHiveLockMode() == o2.getHiveLockMode()) {
+                return cmp;
+              }
+              // EXCLUSIVE locks occur before SHARED locks
+              if (o1.getHiveLockMode() == HiveLockMode.EXCLUSIVE) {
+                return -1;
+              }
+              return +1;
+            }
+            return cmp;
+          }
+
+        });
+
+      Iterator<HiveLock> locksIter = locks.iterator();
+
+      while (locksIter.hasNext()) {
+        HiveLock lock = locksIter.next();
+        outStream.writeBytes(lock.getHiveLockObject().getName());
+        outStream.write(separator);
+        outStream.writeBytes(lock.getHiveLockMode().toString());
+        outStream.write(terminator);
+      }
+      ((FSDataOutputStream) outStream).close();
+    } catch (FileNotFoundException e) {
+      LOG.warn("show function: " + stringifyException(e));
+      return 1;
+    } catch (IOException e) {
+      LOG.warn("show function: " + stringifyException(e));
+      return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
+    }
+    return 0;
+  }
+
+  /**
+   * Lock the table/partition specified
+   *
+   * @param lockTbl
+   *          the table/partition to be locked along with the mode
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int lockTable(LockTableDesc lockTbl) throws HiveException {
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    if (lockMgr == null) {
+      throw new HiveException("lock Table LockManager not specified");
+    }
+
+    HiveLockMode mode = HiveLockMode.valueOf(lockTbl.getMode());
+    String tabName = lockTbl.getTableName();
+    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
+    if (tbl == null) {
+      throw new HiveException("Table " + tabName + " does not exist ");
+    }
+
+    Map<String, String> partSpec = lockTbl.getPartSpec();
+    if (partSpec == null) {
+      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl), mode, true);
+      if (lck == null) {
+        return 1;
+      }
+      return 0;
+    }
+
+    Partition par = db.getPartition(tbl, partSpec, false);
+    if (par == null) {
+      throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
+    }
+    HiveLock lck = lockMgr.lock(new HiveLockObject(par), mode, true);
+    if (lck == null) {
+      return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Unlock the table/partition specified
+   *
+   * @param unlockTbl
+   *          the table/partition to be unlocked
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int unlockTable(UnlockTableDesc unlockTbl) throws HiveException {
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    if (lockMgr == null) {
+      throw new HiveException("unlock Table LockManager not specified");
+    }
+
+    String tabName = unlockTbl.getTableName();
+    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
+    if (tbl == null) {
+      throw new HiveException("Table " + tabName + " does not exist ");
+    }
+
+    Map<String, String> partSpec = unlockTbl.getPartSpec();
+    HiveLockObject obj = null;
+
+    if  (partSpec == null) {
+      obj = new HiveLockObject(tbl);
+    }
+    else {
+      Partition par = db.getPartition(tbl, partSpec, false);
+      if (par == null) {
+        throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
+      }
+      obj = new HiveLockObject(par);
+    }
+
+    List<HiveLock> locks = lockMgr.getLocks(obj);
+    if ((locks == null) || (locks.isEmpty())) {
+      throw new HiveException("Table " + tabName + " is not locked ");
+    }
+    Iterator<HiveLock> locksIter = locks.iterator();
+    while (locksIter.hasNext()) {
+      HiveLock lock = locksIter.next();
+      lockMgr.unlock(lock);
+    }
+
     return 0;
   }
 

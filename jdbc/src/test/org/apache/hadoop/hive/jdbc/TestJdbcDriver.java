@@ -79,6 +79,8 @@ public class TestJdbcDriver extends TestCase {
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
 
+    stmt.executeQuery("set hive.support.concurrency = false");
+
     // drop table. ignore error.
     try {
       stmt.executeQuery("drop table " + tableName);

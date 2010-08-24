@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import junit.framework.Test;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -69,6 +70,9 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.hadoop.hbase.MiniZooKeeperCluster;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 
 /**
  * QTestUtil.
@@ -103,6 +107,7 @@ public class QTestUtil {
   private HadoopShims.MiniDFSShim dfs = null;
   private boolean miniMr = false;
   private String hadoopVer = null;
+  private QTestSetup setup = null;
 
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -198,10 +203,10 @@ public class QTestUtil {
                .concat("/build/ql/test/data/warehouse/"));
       conf.set("mapred.job.tracker", "localhost:" + mr.getJobTrackerPort());
     }
-
   }
 
-  public QTestUtil(String outDir, String logDir, boolean miniMr, String hadoopVer) throws Exception {
+  public QTestUtil(String outDir, String logDir, boolean miniMr, String hadoopVer)
+    throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
@@ -227,6 +232,8 @@ public class QTestUtil {
       overWrite = true;
     }
 
+    setup = new QTestSetup();
+    setup.preTest(conf);
     init();
   }
 
@@ -301,6 +308,13 @@ public class QTestUtil {
   /**
    * Clear out any side effects of running tests
    */
+  public void clearPostTestEffects () throws Exception {
+    setup.postTest(conf);
+  }
+
+  /**
+   * Clear out any side effects of running tests
+   */
   public void clearTestSideEffects () throws Exception {
     // delete any tables other than the source tables
     for (String s: db.getAllTables()) {
@@ -312,8 +326,8 @@ public class QTestUtil {
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);
     initConf();
+    setup.preTest(conf);
   }
-
 
   public void cleanUp() throws Exception {
     String warehousePath = ((new URI(testWarehouse)).getPath());
@@ -329,6 +343,7 @@ public class QTestUtil {
     }
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
     FunctionRegistry.unregisterTemporaryUDF("test_error");
+    setup.tearDown();
   }
 
   private void runLoadCmd(String loadCmd) throws Exception {
@@ -916,6 +931,59 @@ public class QTestUtil {
   }
 
   /**
+   * QTestSetup defines test fixtures which are reused across testcases,
+   * and are needed before any test can be run
+   */
+  public static class QTestSetup
+  {
+    private MiniZooKeeperCluster zooKeeperCluster = null;
+    private int zkPort;
+    private ZooKeeper zooKeeper;
+
+    public QTestSetup() {
+    }
+
+    public void preTest(HiveConf conf) throws Exception {
+
+      if (zooKeeperCluster == null) {
+        String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
+        zooKeeperCluster = new MiniZooKeeperCluster();
+        zkPort = zooKeeperCluster.startup(new File(tmpdir, "zookeeper"));
+      }
+
+      if (zooKeeper != null) {
+        zooKeeper.close();
+      }
+
+      int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
+      zooKeeper = new ZooKeeper("localhost:" + zkPort, sessionTimeout, null);
+
+      String zkServer = "localhost";
+      conf.set("hive.zookeeper.quorum", zkServer);
+      conf.set("hive.zookeeper.client.port", "" + zkPort);
+    }
+
+    public void postTest(HiveConf conf) throws Exception {
+      if (zooKeeperCluster == null) {
+        return;
+      }
+
+      if (zooKeeper != null) {
+        zooKeeper.close();
+      }
+
+      ZooKeeperHiveLockManager.releaseAllLocks(conf);
+    }
+
+    public void tearDown() throws Exception {
+      if (zooKeeperCluster != null) {
+        zooKeeperCluster.shutdown();
+        zooKeeperCluster = null;
+      }
+    }
+  }
+
+  /**
    * QTRunner: Runnable class for running a a single query file.
    *
    **/
@@ -962,17 +1030,18 @@ public class QTestUtil {
    *         (in terms of destination tables)
    */
   public static boolean queryListRunner(File[] qfiles, String[] resDirs,
-      String[] logDirs, boolean mt) {
+                                        String[] logDirs, boolean mt, Test test) {
 
     assert (qfiles.length == resDirs.length);
     assert (qfiles.length == logDirs.length);
     boolean failed = false;
-
     try {
       QTestUtil[] qt = new QTestUtil[qfiles.length];
+      QTestSetup[] qsetup = new QTestSetup[qfiles.length];
       for (int i = 0; i < qfiles.length; i++) {
-        qt[i] = new QTestUtil(resDirs[i], logDirs[i]);
+        qt[i] = new QTestUtil(resDirs[i], logDirs[i], false, "0.20");
         qt[i].addFile(qfiles[i]);
+        qt[i].clearTestSideEffects();
       }
 
       if (mt) {
@@ -980,6 +1049,7 @@ public class QTestUtil {
 
         qt[0].cleanUp();
         qt[0].createSources();
+        qt[0].clearTestSideEffects();
 
         QTRunner[] qtRunners = new QTestUtil.QTRunner[qfiles.length];
         Thread[] qtThread = new Thread[qfiles.length];

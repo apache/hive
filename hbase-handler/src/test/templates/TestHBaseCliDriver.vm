@@ -88,6 +88,7 @@ public class $className extends TestCase {
     try {
       System.out.println("Begin query: " + "$fname");
       qt.cliInit("$fname");
+      qt.clearTestSideEffects();
       int ecode = qt.executeClient("$fname");
       if (ecode != 0) {
         fail("Client Execution failed with error code = " + ecode);
@@ -112,6 +113,8 @@ public class $className extends TestCase {
       if (ecode != 0) {
         fail("Client execution results failed with error code = " + ecode);
       }
+      qt.clearPostTestEffects();
+
     } catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();

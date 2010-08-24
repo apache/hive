@@ -56,6 +56,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, "SHOWFUNCTIONS");
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, "SHOWPARTITIONS");
+    commandType.put(HiveParser.TOK_SHOWLOCKS, "SHOWLOCKS");
     commandType.put(HiveParser.TOK_CREATEFUNCTION, "CREATEFUNCTION");
     commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
     commandType.put(HiveParser.TOK_CREATEVIEW, "CREATEVIEW");
@@ -65,6 +66,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, "ALTERINDEX_REBUILD");
     commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, "ALTERVIEW_PROPERTIES");
     commandType.put(HiveParser.TOK_QUERY, "QUERY");
+    commandType.put(HiveParser.TOK_LOCKTABLE, "LOCKTABLE");
+    commandType.put(HiveParser.TOK_UNLOCKTABLE, "UNLOCKTABLE");
   }
   
   static {
@@ -109,12 +112,15 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
+      case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_CREATEINDEX:
       case HiveParser.TOK_DROPINDEX:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_ALTERTABLE_TOUCH:
       case HiveParser.TOK_ALTERTABLE_ARCHIVE:
       case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
+      case HiveParser.TOK_LOCKTABLE:
+      case HiveParser.TOK_UNLOCKTABLE:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_ALTERTABLE_PARTITION:
         String commandType = null;

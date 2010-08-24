@@ -110,6 +110,7 @@ public class HiveServer extends ThriftHive {
         CommandProcessorResponse response = null;
         if (proc != null) {
           if (proc instanceof Driver) {
+            ((Driver)proc).destroy();
             isHiveQuery = true;
             response = driver.run(cmd);
           } else {

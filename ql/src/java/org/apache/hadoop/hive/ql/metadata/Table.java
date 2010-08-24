@@ -794,4 +794,11 @@ public class Table implements Serializable {
     ProtectMode mode = getProtectMode();
     return (!mode.offline && !mode.readOnly);
   }
+
+  /**
+   * @return include the db name
+   */
+  public String getCompleteName() {
+    return getDbName() + "@" + getTableName();
+  }
 };

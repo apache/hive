@@ -69,6 +69,9 @@ import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
+import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
@@ -131,7 +134,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
     // Partition can't have this name
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
-
+    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
     // Partition value can't end in this suffix
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
@@ -171,6 +174,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWFUNCTIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowFunctions(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWLOCKS) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowLocks(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_DESCFUNCTION) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescFunction(ast);
@@ -212,6 +218,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_LOCKTABLE) {
+      analyzeLockTable(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_UNLOCKTABLE) {
+      analyzeUnlockTable(ast);
     } else {
       throw new SemanticException("Unsupported command.");
     }
@@ -804,6 +814,84 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showFuncsDesc), conf));
     setFetchTask(createFetchTask(showFuncsDesc.getSchema()));
+  }
+
+  /**
+   * Add the task according to the parsed command tree. This is used for the CLI
+   * command "SHOW LOCKS;".
+   *
+   * @param ast
+   *          The parsed command tree.
+   * @throws SemanticException
+   *           Parsing failed
+   */
+  private void analyzeShowLocks(ASTNode ast) throws SemanticException {
+    ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile());
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showLocksDesc), conf));
+    setFetchTask(createFetchTask(showLocksDesc.getSchema()));
+
+    // Need to initialize the lock manager
+    ctx.setNeedLockMgr(true);
+  }
+
+  /**
+   * Add the task according to the parsed command tree. This is used for the CLI
+   * command "LOCK TABLE ..;".
+   *
+   * @param ast
+   *          The parsed command tree.
+   * @throws SemanticException
+   *           Parsing failed
+   */
+  private void analyzeLockTable(ASTNode ast)
+      throws SemanticException {
+    String tableName = unescapeIdentifier(ast.getChild(0).getText().toLowerCase());
+    String mode      = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+
+    // We only can have a single partition spec
+    assert(partSpecs.size() <= 1);
+    Map<String, String> partSpec = null;
+    if (partSpecs.size() > 0) {
+      partSpec = partSpecs.get(0);
+    }
+
+    LockTableDesc lockTblDesc = new LockTableDesc(tableName, mode, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+                                              lockTblDesc), conf));
+
+    // Need to initialize the lock manager
+    ctx.setNeedLockMgr(true);
+  }
+
+  /**
+   * Add the task according to the parsed command tree. This is used for the CLI
+   * command "UNLOCK TABLE ..;".
+   *
+   * @param ast
+   *          The parsed command tree.
+   * @throws SemanticException
+   *           Parsing failed
+   */
+  private void analyzeUnlockTable(ASTNode ast)
+      throws SemanticException {
+    String tableName = unescapeIdentifier(ast.getChild(0).getText().toLowerCase());
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+
+    // We only can have a single partition spec
+    assert(partSpecs.size() <= 1);
+    Map<String, String> partSpec = null;
+    if (partSpecs.size() > 0) {
+      partSpec = partSpecs.get(0);
+    }
+
+    UnlockTableDesc unlockTblDesc = new UnlockTableDesc(tableName, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+                                              unlockTblDesc), conf));
+
+    // Need to initialize the lock manager
+    ctx.setNeedLockMgr(true);
   }
 
   /**

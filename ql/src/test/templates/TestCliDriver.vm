@@ -71,6 +71,7 @@ public class $className extends TestCase {
   @Override
   protected void tearDown() {
     try {
+      qt.clearPostTestEffects();
       if (getName().equals("testCliDriver_shutdown"))
         qt.shutdown();
     }
@@ -110,7 +111,7 @@ public class $className extends TestCase {
       if (qt.shouldBeSkipped("$fname")) {
         return;
       }
-      
+
       qt.cliInit("$fname", false);
       int ecode = qt.executeClient("$fname");
       if (ecode != 0) {

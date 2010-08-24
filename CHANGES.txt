@@ -59,6 +59,9 @@ Trunk -  Unreleased
     HIVE-1578. Add conf. variable for displaying link to task
     with most failures (Paul Yang via namit)
 
+    HIVE-1293. Concurrency Model for Hive
+    (Namit Jain via jvs)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
@@ -191,7 +194,7 @@ Trunk -  Unreleased
     HIVE-1510. HiveCombineInputFormat should not use prefix matching to find
     the partitionDesc for a given path
     (He Yongqiang via Ning Zhang)
-    
+
     HIVE-1584. wrong log files in contrib client positive
     (namit via He Yongqiang)
 

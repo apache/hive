@@ -146,6 +146,12 @@
 </property>
 
 <property>
+  <name>hive.support.concurrency</name>
+  <value>true</value>
+  <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
   <name>fs.pfile.impl</name>
   <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
   <description>A proxy for local file system used for cross file system testing</description>
