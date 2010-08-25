@@ -73,18 +73,6 @@
 </property>
 
 <property>
-  <name>fs.default.name</name>
-  <value>file:///</value>
-  <description></description>
-</property>
-
-<property>
-  <name>mapred.job.tracker</name>
-  <value>local</value>
-  <description></description>
-</property>
-
-<property>
   <name>test.log.dir</name>
   <value>${build.dir}/test/logs</value>
   <description></description>

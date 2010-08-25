@@ -342,16 +342,16 @@
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}"/>
 
     <condition property="jetty.jar" value="jetty-6.1.14.jar" else="jetty-5.1.4.jar">
-      <equals arg1="${hadoop.version.ant-internal.prefix}" arg2="0.20" />
+      <matches string="${hadoop.version.ant-internal}" pattern="^0\.20\..*" />
     </condition>
 
     <condition property="jetty.util.jar" value="jetty-util-6.1.14.jar" else="jetty-ext/jsp-api.jar">
       <!-- hadoop 0.19 and earlier does not have jetty-util.jar, so we just load another jar -->
-      <equals arg1="${hadoop.version.ant-internal.prefix}" arg2="0.20" />
+      <matches string="${hadoop.version.ant-internal}" pattern="^0\.20\..*" />
     </condition>
 
     <condition property="servlet-api.jar" value="servlet-api-2.5-6.1.14.jar" else="servlet-api.jar">
-      <equals arg1="${hadoop.version.ant-internal.prefix}" arg2="0.20" />
+      <matches string="${hadoop.version.ant-internal}" pattern="^0\.20\..*" />
     </condition>
 
     <pathconvert property="eclipse.project">

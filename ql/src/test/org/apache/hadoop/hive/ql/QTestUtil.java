@@ -194,14 +194,17 @@ public class QTestUtil {
     return null;
   }
 
-  public void initConf() {
+  public void initConf() throws Exception {
     if (miniMr) {
-      String fsName = conf.get("fs.default.name");
-      assert fsName != null;
-      // hive.metastore.warehouse.dir needs to be set relative to the jobtracker
-      conf.set("hive.metastore.warehouse.dir", fsName
-               .concat("/build/ql/test/data/warehouse/"));
-      conf.set("mapred.job.tracker", "localhost:" + mr.getJobTrackerPort());
+      assert dfs != null;
+      assert mr != null;
+      // set fs.default.name to the uri of mini-dfs
+      conf.setVar(HiveConf.ConfVars.HADOOPFS, dfs.getFileSystem().getUri().toString());
+      // hive.metastore.warehouse.dir needs to be set relative to the mini-dfs
+      conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, 
+                  (new Path(dfs.getFileSystem().getUri().toString(),
+                            "/build/ql/test/data/warehouse/")).toString());
+      conf.setVar(HiveConf.ConfVars.HADOOPJT, "localhost:" + mr.getJobTrackerPort());
     }
   }
 
@@ -330,7 +333,6 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
-    String warehousePath = ((new URI(testWarehouse)).getPath());
     // Drop any tables that remain due to unsuccessful runs
     for (String s : new String[] {"src", "src1", "src_json", "src_thrift",
         "src_sequencefile", "srcpart", "srcbucket", "srcbucket2", "dest1",
@@ -338,9 +340,15 @@ public class QTestUtil {
         "dest_g1", "dest_g2", "fetchtask_ioexception"}) {
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
     }
-    for (String s : new String[] {"dest4.out", "union.out"}) {
-      deleteDirectory(new File(warehousePath, s));
+
+    // delete any contents in the warehouse dir
+    Path p = new Path(testWarehouse);
+    FileSystem fs = p.getFileSystem(conf);
+    FileStatus [] ls = fs.listStatus(p);
+    for (int i=0; (ls != null) && (i<ls.length); i++) {
+      fs.delete(ls[i].getPath(), true);
     }
+
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
     FunctionRegistry.unregisterTemporaryUDF("test_error");
     setup.tearDown();
@@ -516,7 +524,7 @@ public class QTestUtil {
   }
 
   public void cliInit(String tname, boolean recreate) throws Exception {
-    if (miniMr || recreate) {
+    if (recreate) {
       cleanUp();
       createSources();
     }
@@ -538,6 +546,7 @@ public class QTestUtil {
       oldSs.out.close();
     }
     SessionState.start(ss);
+
     cliDriver = new CliDriver();
     if (tname.equals("init_file.q")) {
       ss.initFiles.add("../data/scripts/test_init_file.sql");
@@ -859,6 +868,7 @@ public class QTestUtil {
         "diff", "-a",
         "-I", "file:",
         "-I", "pfile:",
+        "-I", "hdfs:",
         "-I", "/tmp/",
         "-I", "invalidscheme:",
         "-I", "lastUpdateTime",

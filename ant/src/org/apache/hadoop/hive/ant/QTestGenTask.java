@@ -81,6 +81,8 @@ public class QTestGenTask extends Task {
   private String queryDirectory;
  
   private String queryFile;
+
+  private String excludeQueryFile;
   
   private String queryFileRegex;
 
@@ -193,11 +195,19 @@ public class QTestGenTask extends Task {
   public String getQueryFile() {
     return queryFile;
   }
-  
+
+  public void setExcludeQueryFile(String excludeQueryFile) {
+    this.excludeQueryFile = excludeQueryFile;
+  }
+
+  public String getExcludeQueryFile() {
+    return excludeQueryFile;
+  }
+
   public void setQueryFileRegex(String queryFileRegex) {
     this.queryFileRegex = queryFileRegex;
   }
-  
+
   public String getQueryFileRegex() {
     return queryFileRegex;
   }
@@ -256,6 +266,17 @@ public class QTestGenTask extends Task {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
       } else {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
+      }
+
+      if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
+        // Exclude specified query files, comma separated
+        for (String qFile : excludeQueryFile.split(",")) {
+          if (null != inpDir) {
+            qFiles.remove(new File(inpDir, qFile));
+          } else {
+            qFiles.remove(new File(qFile));
+          }
+        }
       }
       
       Collections.sort(qFiles);

@@ -105,6 +105,9 @@ Trunk -  Unreleased
     HIVE-1441. Extend ivy offline mode to cover metastore downloads
     (John Sichi via Ning Zhang)
 
+    HIVE-1523. Enable some tests in miniMR mode
+    (Joydeep Sen Sarma via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

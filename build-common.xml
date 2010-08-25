@@ -50,7 +50,7 @@
   <property name="test.timeout" value="13200000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
-  <property name="minimr.query.files" value="join1.q,groupby1.q"/>
+  <property name="minimr.query.files" value="input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q"/>
   <property name="test.silent" value="true"/>
   <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
   <property name="test.serialize.qplan" value="false"/>
@@ -330,16 +330,6 @@
 
   <target name="test-conditions">
 
-    <condition property="qfile" value="${minimr.query.files}">
-      <and>
-        <not>
-          <isset property="qfile"/>
-        </not>
-
-        <equals arg1="${clustermode}" arg2="miniMR" />
-      </and>
-    </condition>
-
     <condition property="qfile" value="">
       <not>
         <isset property="qfile"/>
@@ -399,6 +389,9 @@
     </not>
   </condition>
 
+  <property name="test.warehouse.dir" value="${test.warehouse.scheme}${build.dir}/test/data/warehouse"/>
+  <property name="mapred.job.tracker" value="local"/>
+  <property name="fs.default.name" value="file:///"/>
 
   <!-- target to run the tests -->
   <target name="test"
@@ -425,7 +418,9 @@
       <sysproperty key="hadoop.log.dir" value="${test.log.dir}"/>
       <sysproperty key="test.silent" value="${test.silent}"/>
       <sysproperty key="test.tmp.dir" value="${build.dir}/tmp"/>
-      <sysproperty key="test.warehouse.dir" value="${test.warehouse.scheme}${build.dir}/test/data/warehouse"/>
+      <sysproperty key="test.warehouse.dir" value="${test.warehouse.dir}"/>
+      <sysproperty key="mapred.job.tracker" value="${mapred.job.tracker}"/>
+      <sysproperty key="fs.default.name" value="${fs.default.name}"/>
       <sysproperty key="build.dir" value="${build.dir}"/>
       <sysproperty key="build.dir.hive" value="${build.dir.hive}"/>
 

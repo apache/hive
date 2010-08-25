@@ -31,6 +31,7 @@
   <property name="thrift.args" value="--gen java:beans --gen php --gen py -I ${basedir}/include -I ${basedir}/.. -o ${basedir}/src"/>
 
   <import file="../build-common.xml"/>
+  <property name="ql.test.clientpositive.exclude" value="${minimr.query.files}"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
@@ -48,6 +49,7 @@
     <pathelement location="${common.jar}"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
+    <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
     <path refid="classpath"/>
   </path>
 
@@ -86,10 +88,23 @@
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
               queryDirectory="${ql.test.query.clientpositive.dir}" 
               queryFile="${qfile}"
+              excludeQueryFile="${ql.test.clientpositive.exclude}"
               queryFileRegex="${qfile_regex}"
               clusterMode="${clustermode}"
               resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestCliDriver"
               logFile="${test.log.dir}/testclidrivergen.log"
+              logDirectory="${test.log.dir}/clientpositive"
+              hadoopVersion="${hadoopVersion}"
+    />
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
+              queryDirectory="${ql.test.query.clientpositive.dir}" 
+              queryFile="${minimr.query.files}"
+              queryFileRegex="${qfile_regex}"
+              clusterMode="miniMR"
+              resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestMinimrCliDriver"
+              logFile="${test.log.dir}/testminimrclidrivergen.log"
               logDirectory="${test.log.dir}/clientpositive"
               hadoopVersion="${hadoopVersion}"
     />
