@@ -204,6 +204,9 @@ Trunk -  Unreleased
     HIVE-741. NULL is not handled correctly in join
     (Amareshwari Sriramadasu via Ning Zhang)
 
+    HIVE-1593. Add test file udtf_explode
+    (Carl Steinbach via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
