@@ -69,6 +69,7 @@
               queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/compiler" className="TestParse"
               logFile="${test.log.dir}/testparsegen.log"
+              hadoopVersion="${hadoopVersion}"
               logDirectory="${test.log.dir}/positive"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
@@ -78,6 +79,7 @@
               queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/compiler/errors" className="TestParseNegative"
               logFile="${test.log.dir}/testparseneggen.log"
+              hadoopVersion="${hadoopVersion}"
               logDirectory="${test.log.dir}/negative"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
@@ -99,7 +101,8 @@
               queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/clientnegative" className="TestNegativeCliDriver"
               logFile="${test.log.dir}/testnegclidrivergen.log"
-              logDirectory="${test.log.dir}/clientnegative"/>
+              logDirectory="${test.log.dir}/clientnegative"
+              hadoopVersion="${hadoopVersion}"/>
 
   </target>
 

@@ -610,6 +610,9 @@ public class Hive {
 
       FileSystem fs = loadPath.getFileSystem(conf);
       FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDP, fs);
+      if (status.length == 0) {
+        LOG.warn("No partition is genereated by dynamic partitioning");
+      }
 
       if (status.length > conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)) {
         throw new HiveException("Number of dynamic partitions created is " + status.length

@@ -21,13 +21,17 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * Conditional task resolution interface. This is invoked at run time to get the
@@ -48,6 +52,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     private static final long serialVersionUID = 1L;
     List<Task<? extends Serializable>> listTasks;
     private String dir;
+    private DynamicPartitionCtx dpCtx; // merge task could be after dynamic partition insert
 
     public ConditionalResolverMergeFilesCtx() {
     }
@@ -90,6 +95,14 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     public void setListTasks(List<Task<? extends Serializable>> listTasks) {
       this.listTasks = listTasks;
     }
+
+    public DynamicPartitionCtx getDPCtx() {
+      return dpCtx;
+    }
+
+    public void setDPCtx(DynamicPartitionCtx dp) {
+      dpCtx = dp;
+    }
   }
 
   public List<Task<? extends Serializable>> getTasks(HiveConf conf,
@@ -119,15 +132,56 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
         long currAvgSz = totalSz / fStats.length;
         if ((currAvgSz < avgConditionSize) && (fStats.length > 1)) {
+          //
+          // for each dynamic partition, generate a merge task
+          // populate aliasToWork, pathToPartitionInfo, pathToAlias
           // also set the number of reducers
+          //
           Task<? extends Serializable> tsk = ctx.getListTasks().get(1);
           MapredWork work = (MapredWork) tsk.getWork();
 
-          int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-          int reducers = (int) ((totalSz + trgtSize - 1) / trgtSize);
-          reducers = Math.max(1, reducers);
-          reducers = Math.min(maxReducers, reducers);
-          work.setNumReduceTasks(reducers);
+
+          // Dynamic partition: replace input path (root to dp paths) with dynamic partition
+          // input paths.
+          DynamicPartitionCtx dpCtx = ctx.getDPCtx();
+          if (dpCtx != null &&  dpCtx.getNumDPCols() > 0) {
+            FileStatus[] status = Utilities.getFileStatusRecurse(dirPath,
+                dpCtx.getNumDPCols(), inpFs);
+
+            // cleanup pathToPartitionInfo
+          	Map<String, PartitionDesc> ptpi = work.getPathToPartitionInfo();
+          	assert ptpi.size() == 1;
+          	String path = ptpi.keySet().iterator().next();
+          	TableDesc tblDesc = ptpi.get(path).getTableDesc();
+          	ptpi.remove(path); // the root path is not useful anymore
+
+          	// cleanup pathToAliases
+          	Map<String, ArrayList<String>> pta = work.getPathToAliases();
+          	assert pta.size() == 1;
+          	path = pta.keySet().iterator().next();
+          	ArrayList<String> aliases = pta.get(path);
+          	pta.remove(path); // the root path is not useful anymore
+
+          	// populate pathToPartitionInfo and pathToAliases w/ DP paths
+          	for (int i = 0; i < status.length; ++i) {
+          	  work.getPathToAliases().put(status[i].getPath().toString(), aliases);
+          	  // get the full partition spec from the path and update the PartitionDesc
+          	  Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
+          	      dpCtx.getPartSpec());
+          	  Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath());
+          	  PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
+          	  work.getPathToPartitionInfo().put(
+          	      status[i].getPath().toString(),
+          	      pDesc);
+          	}
+          } else {
+            int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+            int reducers = (int) ((totalSz + trgtSize - 1) / trgtSize);
+            reducers = Math.max(1, reducers);
+            reducers = Math.min(maxReducers, reducers);
+            work.setNumReduceTasks(reducers);
+          }
+
           resTsks.add(tsk);
           return resTsks;
         }

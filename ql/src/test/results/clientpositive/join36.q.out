@@ -176,7 +176,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-51_782_4316865711705219377/10000
+          destination: file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-50-21_842_8207422885220211132/10000
 
   Stage: Stage-0
     Move Operator
@@ -191,30 +191,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-51_782_4316865711705219377/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: int
-                    expr: value
-                    type: int
-                    expr: val2
-                    type: int
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
+        file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-50-21_842_8207422885220211132/10002 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest_j1
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
@@ -241,11 +226,11 @@ POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-56_079_1877087600971898109/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-50-25_193_192031805291343419/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-19-56_079_1877087600971898109/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-50-25_193_192031805291343419/10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]

@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -1336,6 +1337,10 @@ public final class Utilities {
     for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
       job.set(entry.getKey(), entry.getValue());
     }
+  }
+
+  public static boolean supportCombineFileInputFormat() {
+    return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
   }
 
 }

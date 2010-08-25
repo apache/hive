@@ -78,6 +78,20 @@ public class DynamicPartitionCtx implements Serializable {
     }
   }
 
+  public DynamicPartitionCtx(DynamicPartitionCtx dp) {
+    this.partSpec = dp.partSpec;
+    this.numDPCols = dp.numDPCols;
+    this.numSPCols = dp.numSPCols;
+    this.spPath = dp.spPath;
+    this.rootPath = dp.rootPath;
+    this.numBuckets = dp.numBuckets;
+    this.inputToDPCols = dp.inputToDPCols;
+    this.spNames = dp.spNames;
+    this.dpNames = dp.dpNames;
+    this.defaultPartName = dp.defaultPartName;
+    this.maxPartsPerNode = dp.maxPartsPerNode;
+  }
+
   public void mapInputToDP(List<ColumnInfo> fs) {
 
       assert fs.size() == this.numDPCols: "input DP column size != numDPCols";

@@ -162,6 +162,17 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
+   * The default dependent tasks are just child tasks, but different types
+   * could implement their own (e.g. ConditionalTask will use the listTasks
+   * as dependents).
+   *
+   * @return a list of tasks that are dependent on this task.
+   */
+  public List<Task<? extends Serializable>> getDependentTasks() {
+    return getChildTasks();
+  }
+
+  /**
    * Add a dependent task on the current task. Return if the dependency already
    * existed or is this a new one
    *

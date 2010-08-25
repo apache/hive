@@ -33,7 +33,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part1, dbName:default, owner:null, createTime:1271267550, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/nzhang_part1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE,transient_lastDdlTime=1271267550}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part1, dbName:default, owner:null, createTime:1282510566, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/test/data/warehouse/nzhang_part1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1282510566}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part1 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
@@ -49,8 +49,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-0 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-2
+  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-3
+  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-1 depends on stages: Stage-7, Stage-6
+  Stage-6
 
 STAGE PLANS:
   Stage: Stage-2
@@ -104,6 +110,15 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: nzhang_part2
 
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-56-07_128_6805915456695744078/10000
+
   Stage: Stage-0
     Move Operator
       tables:
@@ -117,6 +132,28 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part1
 
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-56-07_128_6805915456695744078/10004 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: nzhang_part1
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-56-07_128_6805915456695744078/10002
+
   Stage: Stage-1
     Move Operator
       tables:
@@ -129,6 +166,19 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-56-07_128_6805915456695744078/10005 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: nzhang_part2
 
 
 PREHOOK: query: from srcpart
@@ -147,10 +197,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Output: default@nzhang_part2@ds=2008-12-31/hr=12
+POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@nzhang_part1@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -191,12 +241,12 @@ PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-37_444_3227664036860209538/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-56-14_886_1687193710075453186/10000
 POSTHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-37_444_3227664036860209538/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-56-14_886_1687193710075453186/10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
@@ -1209,12 +1259,12 @@ PREHOOK: query: select * from nzhang_part2 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-37_769_8779363378584503667/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-56-15_076_2313443527894536506/10000
 POSTHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/scratchdir/hive_2010-04-14_10-52-37_769_8779363378584503667/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-56-15_076_2313443527894536506/10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]

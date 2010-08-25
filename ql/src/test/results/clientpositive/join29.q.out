@@ -91,7 +91,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10002 
+        file:/tmp/nzhang/hive_2010-08-22_13-48-24_602_8079796663979269211/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -142,11 +142,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10004 
+            file:/tmp/nzhang/hive_2010-08-22_13-48-24_602_8079796663979269211/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10004 
+            file:/tmp/nzhang/hive_2010-08-22_13-48-24_602_8079796663979269211/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -202,7 +202,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10000
+          destination: file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-48-24_602_8079796663979269211/10000
 
   Stage: Stage-0
     Move Operator
@@ -217,30 +217,15 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-39_938_6824990071701609235/10003 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: cnt1
-                    type: int
-                    expr: cnt2
-                    type: int
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
+        file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_13-48-24_602_8079796663979269211/10003 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest_j1
 
   Stage: Stage-6
     Map Reduce
@@ -321,11 +306,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-53_522_4492151849840756172/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-48-34_516_3415832922569387530/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-15-53_522_4492151849840756172/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_13-48-34_516_3415832922569387530/10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

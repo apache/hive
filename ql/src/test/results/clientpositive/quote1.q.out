@@ -66,7 +66,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-07_718_7391802451805086474/10000
+          destination: file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_14-12-18_484_302050857269500345/10000
 
   Stage: Stage-0
     Move Operator
@@ -83,28 +83,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-07_718_7391802451805086474/10002 
-            Reduce Output Operator
-              sort order: 
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: location
-                    type: int
-                    expr: type
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
+        file:/data/users/nzhang/reviews/0.6/branch-0.6/build/ql/scratchdir/hive_2010-08-22_14-12-18_484_302050857269500345/10002 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest1
 
 
 PREHOOK: query: EXPLAIN
@@ -171,11 +158,11 @@ POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.Field
 PREHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1@table=2008-04-08
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-12_969_4532161059633752072/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_14-12-21_939_8647521151159286063/10000
 POSTHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1@table=2008-04-08
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-12_969_4532161059633752072/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-22_14-12-21_939_8647521151159286063/10000
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).location EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-04-08
