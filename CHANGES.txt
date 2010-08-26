@@ -210,6 +210,9 @@ Trunk -  Unreleased
     HIVE-1593. Add test file udtf_explode
     (Carl Steinbach via namit)
 
+    HIVE-1594. Typo of hive.merge.size.smallfiles.avgsize prevents
+    change of value. (Yun Huang Yong via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

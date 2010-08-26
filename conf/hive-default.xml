@@ -462,7 +462,7 @@
 </property>
 
 <property>
-  <name>hive.merge.size.smallfiles.avgsize</name>
+  <name>hive.merge.smallfiles.avgsize</name>
   <value>16000000</value>
   <description>When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files.  This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.</description>
 </property>
@@ -601,7 +601,7 @@
 
 
 <property>
-  <name>hive.default.partition.name</name>
+  <name>hive.exec.default.partition.name</name>
   <value>__HIVE_DEFAULT_PARTITION__</value>
   <description>The default partition name in case the dynamic partition column value is null/empty string or anyother values that cannot be escaped. This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). The user has to be aware that the dynamic partition value should not contain this value to avoid confusions.</description>
 </property>
