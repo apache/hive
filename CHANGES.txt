@@ -593,6 +593,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1543. Abort if record reader's next throws an exception
     (Ning Zhang via namit)
 
+    HIVE-1594. Typo of hive.merge.size.smallfiles.avgsize prevents
+    change of value. (Yun Huang Yong via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
