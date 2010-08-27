@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -319,12 +321,21 @@ public class QTestUtil {
    * Clear out any side effects of running tests
    */
   public void clearTestSideEffects () throws Exception {
-    // delete any tables other than the source tables
-    for (String s: db.getAllTables()) {
-      if (!srcTables.contains(s)) {
-        db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
+    // Delete any tables other than the source tables
+    // and any databases other than the default database.
+    for (String dbName : db.getAllDatabases()) {
+      db.setCurrentDatabase(dbName);
+      for (String tblName : db.getAllTables()) {
+        if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
+          db.dropTable(dbName, tblName);
+        }
+      }
+      if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
+        db.dropDatabase(dbName);
       }
     }
+    db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
+
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);
@@ -433,7 +444,7 @@ public class QTestUtil {
     db.createTable("src_sequencefile", cols, null,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
 
-    Table srcThrift = new Table("src_thrift");
+    Table srcThrift = new Table(db.getCurrentDatabase(), "src_thrift");
     srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
     srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     srcThrift.setSerializationLib(ThriftDeserializer.class.getName());
@@ -506,7 +517,7 @@ public class QTestUtil {
 
     db.createTable("dest3", cols, part_cols, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class);
-    Table dest3 = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "dest3");
+    Table dest3 = db.getTable("dest3");
 
     HashMap<String, String> part_spec = new HashMap<String, String>();
     part_spec.put("ds", "2008-04-08");

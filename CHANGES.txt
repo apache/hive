@@ -62,6 +62,9 @@ Trunk -  Unreleased
     HIVE-1293. Concurrency Model for Hive
     (Namit Jain via jvs)
 
+    HIVE-675. Add database/schema support for Hive
+    (Carl Steinbach via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

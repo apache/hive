@@ -48,40 +48,25 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
-public class TestHiveMetaStore extends TestCase {
-  private HiveMetaStoreClient client;
-  private HiveConf hiveConf;
+public abstract class TestHiveMetaStore extends TestCase {
+  protected static HiveMetaStoreClient client;
+  protected static HiveConf hiveConf;
+  protected static Warehouse warehouse;
+  protected static boolean isThriftClient = false;
+
+  private static final String TEST_DB1_NAME = "testdb1";
+  private static final String TEST_DB2_NAME = "testdb2";
 
   @Override
   protected void setUp() throws Exception {
-    super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    warehouse = new Warehouse(hiveConf);
 
     // set some values to use for getting conf. vars
     hiveConf.set("hive.key1", "value1");
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
     hiveConf.set("hive.key4", "0");
-
-    try {
-      client = new HiveMetaStoreClient(hiveConf, null);
-    } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
-    }
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    try {
-      super.tearDown();
-      client.close();
-    } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
-    }
   }
 
   public void testNameMethods() {
@@ -118,11 +103,11 @@ public class TestHiveMetaStore extends TestCase {
    * @throws Exception
    */
   public void testPartition() throws Exception {
-    partitionTester(client, hiveConf, false);
+    partitionTester(client, hiveConf);
   }
 
-  public static void partitionTester(HiveMetaStoreClient client, HiveConf hiveConf,
-      boolean isThriftClient) throws Exception {
+  public static void partitionTester(HiveMetaStoreClient client, HiveConf hiveConf)
+    throws Exception {
     try {
       String dbName = "compdb";
       String tblName = "comptbl";
@@ -139,9 +124,10 @@ public class TestHiveMetaStore extends TestCase {
       vals3.add("15");
 
       client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
-      boolean ret = client.createDatabase(dbName, "strange_loc");
-      assertTrue("Unable to create the databse " + dbName, ret);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
 
       client.dropType(typeName);
       Type typ1 = new Type();
@@ -151,8 +137,7 @@ public class TestHiveMetaStore extends TestCase {
           new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
           new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
-      ret = client.createType(typ1);
-      assertTrue("Unable to create type " + typeName, ret);
+      client.createType(typ1);
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -181,7 +166,7 @@ public class TestHiveMetaStore extends TestCase {
 
       client.createTable(tbl);
 
-      if(isThriftClient) {
+      if (isThriftClient) {
         // the createTable() above does not update the location in the 'tbl'
         // object when the client is a thrift client and the code below relies
         // on the location being present in the 'tbl' object - so get the table
@@ -306,9 +291,9 @@ public class TestHiveMetaStore extends TestCase {
       Path partPath = new Path(part2.getSd().getLocation());
       FileSystem fs = FileSystem.get(partPath.toUri(), hiveConf);
 
+
       assertTrue(fs.exists(partPath));
-      ret = client.dropPartition(dbName, tblName, part.getValues(), true);
-      assertTrue(ret);
+      client.dropPartition(dbName, tblName, part.getValues(), true);
       assertFalse(fs.exists(partPath));
 
       // Test append_partition_by_name
@@ -326,12 +311,11 @@ public class TestHiveMetaStore extends TestCase {
       // add the partition again so that drop table with a partition can be
       // tested
       retp = client.add_partition(part);
-      assertNotNull("Unable to create partition " + part, ret);
+      assertNotNull("Unable to create partition " + part, retp);
 
       client.dropTable(dbName, tblName);
 
-      ret = client.dropType(typeName);
-      assertTrue("Unable to drop type " + typeName, ret);
+      client.dropType(typeName);
 
       // recreate table as external, drop partition and it should
       // still exist
@@ -343,8 +327,11 @@ public class TestHiveMetaStore extends TestCase {
       client.dropPartition(dbName, tblName, part.getValues(), true);
       assertTrue(fs.exists(partPath));
 
-      ret = client.dropDatabase(dbName);
-      assertTrue("Unable to create the databse " + dbName, ret);
+      for (String tableName : client.getTables(dbName, "*")) {
+        client.dropTable(dbName, tableName);
+      }
+
+      client.dropDatabase(dbName);
 
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -363,9 +350,11 @@ public class TestHiveMetaStore extends TestCase {
       vals.add("14");
 
       client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
-      boolean ret = client.createDatabase(dbName, "strange_loc");
-      assertTrue("Unable to create the databse " + dbName, ret);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Alter Partition Test database");
+      client.createDatabase(db);
 
       ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
       cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
@@ -398,6 +387,14 @@ public class TestHiveMetaStore extends TestCase {
 
       client.createTable(tbl);
 
+      if (isThriftClient) {
+        // the createTable() above does not update the location in the 'tbl'
+        // object when the client is a thrift client and the code below relies
+        // on the location being present in the 'tbl' object - so get the table
+        // from the metastore
+        tbl = client.getTable(dbName, tblName);
+      }
+
       Partition part = new Partition();
       part.setDbName(dbName);
       part.setTableName(tblName);
@@ -426,8 +423,7 @@ public class TestHiveMetaStore extends TestCase {
 
       client.dropTable(dbName, tblName);
 
-      ret = client.dropDatabase(dbName);
-      assertTrue("Unable to create the databse " + dbName, ret);
+      client.dropDatabase(dbName);
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed.");
@@ -438,40 +434,40 @@ public class TestHiveMetaStore extends TestCase {
   public void testDatabase() throws Throwable {
     try {
       // clear up any existing databases
-      client.dropDatabase("test1");
-      client.dropDatabase("test2");
+      silentDropDatabase(TEST_DB1_NAME);
+      silentDropDatabase(TEST_DB2_NAME);
 
-      boolean ret = client.createDatabase("test1", "strange_loc");
-      assertTrue("Unable to create the databse", ret);
+      Database db = new Database();
+      db.setName(TEST_DB1_NAME);
+      client.createDatabase(db);
 
-      Database db = client.getDatabase("test1");
-
-      assertEquals("name of returned db is different from that of inserted db",
-          "test1", db.getName());
-      assertEquals(
-          "location of the returned db is different from that of inserted db",
-          "strange_loc", db.getDescription());
-
-      boolean ret2 = client.createDatabase("test2", "another_strange_loc");
-      assertTrue("Unable to create the databse", ret2);
-
-      Database db2 = client.getDatabase("test2");
+      db = client.getDatabase(TEST_DB1_NAME);
 
       assertEquals("name of returned db is different from that of inserted db",
-          "test2", db2.getName());
-      assertEquals(
-          "location of the returned db is different from that of inserted db",
-          "another_strange_loc", db2.getDescription());
+          TEST_DB1_NAME, db.getName());
+      assertEquals("location of the returned db is different from that of inserted db",
+          warehouse.getDefaultDatabasePath(TEST_DB1_NAME).toString(), db.getLocationUri());
 
-      List<String> dbs = client.getDatabases();
+      Database db2 = new Database();
+      db2.setName(TEST_DB2_NAME);
+      client.createDatabase(db2);
 
-      assertTrue("first database is not test1", dbs.contains("test1"));
-      assertTrue("second database is not test2", dbs.contains("test2"));
+      db2 = client.getDatabase(TEST_DB2_NAME);
 
-      ret = client.dropDatabase("test1");
-      assertTrue("couldn't delete first database", ret);
-      ret = client.dropDatabase("test2");
-      assertTrue("couldn't delete second database", ret);
+      assertEquals("name of returned db is different from that of inserted db",
+          TEST_DB2_NAME, db2.getName());
+      assertEquals("location of the returned db is different from that of inserted db",
+          warehouse.getDefaultDatabasePath(TEST_DB2_NAME).toString(), db2.getLocationUri());
+
+      List<String> dbs = client.getDatabases(".*");
+
+      assertTrue("first database is not " + TEST_DB1_NAME, dbs.contains(TEST_DB1_NAME));
+      assertTrue("second database is not " + TEST_DB2_NAME, dbs.contains(TEST_DB2_NAME));
+
+      client.dropDatabase(TEST_DB1_NAME);
+      client.dropDatabase(TEST_DB2_NAME);
+      silentDropDatabase(TEST_DB1_NAME);
+      silentDropDatabase(TEST_DB2_NAME);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testDatabase() failed.");
@@ -495,9 +491,13 @@ public class TestHiveMetaStore extends TestCase {
       ret = client.dropType(Constants.INT_TYPE_NAME);
       assertTrue("unable to drop type integer", ret);
 
-      Type typ1_3 = null;
-      typ1_3 = client.getType(Constants.INT_TYPE_NAME);
-      assertNull("unable to drop type integer", typ1_3);
+      boolean exceptionThrown = false;
+      try {
+        client.getType(Constants.INT_TYPE_NAME);
+      } catch (NoSuchObjectException e) {
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTypeApi() failed.");
@@ -554,9 +554,13 @@ public class TestHiveMetaStore extends TestCase {
       ret = client.dropType("Person");
       assertTrue("unable to drop type Person", ret);
 
-      Type typ1_3 = null;
-      typ1_3 = client.getType("Person");
-      assertNull("unable to drop type Person", typ1_3);
+      boolean exceptionThrown = false;
+      try {
+        client.getType("Person");
+      } catch (NoSuchObjectException e) {
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testComplexTypeApi() failed.");
@@ -572,9 +576,11 @@ public class TestHiveMetaStore extends TestCase {
       String typeName = "Person";
 
       client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
-      boolean ret = client.createDatabase(dbName, "strange_loc");
-      assertTrue("Unable to create the databse " + dbName, ret);
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
 
       client.dropType(typeName);
       Type typ1 = new Type();
@@ -584,8 +590,7 @@ public class TestHiveMetaStore extends TestCase {
           new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
           new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
-      ret = client.createType(typ1);
-      assertTrue("Unable to create type " + typeName, ret);
+      client.createType(typ1);
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -609,6 +614,14 @@ public class TestHiveMetaStore extends TestCase {
       tbl.setPartitionKeys(new ArrayList<FieldSchema>());
 
       client.createTable(tbl);
+
+      if (isThriftClient) {
+        // the createTable() above does not update the location in the 'tbl'
+        // object when the client is a thrift client and the code below relies
+        // on the location being present in the 'tbl' object - so get the table
+        // from the metastore
+        tbl = client.getTable(dbName, tblName);
+      }
 
       Table tbl2 = client.getTable(dbName, tblName);
       assertNotNull(tbl2);
@@ -647,6 +660,9 @@ public class TestHiveMetaStore extends TestCase {
       }
 
       client.createTable(tbl2);
+      if (isThriftClient) {
+        tbl2 = client.getTable(tbl2.getDbName(), tbl2.getTableName());
+      }
 
       Table tbl3 = client.getTable(dbName, tblName2);
       assertNotNull(tbl3);
@@ -683,18 +699,15 @@ public class TestHiveMetaStore extends TestCase {
           (tbl2.getPartitionKeys() == null)
               || (tbl2.getPartitionKeys().size() == 0));
 
-      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(),
-                                     hiveConf);
+      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(), hiveConf);
       client.dropTable(dbName, tblName);
       assertFalse(fs.exists(new Path(tbl.getSd().getLocation())));
 
       client.dropTable(dbName, tblName2);
       assertTrue(fs.exists(new Path(tbl2.getSd().getLocation())));
 
-      ret = client.dropType(typeName);
-      assertTrue("Unable to drop type " + typeName, ret);
-      ret = client.dropDatabase(dbName);
-      assertTrue("Unable to drop databse " + dbName, ret);
+      client.dropType(typeName);
+      client.dropDatabase(dbName);
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
@@ -703,15 +716,17 @@ public class TestHiveMetaStore extends TestCase {
   }
 
   public void testAlterTable() throws Exception {
-    try {
-      String dbName = "alterdb";
-      String invTblName = "alter-tbl";
-      String tblName = "altertbl";
+    String dbName = "alterdb";
+    String invTblName = "alter-tbl";
+    String tblName = "altertbl";
 
+    try {
       client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
-      boolean ret = client.createDatabase(dbName, "strange_loc");
-      assertTrue("Unable to create the databse " + dbName, ret);
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
 
       ArrayList<FieldSchema> invCols = new ArrayList<FieldSchema>(2);
       invCols.add(new FieldSchema("n-ame", Constants.STRING_TYPE_NAME, ""));
@@ -753,6 +768,10 @@ public class TestHiveMetaStore extends TestCase {
       tbl.getSd().setCols(cols);
       client.createTable(tbl);
 
+      if (isThriftClient) {
+        tbl = client.getTable(tbl.getDbName(), tbl.getTableName());
+      }
+
       // now try to invalid alter table
       Table tbl2 = client.getTable(dbName, tblName);
       failed = false;
@@ -776,18 +795,22 @@ public class TestHiveMetaStore extends TestCase {
       assertEquals("Alter table didn't succeed. Num buckets is different ",
           tbl2.getSd().getNumBuckets(), tbl3.getSd().getNumBuckets());
       // check that data has moved
-      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(),
-                                     hiveConf);
+      FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(), hiveConf);
       assertFalse("old table location still exists", fs.exists(new Path(tbl
           .getSd().getLocation())));
       assertTrue("data did not move to new location", fs.exists(new Path(tbl3
           .getSd().getLocation())));
-      assertEquals("alter table didn't move data correct location", tbl3
-          .getSd().getLocation(), tbl2.getSd().getLocation());
+
+      if (!isThriftClient) {
+        assertEquals("alter table didn't move data correct location", tbl3
+            .getSd().getLocation(), tbl2.getSd().getLocation());
+      }
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
       throw e;
+    } finally {
+      silentDropDatabase(dbName);
     }
   }
 
@@ -799,9 +822,10 @@ public class TestHiveMetaStore extends TestCase {
 
     try {
       client.dropTable(dbName, tblName);
-      client.dropDatabase(dbName);
-      boolean ret = client.createDatabase(dbName, "strange_loc");
-      assertTrue("Unable to create the databse " + dbName, ret);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
 
       client.dropType(typeName);
       Type typ1 = new Type();
@@ -811,8 +835,7 @@ public class TestHiveMetaStore extends TestCase {
           new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
       typ1.getFields().add(
           new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
-      ret = client.createType(typ1);
-      assertTrue("Unable to create type " + typeName, ret);
+      client.createType(typ1);
 
       Table tbl = new Table();
       tbl.setDbName(dbName);
@@ -889,8 +912,7 @@ public class TestHiveMetaStore extends TestCase {
       client.dropTable(dbName, tblName);
       boolean ret = client.dropType(typeName);
       assertTrue("Unable to drop type " + typeName, ret);
-      ret = client.dropDatabase(dbName);
-      assertTrue("Unable to create the databse " + dbName, ret);
+      client.dropDatabase(dbName);
     }
   }
 
@@ -898,20 +920,21 @@ public class TestHiveMetaStore extends TestCase {
 
     String val = "value";
 
-    try {
-      assertEquals(client.getConfigValue("hive.key1", val), "value1");
-      assertEquals(client.getConfigValue("hive.key2", val),
-          "http://www.example.com");
-      assertEquals(client.getConfigValue("hive.key3", val), "");
-      assertEquals(client.getConfigValue("hive.key4", val), "0");
-      assertEquals(client.getConfigValue("hive.key5", val), val);
-      assertEquals(client.getConfigValue(null, val), val);
-    } catch (TException e) {
-      e.printStackTrace();
-      assert (false);
-    } catch (ConfigValSecurityException e) {
-      e.printStackTrace();
-      assert (false);
+    if (!isThriftClient) {
+      try {
+        assertEquals(client.getConfigValue("hive.key1", val), "value1");
+        assertEquals(client.getConfigValue("hive.key2", val), "http://www.example.com");
+        assertEquals(client.getConfigValue("hive.key3", val), "");
+        assertEquals(client.getConfigValue("hive.key4", val), "0");
+        assertEquals(client.getConfigValue("hive.key5", val), val);
+        assertEquals(client.getConfigValue(null, val), val);
+      } catch (TException e) {
+        e.printStackTrace();
+          assert (false);
+      } catch (ConfigValSecurityException e) {
+        e.printStackTrace();
+        assert (false);
+      }
     }
 
     boolean threwException = false;
@@ -933,5 +956,16 @@ public class TestHiveMetaStore extends TestCase {
     Partition part_get = client.getPartition(dbName, tblName, part.getValues());
     part.setCreateTime(part_get.getCreateTime());
     part.putToParameters(org.apache.hadoop.hive.metastore.api.Constants.DDL_TIME, Long.toString(part_get.getCreateTime()));
+  }
+
+  private static void silentDropDatabase(String dbName) throws MetaException, TException {
+    try {
+      for (String tableName : client.getTables(dbName, "*")) {
+        client.dropTable(dbName, tableName);
+      }
+      client.dropDatabase(dbName);
+    } catch (NoSuchObjectException e) {
+    } catch (InvalidOperationException e) {
+    }
   }
 }

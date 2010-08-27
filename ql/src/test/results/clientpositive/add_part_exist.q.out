@@ -63,3 +63,102 @@ POSTHOOK: type: SHOWPARTITIONS
 ds=2010-01-01
 ds=2010-01-02
 ds=2010-01-03
+PREHOOK: query: DROP TABLE add_part_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@add_part_test
+PREHOOK: Output: default@add_part_test
+POSTHOOK: query: DROP TABLE add_part_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcbucket2
+srcpart
+PREHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
+CREATE DATABASE add_part_test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
+CREATE DATABASE add_part_test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE add_part_test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE add_part_test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+PREHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: add_part_test_db@add_part_test
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+PREHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+ds=2010-01-01
+PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: add_part_test_db@add_part_test
+PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
+POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+ds=2010-01-01
+PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-02
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+ds=2010-01-01
+ds=2010-01-02
+PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: add_part_test_db@add_part_test
+PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
+PREHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-02
+POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01') PARTITION (ds='2010-01-02') PARTITION (ds='2010-01-03')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: add_part_test_db@add_part_test
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-01
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-02
+POSTHOOK: Output: add_part_test_db@add_part_test@ds=2010-01-03
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+ds=2010-01-01
+ds=2010-01-02
+ds=2010-01-03

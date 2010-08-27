@@ -114,8 +114,7 @@ public class HiveAlterHandler implements AlterHandler {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getDefaultTablePath(newt.getDbName(),
-            newt.getTableName()).toString();
+        newTblLoc = wh.getDefaultTablePath(newt.getDbName(), newt.getTableName()).toString();
         newt.getSd().setLocation(newTblLoc);
         oldTblLoc = oldt.getSd().getLocation();
         moveData = true;

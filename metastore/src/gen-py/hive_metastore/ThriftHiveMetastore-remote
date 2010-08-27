@@ -21,10 +21,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Usage: ' + sys.argv[0] + ' [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]'
   print ''
   print 'Functions:'
-  print '  bool create_database(string name, string description)'
+  print '  void create_database(Database database)'
   print '  Database get_database(string name)'
-  print '  bool drop_database(string name)'
-  print '   get_databases()'
+  print '  void drop_database(string name, bool deleteData)'
+  print '   get_databases(string pattern)'
+  print '   get_all_databases()'
   print '  Type get_type(string name)'
   print '  bool create_type(Type type)'
   print '  bool drop_type(string type)'
@@ -34,6 +35,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  void create_table(Table tbl)'
   print '  void drop_table(string dbname, string name, bool deleteData)'
   print '   get_tables(string db_name, string pattern)'
+  print '   get_all_tables(string db_name)'
   print '  Table get_table(string dbname, string tbl_name)'
   print '  void alter_table(string dbname, string tbl_name, Table new_tbl)'
   print '  Partition add_partition(Partition new_part)'
@@ -105,10 +107,10 @@ client = ThriftHiveMetastore.Client(protocol)
 transport.open()
 
 if cmd == 'create_database':
-  if len(args) != 2:
-    print 'create_database requires 2 args'
+  if len(args) != 1:
+    print 'create_database requires 1 args'
     sys.exit(1)
-  pp.pprint(client.create_database(args[0],args[1],))
+  pp.pprint(client.create_database(eval(args[0]),))
 
 elif cmd == 'get_database':
   if len(args) != 1:
@@ -117,16 +119,22 @@ elif cmd == 'get_database':
   pp.pprint(client.get_database(args[0],))
 
 elif cmd == 'drop_database':
-  if len(args) != 1:
-    print 'drop_database requires 1 args'
+  if len(args) != 2:
+    print 'drop_database requires 2 args'
     sys.exit(1)
-  pp.pprint(client.drop_database(args[0],))
+  pp.pprint(client.drop_database(args[0],eval(args[1]),))
 
 elif cmd == 'get_databases':
-  if len(args) != 0:
-    print 'get_databases requires 0 args'
+  if len(args) != 1:
+    print 'get_databases requires 1 args'
     sys.exit(1)
-  pp.pprint(client.get_databases())
+  pp.pprint(client.get_databases(args[0],))
+
+elif cmd == 'get_all_databases':
+  if len(args) != 0:
+    print 'get_all_databases requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.get_all_databases())
 
 elif cmd == 'get_type':
   if len(args) != 1:
@@ -181,6 +189,12 @@ elif cmd == 'get_tables':
     print 'get_tables requires 2 args'
     sys.exit(1)
   pp.pprint(client.get_tables(args[0],args[1],))
+
+elif cmd == 'get_all_tables':
+  if len(args) != 1:
+    print 'get_all_tables requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.get_all_tables(args[0],))
 
 elif cmd == 'get_table':
   if len(args) != 2:

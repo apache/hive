@@ -32,10 +32,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -132,8 +131,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         }
         String mesg_detail = " from " + tbd.getSourceDir();
         console.printInfo(mesg.toString(), mesg_detail);
-        Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd
-            .getTable().getTableName());
+        Table table = db.getTable(tbd.getTable().getTableName());
 
         if (work.getCheckFileFormat()) {
           // Get all files from the src directory

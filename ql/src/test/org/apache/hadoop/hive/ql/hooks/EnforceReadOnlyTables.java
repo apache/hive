@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * Implementation of a pre execute hook that prevents modifications
@@ -40,8 +42,10 @@ public class EnforceReadOnlyTables implements PreExecute {
       if ((w.getTyp() == WriteEntity.Type.TABLE) ||
           (w.getTyp() == WriteEntity.Type.PARTITION)) {
         Table t = w.getTable();
-        if (QTestUtil.srcTables.contains(t.getTableName()))
+        if (DEFAULT_DATABASE_NAME.equalsIgnoreCase(t.getDbName())
+            && QTestUtil.srcTables.contains(t.getTableName())) {
           throw new RuntimeException ("Cannot overwrite read-only table: " + t.getTableName());
+        }
       }
     }
   }

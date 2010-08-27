@@ -60,7 +60,8 @@ public class MetaStoreUtils {
   protected static final Log LOG = LogFactory.getLog("hive.log");
 
   public static final String DEFAULT_DATABASE_NAME = "default";
-  
+  public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
+
   /**
    * printStackTrace
    *
@@ -322,135 +323,6 @@ public class MetaStoreUtils {
 
   public static String getMapType(String k, String v) {
     return "map<" + k + "," + v + ">";
-  }
-
-  public static Table getTable(Configuration conf, Properties schema)
-      throws MetaException {
-    Table t = new Table();
-    t.setSd(new StorageDescriptor());
-    t
-        .setTableName(schema
-            .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME));
-    t
-        .getSd()
-        .setLocation(
-            schema
-                .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION));
-    t.getSd().setInputFormat(
-      schema.getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
-        org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName()));
-    t.getSd().setOutputFormat(
-      schema.getProperty(
-        org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-        org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName()));
-    t.setPartitionKeys(new ArrayList<FieldSchema>());
-    t.setDbName(MetaStoreUtils.DEFAULT_DATABASE_NAME);
-    String part_cols_str = schema
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
-    t.setPartitionKeys(new ArrayList<FieldSchema>());
-    if (part_cols_str != null && (part_cols_str.trim().length() != 0)) {
-      String[] part_keys = part_cols_str.trim().split("/");
-      for (String key : part_keys) {
-        FieldSchema part = new FieldSchema();
-        part.setName(key);
-        part.setType(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME); // default
-                                                                               // partition
-                                                                               // key
-        t.getPartitionKeys().add(part);
-      }
-    }
-    t.getSd()
-        .setNumBuckets(
-            Integer.parseInt(schema.getProperty(
-                org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT,
-                "-1")));
-    String bucketFieldName = schema
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME);
-    t.getSd().setBucketCols(new ArrayList<String>(1));
-    if ((bucketFieldName != null) && (bucketFieldName.trim().length() != 0)) {
-      t.getSd().setBucketCols(new ArrayList<String>(1));
-      t.getSd().getBucketCols().add(bucketFieldName);
-    }
-
-    t.getSd().setSerdeInfo(new SerDeInfo());
-    t.getSd().getSerdeInfo().setParameters(new HashMap<String, String>());
-    t.getSd().getSerdeInfo().setName(t.getTableName());
-    t
-        .getSd()
-        .getSerdeInfo()
-        .setSerializationLib(
-            schema
-                .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB));
-    setSerdeParam(t.getSd().getSerdeInfo(), schema,
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_CLASS);
-    setSerdeParam(t.getSd().getSerdeInfo(), schema,
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
-    if (org.apache.commons.lang.StringUtils
-        .isNotBlank(schema
-            .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_CLASS))) {
-      setSerdeParam(t.getSd().getSerdeInfo(), schema,
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_SERDE);
-    }
-    // needed for MetadataTypedColumnSetSerDe and LazySimpleSerDe
-    setSerdeParam(t.getSd().getSerdeInfo(), schema,
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS);
-    // needed for LazySimpleSerDe
-    setSerdeParam(t.getSd().getSerdeInfo(), schema,
-        org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES);
-    // needed for DynamicSerDe
-    setSerdeParam(t.getSd().getSerdeInfo(), schema,
-        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL);
-
-    String colstr = schema
-        .getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS);
-    List<FieldSchema> fields = new ArrayList<FieldSchema>();
-    if (colstr != null) {
-      String[] cols = colstr.split(",");
-      for (String colName : cols) {
-        FieldSchema col = new FieldSchema(colName,
-            org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME,
-            "'default'");
-        fields.add(col);
-      }
-    }
-
-    if (fields.size() == 0) {
-      // get the fields from serde
-      try {
-        fields = getFieldsFromDeserializer(t.getTableName(), getDeserializer(
-            conf, schema));
-      } catch (SerDeException e) {
-        LOG.error(StringUtils.stringifyException(e));
-        throw new MetaException("Invalid serde or schema. " + e.getMessage());
-      }
-    }
-    t.getSd().setCols(fields);
-
-    t.setOwner(schema.getProperty("creator"));
-
-    // remove all the used up parameters to find out the remaining parameters
-    schema.remove(Constants.META_TABLE_NAME);
-    schema.remove(Constants.META_TABLE_LOCATION);
-    schema.remove(Constants.FILE_INPUT_FORMAT);
-    schema.remove(Constants.FILE_OUTPUT_FORMAT);
-    schema.remove(Constants.META_TABLE_PARTITION_COLUMNS);
-    schema.remove(Constants.BUCKET_COUNT);
-    schema.remove(Constants.BUCKET_FIELD_NAME);
-    schema.remove(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_CLASS);
-    schema.remove(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
-    schema.remove(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
-    schema.remove(Constants.META_TABLE_SERDE);
-    schema.remove(Constants.META_TABLE_COLUMNS);
-    schema.remove(Constants.META_TABLE_COLUMN_TYPES);
-
-    // add the remaining unknown parameters to the table's parameters
-    t.setParameters(new HashMap<String, String>());
-    for (Entry<Object, Object> e : schema.entrySet()) {
-      t.getParameters().put(e.getKey().toString(), e.getValue().toString());
-    }
-
-    return t;
   }
 
   public static void setSerdeParam(SerDeInfo sdi, Properties schema,
@@ -883,7 +755,7 @@ public class MetaStoreUtils {
     }
     return true;
   }
-  
+
   public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
     return dbName + "__" + baseTblName + "_" + indexName + "__";
   }
@@ -894,5 +766,5 @@ public class MetaStoreUtils {
     }
     return TableType.INDEX_TABLE.toString().equals(table.getTableType());
   }
-  
+
 }

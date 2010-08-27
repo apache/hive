@@ -1,0 +1,10 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- Try to create a database with an invalid name
+CREATE DATABASE `test.db`
+PREHOOK: type: CREATEDATABASE
+FAILED: Error in metadata: InvalidObjectException(message:test.db is not a valid database name)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

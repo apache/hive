@@ -1,0 +1,311 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- CREATE with comment
+CREATE DATABASE test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- CREATE with comment
+CREATE DATABASE test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- CREATE INE already exists
+CREATE DATABASE IF NOT EXISTS test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- CREATE INE already exists
+CREATE DATABASE IF NOT EXISTS test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- SHOW DATABASES synonym
+SHOW SCHEMAS
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW DATABASES synonym
+SHOW SCHEMAS
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- DROP
+DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP
+DROP DATABASE test_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- CREATE INE doesn't exist
+CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- CREATE INE doesn't exist
+CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- DROP IE exists
+DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP IE exists
+DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP IE doesn't exist
+DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP IE doesn't exist
+DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: -- SHOW
+CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- SHOW
+CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE 'test*'
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE 'test*'
+POSTHOOK: type: SHOWDATABASES
+test_db
+PREHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE '*ef*'
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: -- SHOW pattern
+SHOW DATABASES LIKE '*ef*'
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: -- CREATE table in non-default DB
+CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- CREATE table in non-default DB
+CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+test_table
+PREHOOK: query: -- DESCRIBE table in non-default DB
+DESCRIBE test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- DESCRIBE table in non-default DB
+DESCRIBE test_table
+POSTHOOK: type: DESCTABLE
+col1	string	
+PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
+DESCRIBE EXTENDED test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
+DESCRIBE EXTENDED test_table
+POSTHOOK: type: DESCTABLE
+col1	string	
+	 	 
+Detailed Table Information	Table(tableName:test_table, dbName:test_db, owner:carl, createTime:1282718578, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/test_db.db/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1282718578}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: -- CREATE LIKE in non-default DB
+CREATE TABLE test_table_like LIKE test_table
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- CREATE LIKE in non-default DB
+CREATE TABLE test_table_like LIKE test_table
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@test_table_like
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+test_table
+test_table_like
+PREHOOK: query: DESCRIBE EXTENDED test_table_like
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED test_table_like
+POSTHOOK: type: DESCTABLE
+col1	string	
+	 	 
+Detailed Table Information	Table(tableName:test_table_like, dbName:test_db, owner:carl, createTime:1282718578, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/test_db.db/test_table_like, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1282718578}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: -- LOAD and SELECT
+LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE test_table
+PREHOOK: type: LOAD
+POSTHOOK: query: -- LOAD and SELECT
+LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE test_table
+POSTHOOK: type: LOAD
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SELECT * FROM test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-42-59_567_2461111790069590361/-mr-10000
+POSTHOOK: query: SELECT * FROM test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-42-59_567_2461111790069590361/-mr-10000
+1
+2
+3
+4
+5
+6
+PREHOOK: query: -- DROP and CREATE w/o LOAD
+DROP TABLE test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: -- DROP and CREATE w/o LOAD
+DROP TABLE test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+test_table_like
+PREHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+test_table
+test_table_like
+PREHOOK: query: SELECT * FROM test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-00_940_5138756558646274720/-mr-10000
+POSTHOOK: query: SELECT * FROM test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-00_940_5138756558646274720/-mr-10000
+PREHOOK: query: -- CREATE table that already exists in DEFAULT
+USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: -- CREATE table that already exists in DEFAULT
+USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE src (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@src
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+src
+test_table
+test_table_like
+PREHOOK: query: SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@src
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_221_2875743952247647479/-mr-10000
+POSTHOOK: query: SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@src
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_221_2875743952247647479/-mr-10000
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SELECT * FROM src LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_337_7970214163805278546/-mr-10000
+POSTHOOK: query: SELECT * FROM src LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_337_7970214163805278546/-mr-10000
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+PREHOOK: query: -- DROP DATABASE
+USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: -- DROP DATABASE
+USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: DROP TABLE src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@src
+PREHOOK: Output: test_db@src
+POSTHOOK: query: DROP TABLE src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@src
+POSTHOOK: Output: test_db@src
+PREHOOK: query: DROP TABLE test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table
+PREHOOK: Output: test_db@test_table
+POSTHOOK: query: DROP TABLE test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table
+POSTHOOK: Output: test_db@test_table
+PREHOOK: query: DROP TABLE test_table_like
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_table_like
+PREHOOK: Output: test_db@test_table_like
+POSTHOOK: query: DROP TABLE test_table_like
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_table_like
+POSTHOOK: Output: test_db@test_table_like
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE test_db
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default

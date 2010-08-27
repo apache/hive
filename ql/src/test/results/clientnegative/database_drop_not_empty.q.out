@@ -1,0 +1,28 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- Try to drop a non-empty database
+CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- Try to drop a non-empty database
+CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE t(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE t(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@t
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+FAILED: Error in metadata: InvalidOperationException(message:Database test_db is not empty)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

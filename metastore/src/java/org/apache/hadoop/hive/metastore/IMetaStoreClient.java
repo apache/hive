@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.IndexAlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -44,29 +44,18 @@ public interface IMetaStoreClient {
 
   public void close();
 
-  public List<String> getTables(String dbName, String tablePattern)
-      throws MetaException, UnknownTableException, TException,
-      UnknownDBException;
+  public List<String> getDatabases(String databasePattern)
+      throws MetaException, TException;
 
-  /**
-   * Drop the table.
-   *
-   * @param tableName
-   *          The table to drop
-   * @param deleteData
-   *          Should we delete the underlying data
-   * @throws MetaException
-   *           Could not drop table properly.
-   * @throws UnknownTableException
-   *           The table wasn't found.
-   * @throws TException
-   *           A thrift communication error occurred
-   * @throws NoSuchObjectException
-   *           The table wasn't found.
-   */
-  public void dropTable(String tableName, boolean deleteData)
-      throws MetaException, UnknownTableException, TException,
-      NoSuchObjectException;
+  public List<String> getAllDatabases()
+      throws MetaException, TException;
+
+  public List<String> getTables(String dbName, String tablePattern)
+      throws MetaException, TException, UnknownDBException;
+
+  public List<String> getAllTables(String dbName)
+      throws MetaException, TException, UnknownDBException;
+
 
   /**
    * Drop the table.
@@ -87,28 +76,27 @@ public interface IMetaStoreClient {
       boolean ignoreUknownTab) throws MetaException, TException,
       NoSuchObjectException;
 
+  public void dropTable(String dbname, String tableName)
+      throws MetaException, TException, NoSuchObjectException;
+
   // public void createTable(String tableName, Properties schema) throws
   // MetaException, UnknownTableException,
   // TException;
 
-  public boolean tableExists(String tableName) throws MetaException,
+  public boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException;
 
   /**
-   * Get a table object.
-   *
-   * @param tableName
-   *          Name of the table to fetch.
-   * @return An object representing the table.
-   * @throws MetaException
-   *           Could not fetch the table
-   * @throws TException
-   *           A thrift communication error occurred
-   * @throws NoSuchObjectException
-   *           In case the table wasn't found.
+   * Get a Database Object
+   * @param databaseName  name of the database to fetch
+   * @return
+   * @throws NoSuchObjectException The database does not exist
+   * @throws MetaException Could not fetch the database
+   * @throws TException A thrift communication error occurred
    */
-  public Table getTable(String tableName) throws MetaException, TException,
-      NoSuchObjectException;
+    public Database getDatabase(String databaseName)
+        throws NoSuchObjectException, MetaException, TException;
+
 
   /**
    * Get a table object.
@@ -227,10 +215,14 @@ public interface IMetaStoreClient {
   public void alter_table(String defaultDatabaseName, String tblName,
       Table table) throws InvalidOperationException, MetaException, TException;
 
-  public boolean createDatabase(String name, String location_uri)
-      throws AlreadyExistsException, MetaException, TException;
+  public void createDatabase(Database db)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
-  public boolean dropDatabase(String name) throws MetaException, TException;
+  public void dropDatabase(String name)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
   /**
    * @param db_name
@@ -339,13 +331,13 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws TException
-   * @throws AlreadyExistsException 
+   * @throws AlreadyExistsException
    */
   public void createIndex(Index index, Table indexTable) throws InvalidObjectException,
       MetaException, NoSuchObjectException, TException, AlreadyExistsException;
 
   /**
-   * 
+   *
    * @param dbName
    * @param tblName
    * @param indexName
@@ -375,7 +367,7 @@ public interface IMetaStoreClient {
 
   /**
    * list all the index names of the give base table.
-   * 
+   *
    * @param db_name
    * @param tbl_name
    * @param max
@@ -385,7 +377,7 @@ public interface IMetaStoreClient {
    */
   public List<String> listIndexNames(String db_name, String tbl_name,
       short max) throws MetaException, TException;
-  
+
   /**
    * @param db_name
    * @param tbl_name

@@ -18,16 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 
 
-public class TestHiveMetaStoreRemote extends TestCase {
+public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   private static final String METASTORE_PORT = "29083";
-private HiveMetaStoreClient client;
-  private HiveConf hiveConf;
-  boolean isServerRunning = false;
+  private static boolean isServerRunning = false;
 
   private static class RunMS implements Runnable {
 
@@ -54,26 +50,16 @@ private HiveMetaStoreClient client;
     // a better way of detecting if the metastore has started?
     Thread.sleep(5000);
 
-    // Set conf to connect to the local metastore.
-    hiveConf = new HiveConf(this.getClass());
     // hive.metastore.local should be defined in HiveConf
     hiveConf.set("hive.metastore.local", "false");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
     hiveConf.setIntVar(HiveConf.ConfVars.METATORETHRIFTRETRIES, 3);
 
     client = new HiveMetaStoreClient(hiveConf);
+    isThriftClient = true;
+
     // Now you have the client - run necessary tests.
     isServerRunning = true;
-  }
-
-  /**
-   * tests create table and partition and tries to drop the table without
-   * droppping the partition
-   *
-   * @throws Exception
-   */
-  public void testPartition() throws Exception {
-    TestHiveMetaStore.partitionTester(client, hiveConf, true);
   }
 
 }

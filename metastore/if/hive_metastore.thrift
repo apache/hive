@@ -33,6 +33,7 @@ struct Type {
 struct Database {
   1: string name,
   2: string description,
+  3: string locationUri,
 }
 
 // This object holds the information needed by SerDes
@@ -150,16 +151,16 @@ exception ConfigValSecurityException {
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
-  bool create_database(1:string name, 2:string description)
-                                       throws(1:AlreadyExistsException o1, 2:MetaException o2)
+  void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  bool drop_database(1:string name)    throws(2:MetaException o2)
-  list<string> get_databases()         throws(1:MetaException o1)
+  void drop_database(1:string name, 2:bool deleteData) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  list<string> get_databases(1:string pattern) throws(1:MetaException o1)
+  list<string> get_all_databases() throws(1:MetaException o1)
 
   // returns the type with given name (make seperate calls for the dependent types if needed)
-  Type get_type(1:string name)  throws(1:MetaException o2)
+  Type get_type(1:string name)  throws(1:MetaException o1, 2:NoSuchObjectException o2)
   bool create_type(1:Type type) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
-  bool drop_type(1:string type) throws(1:MetaException o2)
+  bool drop_type(1:string type) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   map<string, Type> get_type_all(1:string name)
                                 throws(1:MetaException o2)
 
@@ -182,8 +183,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  list<string> get_tables(1: string db_name, 2: string pattern)
-                       throws (1: MetaException o1)
+  list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
+  list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
 
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)

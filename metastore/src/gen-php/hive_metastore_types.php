@@ -377,6 +377,7 @@ class metastore_Database {
 
   public $name = null;
   public $description = null;
+  public $locationUri = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -389,6 +390,10 @@ class metastore_Database {
           'var' => 'description',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'locationUri',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -397,6 +402,9 @@ class metastore_Database {
       }
       if (isset($vals['description'])) {
         $this->description = $vals['description'];
+      }
+      if (isset($vals['locationUri'])) {
+        $this->locationUri = $vals['locationUri'];
       }
     }
   }
@@ -434,6 +442,13 @@ class metastore_Database {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->locationUri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -455,6 +470,11 @@ class metastore_Database {
     if ($this->description !== null) {
       $xfer += $output->writeFieldBegin('description', TType::STRING, 2);
       $xfer += $output->writeString($this->description);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->locationUri !== null) {
+      $xfer += $output->writeFieldBegin('locationUri', TType::STRING, 3);
+      $xfer += $output->writeString($this->locationUri);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -30,13 +30,17 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
  */
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private CreateIndexDesc      createIndexDesc;
+  private CreateIndexDesc createIndexDesc;
   private DropIndexDesc dropIdxDesc;
+  private CreateDatabaseDesc createDatabaseDesc;
+  private SwitchDatabaseDesc switchDatabaseDesc;
+  private DropDatabaseDesc dropDatabaseDesc;
   private CreateTableDesc createTblDesc;
   private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
   private DropTableDesc dropTblDesc;
   private AlterTableDesc alterTblDesc;
+  private ShowDatabasesDesc showDatabasesDesc;
   private ShowTablesDesc showTblsDesc;
   private LockTableDesc lockTblDesc;
   private UnlockTableDesc unlockTblDesc;
@@ -71,6 +75,36 @@ public class DDLWork implements Serializable {
     this.createIndexDesc = createIndex;
   }
   
+  /**
+   * @param createDatabaseDesc
+   *          Create Database descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      CreateDatabaseDesc createDatabaseDesc) {
+    this(inputs, outputs);
+    this.createDatabaseDesc = createDatabaseDesc;
+  }
+
+  /**
+   * @param dropDatabaseDesc
+   *          Drop Database descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      DropDatabaseDesc dropDatabaseDesc) {
+    this(inputs, outputs);
+    this.dropDatabaseDesc = dropDatabaseDesc;
+  }
+
+  /**
+   * @param switchDatabaseDesc
+   *          Switch Database descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      SwitchDatabaseDesc switchDatabaseDesc) {
+    this(inputs, outputs);
+    this.switchDatabaseDesc = switchDatabaseDesc;
+  }
+
   /**
    * @param alterTblDesc
    *          alter table descriptor
@@ -133,6 +167,16 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.descTblDesc = descTblDesc;
+  }
+
+  /**
+   * @param showDatabasesDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowDatabasesDesc showDatabasesDesc) {
+    this(inputs, outputs);
+
+    this.showDatabasesDesc = showDatabasesDesc;
   }
 
   /**
@@ -252,6 +296,51 @@ public class DDLWork implements Serializable {
   }
 
   /**
+   * @return Create Database descriptor
+   */
+  public CreateDatabaseDesc getCreateDatabaseDesc() {
+    return createDatabaseDesc;
+  }
+
+  /**
+   * Set Create Database descriptor
+   * @param createDatabaseDesc
+   */
+  public void setCreateDatabaseDesc(CreateDatabaseDesc createDatabaseDesc) {
+    this.createDatabaseDesc = createDatabaseDesc;
+  }
+
+  /**
+   * @return Drop Database descriptor
+   */
+  public DropDatabaseDesc getDropDatabaseDesc() {
+    return dropDatabaseDesc;
+  }
+
+  /**
+   * Set Drop Database descriptor
+   * @param dropDatabaseDesc
+   */
+  public void setDropDatabaseDesc(DropDatabaseDesc dropDatabaseDesc) {
+    this.dropDatabaseDesc = dropDatabaseDesc;
+  }
+
+  /**
+   * @return Switch Database descriptor
+   */
+  public SwitchDatabaseDesc getSwitchDatabaseDesc() {
+    return switchDatabaseDesc;
+  }
+
+  /**
+   * Set Switch Database descriptor
+   * @param switchDatabaseDesc
+   */
+  public void setSwitchDatabaseDesc(SwitchDatabaseDesc switchDatabaseDesc) {
+    this.switchDatabaseDesc = switchDatabaseDesc;
+  }
+
+  /**
    * @return the createTblDesc
    */
   @Explain(displayName = "Create Table Operator")
@@ -337,6 +426,22 @@ public class DDLWork implements Serializable {
    */
   public void setAlterTblDesc(AlterTableDesc alterTblDesc) {
     this.alterTblDesc = alterTblDesc;
+  }
+
+  /**
+   * @return the showDatabasesDesc
+   */
+  @Explain(displayName = "Show Databases Operator")
+  public ShowDatabasesDesc getShowDatabasesDesc() {
+    return showDatabasesDesc;
+  }
+
+  /**
+   * @param showDatabasesDesc
+   *          the showDatabasesDesc to set
+   */
+  public void setShowDatabasesDesc(ShowDatabasesDesc showDatabasesDesc) {
+    this.showDatabasesDesc = showDatabasesDesc;
   }
 
   /**

@@ -85,6 +85,7 @@ TOK_STRING;
 TOK_LIST;
 TOK_STRUCT;
 TOK_MAP;
+TOK_CREATEDATABASE;
 TOK_CREATETABLE;
 TOK_CREATEINDEX;
 TOK_CREATEINDEX_INDEXTBLNAME;
@@ -113,6 +114,7 @@ TOK_ALTERTABLE_PROPERTIES;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERINDEX_REBUILD;
 TOK_MSCK;
+TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
 TOK_SHOWFUNCTIONS;
 TOK_SHOWPARTITIONS;
@@ -120,7 +122,10 @@ TOK_SHOW_TABLESTATUS;
 TOK_SHOWLOCKS;
 TOK_LOCKTABLE;
 TOK_UNLOCKTABLE;
+TOK_SWITCHDATABASE;
+TOK_DROPDATABASE;
 TOK_DROPTABLE;
+TOK_DATABASECOMMENT;
 TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
@@ -162,6 +167,7 @@ TOK_TABLEPROPLIST;
 TOK_TABTYPE;
 TOK_LIMIT;
 TOK_TABLEPROPERTY;
+TOK_IFEXISTS;
 TOK_IFNOTEXISTS;
 TOK_HINTLIST;
 TOK_HINT;
@@ -227,7 +233,10 @@ loadStatement
 ddlStatement
 @init { msgs.push("ddl statement"); }
 @after { msgs.pop(); }
-    : createTableStatement
+    : createDatabaseStatement
+    | switchDatabaseStatement
+    | dropDatabaseStatement
+    | createTableStatement
     | dropTableStatement
     | alterStatement
     | descStatement
@@ -244,11 +253,50 @@ ddlStatement
     | unlockStatement
     ;
 
+ifExists
+@init { msgs.push("if exists clause"); }
+@after { msgs.pop(); }
+    : KW_IF KW_EXISTS
+    -> ^(TOK_IFEXISTS)
+    ;
+
 ifNotExists
 @init { msgs.push("if not exists clause"); }
 @after { msgs.pop(); }
     : KW_IF KW_NOT KW_EXISTS
     -> ^(TOK_IFNOTEXISTS)
+    ;
+
+
+createDatabaseStatement
+@init { msgs.push("create database statement"); }
+@after { msgs.pop(); }
+    : KW_CREATE (KW_DATABASE|KW_SCHEMA)
+        ifNotExists?
+        name=Identifier
+        databaseComment?
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment?)
+    ;
+
+switchDatabaseStatement
+@init { msgs.push("switch database statement"); }
+@after { msgs.pop(); }
+    : KW_USE Identifier
+    -> ^(TOK_SWITCHDATABASE Identifier)
+    ;
+
+dropDatabaseStatement
+@init { msgs.push("drop database statement"); }
+@after { msgs.pop(); }
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? Identifier
+    -> ^(TOK_DROPDATABASE Identifier ifExists?)
+    ;
+
+databaseComment
+@init { msgs.push("database's comment"); }
+@after { msgs.pop(); }
+    : KW_COMMENT comment=StringLiteral
+    -> ^(TOK_DATABASECOMMENT $comment)
     ;
 
 createTableStatement
@@ -577,7 +625,8 @@ descStatement
 showStatement
 @init { msgs.push("show statement"); }
 @after { msgs.pop(); }
-    : KW_SHOW KW_TABLES showStmtIdentifier?  -> ^(TOK_SHOWTABLES showStmtIdentifier?)
+    : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
+    | KW_SHOW KW_TABLES showStmtIdentifier?  -> ^(TOK_SHOWTABLES showStmtIdentifier?)
     | KW_SHOW KW_FUNCTIONS showStmtIdentifier?  -> ^(TOK_SHOWFUNCTIONS showStmtIdentifier?)
     | KW_SHOW KW_PARTITIONS Identifier partitionSpec? -> ^(TOK_SHOWPARTITIONS Identifier partitionSpec?)
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
@@ -1786,6 +1835,7 @@ KW_INTERSECT: 'INTERSECT';
 KW_VIEW: 'VIEW';
 KW_IN: 'IN';
 KW_DATABASE: 'DATABASE';
+KW_DATABASES: 'DATABASES';
 KW_MATERIALIZED: 'MATERIALIZED';
 KW_SCHEMA: 'SCHEMA';
 KW_SCHEMAS: 'SCHEMAS';
@@ -1821,6 +1871,7 @@ KW_LATERAL: 'LATERAL';
 KW_TOUCH: 'TOUCH';
 KW_ARCHIVE: 'ARCHIVE';
 KW_UNARCHIVE: 'UNARCHIVE';
+KW_USE: 'USE';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -18,6 +18,16 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde.Constants.COLLECTION_DELIM;
+import static org.apache.hadoop.hive.serde.Constants.ESCAPE_CHAR;
+import static org.apache.hadoop.hive.serde.Constants.FIELD_DELIM;
+import static org.apache.hadoop.hive.serde.Constants.LINE_DELIM;
+import static org.apache.hadoop.hive.serde.Constants.MAPKEY_DELIM;
+import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT;
+import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +52,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -51,7 +62,6 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
-import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -72,6 +82,7 @@ public class Hive {
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
+  private String currentDatabase;
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal() {
     @Override
@@ -172,6 +183,69 @@ public class Hive {
   }
 
   /**
+   * Create a database
+   * @param db
+   * @param ifNotExist if true, will ignore AlreadyExistsException exception
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDatabase(Database db, boolean ifNotExist)
+      throws AlreadyExistsException, HiveException {
+    try {
+      getMSC().createDatabase(db);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExist) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Create a Database. Raise an error if a database with the same name already exists.
+   * @param db
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createDatabase(Database db) throws AlreadyExistsException, HiveException {
+    createDatabase(db, false);
+  }
+
+  /**
+   * Drop a database.
+   * @param name
+   * @throws NoSuchObjectException
+   * @throws HiveException
+   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
+   */
+  public void dropDatabase(String name) throws HiveException, NoSuchObjectException {
+    dropDatabase(name, true, false);
+  }
+
+
+  /**
+   * Drop a database
+   * @param name
+   * @param deleteData
+   * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
+   * @return
+   * @throws HiveException
+   * @throws NoSuchObjectException
+   */
+  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
+      throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().dropDatabase(name, deleteData, ignoreUnknownDb);
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+
+  /**
    * Creates a table metdata and the directory for the table data
    *
    * @param tableName
@@ -223,13 +297,12 @@ public class Hive {
       throw new HiveException("columns not specified for table " + tableName);
     }
 
-    Table tbl = new Table(tableName);
+    Table tbl = new Table(getCurrentDatabase(), tableName);
     tbl.setInputFormatClass(fileInputFormat.getName());
     tbl.setOutputFormatClass(fileOutputFormat.getName());
 
     for (String col : columns) {
-      FieldSchema field = new FieldSchema(col,
-          org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME, "default");
+      FieldSchema field = new FieldSchema(col, STRING_TYPE_NAME, "default");
       tbl.getCols().add(field);
     }
 
@@ -237,9 +310,7 @@ public class Hive {
       for (String partCol : partCols) {
         FieldSchema part = new FieldSchema();
         part.setName(partCol);
-        part.setType(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME); // default
-                                                                               // partition
-                                                                               // key
+        part.setType(STRING_TYPE_NAME); // default partition key
         tbl.getPartCols().add(part);
       }
     }
@@ -263,8 +334,7 @@ public class Hive {
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
     try {
-      getMSC().alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName,
-          newTbl.getTTable());
+      getMSC().alter_table(getCurrentDatabase(), tblName, newTbl.getTTable());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table.", e);
     } catch (TException e) {
@@ -286,7 +356,7 @@ public class Hive {
   public void alterPartition(String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
     try {
-      getMSC().alter_partition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName,
+      getMSC().alter_partition(getCurrentDatabase(), tblName,
           newPart.getTPartition());
 
     } catch (MetaException e) {
@@ -318,6 +388,9 @@ public class Hive {
    */
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
     try {
+      if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
+        tbl.setDbName(getCurrentDatabase());
+      }
       if (tbl.getCols().size() == 0) {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
@@ -377,7 +450,7 @@ public class Hive {
       throws HiveException {
 
     try {
-      String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+      String dbName = getCurrentDatabase();
       Index old_index = null;
       try {
         old_index = getIndex(dbName, tableName, indexName);
@@ -420,22 +493,20 @@ public class Hive {
       }
 
       if (fieldDelim != null) {
-        serdeInfo.getParameters().put(Constants.FIELD_DELIM, fieldDelim);
-        serdeInfo.getParameters().put(Constants.SERIALIZATION_FORMAT,
-            fieldDelim);
+        serdeInfo.getParameters().put(FIELD_DELIM, fieldDelim);
+        serdeInfo.getParameters().put(SERIALIZATION_FORMAT, fieldDelim);
       }
       if (fieldEscape != null) {
-        serdeInfo.getParameters().put(Constants.ESCAPE_CHAR, fieldEscape);
+        serdeInfo.getParameters().put(ESCAPE_CHAR, fieldEscape);
       }
       if (collItemDelim != null) {
-        serdeInfo.getParameters()
-            .put(Constants.COLLECTION_DELIM, collItemDelim);
+        serdeInfo.getParameters().put(COLLECTION_DELIM, collItemDelim);
       }
       if (mapKeyDelim != null) {
-        serdeInfo.getParameters().put(Constants.MAPKEY_DELIM, mapKeyDelim);
+        serdeInfo.getParameters().put(MAPKEY_DELIM, mapKeyDelim);
       }
       if (lineDelim != null) {
-        serdeInfo.getParameters().put(Constants.LINE_DELIM, lineDelim);
+        serdeInfo.getParameters().put(LINE_DELIM, lineDelim);
       }
 
       if (serdeProps != null) {
@@ -481,7 +552,7 @@ public class Hive {
       HiveIndexHandler indexHandler = HiveUtils.getIndexHandler(this.getConf(), indexHandlerClass);
 
       if (indexHandler.usesIndexTable()) {
-        tt = new org.apache.hadoop.hive.ql.metadata.Table(indexTblName).getTTable();
+        tt = new org.apache.hadoop.hive.ql.metadata.Table(dbName, indexTblName).getTTable();
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
         tt.setTableType(TableType.INDEX_TABLE.toString());
@@ -537,6 +608,26 @@ public class Hive {
    * @throws HiveException
    *           thrown if the drop fails
    */
+  public void dropTable(String tableName) throws HiveException {
+    dropTable(getCurrentDatabase(), tableName, true, true);
+  }
+
+  /**
+   * Drops table along with the data in it. If the table doesn't exist
+   * then it is a no-op
+   * @param dbName database where the table lives
+   * @param tableName table to drop
+   * @throws HiveException thrown if the drop fails
+   * Drops table along with the data in it. If the table doesn't exist then it
+   * is a no-op
+   *
+   * @param dbName
+   *          database where the table lives
+   * @param tableName
+   *          table to drop
+   * @throws HiveException
+   *           thrown if the drop fails
+   */
   public void dropTable(String dbName, String tableName) throws HiveException {
     dropTable(dbName, tableName, true, true);
   }
@@ -570,7 +661,18 @@ public class Hive {
   }
 
   /**
-   * Returns metadata of the table.
+   * Returns metadata for the table named tableName in the current database.
+   * @param tableName the name of the table
+   * @return
+   * @throws HiveException if there's an internal error or if the
+   * table doesn't exist
+   */
+  public Table getTable(final String tableName) throws HiveException {
+    return this.getTable(getCurrentDatabase(), tableName, true);
+  }
+
+  /**
+   * Returns metadata of the table
    *
    * @param dbName
    *          the name of the database
@@ -580,9 +682,7 @@ public class Hive {
    * @exception HiveException
    *              if there's an internal error or if the table doesn't exist
    */
-  public Table getTable(final String dbName, final String tableName)
-      throws HiveException {
-
+  public Table getTable(final String dbName, final String tableName) throws HiveException {
     return this.getTable(dbName, tableName, true);
   }
 
@@ -623,12 +723,11 @@ public class Hive {
     if (!TableType.VIRTUAL_VIEW.toString().equals(tTable.getTableType())) {
       // Fix the non-printable chars
       Map<String, String> parameters = tTable.getSd().getParameters();
-      String sf = parameters.get(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
+      String sf = parameters.get(SERIALIZATION_FORMAT);
       if (sf != null) {
         char[] b = sf.toCharArray();
         if ((b.length == 1) && (b[0] < 10)) { // ^A, ^B, ^C, ^D, \t
-          parameters.put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
-              Integer.toString(b[0]));
+          parameters.put(SERIALIZATION_FORMAT, Integer.toString(b[0]));
         }
       }
 
@@ -654,12 +753,27 @@ public class Hive {
     return table;
   }
 
+  /**
+   * Get all table names for the current database.
+   * @return List of table names
+   * @throws HiveException
+   */
   public List<String> getAllTables() throws HiveException {
-    return getTablesByPattern(".*");
+    return getAllTables(getCurrentDatabase());
   }
 
   /**
-   * returns all existing tables from default database which match the given
+   * Get all table names for the specified database.
+   * @param dbName
+   * @return List of table names
+   * @throws HiveException
+   */
+  public List<String> getAllTables(String dbName) throws HiveException {
+    return getTablesByPattern(dbName, ".*");
+  }
+
+  /**
+   * Returns all existing tables from default database which match the given
    * pattern. The matching occurs as per Java regular expressions
    *
    * @param tablePattern
@@ -667,13 +781,28 @@ public class Hive {
    * @return list of table names
    * @throws HiveException
    */
-  public List<String> getTablesByPattern(String tablePattern)
-      throws HiveException {
-    return getTablesForDb(MetaStoreUtils.DEFAULT_DATABASE_NAME, tablePattern);
+  public List<String> getTablesByPattern(String tablePattern) throws HiveException {
+    return getTablesByPattern(getCurrentDatabase(), tablePattern);
   }
 
   /**
-   * returns all existing tables from the given database which match the given
+   * Returns all existing tables from the specified database which match the given
+   * pattern. The matching occurs as per Java regular expressions.
+   * @param dbName
+   * @param tablePattern
+   * @return list of table names
+   * @throws HiveException
+   */
+  public List<String> getTablesByPattern(String dbName, String tablePattern) throws HiveException {
+    try {
+      return getMSC().getTables(dbName, tablePattern);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Returns all existing tables from the given database which match the given
    * pattern. The matching occurs as per Java regular expressions
    *
    * @param database
@@ -693,30 +822,57 @@ public class Hive {
   }
 
   /**
-   * @param name
-   * @param locationUri
-   * @return true or false
-   * @throws AlreadyExistsException
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#createDatabase(java.lang.String,
-   *      java.lang.String)
+   * Get all existing database names.
+   *
+   * @return List of database names.
+   * @throws HiveException
    */
-  protected boolean createDatabase(String name, String locationUri)
-      throws AlreadyExistsException, MetaException, TException {
-    return getMSC().createDatabase(name, locationUri);
+  public List<String> getAllDatabases() throws HiveException {
+    try {
+      return getMSC().getAllDatabases();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
-   * @param name
-   * @return true or false
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
+   * Get all existing databases that match the given
+   * pattern. The matching occurs as per Java regular expressions
+   *
+   * @param databasePattern
+   *          java re pattern
+   * @return list of database names
+   * @throws HiveException
    */
-  protected boolean dropDatabase(String name) throws MetaException, TException {
-    return getMSC().dropDatabase(name);
+  public List<String> getDatabasesByPattern(String databasePattern) throws HiveException {
+    try {
+      return getMSC().getDatabases(databasePattern);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
+
+  /**
+   * Query metadata to see if a database with the given name already exists.
+   *
+   * @param dbName
+   * @return true if a database with the given name already exists, false if
+   *         does not exist.
+   * @throws HiveException
+   */
+  public boolean databaseExists(String dbName) throws HiveException {
+    try {
+      if (null != getMSC().getDatabase(dbName)) {
+        return true;
+      }
+      return false;
+    } catch (NoSuchObjectException e) {
+      return false;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
 
   /**
    * Load a directory into a Hive Table Partition - Alters existing content of
@@ -740,7 +896,7 @@ public class Hive {
       Map<String, String> partSpec, boolean replace, Path tmpDirPath,
       boolean holdDDLTime)
       throws HiveException {
-    Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+    Table tbl = getTable(tableName);
     try {
       /**
        * Move files before creating the partition since down stream processes
@@ -865,7 +1021,7 @@ public class Hive {
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
       Path tmpDirPath, boolean holdDDLTime) throws HiveException {
-    Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+    Table tbl = getTable(tableName);
 
     if (replace) {
       tbl.replaceFiles(loadPath, tmpDirPath);
@@ -1122,6 +1278,25 @@ public class Hive {
     return qlPartitions;
   }
 
+  /**
+   * Get the name of the current database
+   * @return
+   */
+  public String getCurrentDatabase() {
+    if (null == currentDatabase) {
+      currentDatabase = DEFAULT_DATABASE_NAME;
+    }
+    return currentDatabase;
+  }
+
+  /**
+   * Set the name of the current database
+   * @param currentDatabase
+   */
+  public void setCurrentDatabase(String currentDatabase) {
+    this.currentDatabase = currentDatabase;
+  }
+
   static private void checkPaths(FileSystem fs, FileStatus[] srcs, Path destf,
       boolean replace) throws HiveException {
     try {
@@ -1284,10 +1459,8 @@ public class Hive {
               return null;
             }
             HiveStorageHandler storageHandler =
-              HiveUtils.getStorageHandler(
-                conf,
-                tbl.getParameters().get(
-                    org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE));
+              HiveUtils.getStorageHandler(conf,
+                tbl.getParameters().get(META_TABLE_STORAGE));
             if (storageHandler == null) {
               return null;
             }

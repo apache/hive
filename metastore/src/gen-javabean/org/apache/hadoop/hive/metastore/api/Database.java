@@ -22,11 +22,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("Database");
   private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
   private static final TField DESCRIPTION_FIELD_DESC = new TField("description", TType.STRING, (short)2);
+  private static final TField LOCATION_URI_FIELD_DESC = new TField("locationUri", TType.STRING, (short)3);
 
   private String name;
   public static final int NAME = 1;
   private String description;
   public static final int DESCRIPTION = 2;
+  private String locationUri;
+  public static final int LOCATIONURI = 3;
 
   private final Isset __isset = new Isset();
   private static final class Isset implements java.io.Serializable {
@@ -36,6 +39,8 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     put(DESCRIPTION, new FieldMetaData("description", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(LOCATIONURI, new FieldMetaData("locationUri", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
   }});
 
@@ -48,11 +53,13 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
 
   public Database(
     String name,
-    String description)
+    String description,
+    String locationUri)
   {
     this();
     this.name = name;
     this.description = description;
+    this.locationUri = locationUri;
   }
 
   /**
@@ -64,6 +71,9 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     }
     if (other.isSetDescription()) {
       this.description = other.description;
+    }
+    if (other.isSetLocationUri()) {
+      this.locationUri = other.locationUri;
     }
   }
 
@@ -106,6 +116,23 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     return this.description != null;
   }
 
+  public String getLocationUri() {
+    return this.locationUri;
+  }
+
+  public void setLocationUri(String locationUri) {
+    this.locationUri = locationUri;
+  }
+
+  public void unsetLocationUri() {
+    this.locationUri = null;
+  }
+
+  // Returns true if field locationUri is set (has been asigned a value) and false otherwise
+  public boolean isSetLocationUri() {
+    return this.locationUri != null;
+  }
+
   public void setFieldValue(int fieldID, Object value) {
     switch (fieldID) {
     case NAME:
@@ -124,6 +151,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       }
       break;
 
+    case LOCATIONURI:
+      if (value == null) {
+        unsetLocationUri();
+      } else {
+        setLocationUri((String)value);
+      }
+      break;
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -137,6 +172,9 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     case DESCRIPTION:
       return getDescription();
 
+    case LOCATIONURI:
+      return getLocationUri();
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -149,6 +187,8 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       return isSetName();
     case DESCRIPTION:
       return isSetDescription();
+    case LOCATIONURI:
+      return isSetLocationUri();
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -185,6 +225,15 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
         return false;
     }
 
+    boolean this_present_locationUri = true && this.isSetLocationUri();
+    boolean that_present_locationUri = true && that.isSetLocationUri();
+    if (this_present_locationUri || that_present_locationUri) {
+      if (!(this_present_locationUri && that_present_locationUri))
+        return false;
+      if (!this.locationUri.equals(that.locationUri))
+        return false;
+    }
+
     return true;
   }
 
@@ -218,6 +267,13 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case LOCATIONURI:
+          if (field.type == TType.STRING) {
+            this.locationUri = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -243,6 +299,11 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       oprot.writeString(this.description);
       oprot.writeFieldEnd();
     }
+    if (this.locationUri != null) {
+      oprot.writeFieldBegin(LOCATION_URI_FIELD_DESC);
+      oprot.writeString(this.locationUri);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -265,6 +326,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       sb.append("null");
     } else {
       sb.append(this.description);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("locationUri:");
+    if (this.locationUri == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.locationUri);
     }
     first = false;
     sb.append(")");

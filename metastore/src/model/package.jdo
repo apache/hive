@@ -8,12 +8,15 @@
         <column name="DB_ID"/>
       </datastore-identity>
       <field name="name">  
-        <column name="NAME" length="128" jdbc-type="VARCHAR"/>  
+        <column name="NAME" length="128" jdbc-type="VARCHAR"/>
         <index name="UniqueDatabase" unique="true"/>
       </field>
-      <field name="description">  
-        <column name="DESC" length="767" jdbc-type="VARCHAR"/>  
-      </field>  
+      <field name="description">
+        <column name="DESC" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="locationUri">
+        <column name="DB_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">

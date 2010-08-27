@@ -286,126 +286,133 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public boolean createDatabase(Database db) {
-    boolean success = false;
+  public void createDatabase(Database db) throws InvalidObjectException, MetaException {
     boolean commited = false;
-    MDatabase mdb = new MDatabase(db.getName().toLowerCase(), db
-        .getDescription());
+    MDatabase mdb = new MDatabase();
+    mdb.setName(db.getName().toLowerCase());
+    mdb.setLocationUri(db.getLocationUri());
+    mdb.setDescription(db.getDescription());
     try {
       openTransaction();
       pm.makePersistent(mdb);
-      success = true;
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-    return success;
-  }
-
-  public boolean createDatabase(String name) {
-    // TODO: get default path
-    Database db = new Database(name, "default_path");
-    return this.createDatabase(db);
   }
 
   @SuppressWarnings("nls")
   private MDatabase getMDatabase(String name) throws NoSuchObjectException {
-    MDatabase db = null;
+    MDatabase mdb = null;
     boolean commited = false;
     try {
       openTransaction();
-      name = name.toLowerCase();
+      name = name.toLowerCase().trim();
       Query query = pm.newQuery(MDatabase.class, "name == dbname");
       query.declareParameters("java.lang.String dbname");
       query.setUnique(true);
-      db = (MDatabase) query.execute(name.trim());
-      pm.retrieve(db);
+      mdb = (MDatabase) query.execute(name);
+      pm.retrieve(mdb);
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-    if (db == null) {
+    if (mdb == null) {
       throw new NoSuchObjectException("There is no database named " + name);
     }
-    return db;
+    return mdb;
   }
 
   public Database getDatabase(String name) throws NoSuchObjectException {
-    MDatabase db = null;
+    MDatabase mdb = null;
     boolean commited = false;
     try {
       openTransaction();
-      db = getMDatabase(name);
+      mdb = getMDatabase(name);
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-    return new Database(db.getName(), db.getDescription());
+    Database db = new Database();
+    db.setName(mdb.getName());
+    db.setDescription(mdb.getDescription());
+    db.setLocationUri(mdb.getLocationUri());
+    return db;
   }
 
-  public boolean dropDatabase(String dbname) {
-
+  public boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException {
     boolean success = false;
-    boolean commited = false;
+    LOG.info("Dropping database " + dbname + " along with all tables");
+    dbname = dbname.toLowerCase();
     try {
       openTransaction();
 
       // first drop tables
-      dbname = dbname.toLowerCase();
-      LOG.info("Dropping database along with all tables " + dbname);
-      Query q1 = pm.newQuery(MTable.class, "database.name == dbName");
-      q1.declareParameters("java.lang.String dbName");
-      List<MTable> mtbls = (List<MTable>) q1.execute(dbname.trim());
-      pm.deletePersistentAll(mtbls);
+      for (String tableName : getAllTables(dbname)) {
+        dropTable(dbname, tableName);
+      }
 
       // then drop the database
-      Query query = pm.newQuery(MDatabase.class, "name == dbName");
-      query.declareParameters("java.lang.String dbName");
-      query.setUnique(true);
-      MDatabase db = (MDatabase) query.execute(dbname.trim());
+      MDatabase db = getMDatabase(dbname);
       pm.retrieve(db);
-
-      // StringIdentity id = new StringIdentity(MDatabase.class, dbname);
-      // MDatabase db = (MDatabase) pm.getObjectById(id);
       if (db != null) {
         pm.deletePersistent(db);
       }
-      commited = commitTransaction();
-      success = true;
-    } catch (JDOObjectNotFoundException e) {
-      LOG.debug("database not found " + dbname, e);
-      commited = commitTransaction();
+      success = commitTransaction();
     } finally {
-      if (!commited) {
+      if (!success) {
         rollbackTransaction();
       }
     }
     return success;
   }
 
-  public List<String> getDatabases() {
-    List dbs = null;
+
+  public List<String> getDatabases(String pattern) throws MetaException {
     boolean commited = false;
+    List<String> databases = null;
     try {
       openTransaction();
-      Query query = pm.newQuery(MDatabase.class);
-      query.setResult("name");
-      query.setResultClass(String.class);
-      query.setOrdering("name asc");
-      dbs = (List) query.execute();
+      // Take the pattern and split it on the | to get all the composing
+      // patterns
+      String[] subpatterns = pattern.trim().split("\\|");
+      String query = "select name from org.apache.hadoop.hive.metastore.model.MDatabase where (";
+      boolean first = true;
+      for (String subpattern : subpatterns) {
+        subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+        if (!first) {
+          query = query + " || ";
+        }
+        query = query + " name.matches(\"" + subpattern + "\")";
+        first = false;
+      }
+      query = query + ")";
+
+      Query q = pm.newQuery(query);
+      q.setResult("name");
+      q.setOrdering("name ascending");
+      Collection names = (Collection) q.execute();
+      databases = new ArrayList<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        databases.add((String) i.next());
+      }
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-    return dbs;
+    return databases;
+  }
+
+  public List<String> getAllDatabases() throws MetaException {
+    return getDatabases(".*");
   }
 
   private MType getMType(Type type) {
@@ -470,7 +477,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   public boolean dropType(String typeName) {
-
     boolean success = false;
     boolean commited = false;
     try {
@@ -494,8 +500,7 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  public void createTable(Table tbl) throws InvalidObjectException,
-      MetaException {
+  public void createTable(Table tbl) throws InvalidObjectException, MetaException {
     boolean commited = false;
     try {
       openTransaction();
@@ -509,8 +514,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public boolean dropTable(String dbName, String tableName) {
-
+  public boolean dropTable(String dbName, String tableName) throws MetaException {
     boolean success = false;
     try {
       openTransaction();
@@ -552,11 +556,13 @@ public class ObjectStore implements RawStore, Configurable {
     List<String> tbls = null;
     try {
       openTransaction();
-      dbName = dbName.toLowerCase();
+      dbName = dbName.toLowerCase().trim();
       // Take the pattern and split it on the | to get all the composing
       // patterns
       String[] subpatterns = pattern.trim().split("\\|");
-      String query = "select tableName from org.apache.hadoop.hive.metastore.model.MTable where database.name == dbName && (";
+      String query =
+        "select tableName from org.apache.hadoop.hive.metastore.model.MTable "
+        + "where database.name == dbName && (";
       boolean first = true;
       for (String subpattern : subpatterns) {
         subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
@@ -571,7 +577,8 @@ public class ObjectStore implements RawStore, Configurable {
       Query q = pm.newQuery(query);
       q.declareParameters("java.lang.String dbName");
       q.setResult("tableName");
-      Collection names = (Collection) q.execute(dbName.trim());
+      q.setOrdering("tableName ascending");
+      Collection names = (Collection) q.execute(dbName);
       tbls = new ArrayList<String>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         tbls.add((String) i.next());
@@ -585,18 +592,21 @@ public class ObjectStore implements RawStore, Configurable {
     return tbls;
   }
 
+  public List<String> getAllTables(String dbName) throws MetaException {
+    return getTables(dbName, ".*");
+  }
+
   private MTable getMTable(String db, String table) {
     MTable mtbl = null;
     boolean commited = false;
     try {
       openTransaction();
-      db = db.toLowerCase();
-      table = table.toLowerCase();
-      Query query = pm.newQuery(MTable.class,
-          "tableName == table && database.name == db");
+      db = db.toLowerCase().trim();
+      table = table.toLowerCase().trim();
+      Query query = pm.newQuery(MTable.class, "tableName == table && database.name == db");
       query.declareParameters("java.lang.String table, java.lang.String db");
       query.setUnique(true);
-      mtbl = (MTable) query.execute(table.trim(), db.trim());
+      mtbl = (MTable) query.execute(table, db);
       pm.retrieve(mtbl);
       commited = commitTransaction();
     } finally {
@@ -641,7 +651,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new InvalidObjectException("Database " + tbl.getDbName()
-          + " doesn't exsit.");
+          + " doesn't exist.");
     }
 
     // If the table has property EXTERNAL set, update table type
@@ -790,8 +800,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
+      dbName = dbName.toLowerCase().trim();
+      tableName = tableName.toLowerCase().trim();
       MTable mtbl = getMTable(dbName, tableName);
       if (mtbl == null) {
         commited = commitTransaction();
@@ -801,13 +811,11 @@ public class ObjectStore implements RawStore, Configurable {
       // redundant
       String name = Warehouse.makePartName(convertToFieldSchemas(mtbl
           .getPartitionKeys()), part_vals);
-      Query query = pm
-          .newQuery(MPartition.class,
-              "table.tableName == t1 && table.database.name == t2 && partitionName == t3");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      Query query = pm.newQuery(MPartition.class,
+          "table.tableName == t1 && table.database.name == t2 && partitionName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setUnique(true);
-      mpart = (MPartition) query.execute(tableName.trim(), dbName.trim(), name);
+      mpart = (MPartition) query.execute(tableName, dbName, name);
       pm.retrieve(mpart);
       commited = commitTransaction();
     } finally {
@@ -888,14 +896,15 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing getPartitionNames");
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
-      Query q = pm
-          .newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition where table.database.name == t1 && table.tableName == t2 order by partitionName asc");
+      dbName = dbName.toLowerCase().trim();
+      tableName = tableName.toLowerCase().trim();
+      Query q = pm.newQuery(
+          "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+          + "where table.database.name == t1 && table.tableName == t2 "
+          + "order by partitionName asc");
       q.declareParameters("java.lang.String t1, java.lang.String t2");
       q.setResult("partitionName");
-      Collection names = (Collection) q
-          .execute(dbName.trim(), tableName.trim());
+      Collection names = (Collection) q.execute(dbName, tableName);
       pns = new ArrayList<String>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
@@ -917,13 +926,12 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listMPartitions");
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
+      dbName = dbName.toLowerCase().trim();
+      tableName = tableName.toLowerCase().trim();
       Query query = pm.newQuery(MPartition.class,
           "table.tableName == t1 && table.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
-      mparts = (List<MPartition>) query
-          .execute(tableName.trim(), dbName.trim());
+      mparts = (List<MPartition>) query.execute(tableName, dbName);
       LOG.debug("Done executing query for listMPartitions");
       pm.retrieveAll(mparts);
       success = commitTransaction();
@@ -1077,27 +1085,25 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-  
+
   private MIndex getMIndex(String dbName, String originalTblName, String indexName) throws MetaException {
     MIndex midx = null;
     boolean commited = false;
     try {
       openTransaction();
-      dbName = dbName.toLowerCase();
-      originalTblName = originalTblName.toLowerCase();
+      dbName = dbName.toLowerCase().trim();
+      originalTblName = originalTblName.toLowerCase().trim();
       MTable mtbl = getMTable(dbName, originalTblName);
       if (mtbl == null) {
         commited = commitTransaction();
         return null;
       }
 
-      Query query = pm
-          .newQuery(MIndex.class,
-              "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
-      query
-          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      Query query = pm.newQuery(MIndex.class,
+        "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setUnique(true);
-      midx = (MIndex) query.execute(originalTblName.trim(), dbName.trim(), indexName);
+      midx = (MIndex) query.execute(originalTblName, dbName, indexName);
       pm.retrieve(midx);
       commited = commitTransaction();
     } finally {
@@ -1126,7 +1132,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new Index(
     mIndex.getIndexName(),
     mIndex.getIndexHandlerClass(),
-    MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    mIndex.getOrigTable().getDatabase().getName(),
     mIndex.getOrigTable().getTableName(),
     mIndex.getCreateTime(),
     mIndex.getLastAccessTime(),
@@ -1156,7 +1162,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-  
+
   private List<MIndex> listMIndexes(String dbName, String origTableName,
       int max) {
     boolean success = false;
@@ -1164,13 +1170,12 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listMIndexes");
-      dbName = dbName.toLowerCase();
-      origTableName = origTableName.toLowerCase();
+      dbName = dbName.toLowerCase().trim();
+      origTableName = origTableName.toLowerCase().trim();
       Query query = pm.newQuery(MIndex.class,
           "origTable.tableName == t1 && origTable.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
-      mindexes = (List<MIndex>) query
-          .execute(origTableName.trim(), dbName.trim());
+      mindexes = (List<MIndex>) query.execute(origTableName, dbName);
       LOG.debug("Done executing query for listMIndexes");
       pm.retrieveAll(mindexes);
       success = commitTransaction();
@@ -1191,14 +1196,15 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listIndexNames");
-      dbName = dbName.toLowerCase();
-      origTableName = origTableName.toLowerCase();
-      Query q = pm
-          .newQuery("select indexName from org.apache.hadoop.hive.metastore.model.MIndex where origTable.database.name == t1 && origTable.tableName == t2 order by indexName asc");
+      dbName = dbName.toLowerCase().trim();
+      origTableName = origTableName.toLowerCase().trim();
+      Query q = pm.newQuery(
+          "select indexName from org.apache.hadoop.hive.metastore.model.MIndex "
+          + "where origTable.database.name == t1 && origTable.tableName == t2 "
+          + "order by indexName asc");
       q.declareParameters("java.lang.String t1, java.lang.String t2");
       q.setResult("indexName");
-      Collection names = (Collection) q
-          .execute(dbName.trim(), origTableName.trim());
+      Collection names = (Collection) q.execute(dbName, origTableName);
       pns = new ArrayList<String>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
