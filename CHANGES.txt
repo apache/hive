@@ -229,6 +229,9 @@ Trunk -  Unreleased
     the correct directory
     (Ning Zhang via jvs)
 
+    HIVE-1601. Hadoop 0.17 ant test broken by HIVE-1523
+    (Joydeep Sen Sarma via jvs)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

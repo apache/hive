@@ -49,7 +49,7 @@
     <pathelement location="${common.jar}"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
-    <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="jsp-2.1/*.jar"/>
     <path refid="classpath"/>
   </path>
 
@@ -97,17 +97,24 @@
               hadoopVersion="${hadoopVersion}"
     />
 
-    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
-              templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
-              queryDirectory="${ql.test.query.clientpositive.dir}" 
-              queryFile="${minimr.query.files}"
-              queryFileRegex="${qfile_regex}"
-              clusterMode="miniMR"
-              resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestMinimrCliDriver"
-              logFile="${test.log.dir}/testminimrclidrivergen.log"
-              logDirectory="${test.log.dir}/clientpositive"
-              hadoopVersion="${hadoopVersion}"
-    />
+    <if>
+      <not>
+        <matches string="${hadoop.version.ant-internal}" pattern="^0\.17\..*" />
+      </not>
+      <then>
+        <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+                  templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
+                  queryDirectory="${ql.test.query.clientpositive.dir}" 
+                  queryFile="${minimr.query.files}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="miniMR"
+                  resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestMinimrCliDriver"
+                  logFile="${test.log.dir}/testminimrclidrivergen.log"
+                  logDirectory="${test.log.dir}/clientpositive"
+                  hadoopVersion="${hadoopVersion}"
+                  />
+      </then>
+    </if>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 

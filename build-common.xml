@@ -64,6 +64,12 @@
     <path refid="classpath"/>
   </path>
 
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="${hive.root}/testlibs/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
   <!-- IVY properties set here -->
   <property name="build.ivy.dir" location="${build.dir.hive}/ivy"/>
   <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib"/>
