@@ -101,7 +101,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-06-07_217_8924431315853651638/-mr-10002 
+        file:/tmp/jsichi/hive_2010-08-27_14-01-08_880_5138753499787161938/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -125,7 +125,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest_l1
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-06-07_217_8924431315853651638/-mr-10004 
+        file:/tmp/jsichi/hive_2010-08-27_14-01-08_880_5138753499787161938/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -157,7 +157,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_13-06-07_217_8924431315853651638/-ext-10000
+          destination: pfile:/data/users/jsichi/open/commit-trunk/build/ql/scratchdir/hive_2010-08-27_14-01-08_880_5138753499787161938/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -172,7 +172,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_13-06-07_217_8924431315853651638/-ext-10003 
+        pfile:/data/users/jsichi/open/commit-trunk/build/ql/scratchdir/hive_2010-08-27_14-01-08_880_5138753499787161938/-ext-10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -264,8 +264,8 @@ FROM (SELECT t1.key, p1.value
       LEFT OUTER JOIN src p2
       ON (t2.key = p2.key)) j
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src1
 PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest_l1
 POSTHOOK: query: INSERT OVERWRITE TABLE dest_l1
 SELECT j.*
@@ -279,8 +279,8 @@ FROM (SELECT t1.key, p1.value
       LEFT OUTER JOIN src p2
       ON (t2.key = p2.key)) j
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_l1
 POSTHOOK: Lineage: dest_l1.key EXPRESSION [(src1)t1.FieldSchema(name:key, type:string, comment:default), (src1)t2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_l1.value EXPRESSION [(src)p2.FieldSchema(name:value, type:string, comment:default), (src)p1.FieldSchema(name:value, type:string, comment:default), ]

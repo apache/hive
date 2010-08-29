@@ -164,7 +164,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-09-43_090_1020814150085049302/-ext-10000
+          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-00-31_187_3818554291798258801/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-19_12-09-43_090_1020814150085049302/-ext-10002 
+        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-00-31_187_3818554291798258801/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -194,15 +194,15 @@ PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp2
 PREHOOK: Input: default@tmp1
+PREHOOK: Input: default@tmp2
 PREHOOK: Output: default@dest_j1
 POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp2
 POSTHOOK: Input: default@tmp1
+POSTHOOK: Input: default@tmp2
 POSTHOOK: Output: default@dest_j1
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
@@ -214,11 +214,11 @@ POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-09-48_080_5142795017860273901/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-34_763_7222853945015683789/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-09-48_080_5142795017860273901/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-34_763_7222853945015683789/-mr-10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]

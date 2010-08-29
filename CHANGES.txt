@@ -216,6 +216,9 @@ Trunk -  Unreleased
     HIVE-1594. Typo of hive.merge.size.smallfiles.avgsize prevents
     change of value. (Yun Huang Yong via namit)
 
+    HIVE-1600. Making test outputs deterministic by sorting inputs and outputs in hooks
+    (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

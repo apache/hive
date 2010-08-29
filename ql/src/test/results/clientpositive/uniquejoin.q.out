@@ -31,17 +31,17 @@ POSTHOOK: Output: default@t3
 PREHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), PRESERVE T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-37_498_6289754437459240853/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-24_069_7764691059022887570/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), PRESERVE T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-37_498_6289754437459240853/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-24_069_7764691059022887570/-mr-10000
 1	NULL	NULL
 2	2	2
 3	3	NULL
@@ -56,49 +56,49 @@ NULL	NULL	6
 PREHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key), T3 c (c.key)
 SELECT a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-40_127_7250085494294549177/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-28_719_4365937084792175328/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key), T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-40_127_7250085494294549177/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-28_719_4365937084792175328/-mr-10000
 2	2	2
 PREHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key-1), T3 c (c.key)
 SELECT a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-43_825_1567908835853076632/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-33_295_8916870494939642635/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key-1), T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-43_825_1567908835853076632/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-33_295_8916870494939642635/-mr-10000
 2	3	2
 7	8	7
 7	8	7
 PREHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key, a.val), PRESERVE T2 b (b.key, b.val), PRESERVE T3 c (c.key, c.val)
 SELECT a.key, a.val, b.key, b.val, c.key, c.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-46_450_7673639263976981471/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-38_025_3055236114247084019/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key, a.val), PRESERVE T2 b (b.key, b.val), PRESERVE T3 c (c.key, c.val)
 SELECT a.key, a.val, b.key, b.val, c.key, c.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-46_450_7673639263976981471/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-38_025_3055236114247084019/-mr-10000
 1	11	NULL	NULL	NULL	NULL
 2	12	NULL	NULL	2	12
 NULL	NULL	2	22	NULL	NULL
@@ -113,17 +113,17 @@ NULL	NULL	NULL	NULL	6	16
 PREHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-49_123_8832279231761811264/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-42_685_7167574432261426669/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-49_123_8832279231761811264/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-42_685_7167574432261426669/-mr-10000
 1	NULL	NULL
 2	2	2
 3	3	NULL
@@ -137,15 +137,15 @@ NULL	NULL	6
 PREHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b(b.key)
 SELECT a.key, b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-51_850_1196382022472758858/10000
+PREHOOK: Input: default@t2
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-47_377_9190717715738946261/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b(b.key)
 SELECT a.key, b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-42-51_850_1196382022472758858/10000
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-11-47_377_9190717715738946261/-mr-10000
 1	NULL
 2	2
 3	3

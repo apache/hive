@@ -100,8 +100,8 @@ PREHOOK: Output: default@test3b
 POSTHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@test3b
-POSTHOOK: Output: default@test3b
 POSTHOOK: Output: default@TEST3c
+POSTHOOK: Output: default@test3b
 PREHOOK: query: DESCRIBE TEST3c
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST3c
@@ -160,4 +160,4 @@ POSTHOOK: type: DESCTABLE
 r1	int	
 r2	double	
 	 	 
-Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1282028239, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1282028240, transient_lastDdlTime=1282028240}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:jsichi, createTime:1282863111, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:pfile:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=jsichi, last_modified_time=1282863112, transient_lastDdlTime=1282863112}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

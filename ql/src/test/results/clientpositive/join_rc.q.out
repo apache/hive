@@ -114,15 +114,15 @@ STAGE PLANS:
 PREHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@join_rc2
 PREHOOK: Input: default@join_rc1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-49_005_2982007273012088026/-mr-10000
+PREHOOK: Input: default@join_rc2
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-48_562_272409638263559506/-mr-10000
 POSTHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@join_rc2
 POSTHOOK: Input: default@join_rc1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-49_005_2982007273012088026/-mr-10000
+POSTHOOK: Input: default@join_rc2
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-48_562_272409638263559506/-mr-10000
 POSTHOOK: Lineage: join_rc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: join_rc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: join_rc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

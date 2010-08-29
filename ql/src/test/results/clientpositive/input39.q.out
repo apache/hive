@@ -150,7 +150,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_227_47797524032104088/-mr-10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-52-45_661_2147720856532036723/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -183,14 +183,14 @@ STAGE PLANS:
 
 PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2@ds=1
 PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_383_386196245099968730/-mr-10000
+PREHOOK: Input: default@t2@ds=1
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-52-45_820_1879500705005233044/-mr-10000
 POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2@ds=1
 POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-07-29_12-48-18_383_386196245099968730/-mr-10000
+POSTHOOK: Input: default@t2@ds=1
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-52-45_820_1879500705005233044/-mr-10000
 POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -26,11 +26,11 @@ POSTHOOK: Lineage: tmp.col9 EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-37_683_5319482143791387584/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_066_9191331330135572186/-mr-10000
 POSTHOOK: query: select * from tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-37_683_5319482143791387584/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_066_9191331330135572186/-mr-10000
 POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -138,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-37_907_1369838299280728635/-mr-10002 
+        file:/tmp/jsichi/hive_2010-08-26_16-00-50_333_7198447322152213728/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -224,17 +224,17 @@ SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111
 group by a.value, b.col5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-38_019_4750710911180862739/-mr-10000
+PREHOOK: Input: default@tmp
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_441_1604865558910370709/-mr-10000
 POSTHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
 SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111
 group by a.value, b.col5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_12-59-38_019_4750710911180862739/-mr-10000
+POSTHOOK: Input: default@tmp
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_441_1604865558910370709/-mr-10000
 POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

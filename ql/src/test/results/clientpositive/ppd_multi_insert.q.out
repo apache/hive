@@ -216,10 +216,10 @@ INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHER
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
 PREHOOK: Output: default@mi1
 PREHOOK: Output: default@mi2
 PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
 POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
@@ -227,10 +227,10 @@ INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHER
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
 POSTHOOK: Output: default@mi1
 POSTHOOK: Output: default@mi2
 POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -239,11 +239,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-54_953_7860817338533878265/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-32_780_6038103351737463067/-mr-10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-54_953_7860817338533878265/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-32_780_6038103351737463067/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -400,11 +400,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-55_006_6229034219349396892/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_072_1447950994639415029/-mr-10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-55_006_6229034219349396892/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_072_1447950994639415029/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -624,11 +624,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-55_057_3846144917217046584/10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_365_8344416518806586394/-mr-10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-46-55_057_3846144917217046584/10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_365_8344416518806586394/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

@@ -46,14 +46,14 @@ POSTHOOK: Lineage: src_two_columns.k1 SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: src_two_columns.v1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT /*+ MAPJOIN(six) */ six.*, two.k1 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_two_columns
 PREHOOK: Input: default@src_six_columns
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-15_717_1117205058531623654/10000
+PREHOOK: Input: default@src_two_columns
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-20_108_4263364980066320954/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(six) */ six.*, two.k1 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_two_columns
 POSTHOOK: Input: default@src_six_columns
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-15_717_1117205058531623654/10000
+POSTHOOK: Input: default@src_two_columns
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-20_108_4263364980066320954/-mr-10000
 POSTHOOK: Lineage: src_six_columns.k1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k3 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -64,14 +64,14 @@ POSTHOOK: Lineage: src_two_columns.k1 SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: src_two_columns.v1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT /*+ MAPJOIN(two) */ two.*, six.k3 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_two_columns
 PREHOOK: Input: default@src_six_columns
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-18_496_6407982316158329228/10000
+PREHOOK: Input: default@src_two_columns
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-23_213_3720062508928690752/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(two) */ two.*, six.k3 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_two_columns
 POSTHOOK: Input: default@src_six_columns
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-18_496_6407982316158329228/10000
+POSTHOOK: Input: default@src_two_columns
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-23_213_3720062508928690752/-mr-10000
 POSTHOOK: Lineage: src_six_columns.k1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k3 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

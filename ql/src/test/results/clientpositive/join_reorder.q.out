@@ -191,13 +191,13 @@ SELECT a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-55_951_7421942426050978131/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-55_909_642870158604473859/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-02-55_951_7421942426050978131/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-55_909_642870158604473859/-mr-10000
 1	11	0
 1	11	0
 1	11	0
@@ -207,13 +207,13 @@ SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-00_878_7390588821971448332/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-59_174_1281139540816451802/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-00_878_7390588821971448332/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-05-59_174_1281139540816451802/-mr-10000
 1	11	0
 1	11	0
 1	11	0
@@ -497,19 +497,19 @@ PREHOOK: query: FROM T1 a
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
 SELECT a.key, b.key, a.val, c.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-07_262_9113480534666709881/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-02_681_8146804917511289759/-mr-10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
 SELECT a.key, b.key, a.val, c.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-07_262_9113480534666709881/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-02_681_8146804917511289759/-mr-10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -519,19 +519,19 @@ PREHOOK: query: FROM T1 a
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
 SELECT /*+ STREAMTABLE(a) */ a.key, b.key, a.val, c.val
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-15_685_7005957441622210859/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-09_002_2308842085626596627/-mr-10000
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
 SELECT /*+ STREAMTABLE(a) */ a.key, b.key, a.val, c.val
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-15_685_7005957441622210859/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-09_002_2308842085626596627/-mr-10000
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -766,20 +766,20 @@ PREHOOK: query: FROM UNIQUEJOIN
   PRESERVE T3 c (c.key, c.val)
 SELECT a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-24_689_644851301802156755/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-15_440_3508804411194375153/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
   PRESERVE T3 c (c.key, c.val)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-24_689_644851301802156755/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-15_440_3508804411194375153/-mr-10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -797,20 +797,20 @@ PREHOOK: query: FROM UNIQUEJOIN
   PRESERVE T3 c (c.key, c.val)
 SELECT /*+ STREAMTABLE(b) */ a.key, b.key, c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-30_651_4057662598234428262/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-20_053_2355797831193656267/-mr-10000
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
   PRESERVE T3 c (c.key, c.val)
 SELECT /*+ STREAMTABLE(b) */ a.key, b.key, c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-03-30_651_4057662598234428262/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-20_053_2355797831193656267/-mr-10000
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL

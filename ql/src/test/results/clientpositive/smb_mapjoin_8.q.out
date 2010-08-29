@@ -47,14 +47,14 @@ POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-34_137_8141051139723931378/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-23-26_339_3909337999945942045/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-34_137_8141051139723931378/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-23-26_339_3909337999945942045/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -67,14 +67,14 @@ NULL	NULL	3000	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-36_691_9046607359163451591/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-23-38_317_508151892313324438/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-36_691_9046607359163451591/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-23-38_317_508151892313324438/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -117,14 +117,14 @@ POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-44_394_7557765393788088271/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-24-31_952_8374542834959139365/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-44_394_7557765393788088271/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-24-31_952_8374542834959139365/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
@@ -139,14 +139,14 @@ NULL	NULL	3000	val_169
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-46_918_7232119579754498838/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-24-43_990_3126143867389068365/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-46_918_7232119579754498838/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-24-43_990_3126143867389068365/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
@@ -199,14 +199,14 @@ POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-54_681_4952863565750203661/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-25-38_661_7409288226979635465/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-54_681_4952863565750203661/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-25-38_661_7409288226979635465/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -223,14 +223,14 @@ POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-57_249_6696803477494534544/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-25-50_868_4035898613792109463/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-02-57_249_6696803477494534544/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-25-50_868_4035898613792109463/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -293,14 +293,14 @@ POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:from deserializer), ]
 PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-05_070_1157762852634375607/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-26-45_411_1957736509270496141/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-05_070_1157762852634375607/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-26-45_411_1957736509270496141/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -322,14 +322,14 @@ POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 NULL	NULL	5000	val_125
 PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-07_631_8246437502603272669/10000
+PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-26-57_373_7830701927735743689/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-07_631_8246437502603272669/10000
+POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-26-57_373_7830701927735743689/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -436,17 +436,17 @@ POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-18_035_8194510363795325400/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-28-12_376_3195316619132079809/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-18_035_8194510363795325400/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-28-12_376_3195316619132079809/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -578,17 +578,17 @@ POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-28_546_3828350776248819685/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-29-27_919_6526558082466570828/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-28_546_3828350776248819685/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-29-27_919_6526558082466570828/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -743,17 +743,17 @@ POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-38_980_3157892661865975232/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-30-43_540_1966536991630908087/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-38_980_3157892661865975232/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-30-43_540_1966536991630908087/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -931,17 +931,17 @@ POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-49_348_5700728228920265228/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-31-58_568_6938740676741659181/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-49_348_5700728228920265228/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-31-58_568_6938740676741659181/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -1143,17 +1143,17 @@ POSTHOOK: Lineage: smb_bucket4_3.value SIMPLE [(smb_bucket_input)smb_bucket_inpu
 PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-59_852_8218593296814549763/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-33-14_722_2351975474311252846/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-03-59_852_8218593296814549763/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-33-14_722_2351975474311252846/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:from deserializer), ]

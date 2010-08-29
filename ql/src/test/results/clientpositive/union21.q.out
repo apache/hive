@@ -261,9 +261,9 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_thrift
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-50-40_879_1035612367995200636/10000
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-09-13_745_2040382884129754790/-mr-10000
 POSTHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -278,9 +278,9 @@ FROM (
 ) union_output
 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_thrift
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_2/build/ql/scratchdir/hive_2010-02-12_22-50-40_879_1035612367995200636/10000
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-09-13_745_2040382884129754790/-mr-10000
 NULL	2
 0	7
 001	2

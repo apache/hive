@@ -231,9 +231,9 @@ PREHOOK: query: SELECT a.key, a.value, b.key, b.value
  ) b 
  ON (a.key = b.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/205671669/10000
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-57-30_453_6304651443448748016/-mr-10000
 POSTHOOK: query: SELECT a.key, a.value, b.key, b.value
  FROM 
   (
@@ -246,9 +246,9 @@ POSTHOOK: query: SELECT a.key, a.value, b.key, b.value
  ) b 
  ON (a.key = b.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/205671669/10000
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-57-30_453_6304651443448748016/-mr-10000
 NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL

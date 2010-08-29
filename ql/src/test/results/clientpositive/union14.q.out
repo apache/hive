@@ -47,7 +47,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1033881589/10002 
+        file:/tmp/jsichi/hive_2010-08-26_17-07-20_757_8607585855873415399/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -75,7 +75,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/1033881589/10003 
+        file:/tmp/jsichi/hive_2010-08-26_17-07-20_757_8607585855873415399/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -177,17 +177,17 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.val
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
   unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/156140549/10000
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-07-20_875_6103598893495788063/-mr-10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
   unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_2/build/ql/tmp/156140549/10000
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-07-20_875_6103598893495788063/-mr-10000
 	10
 128	1
 146	1

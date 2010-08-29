@@ -178,21 +178,21 @@ FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
           JOIN T4 d ON c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-04-05_136_4804665682309466152/-mr-10000
+PREHOOK: Input: default@t4
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-46_655_1849254422797768428/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
           JOIN T4 d ON c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-04-05_136_4804665682309466152/-mr-10000
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-46_655_1849254422797768428/-mr-10000
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
@@ -411,19 +411,19 @@ FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON a.val = c.val
           JOIN T4 d ON a.key + 1 = d.key + 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-04-10_594_441778213826699504/-mr-10000
+PREHOOK: Input: default@t4
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-51_531_8070318925118385343/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON a.val = c.val
           JOIN T4 d ON a.key + 1 = d.key + 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-04-10_594_441778213826699504/-mr-10000
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-06-51_531_8070318925118385343/-mr-10000
 2	22	2	12	2	12	2	12

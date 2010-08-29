@@ -153,7 +153,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10000
+          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -168,7 +168,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10007 
+        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10007 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -185,7 +185,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10002
+          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -200,7 +200,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10008 
+        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10008 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -217,7 +217,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10004
+          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10004
 
   Stage: Stage-2
     Move Operator
@@ -235,7 +235,7 @@ STAGE PLANS:
   Stage: Stage-11
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10009 
+        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10009 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -252,7 +252,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10006
+          destination: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10006
 
   Stage: Stage-3
     Move Operator
@@ -263,7 +263,7 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-52-32_332_2389903696189180400/-ext-10010 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10010 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -279,10 +279,10 @@ INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key 
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 PREHOOK: Output: default@dest1
 PREHOOK: Output: default@dest2
 PREHOOK: Output: default@dest3@ds=2008-04-08/hr=12
-PREHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
@@ -290,10 +290,10 @@ INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key 
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Output: default@dest3@ds=2008-04-08/hr=12
-POSTHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -302,11 +302,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-37_616_364430927880973822/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_603_8204333485013682573/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-37_616_364430927880973822/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_603_8204333485013682573/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -399,11 +399,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest2.* FROM dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-37_867_3685128862804503912/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_865_5466685897994447699/-mr-10000
 POSTHOOK: query: SELECT dest2.* FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-37_867_3685128862804503912/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_865_5466685897994447699/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -517,11 +517,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-38_110_1838979259788850926/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-23_137_2677954228712032208/-mr-10000
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-17_22-52-38_110_1838979259788850926/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-23_137_2677954228712032208/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -103,7 +103,7 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-41-57_236_7094587945850687486/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-18_976_1272829475610150800/-mr-10000
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
@@ -111,7 +111,7 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-41-57_236_7094587945850687486/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-18_976_1272829475610150800/-mr-10000
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -146,13 +146,13 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-05_285_507626451298228865/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-25_151_2967941869328137406/-mr-10000
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-05_285_507626451298228865/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-25_151_2967941869328137406/-mr-10000
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -167,11 +167,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-10_049_6066385213850923753/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-28_548_4632264336389099950/-mr-10000
 POSTHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-10_049_6066385213850923753/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-28_548_4632264336389099950/-mr-10000
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -188,13 +188,13 @@ WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrc
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-13_594_7068481220028250163/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-31_792_4165036420533315437/-mr-10000
 POSTHOOK: query: SELECT * FROM tstsrcpart a JOIN tstsrc b ON a.key=b.key
 WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrc
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-13_594_7068481220028250163/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-31_792_4165036420533315437/-mr-10000
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -237,13 +237,13 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-18_911_7638636591676197332/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-35_688_2955384568705499730/-mr-10000
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-18_911_7638636591676197332/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-35_688_2955384568705499730/-mr-10000
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -296,11 +296,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-27_341_4171791869922370959/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-42_283_2054256979152422951/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-27_341_4171791869922370959/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-42_283_2054256979152422951/-mr-10000
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -340,11 +340,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-33_554_4982150859229878793/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-48_350_3116069503890468898/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-33_554_4982150859229878793/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-48_350_3116069503890468898/-mr-10000
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -384,11 +384,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@harbucket@ds=1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-37_492_8334218564133786220/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-51_789_5787141881350623573/-mr-10000
 POSTHOOK: query: SELECT key FROM harbucket TABLESAMPLE(BUCKET 1 OUT OF 10) SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket@ds=1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-37_492_8334218564133786220/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-25-51_789_5787141881350623573/-mr-10000
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -468,12 +468,12 @@ PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "
 FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@old_name@ds=1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-47_944_3509519100083434350/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-26-01_045_8209299115713838372/-mr-10000
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM old_name WHERE ds='1') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@old_name@ds=1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-47_944_3509519100083434350/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-26-01_045_8209299115713838372/-mr-10000
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -494,8 +494,8 @@ PREHOOK: Output: default@old_name
 POSTHOOK: query: ALTER TABLE old_name RENAME TO new_name
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@old_name
-POSTHOOK: Output: default@old_name
 POSTHOOK: Output: default@new_name
+POSTHOOK: Output: default@old_name
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -512,12 +512,12 @@ PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@new_name@ds=1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-51_806_7196728345940154423/-mr-10000
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-26-04_352_8867631871149339879/-mr-10000
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@new_name@ds=1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_13-42-51_806_7196728345940154423/-mr-10000
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-26-04_352_8867631871149339879/-mr-10000
 POSTHOOK: Lineage: harbucket PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: old_name PARTITION(ds=1).key EXPRESSION [(tstsrc)tstsrc.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

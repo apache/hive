@@ -43,15 +43,15 @@ PREHOOK: query: insert overwrite table tmp3
   select /*+ MAPJOIN(l) */ i.a, i.b, l.b
   from tmp1 i join tmp2 l ON i.a = l.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp2
 PREHOOK: Input: default@tmp1
+PREHOOK: Input: default@tmp2
 PREHOOK: Output: default@tmp3
 POSTHOOK: query: insert overwrite table tmp3
   select /*+ MAPJOIN(l) */ i.a, i.b, l.b
   from tmp1 i join tmp2 l ON i.a = l.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp2
 POSTHOOK: Input: default@tmp1
+POSTHOOK: Input: default@tmp2
 POSTHOOK: Output: default@tmp3
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -63,11 +63,11 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 PREHOOK: query: select * from tmp3 order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-16-34_797_3291869263216721850/10000
+PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-18-51_917_5942757771764717347/-mr-10000
 POSTHOOK: query: select * from tmp3 order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-16-34_797_3291869263216721850/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-18-51_917_5942757771764717347/-mr-10000
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

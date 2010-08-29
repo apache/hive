@@ -86,104 +86,104 @@ POSTHOOK: Output: default@countries
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-35_518_6582730260204141679/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-44_025_3464030805185795112/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-35_518_6582730260204141679/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-44_025_3464030805185795112/-mr-10000
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-39_508_6031616226903764593/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-49_449_2533239955498825412/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-39_508_6031616226903764593/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-49_449_2533239955498825412/-mr-10000
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-43_394_7124445524751329949/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-54_460_9134325599532847572/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-43_394_7124445524751329949/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-54_460_9134325599532847572/-mr-10000
 PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@states
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-47_258_669944869681282290/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-59_427_3646437485215925564/-mr-10000
 POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@states
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-47_258_669944869681282290/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-58-59_427_3646437485215925564/-mr-10000
 user1	IA	Iowa
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-51_124_1283622353907376927/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-03_357_736778343063311968/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-51_124_1283622353907376927/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-03_357_736778343063311968/-mr-10000
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-55_006_4907179709145458200/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-08_313_7684989920596569472/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-55_006_4907179709145458200/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-08_313_7684989920596569472/-mr-10000
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@countries
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-59_926_3403340219286631512/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-13_256_4291980393265625395/-mr-10000
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@countries
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-24-59_926_3403340219286631512/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-13_256_4291980393265625395/-mr-10000
 PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@users
 PREHOOK: Input: default@states
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-25-03_662_70234471203920991/-mr-10000
+PREHOOK: Input: default@users
+PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-18_206_1231084557369200625/-mr-10000
 POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@users
 POSTHOOK: Input: default@states
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-18_16-25-03_662_70234471203920991/-mr-10000
+POSTHOOK: Input: default@users
+POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-18_206_1231084557369200625/-mr-10000
 user1	IA	Iowa
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
