@@ -1,7 +1,3 @@
-DROP TABLE myinput1;
-DROP TABLE smb_input1;
-DROP TABLE smb_input2;
-
 CREATE TABLE myinput1(key int, value int);
 LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1;
 
@@ -11,15 +7,19 @@ SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b;
 SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value;
 SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key;
 SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value;
+SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key;
 SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value;
 SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value;
 SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key;
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value;
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value;
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key;
 SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value;
+SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value;
 SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value;
 SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key;
 SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value;
+SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key;
 
 SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value);
 SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value);
@@ -32,6 +32,7 @@ SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value;
+SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key;
 SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value;
@@ -51,6 +52,7 @@ SET hive.optimize.bucketmapJOIN.sortedmerge = true;
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key;
+SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value ORDER BY a.key;
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY b.key, b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY a.key, a.value;
@@ -64,7 +66,3 @@ SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.va
 SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY b.key, b.value;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value;
 SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY a.key, a.value;
-
-DROP TABLE smb_input2;
-DROP TABLE smb_input1;
-DROP TABLE myinput1;

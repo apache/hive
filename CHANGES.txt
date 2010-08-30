@@ -225,6 +225,9 @@ Trunk -  Unreleased
     HIVE-1600. Making test outputs deterministic by sorting inputs and outputs in hooks
     (John Sichi via namit)
 
+    HIVE-1605. Regression and improvements in handling NULLs in joins
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

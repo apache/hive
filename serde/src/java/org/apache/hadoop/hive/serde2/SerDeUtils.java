@@ -340,7 +340,7 @@ public final class SerDeUtils {
    * @return true if the object passed is representing NULL object
    *         false otherwise
    */
-  public static boolean isNullObject(Object o, ObjectInspector oi) {
+  public static boolean hasAnyNullObject(Object o, ObjectInspector oi) {
     switch (oi.getCategory()) {
     case PRIMITIVE: {
       if (o == null) {
@@ -362,11 +362,11 @@ public final class SerDeUtils {
         }
         // if all the elements are representing null, then return true
         for (int i = 0; i < olist.size(); i++) {
-          if (!isNullObject(olist.get(i), listElementObjectInspector)) {
-            return false;
+          if (hasAnyNullObject(olist.get(i), listElementObjectInspector)) {
+            return true;
           }
         }
-        return true;
+        return false;
       }
     }
     case MAP: {
@@ -384,12 +384,12 @@ public final class SerDeUtils {
         }
         // if all the entries of map are representing null, then return true
         for (Map.Entry<?, ?> entry : omap.entrySet()) {
-          if (!isNullObject(entry.getKey(), mapKeyObjectInspector)
-              || !isNullObject(entry.getValue(), mapValueObjectInspector)) {
-            return false;
+          if (hasAnyNullObject(entry.getKey(), mapKeyObjectInspector)
+              || hasAnyNullObject(entry.getValue(), mapValueObjectInspector)) {
+            return true;
           }
         }
-        return true;
+        return false;
       }
     }
     case STRUCT: {
@@ -402,14 +402,14 @@ public final class SerDeUtils {
         if (structFields.size() == 0) {
           return false;
         }
-        // if all the fields of struct are representing null, then return true
+        // if any the fields of struct are representing null, then return true
         for (int i = 0; i < structFields.size(); i++) {
-          if (!isNullObject(soi.getStructFieldData(o, structFields.get(i)),
+          if (hasAnyNullObject(soi.getStructFieldData(o, structFields.get(i)),
               structFields.get(i).getFieldObjectInspector())) {
-            return false;
+            return true;
           }
         }
-        return true;
+        return false;
       }
     }
     default:

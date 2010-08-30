@@ -119,7 +119,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       // Add the value to the vector
       storage.get(alias).add(nr);
       // if join-key is null, process each row in different group.
-      if (SerDeUtils.isNullObject(keyObject, sf.getFieldObjectInspector())) {
+      if (SerDeUtils.hasAnyNullObject(keyObject, sf.getFieldObjectInspector())) {
         endGroup();
         startGroup();
       }
