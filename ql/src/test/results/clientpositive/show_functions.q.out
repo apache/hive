@@ -104,6 +104,7 @@ pow
 power
 radians
 rand
+reflect
 regexp
 regexp_extract
 regexp_replace

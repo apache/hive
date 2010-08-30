@@ -1,0 +1,12 @@
+PREHOOK: query: SELECT reflect("java.lang.StringClassThatDoesNotExist", "valueOf", 1),
+       reflect("java.lang.String", "methodThatDoesNotExist"),
+       reflect("java.lang.Math", "max", "overloadthatdoesnotexist", 3),
+       reflect("java.lang.Math", "min", 2, 3),
+       reflect("java.lang.Math", "round", 2.5),
+       reflect("java.lang.Math", "exp", 1.0),
+       reflect("java.lang.Math", "floor", 1.9)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/edward/hive_2010-08-28_18-06-12_525_3180708990156012812/-mr-10000
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

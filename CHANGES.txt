@@ -65,6 +65,9 @@ Trunk -  Unreleased
     HIVE-675. Add database/schema support for Hive
     (Carl Steinbach via namit)
 
+    HIVE-471. Add a UDF for simple reflection
+    (Edward Capriolo via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
