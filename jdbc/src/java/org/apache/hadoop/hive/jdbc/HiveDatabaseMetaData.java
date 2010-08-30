@@ -44,8 +44,11 @@ import java.util.jar.Manifest;
  */
 public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
-  private HiveInterface client;
+  private final HiveInterface client;
   private static final String CATALOG_SEPARATOR = ".";
+
+  //  The maximum column length = MFieldSchema.FNAME in metastore/src/model/package.jdo
+  private static final int maxColumnNameLength = 128;
 
   /**
    *
@@ -346,8 +349,13 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
+  /**
+   *  Returns the value of maxColumnNameLength.
+   *
+   *  @param int
+   */
   public int getMaxColumnNameLength() throws SQLException {
-    throw new SQLException("Method not supported");
+    return maxColumnNameLength;
   }
 
   public int getMaxColumnsInGroupBy() throws SQLException {

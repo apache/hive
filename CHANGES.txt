@@ -111,6 +111,9 @@ Trunk -  Unreleased
     HIVE-1523. Enable some tests in miniMR mode
     (Joydeep Sen Sarma via namit)
 
+    HIVE-1536. Add support for JDBC PreparedStatements
+    (Sean Flatley via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
