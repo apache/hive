@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -386,6 +388,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     dropTable(dbname, name, true, true);
   }
 
+  /** {@inheritDoc} */
+  @Deprecated
+  public void dropTable(String tableName, boolean deleteData)
+      throws MetaException, UnknownTableException, TException, NoSuchObjectException {
+    dropTable(DEFAULT_DATABASE_NAME, tableName, deleteData, false);
+  }
+
   /**
    * @param dbname
    * @param name
@@ -463,12 +472,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return result;
   }
 
-  /**
-   * @return the list of databases
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_databases()
-   */
+  /** {@inheritDoc} */
   public List<String> getDatabases(String databasePattern)
     throws MetaException {
     try {
@@ -479,12 +483,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return null;
   }
 
-  /**
-   * @return the list of databases
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_all_databases()
-   */
+  /** {@inheritDoc} */
   public List<String> getAllDatabases() throws MetaException {
     try {
       return client.get_all_databases();
@@ -561,6 +560,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return deepCopy(client.get_table(dbname, name));
   }
 
+  /** {@inheritDoc} */
+  @Deprecated
+  public Table getTable(String tableName) throws MetaException, TException,
+      NoSuchObjectException {
+    return getTable(DEFAULT_DATABASE_NAME, tableName);
+  }
+
   /**
    * @param name
    * @return the type
@@ -573,6 +579,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return deepCopy(client.get_type(name));
   }
 
+  /** {@inheritDoc} */
   public List<String> getTables(String dbname, String tablePattern) throws MetaException {
     try {
       return client.get_tables(dbname, tablePattern);
@@ -582,6 +589,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return null;
   }
 
+  /** {@inheritDoc} */
   public List<String> getAllTables(String dbname) throws MetaException {
     try {
       return client.get_all_tables(dbname);
@@ -599,6 +607,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       return false;
     }
     return true;
+  }
+
+  /** {@inheritDoc} */
+  @Deprecated
+  public boolean tableExists(String tableName) throws MetaException,
+      TException, UnknownDBException {
+    return tableExists(DEFAULT_DATABASE_NAME, tableName);
   }
 
   public List<String> listPartitionNames(String dbName, String tblName,

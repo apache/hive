@@ -228,6 +228,10 @@ Trunk -  Unreleased
     HIVE-1605. Regression and improvements in handling NULLs in joins
     (Ning Zhang via namit)
 
+    HIVE-1607. Reinstate and deprecate IMetaStoreClient methods removed 
+    in HIVE-675
+    (Carl Steinbach via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
