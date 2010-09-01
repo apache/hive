@@ -68,6 +68,9 @@ Trunk -  Unreleased
     HIVE-471. Add a UDF for simple reflection
     (Edward Capriolo via namit)
 
+    HIVE-1598. Create an option to specify an option for the format of
+    intermediate results (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
@@ -228,7 +231,7 @@ Trunk -  Unreleased
     HIVE-1605. Regression and improvements in handling NULLs in joins
     (Ning Zhang via namit)
 
-    HIVE-1607. Reinstate and deprecate IMetaStoreClient methods removed 
+    HIVE-1607. Reinstate and deprecate IMetaStoreClient methods removed
     in HIVE-675
     (Carl Steinbach via Ning Zhang)
 

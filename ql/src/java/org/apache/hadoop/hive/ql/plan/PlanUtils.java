@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -37,23 +38,25 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * PlanUtils.
@@ -150,6 +153,15 @@ public final class PlanUtils {
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
       boolean useJSONForLazy) {
 
+    return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
+        lastColumnTakesRestOfTheLine, useJSONForLazy, "TextFile");
+ }
+
+  public static TableDesc getTableDesc(
+      Class<? extends Deserializer> serdeClass, String separatorCode,
+      String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
+      boolean useJSONForLazy, String fileFormat) {
+
     Properties properties = Utilities.makeProperties(
         Constants.SERIALIZATION_FORMAT, separatorCode, Constants.LIST_COLUMNS,
         columns);
@@ -176,11 +188,29 @@ public final class PlanUtils {
       properties.setProperty(Constants.SERIALIZATION_USE_JSON_OBJECTS, "true");
     }
 
-    return new TableDesc(serdeClass, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class, properties);
+    Class inputFormat, outputFormat;
+    // get the input & output file formats
+    if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
+      inputFormat = SequenceFileInputFormat.class;
+      outputFormat = SequenceFileOutputFormat.class;
+    } else if ("RCFile".equalsIgnoreCase(fileFormat)) {
+      inputFormat = RCFileInputFormat.class;
+      outputFormat = RCFileOutputFormat.class;
+      assert serdeClass == ColumnarSerDe.class;
+    } else { // use TextFile by default
+      inputFormat = TextInputFormat.class;
+      outputFormat = IgnoreKeyTextOutputFormat.class;
+    }
+    return new TableDesc(serdeClass, inputFormat, outputFormat, properties);
   }
 
-  /**
+  public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
+      String fileFormat) {
+    return getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
+        false, false, fileFormat);
+  }
+
+ /**
    * Generate a table descriptor from a createTableDesc.
    */
   public static TableDesc getTableDesc(CreateTableDesc crtTblDesc, String cols,

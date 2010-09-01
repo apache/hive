@@ -205,6 +205,7 @@ public class HiveConf extends Configuration {
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
+    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile"),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
 
     //Location of Hive run time structured log file
