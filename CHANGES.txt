@@ -120,6 +120,9 @@ Trunk -  Unreleased
     HIVE-1536. Add support for JDBC PreparedStatements
     (Sean Flatley via jvs)
 
+    HIVE-1580. Cleanup ExecDriver.progress
+    (Joydeep Sen Sarma via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
