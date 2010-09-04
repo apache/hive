@@ -170,11 +170,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-40_635_1281135763793637833/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-19_803_2666094965449433693/-mr-10000
 POSTHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-40_635_1281135763793637833/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-19_803_2666094965449433693/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value1	value2	3	NULL	5.23
@@ -182,6 +182,7 @@ POSTHOOK: Lineage: json_t.key EXPRESSION []
 3	value13	2	value33	value44	5.01
 4	NULL	NULL	NULL	NULL	NULL
 5		NULL	NULL	NULL	NULL
+6	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain 
 select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
@@ -259,13 +260,14 @@ STAGE PLANS:
 PREHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-45_180_2708614101544289634/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-23_587_329732554604745953/-mr-10000
 POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-45_180_2708614101544289634/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-23_587_329732554604745953/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
+NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL
 	NULL	NULL	NULL	NULL
 value1	value2	3	NULL	5.23
@@ -378,11 +380,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-49_816_21621192409300726/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-27_221_7064484297445074328/-mr-10000
 POSTHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-49_816_21621192409300726/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-27_221_7064484297445074328/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value2	5.23
@@ -390,6 +392,7 @@ POSTHOOK: Lineage: json_t.key EXPRESSION []
 3	2	5.01
 4	NULL	NULL
 5	NULL	NULL
+6	NULL	NULL
 PREHOOK: query: explain 
 select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
@@ -524,7 +527,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-08-19_15-38-54_247_4884440383284422625/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-03_10-54-30_781_7324008318084168447/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -553,11 +556,11 @@ STAGE PLANS:
 PREHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-54_422_4487534965862546924/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-30_948_7241268347011544967/-mr-10000
 POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_15-38-54_422_4487534965862546924/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-03_10-54-30_948_7241268347011544967/-mr-10000
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	1

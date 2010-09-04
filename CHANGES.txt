@@ -123,6 +123,9 @@ Trunk -  Unreleased
     HIVE-1580. Cleanup ExecDriver.progress
     (Joydeep Sen Sarma via namit)
 
+    HIVE-1614. UDTF json_tuple should return null row when input is not a valid
+    JSON string (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

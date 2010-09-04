@@ -137,12 +137,18 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
         }
       }
       forward(retCols);
+      return;
     } catch (JSONException e) {
       // parsing error, invalid JSON string
       if (!seenErrors) {
         LOG.error("The input is not a valid JSON string: " + jsonStr + ". Skipping such error messages in the future.");
         seenErrors = true;
       }
+      forward(nullCols);
+      return;
+    } catch (Throwable e) {
+      LOG.error("JSON parsing/evaluation exception" + e);
+      forward(nullCols);
     }
   }
 
