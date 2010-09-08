@@ -241,6 +241,9 @@ Trunk -  Unreleased
     in HIVE-675
     (Carl Steinbach via Ning Zhang)
 
+    HIVE-1622. Use map-only tak to merge if available
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

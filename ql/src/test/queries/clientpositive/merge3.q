@@ -37,3 +37,20 @@ where ds is not null;
 show partitions merge_src_part2;
 
 select * from merge_src_part2 where ds is not null;
+
+drop table merge_src_part2;
+
+create table merge_src_part2 like merge_src_part;
+
+explain extended
+from (select * from merge_src_part where ds is not null distribute by ds) s
+insert overwrite table merge_src_part2 partition(ds)
+select key, value, ds;
+
+from (select * from merge_src_part where ds is not null distribute by ds) s
+insert overwrite table merge_src_part2 partition(ds)
+select key, value, ds;
+
+show partitions merge_src_part2;
+
+select * from merge_src_part2 where ds is not null;

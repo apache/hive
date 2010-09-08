@@ -222,7 +222,9 @@ public class GenMRFileSink1 implements NodeProcessor {
     // if the hadoop version support CombineFileInputFormat (version >= 0.20),
     // create a Map-only job for merge, otherwise create a MapReduce merge job.
     ParseContext parseCtx = ctx.getParseCtx();
-    if (parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
+    HiveConf conf = parseCtx.getConf();
+    if ((conf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) ||
+         conf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES)) &&
         Utilities.supportCombineFileInputFormat()) {
       // create Map-only merge job
       createMap4Merge(fsOp, ctx, finalName);
