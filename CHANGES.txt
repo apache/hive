@@ -596,6 +596,10 @@ Release 0.6.0 -  Unreleased
     HIVE-1594. Typo of hive.merge.size.smallfiles.avgsize prevents
     change of value. (Yun Huang Yong via namit)
 
+    HIVE-1613. hive --service jar looks for hadoop version but was not
+    defined
+    (Edward Capriolo via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
