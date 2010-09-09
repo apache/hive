@@ -837,6 +837,10 @@ Release 0.6.0 -  Unreleased
     metastore
     (Pradeep Kamath via jvs)
 
+    HIVE-1613. hive --service jar looks for hadoop version but was not
+    defined
+    (Edward Capriolo via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

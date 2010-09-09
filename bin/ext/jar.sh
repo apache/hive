@@ -23,6 +23,27 @@ jar () {
   RUNCLASS=$1
   shift
 
+  if $cygwin; then
+    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
+  fi
+
+  version=$($HADOOP version | awk '{if (NR == 1) {print $2;}}');
+
+  # Save the regex to a var to workaround quoting incompatabilities
+  # between Bash 3.1 and 3.2
+  version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
+
+  if [[ "$version" =~ $version_re ]]; then
+      major_ver=${BASH_REMATCH[1]}
+      minor_ver=${BASH_REMATCH[2]}
+      patch_ver=${BASH_REMATCH[4]}
+  else
+      echo "Unable to determine Hadoop version information."
+      echo "'hadoop version' returned:"
+      echo `$HADOOP version`
+      exit 6
+  fi
+
   if [ -z "$RUNJAR" ] ; then
     echo "RUNJAR not specified"
     exit 3
