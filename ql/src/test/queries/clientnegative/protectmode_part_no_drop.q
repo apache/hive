@@ -1,4 +1,4 @@
--- protect mode: syntax to change protect mode works and queries are not blocked if a table or partition is not in protect mode
+-- protect mode: syntax to change protect mode works and queries to drop partitions are blocked if it is marked no drop
 
 drop table tbl_protectmode_no_drop;
 
@@ -7,4 +7,4 @@ alter table tbl_protectmode_no_drop add partition (p='p1');
 alter table tbl_protectmode_no_drop partition (p='p1') enable no_drop;
 desc extended tbl_protectmode_no_drop partition (p='p1');
 
-drop table tbl_protectmode_no_drop;
+alter table tbl_protectmode_no_drop drop partition (p='p1');

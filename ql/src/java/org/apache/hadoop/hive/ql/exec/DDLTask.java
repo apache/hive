@@ -2151,10 +2151,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = null;
     try {
       tbl = db.getTable(dropTbl.getTableName());
-      if (!tbl.canDrop()) {
-        throw new HiveException("Table " + tbl.getTableName() +
-            " is protected from being dropped");
-      }
     } catch (InvalidTableException e) {
       // drop table is idempotent
     }
@@ -2172,6 +2168,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     if (dropTbl.getPartSpecs() == null) {
+      if (tbl != null && !tbl.canDrop()) {
+        throw new HiveException("Table " + tbl.getTableName() +
+            " is protected from being dropped");
+      }
+
       // We should check that all the partitions of the table can be dropped
       if (tbl != null && tbl.isPartitioned()) {
         List<Partition> listPartitions = db.getPartitions(tbl);
