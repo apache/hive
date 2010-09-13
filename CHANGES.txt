@@ -241,7 +241,7 @@ Trunk -  Unreleased
     in HIVE-675
     (Carl Steinbach via Ning Zhang)
 
-    HIVE-1622. Use map-only tak to merge if available
+    HIVE-1622. Use map-only task to merge if available
     (Ning Zhang via namit)
 
     HIVE-1630. Bug in NO_DROP
@@ -249,6 +249,9 @@ Trunk -  Unreleased
 
     HIVE-1629. Patch to fix hashCode method in DoubleWritable class
     (Vaibhav Aggarwal via Ning Zhang)
+
+    HIVE-1622. Bug in updating log file for hadoop 17
+    (Ning Zhang via namit)
 
   TESTS
 
