@@ -247,6 +247,9 @@ Trunk -  Unreleased
     HIVE-1630. Bug in NO_DROP
     (Siying Dong via namit)
 
+    HIVE-1629. Patch to fix hashCode method in DoubleWritable class
+    (Vaibhav Aggarwal via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
