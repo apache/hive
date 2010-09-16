@@ -55,16 +55,18 @@ public interface RawStore extends Configurable {
    */
   public abstract void rollbackTransaction();
 
-  public abstract boolean createDatabase(Database db) throws MetaException;
-
-  public abstract boolean createDatabase(String name) throws MetaException;
+  public abstract void createDatabase(Database db)
+      throws InvalidObjectException, MetaException;
 
   public abstract Database getDatabase(String name)
       throws NoSuchObjectException;
 
-  public abstract boolean dropDatabase(String dbname);
+  public abstract boolean dropDatabase(String dbname)
+      throws NoSuchObjectException, MetaException;
 
-  public abstract List<String> getDatabases() throws MetaException;
+  public abstract List<String> getDatabases(String pattern) throws MetaException;
+
+  public abstract List<String> getAllDatabases() throws MetaException;
 
   public abstract boolean createType(Type type);
 
@@ -99,6 +101,8 @@ public interface RawStore extends Configurable {
   public List<String> getTables(String dbName, String pattern)
       throws MetaException;
 
+  public List<String> getAllTables(String dbName) throws MetaException;
+    
   public abstract List<String> listPartitionNames(String db_name,
       String tbl_name, short max_parts) throws MetaException;
 

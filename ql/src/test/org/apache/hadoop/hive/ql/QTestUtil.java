@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,8 +28,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,11 +86,15 @@ public class QTestUtil {
   private final String logDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
-  private final LinkedList<String> srcTables;
+  public static final HashSet<String> srcTables = new HashSet<String>
+    (Arrays.asList(new String [] {
+        "src", "src1", "srcbucket", "srcbucket2", "src_json", "src_thrift",
+        "src_sequencefile", "srcpart"
+      }));
 
   private ParseDriver pd;
   private Hive db;
-  protected final HiveConf conf;
+  protected HiveConf conf;
   private Driver drv;
   private SemanticAnalyzer sem;
   private FileSystem fs;
@@ -184,6 +190,18 @@ public class QTestUtil {
     return null;
   }
 
+  public void initConf() {
+    if (miniMr) {
+      String fsName = conf.get("fs.default.name");
+      assert fsName != null;
+      // hive.metastore.warehouse.dir needs to be set relative to the jobtracker
+      conf.set("hive.metastore.warehouse.dir", fsName
+               .concat("/build/ql/test/data/warehouse/"));
+      conf.set("mapred.job.tracker", "localhost:" + mr.getJobTrackerPort());
+    }
+
+  }
+
   public QTestUtil(String outDir, String logDir, boolean miniMr, String hadoopVer) throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
@@ -197,17 +215,10 @@ public class QTestUtil {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
       FileSystem fs = dfs.getFileSystem();
       mr = new MiniMRCluster(4, fs.getUri().toString(), 1);
-
-      // hive.metastore.warehouse.dir needs to be set relative to the jobtracker
-      String fsName = conf.get("fs.default.name");
-      assert fsName != null;
-      conf.set("hive.metastore.warehouse.dir", fsName
-          .concat("/build/ql/test/data/warehouse/"));
-
-      conf.set("mapred.job.tracker", "localhost:" + mr.getJobTrackerPort());
     }
 
-    // System.out.println(conf.toString());
+    initConf();
+
     testFiles = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
 
@@ -216,8 +227,6 @@ public class QTestUtil {
     if ((ow != null) && ow.equalsIgnoreCase("true")) {
       overWrite = true;
     }
-
-    srcTables = new LinkedList<String>();
 
     init();
   }
@@ -290,18 +299,50 @@ public class QTestUtil {
     dis.close();
   }
 
+  /**
+   * Clear out any side effects of running tests
+   */
+  public void clearTestSideEffects () throws Exception {
+    // Delete any tables other than the source tables
+    // and any databases other than the default database.
+    for (String dbName : db.getAllDatabases()) {
+      db.setCurrentDatabase(dbName);
+      for (String tblName : db.getAllTables()) {
+        if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
+          db.dropTable(dbName, tblName);
+        }
+      }
+      if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
+        db.dropDatabase(dbName);
+      }
+    }
+    db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    // allocate and initialize a new conf since a test can
+    // modify conf by using 'set' commands
+    conf = new HiveConf (Driver.class);
+    initConf();
+  }
+
+
   public void cleanUp() throws Exception {
-    String warehousePath = ((new URI(testWarehouse)).getPath());
     // Drop any tables that remain due to unsuccessful runs
-    for (String s : new String[] {"src", "src1", "src_json", "src_thrift",
-        "src_sequencefile", "srcpart", "srcbucket", "srcbucket2", "dest1",
-        "dest2", "dest3", "dest4", "dest4_sequencefile", "dest_j1", "dest_j2",
-        "dest_g1", "dest_g2", "fetchtask_ioexception"}) {
-      db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
+    for (String dbName : db.getAllDatabases()) {
+      for (String tableName : db.getAllTables(dbName)) {
+        db.dropTable(dbName, tableName, true, true);
+      }
+      if (!DEFAULT_DATABASE_NAME.equalsIgnoreCase(dbName)) {
+        db.dropDatabase(dbName, true, true);
+      }
     }
-    for (String s : new String[] {"dest4.out", "union.out"}) {
-      deleteDirectory(new File(warehousePath, s));
+
+   // delete any contents in the warehouse dir
+    Path p = new Path(testWarehouse);
+    FileSystem fs = p.getFileSystem(conf);
+    FileStatus [] ls = fs.listStatus(p);
+    for (int i=0; (ls != null) && (i<ls.length); i++) {
+      fs.delete(ls[i].getPath(), true);
     }
+
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
     FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
@@ -329,6 +370,7 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
+    db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
     // Next create the three tables src, dest1 and dest2 each with two columns
     // key and value
     LinkedList<String> cols = new LinkedList<String>();
@@ -340,7 +382,6 @@ public class QTestUtil {
     part_cols.add("hr");
     db.createTable("srcpart", cols, part_cols, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class);
-    srcTables.add("srcpart");
 
     Path fpath;
     Path newfpath;
@@ -367,7 +408,6 @@ public class QTestUtil {
     runCreateTableCmd("CREATE TABLE srcbucket(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE");
     // db.createTable("srcbucket", cols, null, TextInputFormat.class,
     // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
-    srcTables.add("srcbucket");
     for (String fname : new String[] {"srcbucket0.txt", "srcbucket1.txt"}) {
       fpath = new Path(testFiles, fname);
       newfpath = new Path(tmppath, fname);
@@ -380,7 +420,6 @@ public class QTestUtil {
         + "CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE");
     // db.createTable("srcbucket", cols, null, TextInputFormat.class,
     // IgnoreKeyTextOutputFormat.class, 2, bucketCols);
-    srcTables.add("srcbucket2");
     for (String fname : new String[] {"srcbucket20.txt", "srcbucket21.txt",
         "srcbucket22.txt", "srcbucket23.txt"}) {
       fpath = new Path(testFiles, fname);
@@ -393,13 +432,11 @@ public class QTestUtil {
     for (String tname : new String[] {"src", "src1"}) {
       db.createTable(tname, cols, null, TextInputFormat.class,
           IgnoreKeyTextOutputFormat.class);
-      srcTables.add(tname);
     }
     db.createTable("src_sequencefile", cols, null,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
-    srcTables.add("src_sequencefile");
 
-    Table srcThrift = new Table("src_thrift");
+    Table srcThrift = new Table(db.getCurrentDatabase(), "src_thrift");
     srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
     srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     srcThrift.setSerializationLib(ThriftDeserializer.class.getName());
@@ -408,13 +445,11 @@ public class QTestUtil {
     srcThrift.setSerdeParam(Constants.SERIALIZATION_FORMAT,
         TBinaryProtocol.class.getName());
     db.createTable(srcThrift);
-    srcTables.add("src_thrift");
 
     LinkedList<String> json_cols = new LinkedList<String>();
     json_cols.add("json");
     db.createTable("src_json", json_cols, null, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class);
-    srcTables.add("src_json");
 
     // load the input data into the src table
     fpath = new Path(testFiles, "kv1.txt");
@@ -489,7 +524,7 @@ public class QTestUtil {
 
     db.createTable("dest3", cols, part_cols, TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class);
-    Table dest3 = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "dest3");
+    Table dest3 = db.getTable("dest3");
 
     HashMap<String, String> part_spec = new HashMap<String, String>();
     part_spec.put("ds", "2008-04-08");
@@ -512,7 +547,7 @@ public class QTestUtil {
       createSources();
     }
 
-    CliSessionState ss = new CliSessionState(conf);
+    CliSessionState ss = new CliSessionState(new HiveConf(Driver.class));
     assert ss != null;
     ss.in = System.in;
 
@@ -973,6 +1008,7 @@ public class QTestUtil {
       for (int i = 0; i < qfiles.length; i++) {
         qt[i] = new QTestUtil(resDirs[i], logDirs[i]);
         qt[i].addFile(qfiles[i]);
+        qt[i].clearTestSideEffects();
       }
 
       if (mt) {
@@ -980,6 +1016,7 @@ public class QTestUtil {
 
         qt[0].cleanUp();
         qt[0].createSources();
+        qt[0].clearTestSideEffects();
 
         QTRunner[] qtRunners = new QTestUtil.QTRunner[qfiles.length];
         Thread[] qtThread = new Thread[qfiles.length];

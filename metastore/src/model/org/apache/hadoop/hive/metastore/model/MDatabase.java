@@ -27,6 +27,7 @@ package org.apache.hadoop.hive.metastore.model;
  */
 public class MDatabase {
   private String name;
+  private String locationUri;
   private String description;
 
   /**
@@ -37,11 +38,13 @@ public class MDatabase {
   /**
    * To create a database object
    * @param name of the database
-   * @param location future use
+   * @param locationUri Location of the database in the warehouse
+   * @param description Comment describing the database
    */
-  public MDatabase(String name, String location) {
+  public MDatabase(String name, String locationUri, String description) {
     this.name = name;
-    this.description = location;
+    this.locationUri = locationUri;
+    this.description = description;
   }
 
   /**
@@ -56,6 +59,20 @@ public class MDatabase {
    */
   public void setName(String name) {
     this.name = name;
+  }
+
+  /**
+   * @return the location_uri
+   */
+  public String getLocationUri() {
+    return locationUri;
+  }
+
+  /**
+   * @param locationUri the locationUri to set
+   */
+  public void setLocationUri(String locationUri) {
+    this.locationUri = locationUri;
   }
 
   /**

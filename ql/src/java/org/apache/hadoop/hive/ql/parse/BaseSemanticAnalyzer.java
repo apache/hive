@@ -31,7 +31,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -457,8 +456,7 @@ public abstract class BaseSemanticAnalyzer {
               + tableName;
         }
 
-        tableHandle = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-            tableName);
+        tableHandle = db.getTable(tableName);
       } catch (InvalidTableException ite) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast
             .getChild(0)), ite);

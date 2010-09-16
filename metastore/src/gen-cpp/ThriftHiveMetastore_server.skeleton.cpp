@@ -22,7 +22,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
-  bool create_database(const std::string& name, const std::string& description) {
+  void create_database(const Database& database) {
     // Your implementation goes here
     printf("create_database\n");
   }
@@ -32,14 +32,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_database\n");
   }
 
-  bool drop_database(const std::string& name) {
+  void drop_database(const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_database\n");
   }
 
-  void get_databases(std::vector<std::string> & _return) {
+  void get_databases(std::vector<std::string> & _return, const std::string& pattern) {
     // Your implementation goes here
     printf("get_databases\n");
+  }
+
+  void get_all_databases(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_all_databases\n");
   }
 
   void get_type(Type& _return, const std::string& name) {
@@ -85,6 +90,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
+  }
+
+  void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) {
+    // Your implementation goes here
+    printf("get_all_tables\n");
   }
 
   void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name) {

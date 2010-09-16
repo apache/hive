@@ -32,7 +32,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -131,7 +130,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         }
         String mesg_detail = " from " + tbd.getSourceDir();
         console.printInfo(mesg.toString(), mesg_detail);
-        Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd
+        Table table = db.getTable(db.getCurrentDatabase(), tbd
             .getTable().getTableName());
 
         if (work.getCheckFileFormat()) {

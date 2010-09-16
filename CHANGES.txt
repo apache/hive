@@ -105,6 +105,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1307. More efficient merge
     (Ning Zhang via namit)
 
+    HIVE-675. add database/schema support Hive QL
+    (Carl Steinbach via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)

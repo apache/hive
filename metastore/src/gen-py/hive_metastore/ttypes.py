@@ -270,17 +270,20 @@ class Database:
   Attributes:
    - name
    - description
+   - locationUri
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
+    (3, TType.STRING, 'locationUri', None, None, ), # 3
   )
 
-  def __init__(self, name=None, description=None,):
+  def __init__(self, name=None, description=None, locationUri=None,):
     self.name = name
     self.description = description
+    self.locationUri = locationUri
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -301,6 +304,11 @@ class Database:
           self.description = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.locationUri = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -318,6 +326,10 @@ class Database:
     if self.description != None:
       oprot.writeFieldBegin('description', TType.STRING, 2)
       oprot.writeString(self.description)
+      oprot.writeFieldEnd()
+    if self.locationUri != None:
+      oprot.writeFieldBegin('locationUri', TType.STRING, 3)
+      oprot.writeString(self.locationUri)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

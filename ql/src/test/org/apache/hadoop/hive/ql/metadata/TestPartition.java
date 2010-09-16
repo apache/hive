@@ -39,7 +39,7 @@ public class TestPartition extends TestCase {
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema(PARTITION_COL, "string", ""));
 
-    Table tbl = new Table(TABLENAME);
+    Table tbl = new Table("default", TABLENAME);
     tbl.setDataLocation(new URI("tmplocation"));
     tbl.setPartCols(partCols);
 

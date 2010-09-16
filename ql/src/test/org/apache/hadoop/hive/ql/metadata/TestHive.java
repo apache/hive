@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
@@ -90,7 +93,7 @@ public class TestHive extends TestCase {
         e1.printStackTrace();
         assertTrue("Unable to drop table", false);
       }
-      Table tbl = new Table(tableName);
+      Table tbl = new Table(DEFAULT_DATABASE_NAME, tableName);
       List<FieldSchema> fields = tbl.getCols();
 
       fields.add(new FieldSchema("col1", Constants.INT_TYPE_NAME,
@@ -158,6 +161,7 @@ public class TestHive extends TestCase {
             .getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName,
             tbl.getRetention(), ft.getRetention());
+        String dbPath = wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString();
         assertEquals("Data location is not set correctly", wh
             .getDefaultTablePath(MetaStoreUtils.DEFAULT_DATABASE_NAME,
             tableName).toString(), ft.getDataLocation().toString());
@@ -205,7 +209,7 @@ public class TestHive extends TestCase {
         System.err.println(StringUtils.stringifyException(e1));
         assertTrue("Unable to drop table", false);
       }
-      Table tbl = new Table(tableName);
+      Table tbl = new Table(DEFAULT_DATABASE_NAME, tableName);
       tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
       tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
       tbl.setSerializationLib(ThriftDeserializer.class.getName());
@@ -256,8 +260,7 @@ public class TestHive extends TestCase {
   }
 
   private static Table createTestTable(String dbName, String tableName) throws HiveException {
-    Table tbl = new Table(tableName);
-    tbl.setDbName(dbName);
+    Table tbl = new Table(dbName, tableName);
     tbl.setInputFormatClass(SequenceFileInputFormat.class.getName());
     tbl.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     tbl.setSerializationLib(ThriftDeserializer.class.getName());
@@ -283,8 +286,11 @@ public class TestHive extends TestCase {
     try {
       String dbName = "db_for_testgettables";
       String table1Name = "table1";
-      hm.dropDatabase(dbName);
-      hm.createDatabase(dbName, "");
+      hm.dropDatabase(dbName, true, true);
+
+      Database db = new Database();
+      db.setName(dbName);
+      hm.createDatabase(db);
 
       List<String> ts = new ArrayList<String>(2);
       ts.add(table1Name);
@@ -313,6 +319,10 @@ public class TestHive extends TestCase {
       hm.dropTable(dbName, table1Name);
       assertFalse(fs.exists(table1.getPath()));
 
+      // Drop all tables
+      for (String tableName : hm.getAllTables(dbName)) {
+        hm.dropTable(dbName, tableName);
+      }
       hm.dropDatabase(dbName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));

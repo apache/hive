@@ -6,3 +6,4 @@ build-eclipse
 .settings
 *.launch
 *~
+metastore_db

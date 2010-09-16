@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -42,29 +43,49 @@ public interface IMetaStoreClient {
 
   public void close();
 
-  public List<String> getTables(String dbName, String tablePattern)
-      throws MetaException, UnknownTableException, TException,
-      UnknownDBException;
+  /**
+   * Get the names of all databases in the MetaStore that match the given pattern.
+   * @param databasePattern
+   * @return List of database names.
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<String> getDatabases(String databasePattern)
+      throws MetaException, TException;
 
   /**
-   * Drop the table.
-   *
-   * @param tableName
-   *          The table to drop
-   * @param deleteData
-   *          Should we delete the underlying data
+   * Get the names of all databases in the MetaStore.
+   * @return List of database names.
    * @throws MetaException
-   *           Could not drop table properly.
-   * @throws UnknownTableException
-   *           The table wasn't found.
    * @throws TException
-   *           A thrift communication error occurred
-   * @throws NoSuchObjectException
-   *           The table wasn't found.
    */
-  public void dropTable(String tableName, boolean deleteData)
-      throws MetaException, UnknownTableException, TException,
-      NoSuchObjectException;
+  public List<String> getAllDatabases()
+      throws MetaException, TException;
+
+  /**
+   * Get the names of all tables in the specified database that satisfy the supplied
+   * table name pattern.
+   * @param dbName
+   * @param tablePattern
+   * @return List of table names.
+   * @throws MetaException
+   * @throws TException
+   * @throws UnknownDBException
+   */
+  public List<String> getTables(String dbName, String tablePattern)
+      throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Get the names of all tables in the specified database.
+   * @param dbName
+   * @return List of table names.
+   * @throws MetaException
+   * @throws TException
+   * @throws UnknownDBException
+   */
+  public List<String> getAllTables(String dbName)
+      throws MetaException, TException, UnknownDBException;
+
 
   /**
    * Drop the table.
@@ -85,15 +106,52 @@ public interface IMetaStoreClient {
       boolean ignoreUknownTab) throws MetaException, TException,
       NoSuchObjectException;
 
-  // public void createTable(String tableName, Properties schema) throws
-  // MetaException, UnknownTableException,
-  // TException;
+  /**
+   * Drop the table in the DEFAULT database.
+   *
+   * @param tableName
+   *          The table to drop
+   * @param deleteData
+   *          Should we delete the underlying data
+   * @throws MetaException
+   *           Could not drop table properly.
+   * @throws UnknownTableException
+   *           The table wasn't found.
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           The table wasn't found.
+   *
+   * @deprecated As of release 0.6.0 replaced by {@link #dropTable(String, String, boolean, boolean)}.
+   *             This method will be removed in release 0.7.0.
+   */
+  @Deprecated
+  public void dropTable(String tableName, boolean deleteData)
+      throws MetaException, UnknownTableException, TException,
+      NoSuchObjectException;
 
+  public void dropTable(String dbname, String tableName)
+      throws MetaException, TException, NoSuchObjectException;
+
+  public boolean tableExists(String databaseName, String tableName) throws MetaException,
+      TException, UnknownDBException;
+
+  /**
+   * Check to see if the specified table exists in the DEFAULT database.
+   * @param tableName
+   * @return TRUE if DEFAULT.tableName exists, FALSE otherwise.
+   * @throws MetaException
+   * @throws TException
+   * @throws UnknownDBException
+   * @deprecated As of release 0.6.0 replaced by {@link #tableExists(String, String)}.
+   *             This method will be removed in release 0.7.0.
+   */
+  @Deprecated
   public boolean tableExists(String tableName) throws MetaException,
       TException, UnknownDBException;
 
   /**
-   * Get a table object.
+   * Get a table object from the DEFAULT database.
    *
    * @param tableName
    *          Name of the table to fetch.
@@ -104,9 +162,23 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
+   * @deprecated As of release 0.6.0 replaced by {@link #getTable(String, String)}.
+   *             This method will be removed in release 0.7.0.
    */
+  @Deprecated
   public Table getTable(String tableName) throws MetaException, TException,
       NoSuchObjectException;
+
+  /**
+   * Get a Database Object
+   * @param databaseName  name of the database to fetch
+   * @return
+   * @throws NoSuchObjectException The database does not exist
+   * @throws MetaException Could not fetch the database
+   * @throws TException A thrift communication error occurred
+   */
+    public Database getDatabase(String databaseName)
+        throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get a table object.
@@ -225,10 +297,14 @@ public interface IMetaStoreClient {
   public void alter_table(String defaultDatabaseName, String tblName,
       Table table) throws InvalidOperationException, MetaException, TException;
 
-  public boolean createDatabase(String name, String location_uri)
-      throws AlreadyExistsException, MetaException, TException;
+  public void createDatabase(Database db)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
-  public boolean dropDatabase(String name) throws MetaException, TException;
+  public void dropDatabase(String name)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
   /**
    * @param db_name

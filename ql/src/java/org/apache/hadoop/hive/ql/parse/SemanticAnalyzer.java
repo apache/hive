@@ -42,7 +42,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -738,7 +737,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String tab_name = qb.getTabNameForAlias(alias);
         Table tab = null;
         try {
-          tab = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tab_name);
+          tab = db.getTable(tab_name);
         } catch (InvalidTableException ite) {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(qb
               .getParseInfo().getSrcForAlias(alias)));
@@ -6605,9 +6604,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        List<String> tables = db.getTablesByPattern(tableName);
-        if (tables != null && tables.size() > 0) { // table exists
-          return null;
+        if (null != db.getTable(db.getCurrentDatabase(), tableName, false)) {
+            return null;
         }
       } catch (HiveException e) {
         e.printStackTrace();
@@ -6641,8 +6639,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // check for existence of table. Throw an exception if it exists.
       try {
-        Table tab = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-            tableName, false); // do not throw exception if table does not exist
+        Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
+        // do not throw exception if table does not exist
 
         if (tab != null) {
           throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS
