@@ -649,6 +649,12 @@
 </property>
 
 <property>
+  <name>hive.zookeeper.namespace</name>
+  <value>hive_zookeeper_namespace</value>
+  <description>The parent node under which all zookeeper nodes are created.</description>
+</property>
+
+<property>
   <name>fs.har.impl</name>
   <value>org.apache.hadoop.hive.shims.HiveHarFileSystem</value>
   <description>The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop vers less than 0.20</description>

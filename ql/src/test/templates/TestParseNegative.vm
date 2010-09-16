@@ -51,9 +51,11 @@ public class $className extends TestCase {
   @Override
   protected void tearDown() {
     try {
-      qt.clearPostTestEffects();
+
       if (getName().equals("testParseNegative_shutdown"))
         qt.shutdown();
+      else
+        qt.clearPostTestEffects();
     }
     catch (Exception e) {
       System.out.println("Exception: " + e.getMessage());

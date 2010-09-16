@@ -126,6 +126,9 @@ Trunk -  Unreleased
     HIVE-1614. UDTF json_tuple should return null row when input is not a valid
     JSON string (Ning Zhang via namit)
 
+    HIVE-1645. ability to specify parent directory for zookeeper lock manager
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

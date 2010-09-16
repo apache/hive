@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.zookeeper.KeeperException;
 
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
@@ -57,6 +58,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   static final private LogHelper console = new LogHelper(LOG);
 
   private ZooKeeper zooKeeper;
+
+  // All the locks are created under this parent
+  private String    parent;
 
   public ZooKeeperHiveLockManager() {
   }
@@ -88,6 +92,15 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       zooKeeper = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
+      parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
+
+      try {
+        String par = zooKeeper.create("/" +  parent, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      } catch (KeeperException e) {
+        // ignore if the parent already exists
+      }
+
+
     } catch (Exception e) {
       LOG.error("Failed to create ZooKeeper object: " + e);
       throw new LockException(ErrorMsg.ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED.getMsg());
@@ -99,7 +112,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * replace "/" by a dummy name to ensure a single hierarchy.
    **/
   private String getObjectName(HiveLockObject key, HiveLockMode mode) {
-    return "/" + key.getName().replaceAll("/", ctx.getConf().getVar(HiveConf.ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME)) + "-" + mode + "-";
+    return "/" + parent + "/" +
+      key.getName().replaceAll("/", ctx.getConf().getVar(HiveConf.ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME)) +
+      "-" + mode + "-";
   }
 
   /**
@@ -127,13 +142,13 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         return null;
       }
 
-      List<String> children = zooKeeper.getChildren("/", false);
+      List<String> children = zooKeeper.getChildren("/" + parent, false);
 
       String exLock = getObjectName(key, HiveLockMode.EXCLUSIVE);
       String shLock = getObjectName(key, HiveLockMode.SHARED);
 
       for (String child : children) {
-        child = "/" + child;
+        child = "/" + parent + "/" + child;
 
         // Is there a conflicting lock on the same object with a lower sequence number
         int childSeq = seqNo;
@@ -181,7 +196,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
       String quorumServers = getQuorumServers(conf);
       ZooKeeper zkpClient = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
-      List<HiveLock> locks = getLocks(conf, zkpClient, null);
+      String parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
+      List<HiveLock> locks = getLocks(conf, zkpClient, null, parent);
+
       if (locks != null) {
         for (HiveLock lock : locks) {
           unlock(conf, zkpClient, lock);
@@ -198,12 +215,12 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   /* Get all locks */
   public List<HiveLock> getLocks() throws LockException {
-    return getLocks(ctx.getConf(), zooKeeper, null);
+    return getLocks(ctx.getConf(), zooKeeper, null, parent);
   }
 
   /* Get all locks for a particular object */
   public List<HiveLock> getLocks(HiveLockObject key) throws LockException {
-    return getLocks(ctx.getConf(), zooKeeper, key);
+    return getLocks(ctx.getConf(), zooKeeper, key, parent);
   }
 
   /**
@@ -211,19 +228,20 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * @param zkpClient   The ZooKeeper client
    * @param key         The object to be compared against - if key is null, then get all locks
    **/
-  private static List<HiveLock> getLocks(HiveConf conf, ZooKeeper zkpClient, HiveLockObject key) throws LockException {
+  private static List<HiveLock> getLocks(HiveConf conf, ZooKeeper zkpClient,
+                                         HiveLockObject key, String parent) throws LockException {
     List<HiveLock> locks = new ArrayList<HiveLock>();
     List<String> children;
 
     try {
-      children = zkpClient.getChildren("/", false);
+      children = zkpClient.getChildren("/" + parent, false);
     } catch (Exception e) {
       LOG.error("Failed to get ZooKeeper children: " + e);
       throw new LockException(e);
     }
 
     for (String child : children) {
-      child = "/" + child;
+      child = "/" + parent + "/" + child;
 
       HiveLockMode   mode  = getLockMode(conf, child);
       if (mode == null) {
@@ -231,7 +249,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       HiveLockObject obj   = getLockObject(conf, child, mode);
-      if ((key == null) || (obj.getName().equals(key.getName()))) {
+      if ((key == null) ||
+          (obj.getName().equals(key.getName()))) {
         HiveLock lck = (HiveLock)(new ZooKeeperHiveLock(child, obj, mode));
         locks.add(lck);
       }
@@ -276,8 +295,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       Hive db = Hive.get(conf);
       int indx = path.lastIndexOf(mode.toString());
       String objName = path.substring(1, indx-1);
+      String[] names = objName.split("/")[1].split("@");
 
-      String[] names = objName.split("@");
       Table tab = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
                               names[1], false); // do not throw exception if table does not exist
       assert (tab != null);
@@ -303,7 +322,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       if (partn == null) {
         return new HiveLockObject(new DummyPartition(
-          objName.replaceAll(conf.getVar(HiveConf.ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME), "/")));
+          objName.split("/")[1].replaceAll(conf.getVar(HiveConf.ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME), "/")));
       }
 
       return new HiveLockObject(partn);
