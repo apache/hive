@@ -81,12 +81,12 @@ PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-34-01_694_1262392506003674198/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-30_838_7629815615150053920/-mr-10000
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-34-01_694_1262392506003674198/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-30_838_7629815615150053920/-mr-10000
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1173,12 +1173,12 @@ PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-34-07_502_6771693234182088332/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-39_689_174314225109504234/-mr-10000
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-19_12-34-07_502_6771693234182088332/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-39_689_174314225109504234/-mr-10000
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2685,3 +2685,228 @@ POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(src
 400	val_400	2010-08-15	12
 200	val_200	2010-08-15	12
 97	val_97	2010-08-15	12
+PREHOOK: query: explain
+insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
+select * from (
+    select key, value, hr from srcpart where ds='2008-04-08'
+    union all
+    select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
+select * from (
+    select key, value, hr from srcpart where ds='2008-04-08'
+    union all
+    select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR '1' key) (TOK_SELEXPR '1' value) (TOK_SELEXPR 'file,' hr)) (TOK_LIMIT 1)))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB nzhang_part (TOK_PARTSPEC (TOK_PARTVAL ds '2010-08-15') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-0 depends on stages: Stage-2
+  Stage-3 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:s-subquery1:srcpart 
+          TableScan
+            alias: srcpart
+            Filter Operator
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: hr
+                        type: string
+                  outputColumnNames: _col0, _col1, _col2
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/tmp/nzhang/hive_2010-09-15_16-54-41_064_902801052919283411/-mr-10002 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: nzhang_part
+        file:/tmp/nzhang/hive_2010-09-15_16-54-41_064_902801052919283411/-mr-10003 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: nzhang_part
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2010-08-15
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: nzhang_part
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery2:s-subquery2:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: '1'
+                    type: string
+                    expr: '1'
+                    type: string
+                    expr: 'file,'
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+
+PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
+select * from (
+    select key, value, hr from srcpart where ds='2008-04-08'
+    union all
+    select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
+select * from (
+    select key, value, hr from srcpart where ds='2008-04-08'
+    union all
+    select '1' as key, '1' as value, 'file,' as hr from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=11
+POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=12
+POSTHOOK: Output: default@nzhang_part@ds=2010-08-15/hr=file,
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions nzhang_part
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions nzhang_part
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+ds=2010-08-15/hr=11
+ds=2010-08-15/hr=12
+ds=2010-08-15/hr=file,
+PREHOOK: query: select * from nzhang_part where hr = 'file,'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-54_825_7294798270721816998/-mr-10000
+POSTHOOK: query: select * from nzhang_part where hr = 'file,'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-54-54_825_7294798270721816998/-mr-10000
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=file,).value EXPRESSION [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+1	1	2010-08-15	file,

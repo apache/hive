@@ -465,12 +465,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
    */
   @Override
   public int execute(DriverContext driverContext) {
-    
+
     IOPrepareCache ioPrepareCache = IOPrepareCache.get();
     ioPrepareCache.clear();
-    
+
     boolean success = true;
-    
+
     String invalidReason = work.isInvalid();
     if (invalidReason != null) {
       throw new RuntimeException("Plan invalid, Reason: " + invalidReason);
@@ -1199,8 +1199,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
 
           LOG.info("Adding input file " + path);
 
-          if (!Utilities.isEmptyPath(job, path)) {
-            FileInputFormat.addInputPaths(job, path);
+          Path dirPath = new Path(path);
+          if (!Utilities.isEmptyPath(job, dirPath)) {
+            FileInputFormat.addInputPath(job, dirPath);
           } else {
             emptyPaths.add(path);
           }

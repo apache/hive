@@ -253,6 +253,9 @@ Trunk -  Unreleased
     HIVE-1622. Bug in updating log file for hadoop 17
     (Ning Zhang via namit)
 
+    HIVE-1639 ExecDriver.addInputPaths() error if partition name contains a comma
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

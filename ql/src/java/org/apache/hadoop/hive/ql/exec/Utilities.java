@@ -1389,8 +1389,7 @@ public final class Utilities {
     return new ContentSummary(summary[0], summary[1], summary[2]);
   }
 
-  public static boolean isEmptyPath(JobConf job, String path) throws Exception {
-    Path dirPath = new Path(path);
+  public static boolean isEmptyPath(JobConf job, Path dirPath) throws Exception {
     FileSystem inpFs = dirPath.getFileSystem(job);
 
     if (inpFs.exists(dirPath)) {
