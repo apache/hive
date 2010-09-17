@@ -50,12 +50,10 @@
           
           <% if (si!=null) { %>
             <table border=1">
-          	<% for (List<String> rows : si.getResultBucket() ) { %>
-              <tr>
-	      		<% for (String row : rows ) { %>  
-					<td><%=row%></td>
-	      		<% } %>
-              </tr>
+              <% for (List<String> rows : si.getResultBucket() ) { %>
+	        <% for (String row : rows ) { %>  
+		  <tr><td><%=row%></td></tr>
+	      	<% } %>
             <% } %>
 	    	</table>	
           <% } %>

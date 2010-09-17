@@ -859,6 +859,10 @@ Release 0.6.0 -  Unreleased
     defined
     (Edward Capriolo via jvs)
 
+    HIVE-1615. Web Interface JSP needs Refactoring for removed
+    metastore methods
+    (Edward Capriolo via jvs)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
