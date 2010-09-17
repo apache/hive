@@ -262,6 +262,9 @@ Trunk -  Unreleased
     HIVE-1639 ExecDriver.addInputPaths() error if partition name contains a comma
     (Ning Zhang via namit)
 
+    HIVE-1650. TestContribNegativeCliDriver fails
+    (namit via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

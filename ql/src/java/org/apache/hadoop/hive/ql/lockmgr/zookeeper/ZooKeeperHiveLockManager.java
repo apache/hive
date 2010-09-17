@@ -236,8 +236,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     try {
       children = zkpClient.getChildren("/" + parent, false);
     } catch (Exception e) {
-      LOG.error("Failed to get ZooKeeper children: " + e);
-      throw new LockException(e);
+      // no locks present
+      return locks;
     }
 
     for (String child : children) {
