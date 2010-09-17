@@ -1,0 +1,15 @@
+package org.apache.hadoop.hive.serde2.proto.test;
+
+message IntString {
+  optional int32 myint			= 1;
+  optional string myString		= 2;
+  optional int32 underscore_int	= 3;
+};
+
+message Complex {
+  optional int32 aint         	= 1;
+  optional string aString       = 2;
+  repeated int32 lint     = 3;
+  repeated string lString = 4;
+  repeated IntString lintString = 5;
+};

@@ -71,6 +71,9 @@ Trunk -  Unreleased
     HIVE-1598. Create an option to specify an option for the format of
     intermediate results (Ning Zhang via namit)
 
+    HIVE-1616. Add ProtocolsBufferStructObjectInspector
+    (Johan Oskarsson via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

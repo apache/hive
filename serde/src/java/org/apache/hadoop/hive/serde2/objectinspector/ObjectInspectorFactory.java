@@ -23,6 +23,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +49,16 @@ public final class ObjectInspectorFactory {
   /**
    * ObjectInspectorOptions describes what ObjectInspector to use. JAVA is to
    * use pure JAVA reflection. THRIFT is to use JAVA reflection and filter out
-   * __isset fields. New ObjectInspectorOptions can be added here when
-   * available.
-   * 
+   * __isset fields, PROTOCOL_BUFFERS filters out has*.
+   * New ObjectInspectorOptions can be added here when available.
+   *
    * We choose to use a single HashMap objectInspectorCache to cache all
    * situations for efficiency and code simplicity. And we don't expect a case
    * that a user need to create 2 or more different types of ObjectInspectors
    * for the same Java type.
    */
   public enum ObjectInspectorOptions {
-    JAVA, THRIFT
+    JAVA, THRIFT, PROTOCOL_BUFFERS
   };
 
   private static HashMap<Type, ObjectInspector> objectInspectorCache = new HashMap<Type, ObjectInspector>();
@@ -69,14 +70,35 @@ public final class ObjectInspectorFactory {
       oi = getReflectionObjectInspectorNoCache(t, options);
       objectInspectorCache.put(t, oi);
     }
-    if ((options.equals(ObjectInspectorOptions.JAVA) && oi.getClass().equals(
-        ThriftStructObjectInspector.class))
-        || (options.equals(ObjectInspectorOptions.THRIFT) && oi.getClass()
-        .equals(ReflectionStructObjectInspector.class))) {
-      throw new RuntimeException(
-          "Cannot call getObjectInspectorByReflection with both JAVA and THRIFT !");
-    }
+    verifyObjectInspector(options, oi, ObjectInspectorOptions.JAVA, new Class[]{ThriftStructObjectInspector.class,
+      ProtocolBuffersStructObjectInspector.class});
+    verifyObjectInspector(options, oi, ObjectInspectorOptions.THRIFT, new Class[]{ReflectionStructObjectInspector.class,
+        ProtocolBuffersStructObjectInspector.class});
+    verifyObjectInspector(options, oi, ObjectInspectorOptions.PROTOCOL_BUFFERS, new Class[]{ThriftStructObjectInspector.class,
+        ReflectionStructObjectInspector.class});
+
     return oi;
+  }
+
+  /**
+   * Verify that we don't have an unexpected type of object inspector.
+   * @param option The option to verify
+   * @param oi The ObjectInspector to verify
+   * @param checkOption We're only interested in this option type
+   * @param classes ObjectInspector should not be of these types
+   */
+  private static void verifyObjectInspector(ObjectInspectorOptions option, ObjectInspector oi,
+      ObjectInspectorOptions checkOption, Class[] classes) {
+
+    if (option.equals(checkOption)) {
+      for (Class checkClass : classes) {
+        if (oi.getClass().equals(checkClass)) {
+          throw new RuntimeException(
+            "Cannot call getObjectInspectorByReflection with more then one of " +
+            Arrays.toString(ObjectInspectorOptions.values()) + "!");
+        }
+      }
+    }
   }
 
   private static ObjectInspector getReflectionObjectInspectorNoCache(Type t,
@@ -146,6 +168,9 @@ public final class ObjectInspectorFactory {
       break;
     case THRIFT:
       oi = new ThriftStructObjectInspector();
+      break;
+    case PROTOCOL_BUFFERS:
+      oi = new ProtocolBuffersStructObjectInspector();
       break;
     default:
       throw new RuntimeException(ObjectInspectorFactory.class.getName()
