@@ -14,7 +14,7 @@ org.apache.hadoop.hive.cli.*" %>
   HiveMetaStoreClient client = new HiveMetaStoreClient(hiveConf);
   String db = request.getParameter("db");
   Database db2 = client.getDatabase(db);
-  List<String> tables = client.getTables(".*");
+  List<String> tables = client.getAllTables(db);
   client.close();
 %>
 <html>

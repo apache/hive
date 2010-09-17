@@ -11,7 +11,7 @@ org.apache.hadoop.hive.cli.*" %>
 <% 
   HiveConf hiveConf = new HiveConf(SessionState.class); 
   HiveMetaStoreClient client = new HiveMetaStoreClient(hiveConf);
-  List <String> dbs = client.getDatabases();
+  List <String> dbs = client.getAllDatabases();
   client.close();
 %>
 <html>

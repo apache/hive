@@ -334,7 +334,9 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
           ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
-              resultBucket.add(res);
+              ArrayList<String> resCopy = new ArrayList<String>();
+              resCopy.addAll(res);
+              resultBucket.add(resCopy);
               if (resultBucket.size() > resultBucketMaxSize) {
                 resultBucket.remove(0);
               }
@@ -347,7 +349,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
                   throw new RuntimeException("ss was null");
                 }
               }
-              // res.clear();
+              res.clear();
             }
           } catch (IOException ex) {
             l4j.error(getSessionName() + " getting results " + getResultFile()
