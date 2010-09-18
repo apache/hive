@@ -33,11 +33,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
@@ -215,7 +219,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // clone a jobConf for setting needed columns for reading
     JobConf cloneJobConf = new JobConf(job);
-    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath()
+    pushProjectionsAndFilters(cloneJobConf, inputFormatClass, hsplit.getPath()
         .toString(), hsplit.getPath().toUri().getPath());
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
@@ -260,6 +264,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
       Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), newjob);
 
+      // Make filter pushdown information available to getSplits.
+      ArrayList<String> aliases =
+        mrwork.getPathToAliases().get(dir.toUri().toString());
+      if ((aliases != null) && (aliases.size() == 1)) {
+        Operator op = mrwork.getAliasToWork().get(aliases.get(0));
+        if ((op != null) && (op instanceof TableScanOperator)) {
+          TableScanOperator tableScan = (TableScanOperator) op;
+          pushFilters(newjob, tableScan);
+        }
+      }
+      
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
       InputSplit[] iss = inputFormat.getSplits(newjob, numSplits / dirs.length);
@@ -309,7 +324,37 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return partDesc;
   }
 
-  protected void initColumnsNeeded(JobConf jobConf, Class inputFormatClass,
+  protected void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
+
+    TableScanDesc scanDesc = tableScan.getConf();
+    if (scanDesc == null) {
+      return;
+    }
+
+    // construct column name list for reference by filter push down
+    Utilities.setColumnNameList(jobConf, tableScan);
+
+    // push down filters
+    ExprNodeDesc filterExpr = scanDesc.getFilterExpr();
+    if (filterExpr == null) {
+      return;
+    }
+
+    String filterText = filterExpr.getExprString();
+    String filterExprSerialized = Utilities.serializeExpression(filterExpr);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Filter text = " + filterText);
+      LOG.debug("Filter expression = " + filterExprSerialized);
+    }
+    jobConf.set(
+      TableScanDesc.FILTER_TEXT_CONF_STR,
+      filterText);
+    jobConf.set(
+      TableScanDesc.FILTER_EXPR_CONF_STR,
+      filterExprSerialized);
+  }
+  
+  protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
       String splitPath, String splitPathWithNoSchema) {
     if (this.mrwork == null) {
       init(job);
@@ -335,12 +380,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           alias);
       if (op != null && op instanceof TableScanOperator) {
         TableScanOperator tableScan = (TableScanOperator) op;
+
+        // push down projections
         ArrayList<Integer> list = tableScan.getNeededColumnIDs();
         if (list != null) {
           ColumnProjectionUtils.appendReadColumnIDs(jobConf, list);
         } else {
           ColumnProjectionUtils.setFullyReadColumns(jobConf);
         }
+
+        pushFilters(jobConf, tableScan);
       }
     }
   }

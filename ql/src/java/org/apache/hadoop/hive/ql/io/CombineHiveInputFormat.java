@@ -340,7 +340,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    initColumnsNeeded(job, inputFormatClass, hsplit.getPath(0).toString(),
+    pushProjectionsAndFilters(job, inputFormatClass,
+        hsplit.getPath(0).toString(),
         hsplit.getPath(0).toUri().getPath());
 
     return ShimLoader.getHadoopShims().getCombineFileInputFormat()

@@ -81,7 +81,7 @@ public class PredicatePushDown implements Transform {
     opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // create a the context for walking operators
-    OpWalkerInfo opWalkerInfo = new OpWalkerInfo(opToParseCtxMap);
+    OpWalkerInfo opWalkerInfo = new OpWalkerInfo(pGraphContext);
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1", "FIL%"), OpProcFactory.getFilterProc());

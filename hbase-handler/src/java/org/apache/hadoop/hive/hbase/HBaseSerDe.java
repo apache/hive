@@ -582,4 +582,11 @@ public class HBaseSerDe implements SerDe {
   public void setUseJSONSerialize(boolean useJSONSerialize) {
     this.useJSONSerialize = useJSONSerialize;
   }
+
+  /**
+   * @return 0-based offset of the key column within the table
+   */
+  int getKeyColumnOffset() {
+    return iKey;
+  }
 }

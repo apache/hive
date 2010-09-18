@@ -273,6 +273,12 @@
 </property>
 
 <property>
+  <name>hive.optimize.ppd.storage</name>
+  <value>true</value>
+  <description>Whether to push predicates down into storage handlers.  Ignored when hive.optimize.ppd is false.</description>
+</property>
+
+<property>
   <name>hive.optimize.pruner</name>
   <value>true</value>
   <description>Whether to enable the new partition pruner which depends on predicate pushdown. If this is disabled,

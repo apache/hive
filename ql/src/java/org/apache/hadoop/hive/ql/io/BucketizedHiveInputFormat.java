@@ -68,7 +68,7 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
 
     // clone a jobConf for setting needed columns for reading
     JobConf cloneJobConf = new JobConf(job);
-    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath()
+    pushProjectionsAndFilters(cloneJobConf, inputFormatClass, hsplit.getPath()
         .toString(), hsplit.getPath().toUri().getPath());
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,

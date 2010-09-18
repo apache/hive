@@ -26,6 +26,8 @@ import java.beans.Statement;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.File;
@@ -37,6 +39,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -81,6 +84,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -317,6 +321,40 @@ public final class Utilities {
     return null;
   }
 
+  public static String serializeExpression(ExprNodeDesc expr) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    XMLEncoder encoder = new XMLEncoder(baos);
+    try {
+      encoder.writeObject(expr);
+    } finally {
+      encoder.close();
+    }
+    try {
+      return baos.toString("UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException("UTF-8 support required", ex);
+    }
+  }
+
+  public static ExprNodeDesc deserializeExpression(
+    String s, Configuration conf) {
+    byte [] bytes;
+    try {
+      bytes = s.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException("UTF-8 support required", ex);
+    }
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    XMLDecoder decoder = new XMLDecoder(
+      bais, null, null, conf.getClassLoader());
+    try {
+      ExprNodeDesc expr = (ExprNodeDesc) decoder.readObject();
+      return expr;
+    } finally {
+      decoder.close();
+    }
+  }
+  
   /**
    * Serialize a single Task.
    */
@@ -1424,5 +1462,23 @@ public final class Utilities {
 
   public static boolean supportCombineFileInputFormat() {
     return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
+  }
+
+  public static void setColumnNameList(JobConf jobConf, Operator op) {
+    RowSchema rowSchema = op.getSchema();
+    if (rowSchema == null) {
+      return;
+    }
+    StringBuilder columnNames = new StringBuilder();
+    for (ColumnInfo colInfo : rowSchema.getSignature()) {
+      if (columnNames.length() > 0) {
+        columnNames.append(",");
+      }
+      columnNames.append(colInfo.getInternalName());
+    }
+    String columnNamesString = columnNames.toString();
+    jobConf.set(
+      Constants.LIST_COLUMNS,
+      columnNamesString);
   }
 }

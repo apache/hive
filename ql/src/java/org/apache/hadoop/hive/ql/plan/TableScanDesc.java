@@ -36,6 +36,14 @@ public class TableScanDesc implements Serializable {
   
   private List<VirtualColumn> virtualCols;
 
+  private ExprNodeDesc filterExpr;
+
+  public static final String FILTER_EXPR_CONF_STR =
+    "hive.io.filter.expr.serialized";
+
+  public static final String FILTER_TEXT_CONF_STR =
+    "hive.io.filter.text";
+
   @SuppressWarnings("nls")
   public TableScanDesc() {
   }
@@ -52,6 +60,15 @@ public class TableScanDesc implements Serializable {
   @Explain(displayName = "alias")
   public String getAlias() {
     return alias;
+  }
+
+  @Explain(displayName = "filterExpr")
+  public ExprNodeDesc getFilterExpr() {
+    return filterExpr;
+  }
+
+  public void setFilterExpr(ExprNodeDesc filterExpr) {
+    this.filterExpr = filterExpr;
   }
 
   public void setAlias(String alias) {

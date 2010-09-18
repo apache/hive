@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +40,17 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
+import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
 
@@ -51,7 +58,8 @@ import org.apache.hadoop.util.StringUtils;
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
  */
-public class HBaseStorageHandler implements HiveStorageHandler, HiveMetaHook {
+public class HBaseStorageHandler extends DefaultStorageHandler
+  implements HiveMetaHook, HiveStoragePredicateHandler {
 
   private HBaseConfiguration hbaseConf;
   private HBaseAdmin admin;
@@ -259,5 +267,39 @@ public class HBaseStorageHandler implements HiveStorageHandler, HiveMetaHook {
         tableProperties.getProperty(Constants.META_TABLE_NAME);
     }
     jobProperties.put(HBaseSerDe.HBASE_TABLE_NAME, tableName);
+  }
+
+  @Override
+  public DecomposedPredicate decomposePredicate(
+    JobConf jobConf,
+    Deserializer deserializer,
+    ExprNodeDesc predicate)
+  {
+    String columnNameProperty = jobConf.get(
+      org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS);
+    List<String> columnNames =
+      Arrays.asList(columnNameProperty.split(","));
+    HBaseSerDe hbaseSerde = (HBaseSerDe) deserializer;
+    IndexPredicateAnalyzer analyzer =
+      HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
+        columnNames.get(hbaseSerde.getKeyColumnOffset()));
+    List<IndexSearchCondition> searchConditions =
+      new ArrayList<IndexSearchCondition>();
+    ExprNodeDesc residualPredicate =
+      analyzer.analyzePredicate(predicate, searchConditions);
+    if (searchConditions.size() != 1) {
+      // Either there was nothing which could be pushed down (size = 0),
+      // or more than one predicate (size > 1); in the latter case,
+      // we bail out for now since multiple lookups on the key are
+      // either contradictory or redundant.  We'll need to handle
+      // this better later when we support more interesting predicates.
+      return null;
+    }
+    
+    DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
+    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(
+      searchConditions);
+    decomposedPredicate.residualPredicate = residualPredicate;
+    return decomposedPredicate;
   }
 }
