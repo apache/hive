@@ -309,7 +309,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         if (HiveConf
             .getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
           autoProgressor = new AutoProgressor(this.getClass().getName(),
-              reporter, Utilities.getDefaultNotificationInterval(hconf));
+              reporter, Utilities.getDefaultNotificationInterval(hconf),
+              HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVES_AUTO_PROGRESS_TIMEOUT) * 1000);
           autoProgressor.go();
         }
 

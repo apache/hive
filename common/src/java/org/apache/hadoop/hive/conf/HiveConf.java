@@ -182,6 +182,7 @@ public class HiveConf extends Configuration {
     HIVEADDEDARCHIVES("hive.added.archives.path", ""),
 
     // for hive script operator
+    HIVES_AUTO_PROGRESS_TIMEOUT("hive.auto.progress.timeout", 0),
     HIVETABLENAME("hive.table.name", ""),
     HIVEPARTITIONNAME("hive.partition.name", ""),
     HIVESCRIPTAUTOPROGRESS("hive.script.auto.progress", false),

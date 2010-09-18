@@ -695,6 +695,14 @@
   </description>
 </property>
 
+<property>
+  <name>hive.auto.progress.timeout</name>
+  <value>0</value>
+  <description> 
+    How long to run autoprogressor for the script/UDTF operators (in seconds). 
+    Set to 0 for forever.
+  </description>
+</property>
 
 <!-- HBase Storage Handler Parameters -->
 

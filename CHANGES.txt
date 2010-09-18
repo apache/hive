@@ -132,6 +132,9 @@ Trunk -  Unreleased
     HIVE-1645. ability to specify parent directory for zookeeper lock manager
     (namit via He Yongqiang)
 
+    HIVE-1617. ScriptOperator's AutoProgressor can lead to an infinite loop
+    (Paul Yang via namit)
+
     HIVE-1226. support filter pushdown against non-native tables
     (jvs via He Yongqiang)
 
