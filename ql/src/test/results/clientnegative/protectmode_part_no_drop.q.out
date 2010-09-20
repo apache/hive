@@ -32,11 +32,41 @@ PREHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode_no_drop partition (p='p1')
 POSTHOOK: type: DESCTABLE
-c1	string	
-c2	string	
-p	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl_protectmode_no_drop, createTime:1284168328, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:c1, type:string, comment:null), FieldSchema(name:c2, type:string, comment:null)], location:pfile:/data/users/sdong/www/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/tbl_protectmode_no_drop/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=sdong, last_modified_time=1284168328, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1284168328})	
+c1                  	string              	None                
+c2                  	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+p                   	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[p1]                	 
+Database:           	default             	 
+Table:              	tbl_protectmode_no_drop	 
+CreateTime:         	Tue Sep 14 08:27:42 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	NO_DROP             	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl_protectmode_no_drop/p=p1	 
+Partition Parameters:	 	 
+	last_modified_by    	thiruvel            
+	last_modified_time  	1284478062          
+	PROTECT_MODE        	NO_DROP             
+	transient_lastDdlTime	1284478062          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: alter table tbl_protectmode_no_drop drop partition (p='p1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@tbl_protectmode_no_drop

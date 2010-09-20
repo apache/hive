@@ -7,16 +7,42 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:jssarma, createTime:1279736301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736301}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:11:23 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477083          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1 (a STRING, b STRING) STORED AS TEXTFILE
@@ -30,16 +56,42 @@ PREHOOK: query: DESCRIBE table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table2
 POSTHOOK: type: DESCTABLE
-a	string	
-b	int	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	int                 	None                
 PREHOOK: query: DESCRIBE EXTENDED table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table2
 POSTHOOK: type: DESCTABLE
-a	string	
-b	int	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table2, dbName:default, owner:jssarma, createTime:1279736301, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736301}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+a                   	string              	None                
+b                   	int                 	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:11:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477084          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: CREATE TABLE table3 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
@@ -53,13 +105,40 @@ PREHOOK: query: DESCRIBE table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table3
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table3
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table3, dbName:default, owner:jssarma, createTime:1279736302, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=	, field.delim=
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:11:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table3	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477084          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	\t                  
+	field.delim         	\t                  
+	 	 

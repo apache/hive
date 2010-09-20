@@ -19,13 +19,43 @@ PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
 POSTHOOK: type: DESCTABLE
-aint	int	from deserializer
-astring	string	from deserializer
-lint	array<int>	from deserializer
-lstring	array<string>	from deserializer
-lintstring	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer
-mstringstring	map<string,string>	from deserializer
-ds	string	
-country	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:jssarma, createTime:1279737072, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex, serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737072, comment=This is a thrift based table}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+aint                	int                 	from deserializer   
+astring             	string              	from deserializer   
+lint                	array<int>          	from deserializer   
+lstring             	array<string>       	from deserializer   
+lintstring          	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer   
+mstringstring       	map<string,string>  	from deserializer   
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:22:10 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/inputddl8	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477730          
+	comment             	This is a thrift based table
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	32                  	 
+Bucket Columns:     	[aint]              	 
+Sort Columns:       	[Order(col:lint, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.class 	org.apache.hadoop.hive.serde2.thrift.test.Complex
+	serialization.format	com.facebook.thrift.protocol.TBinaryProtocol
+	 	 

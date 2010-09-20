@@ -20,12 +20,41 @@ PREHOOK: query: describe extended nzhang_part1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part1
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part1, dbName:default, owner:null, createTime:1282864103, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/nzhang_part1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1282864103}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 07:09:12 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284473352          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part1 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
@@ -109,7 +138,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-24_132_8350648338748839361/-ext-10000
+          destination: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -127,7 +156,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-24_132_8350648338748839361/-ext-10004 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -144,7 +173,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-24_132_8350648338748839361/-ext-10002
+          destination: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -162,7 +191,7 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-24_132_8350648338748839361/-ext-10005 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -233,12 +262,12 @@ PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-08-33_285_7916313488954403803/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_593_3192732830429365525/-mr-10000
 POSTHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-08-33_285_7916313488954403803/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_593_3192732830429365525/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1251,12 +1280,12 @@ PREHOOK: query: select * from nzhang_part2 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-08-33_856_4074078546892062221/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_830_3512781667183170568/-mr-10000
 POSTHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-08-33_856_4074078546892062221/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_830_3512781667183170568/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

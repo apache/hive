@@ -7,10 +7,35 @@ PREHOOK: query: desc extended T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t1, dbName:default, owner:null, createTime:1279736455, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736455}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477286          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T1 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -27,10 +52,35 @@ POSTHOOK: query: desc extended T1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t1, dbName:default, owner:null, createTime:1279736455, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736459}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477290          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T1 select /*+ HOLD_DDLTIME*/ * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -51,10 +101,35 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t1, dbName:default, owner:null, createTime:1279736455, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736459}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477290          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T1 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -79,10 +154,35 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t1, dbName:default, owner:null, createTime:1279736455, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736467}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477296          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: create table if not exists T2 like srcpart
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table if not exists T2 like srcpart
@@ -104,12 +204,41 @@ POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t2, dbName:default, owner:null, createTime:1279736467, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736467}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 08:14:57 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477297          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr = '1') select key, value from src where key > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -138,12 +267,39 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2010-06-21, 1], dbName:default, tableName:t2, createTime:1279736471, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279736471})	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010-06-21, 1]     	 
+Database:           	default             	 
+Table:              	t2                  	 
+CreateTime:         	Tue Sep 14 08:15:00 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477300          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T2 partition (ds = '2010-06-21', hr='1') select /*+ HOLD_DDLTIME */ key, value from src where key > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -176,12 +332,39 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2010-06-21, 1], dbName:default, tableName:t2, createTime:1279736471, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279736471})	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010-06-21, 1]     	 
+Database:           	default             	 
+Table:              	t2                  	 
+CreateTime:         	Tue Sep 14 08:15:00 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477300          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: insert overwrite table T2 partition (ds='2010-06-01', hr='1') select key, value from src where key > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -218,9 +401,36 @@ POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2010-06-01, 1], dbName:default, tableName:t2, createTime:1279736478, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t2/ds=2010-06-01/hr=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279736478})	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2010-06-01, 1]     	 
+Database:           	default             	 
+Table:              	t2                  	 
+CreateTime:         	Tue Sep 14 08:15:08 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-01/hr=1	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477308          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

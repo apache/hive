@@ -15,12 +15,41 @@ PREHOOK: query: describe extended nzhang_part8
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part8
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part8, dbName:default, owner:null, createTime:1281476407, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part8, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1281476407}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 07:14:42 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part8	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284473682          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: explain extended
 from srcpart
 insert overwrite table nzhang_part8 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
@@ -65,7 +94,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10000
+                  directory: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10000
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -77,13 +106,13 @@ STAGE PLANS:
                         columns.types string:string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part8
+                        location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part8
                         name nzhang_part8
                         partition_columns ds/hr
                         serialization.ddl struct nzhang_part8 { string key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1281476407
+                        transient_lastDdlTime 1284473682
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: nzhang_part8
                   TotalFiles: 1
@@ -105,7 +134,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 2
-                  directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10002
+                  directory: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,25 +146,25 @@ STAGE PLANS:
                         columns.types string:string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part8
+                        location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part8
                         name nzhang_part8
                         partition_columns ds/hr
                         serialization.ddl struct nzhang_part8 { string key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1281476407
+                        transient_lastDdlTime 1284473682
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: nzhang_part8
                   TotalFiles: 1
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [srcpart]
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [srcpart]
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [srcpart]
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [srcpart]
       Path -> Partition:
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -149,13 +178,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+              location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1281474268
+              transient_lastDdlTime 1284473678
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -166,17 +195,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281474268
+                transient_lastDdlTime 1284473678
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -190,13 +219,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+              location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1281474268
+              transient_lastDdlTime 1284473678
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -207,17 +236,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281474268
+                transient_lastDdlTime 1284473678
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -231,13 +260,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+              location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1281474268
+              transient_lastDdlTime 1284473678
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -248,17 +277,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281474268
+                transient_lastDdlTime 1284473678
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -272,13 +301,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+              location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1281474268
+              transient_lastDdlTime 1284473678
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -289,13 +318,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/srcpart
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281474268
+                transient_lastDdlTime 1284473678
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -307,7 +336,7 @@ STAGE PLANS:
             ds 
             hr 
           replace: true
-          source: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10000
+          source: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -318,16 +347,16 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part8
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part8
                 name nzhang_part8
                 partition_columns ds/hr
                 serialization.ddl struct nzhang_part8 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281476407
+                transient_lastDdlTime 1284473682
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part8
-          tmp directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10001
+          tmp directory: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10001
 
   Stage: Stage-1
     Move Operator
@@ -336,7 +365,7 @@ STAGE PLANS:
             ds 2008-12-31
             hr 
           replace: true
-          source: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10002
+          source: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10002
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -347,16 +376,16 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part8
+                location pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part8
                 name nzhang_part8
                 partition_columns ds/hr
                 serialization.ddl struct nzhang_part8 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1281476407
+                transient_lastDdlTime 1284473682
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part8
-          tmp directory: pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/scratchdir/hive_2010-08-10_14-40-07_257_9168405860452294864/-ext-10003
+          tmp directory: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-14-42_202_4241678664810185333/-ext-10003
 
 
 PREHOOK: query: from srcpart
@@ -409,14 +438,14 @@ PREHOOK: Input: default@nzhang_part8@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part8@ds=2008-04-08/hr=12
 PREHOOK: Input: default@nzhang_part8@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part8@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-40-11_367_1973645086363900348/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-14-47_080_4674138694548640892/-mr-10000
 POSTHOOK: query: select * from nzhang_part8 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part8@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part8@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@nzhang_part8@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part8@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-40-11_367_1973645086363900348/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-14-47_080_4674138694548640892/-mr-10000
 POSTHOOK: Lineage: nzhang_part8 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part8 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part8 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

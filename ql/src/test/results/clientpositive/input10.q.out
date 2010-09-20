@@ -31,7 +31,13 @@ PREHOOK: query: DESCRIBE TEST10
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST10
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                

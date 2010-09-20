@@ -7,14 +7,18 @@ PREHOOK: query: DESCRIBE TEST2a
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST2a
 POSTHOOK: type: DESCTABLE
-a	int	
-b	double	
+col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	double              	None                
 PREHOOK: query: DESC TEST2a
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC TEST2a
 POSTHOOK: type: DESCTABLE
-a	int	
-b	double	
+col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+b                   	double              	None                
 PREHOOK: query: CREATE TABLE TEST2b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE TEST2b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
@@ -24,9 +28,11 @@ PREHOOK: query: DESCRIBE TEST2b
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST2b
 POSTHOOK: type: DESCTABLE
-a	array<int>	
-b	double	
-c	map<double,int>	
+col_name            	data_type           	comment             
+	 	 
+a                   	array<int>          	None                
+b                   	double              	None                
+c                   	map<double,int>     	None                
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES

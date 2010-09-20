@@ -7,10 +7,34 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:carl, createTime:1282710046, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1282710046}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:07:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/set_bucketing_test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284476844          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	10                  	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
 PREHOOK: type: null
 PREHOOK: Input: default@set_bucketing_test
@@ -23,10 +47,36 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:default, owner:carl, createTime:1282710046, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=carl, last_modified_time=1282710046, transient_lastDdlTime=1282710046}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:07:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/set_bucketing_test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	last_modified_by    	thiruvel            
+	last_modified_time  	1284476844          
+	transient_lastDdlTime	1284476844          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: -- Cleanup
 DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
@@ -74,10 +124,34 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:alter4_db, owner:carl, createTime:1282710046, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/alter4_db.db/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1282710046}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	alter4_db           	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:07:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter4_db.db/set_bucketing_test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284476844          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	10                  	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
 PREHOOK: type: null
 PREHOOK: Input: alter4_db@set_bucketing_test
@@ -90,10 +164,36 @@ PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:set_bucketing_test, dbName:alter4_db, owner:carl, createTime:1282710046, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/alter4_db.db/set_bucketing_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=carl, last_modified_time=1282710046, transient_lastDdlTime=1282710046}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	alter4_db           	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:07:24 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter4_db.db/set_bucketing_test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	last_modified_by    	thiruvel            
+	last_modified_time  	1284476845          
+	transient_lastDdlTime	1284476845          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: DROP TABLE set_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter4_db@set_bucketing_test

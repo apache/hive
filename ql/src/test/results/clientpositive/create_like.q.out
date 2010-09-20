@@ -7,16 +7,42 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:jssarma, createTime:1279736324, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279736324}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:12:39 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477159          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: CREATE TABLE table2 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table2 LIKE table1
@@ -26,16 +52,43 @@ PREHOOK: query: DESCRIBE table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table2
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table2
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table2, dbName:default, owner:jssarma, createTime:1279736325, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279736325}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:12:39 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477159          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE table1
@@ -53,16 +106,43 @@ PREHOOK: query: DESCRIBE table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table3
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED table3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table3
 POSTHOOK: type: DESCTABLE
-a	string	
-b	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:table3, dbName:default, owner:jssarma, createTime:1279736325, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1279736325}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:12:40 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table3	 
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	transient_lastDdlTime	1284477160          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -88,11 +168,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-50_868_6881405350249810394/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-45_384_7121730707453573717/-mr-10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-50_868_6881405350249810394/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-45_384_7121730707453573717/-mr-10000
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -101,11 +181,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-50_925_7813524751422798542/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-45_467_3430528099067644720/-mr-10000
 POSTHOOK: query: SELECT * FROM table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-18-50_925_7813524751422798542/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-45_467_3430528099067644720/-mr-10000
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

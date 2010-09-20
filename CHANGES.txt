@@ -138,6 +138,9 @@ Trunk -  Unreleased
     HIVE-1226. support filter pushdown against non-native tables
     (jvs via He Yongqiang)
 
+    HIVE-558. Make describe output better
+    (Thiruvel Thirumoolan via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

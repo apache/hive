@@ -19,11 +19,11 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: SELECT COUNT(1) FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-01_263_7107969806665063947/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-38_208_6942362751444337631/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-01_263_7107969806665063947/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-38_208_6942362751444337631/-mr-10000
 500
 PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
@@ -38,11 +38,11 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-03_852_7925766013771881851/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-41_054_6564363936212747087/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-03_852_7925766013771881851/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-41_054_6564363936212747087/-mr-10000
 500
 PREHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -57,11 +57,11 @@ POSTHOOK: Output: default@t3@ds=2008-04-09
 PREHOOK: query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3@ds=2008-04-09
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-06_508_6701973609385610242/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-43_724_6669484579821533203/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-06_508_6701973609385610242/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-43_724_6669484579821533203/-mr-10000
 500
 PREHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
@@ -76,39 +76,141 @@ POSTHOOK: Output: default@t4@ds=2008-04-09
 PREHOOK: query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4@ds=2008-04-09
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-09_249_5639659187396085133/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-46_518_8734843392472439359/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-31-09_249_5639659187396085133/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-21-46_518_8734843392472439359/-mr-10000
 500
 PREHOOK: query: DESCRIBE EXTENDED T1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T1
 POSTHOOK: type: DESCTABLE
-name	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t1, dbName:default, owner:jssarma, createTime:1279737061, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279737061}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+name                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:21:38 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477698          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: DESCRIBE EXTENDED T2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T2
 POSTHOOK: type: DESCTABLE
-name	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:t2, dbName:default, owner:jssarma, createTime:1279737063, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t2, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1279737063}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+name                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:21:40 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477701          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name	string	
-ds	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09], dbName:default, tableName:t3, createTime:1279737066, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t3/ds=2008-04-09, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279737066})	
+name                	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09]        	 
+Database:           	default             	 
+Table:              	t3                  	 
+CreateTime:         	Tue Sep 14 08:21:43 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t3/ds=2008-04-09	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477703          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 POSTHOOK: type: DESCTABLE
-name	string	
-ds	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09], dbName:default, tableName:t4, createTime:1279737069, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/t4/ds=2008-04-09, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279737069})	
+name                	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-09]        	 
+Database:           	default             	 
+Table:              	t4                  	 
+CreateTime:         	Tue Sep 14 08:21:46 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t4/ds=2008-04-09	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477706          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

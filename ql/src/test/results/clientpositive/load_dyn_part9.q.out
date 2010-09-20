@@ -15,12 +15,41 @@ PREHOOK: query: describe extended nzhang_part9
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part9
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part9, dbName:default, owner:null, createTime:1281476412, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/heyongqiang/hive-trunk-clean/build/ql/test/data/warehouse/nzhang_part9, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1281476412}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 07:15:19 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part9	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284473719          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: explain
 from srcpart
 insert overwrite table nzhang_part9 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
@@ -115,12 +144,12 @@ PREHOOK: query: select * from nzhang_part9 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part9@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part9@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-40-15_780_650724952014850980/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-15-22_688_3998083922561230101/-mr-10000
 POSTHOOK: query: select * from nzhang_part9 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part9@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part9@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-08-10_14-40-15_780_650724952014850980/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-15-22_688_3998083922561230101/-mr-10000
 POSTHOOK: Lineage: nzhang_part9 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part9 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part9 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

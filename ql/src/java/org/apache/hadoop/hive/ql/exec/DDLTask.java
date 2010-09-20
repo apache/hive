@@ -68,14 +68,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.CheckResult;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
@@ -1615,64 +1608,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       LOG.info("DDLTask: got data for " + tbl.getTableName());
 
-      List<FieldSchema> cols = null;
+			Path resFile = new Path(descTbl.getResFile());
+			FileSystem fs = resFile.getFileSystem(conf);
+			DataOutput outStream = fs.create(resFile);
+
       if (colPath.equals(tableName)) {
-        cols = tbl.getCols();
-        if (part != null) {
-          cols = part.getCols();
-        }
+				outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(tbl));
       } else {
+				List<FieldSchema> cols = null;
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
-      }
-      Path resFile = new Path(descTbl.getResFile());
-      FileSystem fs = resFile.getFileSystem(conf);
-      DataOutput outStream = fs.create(resFile);
-      Iterator<FieldSchema> iterCols = cols.iterator();
-      while (iterCols.hasNext()) {
-        // create a row per column
-        FieldSchema col = iterCols.next();
-        outStream.writeBytes(col.getName());
-        outStream.write(separator);
-        outStream.writeBytes(col.getType());
-        outStream.write(separator);
-        outStream.writeBytes(col.getComment() == null ? "" : col.getComment());
-        outStream.write(terminator);
+				outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
       }
 
       if (tableName.equals(colPath)) {
-        // also return the partitioning columns
-        List<FieldSchema> partCols = tbl.getPartCols();
-        Iterator<FieldSchema> iterPartCols = partCols.iterator();
-        while (iterPartCols.hasNext()) {
-          FieldSchema col = iterPartCols.next();
-          outStream.writeBytes(col.getName());
-          outStream.write(separator);
-          outStream.writeBytes(col.getType());
-          outStream.write(separator);
-          outStream
-              .writeBytes(col.getComment() == null ? "" : col.getComment());
-          outStream.write(terminator);
-        }
-
         // if extended desc table then show the complete details of the table
         if (descTbl.isExt()) {
           // add empty line
           outStream.write(terminator);
           if (part != null) {
             // show partition information
-            outStream.writeBytes("Detailed Partition Information");
-            outStream.write(separator);
-            outStream.writeBytes(part.getTPartition().toString());
-            outStream.write(separator);
+            outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
             // comment column is empty
             outStream.write(terminator);
           } else {
             // show table information
-            outStream.writeBytes("Detailed Table Information");
-            outStream.write(separator);
-            outStream.writeBytes(tbl.getTTable().toString());
-            outStream.write(separator);
-            // comment column is empty
+            outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
             outStream.write(terminator);
           }
         }

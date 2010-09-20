@@ -31,16 +31,18 @@ POSTHOOK: query: describe columnTable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	from deserializer
-value	string	from deserializer
+col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
 PREHOOK: query: SELECT columnTable.* FROM columnTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-15_409_223543948857251615/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-16-53_856_5575945175837293998/-mr-10000
 POSTHOOK: query: SELECT columnTable.* FROM columnTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-15_409_223543948857251615/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-16-53_856_5575945175837293998/-mr-10000
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

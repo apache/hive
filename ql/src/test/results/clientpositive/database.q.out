@@ -129,16 +129,42 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE table in non-default DB
 DESCRIBE test_table
 POSTHOOK: type: DESCTABLE
-col1	string	
+col_name            	data_type           	comment             
+	 	 
+col1                	string              	None                
 PREHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: -- DESCRIBE EXTENDED in non-default DB
 DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
-col1	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:test_table, dbName:test_db, owner:carl, createTime:1282718578, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/test_db.db/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1282718578}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+col1                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	test_db             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:14:02 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/test_db.db/test_table	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477242          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: -- CREATE LIKE in non-default DB
 CREATE TABLE test_table_like LIKE test_table
 PREHOOK: type: CREATETABLE
@@ -156,9 +182,34 @@ PREHOOK: query: DESCRIBE EXTENDED test_table_like
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
-col1	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:test_table_like, dbName:test_db, owner:carl, createTime:1282718578, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/Users/carl/Projects/hive/build/ql/test/data/warehouse/test_db.db/test_table_like, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1282718578}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+col1                	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	test_db             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:14:02 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/test_db.db/test_table_like	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284477242          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: -- LOAD and SELECT
 LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE test_table
 PREHOOK: type: LOAD
@@ -169,11 +220,11 @@ POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-42-59_567_2461111790069590361/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_014_3734417394191268060/-mr-10000
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-42-59_567_2461111790069590361/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_014_3734417394191268060/-mr-10000
 1
 2
 3
@@ -209,11 +260,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-00_940_5138756558646274720/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_657_3100419213937707581/-mr-10000
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-00_940_5138756558646274720/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_657_3100419213937707581/-mr-10000
 PREHOOK: query: -- CREATE table that already exists in DEFAULT
 USE test_db
 PREHOOK: type: SWITCHDATABASE
@@ -235,11 +286,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@src
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_221_2875743952247647479/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_810_3196244583692570364/-mr-10000
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@src
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_221_2875743952247647479/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_810_3196244583692570364/-mr-10000
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
@@ -247,11 +298,11 @@ POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_337_7970214163805278546/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_870_6860222356519835640/-mr-10000
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-08-24_23-43-01_337_7970214163805278546/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-14-03_870_6860222356519835640/-mr-10000
 238	val_238
 86	val_86
 311	val_311

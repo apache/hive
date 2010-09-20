@@ -17,18 +17,45 @@ PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
 POSTHOOK: type: DESCTABLE
-key	int	from deserializer
-value	string	from deserializer
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:hbase_table_1, dbName:default, owner:jsichi, createTime:1282870784, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_table_1, inputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat, outputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.hbase.HBaseSerDe, parameters:{serialization.format=1, hbase.columns.mapping=cf:string}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{hbase.table.name=hbase_table_0, transient_lastDdlTime=1282870784, storage_handler=org.apache.hadoop.hive.hbase.HBaseStorageHandler}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	from deserializer   
+value               	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Sun Sep 19 23:24:01 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive.unsecure/build/hbase-handler/test/data/warehouse/hbase_table_1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	hbase.table.name    	hbase_table_0       
+	transient_lastDdlTime	1284963841          
+	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
+InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	hbase.columns.mapping	cf:string           
+	 	 
 PREHOOK: query: select * from hbase_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-44_959_664484390867638581/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-01_683_4327611959875667509/-mr-10000
 POSTHOOK: query: select * from hbase_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-44_959_664484390867638581/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-01_683_4327611959875667509/-mr-10000
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
@@ -198,7 +225,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jsichi/hive_2010-08-26_17-59-48_518_6224953898347253125/-mr-10002 
+        file:/tmp/thiruvel/hive_2010-09-19_23-24-05_761_4987544134453195852/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -237,7 +264,7 @@ ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-48_687_7267893285176645949/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-05_861_535022589520098382/-mr-10000
 POSTHOOK: query: SELECT Y.* 
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1) x
@@ -248,7 +275,7 @@ ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-48_687_7267893285176645949/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-05_861_535022589520098382/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -382,7 +409,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jsichi/hive_2010-08-26_17-59-56_537_4371415923720310528/-mr-10002 
+        file:/tmp/thiruvel/hive_2010-09-19_23-24-12_397_6864973420568576681/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -420,7 +447,7 @@ ORDER BY key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@hbase_table_2
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-56_729_1646077641371437252/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-12_547_6310920357243853243/-mr-10000
 POSTHOOK: query: SELECT Y.*
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
@@ -431,7 +458,7 @@ ORDER BY key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@hbase_table_2
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_17-59-56_729_1646077641371437252/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-12_547_6310920357243853243/-mr-10000
 104	val_104
 114	val_114
 116	val_116
@@ -462,48 +489,48 @@ PREHOOK: query: select * from (select count(1) as c from empty_normal_table unio
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@empty_normal_table
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-07_075_2779968526096451886/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-21_501_1398129784538806928/-mr-10000
 POSTHOOK: query: select * from (select count(1) as c from empty_normal_table union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@empty_normal_table
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-07_075_2779968526096451886/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-21_501_1398129784538806928/-mr-10000
 0
 0
 PREHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_normal_table
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-16_419_1002434022290170784/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-29_194_1717741306846244710/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_normal_table
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-16_419_1002434022290170784/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-29_194_1717741306846244710/-mr-10000
 0
 155
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-25_859_2570695575641705647/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-36_929_1877869894302110012/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-25_859_2570695575641705647/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-36_929_1877869894302110012/-mr-10000
 0
 500
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-35_201_7212376066806846352/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-44_477_2750297097097131407/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-35_201_7212376066806846352/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-24-44_477_2750297097097131407/-mr-10000
 155
 500
 PREHOOK: query: CREATE TABLE hbase_table_3(key int, value string, count int) 
@@ -703,20 +730,20 @@ POSTHOOK: Output: default@hbase_table_3
 PREHOOK: query: select count(1) from hbase_table_3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-55_042_4227305362165776181/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-01_253_8576430709310957378/-mr-10000
 POSTHOOK: query: select count(1) from hbase_table_3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-55_042_4227305362165776181/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-01_253_8576430709310957378/-mr-10000
 155
 PREHOOK: query: select * from hbase_table_3 order by key, value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-58_660_6615166785753648742/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-04_391_6395645615304876336/-mr-10000
 POSTHOOK: query: select * from hbase_table_3 order by key, value limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-58_660_6615166785753648742/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-04_391_6395645615304876336/-mr-10000
 0	val_0	3
 2	val_2	1
 4	val_4	1
@@ -725,11 +752,11 @@ POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-00-58_660_6615166785753648
 PREHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-02_229_7032023633895650392/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-07_505_7507809148698442371/-mr-10000
 POSTHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-02_229_7032023633895650392/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-07_505_7507809148698442371/-mr-10000
 0	3
 2	1
 4	1
@@ -765,11 +792,11 @@ POSTHOOK: Output: default@hbase_table_4
 PREHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_4
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-11_244_2234692314536262670/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-16_096_5831356591320350016/-mr-10000
 POSTHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_4
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-11_244_2234692314536262670/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-16_096_5831356591320350016/-mr-10000
 98	val_98	99	100
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_5
@@ -790,11 +817,11 @@ POSTHOOK: Output: default@hbase_table_5
 PREHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_5
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-15_009_1646727916221485033/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-19_335_8952484238655135527/-mr-10000
 POSTHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_5
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-15_009_1646727916221485033/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-19_335_8952484238655135527/-mr-10000
 98	{"b":"val_98","c":"99"}
 100	{"b":"val_100","c":"101"}
 PREHOOK: query: DROP TABLE hbase_table_6
@@ -827,11 +854,11 @@ POSTHOOK: Output: default@hbase_table_6
 PREHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_6
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-23_977_5712476856221236690/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-28_089_7578738986294123292/-mr-10000
 POSTHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_6
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-23_977_5712476856221236690/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-28_089_7578738986294123292/-mr-10000
 98	{"val_98":"98"}
 100	{"val_100":"100"}
 PREHOOK: query: DROP TABLE hbase_table_7
@@ -866,11 +893,11 @@ POSTHOOK: Output: default@hbase_table_7
 PREHOOK: query: SELECT * FROM hbase_table_7 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_7
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-32_885_9063305271253836242/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-36_674_7610811991249617421/-mr-10000
 POSTHOOK: query: SELECT * FROM hbase_table_7 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_7
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-32_885_9063305271253836242/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-36_674_7610811991249617421/-mr-10000
 {"VAL_98":"99.0","val_98":"98"}	98
 {"VAL_100":"101.0","val_100":"100"}	100
 PREHOOK: query: DROP TABLE hbase_table_8
@@ -903,11 +930,11 @@ POSTHOOK: Output: default@hbase_table_8
 PREHOOK: query: SELECT * FROM hbase_table_8 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_8
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-41_786_3914765665154306140/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-45_283_2749724644026569867/-mr-10000
 POSTHOOK: query: SELECT * FROM hbase_table_8 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_8
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_18-01-41_786_3914765665154306140/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-19_23-25-45_283_2749724644026569867/-mr-10000
 98	val_98	99	100
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_1

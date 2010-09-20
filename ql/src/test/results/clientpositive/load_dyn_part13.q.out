@@ -15,12 +15,41 @@ PREHOOK: query: describe extended nzhang_part13
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part13
 POSTHOOK: type: DESCTABLE
-key	string	default
-value	string	default
-ds	string	
-hr	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part13, dbName:default, owner:null, createTime:1279737513, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/nzhang_part13, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{EXTERNAL=FALSE, transient_lastDdlTime=1279737513}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	null                	 
+CreateTime:         	Tue Sep 14 07:07:15 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part13	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	transient_lastDdlTime	1284473235          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: explain
 insert overwrite table nzhang_part13 partition (ds="2010-03-03", hr) 
 select * from (
@@ -187,12 +216,12 @@ PREHOOK: query: select * from nzhang_part13 where ds is not null and hr is not n
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
 PREHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-36_782_8524700985752178497/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-07-18_377_2550771221773064356/-mr-10000
 POSTHOOK: query: select * from nzhang_part13 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=22
 POSTHOOK: Input: default@nzhang_part13@ds=2010-03-03/hr=33
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-38-36_782_8524700985752178497/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-07-18_377_2550771221773064356/-mr-10000
 POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=22).value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part13 PARTITION(ds=2010-03-03,hr=33).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]

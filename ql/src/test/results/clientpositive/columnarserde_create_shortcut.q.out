@@ -95,11 +95,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrif
 PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-09_466_5808969739514444099/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-43_710_70657971241231541/-mr-10000
 POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-09_466_5808969739514444099/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-43_710_70657971241231541/-mr-10000
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -119,11 +119,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-12_764_4049123681539494295/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-46_074_7710287368838036826/-mr-10000
 POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-12_764_4049123681539494295/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-46_074_7710287368838036826/-mr-10000
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -178,16 +178,18 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	from deserializer
-value	string	from deserializer
+col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_110_8974973318531798452/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-50_786_1069232517788942548/-mr-10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_110_8974973318531798452/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-50_786_1069232517788942548/-mr-10000
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -223,11 +225,11 @@ POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:v
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_480_5467174698544228493/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-50_931_2866711447002937633/-mr-10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_480_5467174698544228493/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-50_931_2866711447002937633/-mr-10000
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -263,11 +265,11 @@ POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:v
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_846_6716161931231717528/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-51_106_8133207443946864890/-mr-10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-38-20_846_6716161931231717528/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-51_106_8133207443946864890/-mr-10000
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

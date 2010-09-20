@@ -14,11 +14,11 @@ POSTHOOK: Output: default@tbl_protectmode__no_drop
 PREHOOK: query: select * from tbl_protectmode__no_drop
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode__no_drop
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-24_500_202960055467493836/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-39-31_893_2625855232363516041/-mr-10000
 POSTHOOK: query: select * from tbl_protectmode__no_drop
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode__no_drop
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-09-24_500_202960055467493836/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-39-31_893_2625855232363516041/-mr-10000
 PREHOOK: query: alter table tbl_protectmode__no_drop enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl_protectmode__no_drop
@@ -31,9 +31,36 @@ PREHOOK: query: desc extended tbl_protectmode__no_drop
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode__no_drop
 POSTHOOK: type: DESCTABLE
-col	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:tbl_protectmode__no_drop, dbName:default, owner:njain, createTime:1282025364, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/tbl_protectmode__no_drop, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1282025364, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1282025364}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+col                 	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:39:31 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	NO_DROP             	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl_protectmode__no_drop	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	last_modified_by    	thiruvel            
+	last_modified_time  	1284478771          
+	PROTECT_MODE        	NO_DROP             
+	transient_lastDdlTime	1284478771          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: drop table tbl_protectmode__no_drop
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_protectmode__no_drop

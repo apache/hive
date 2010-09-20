@@ -97,20 +97,47 @@ POSTHOOK: query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = 
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
-a	string	
-b	string	
-ds	string	
-ts	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Partition Information	Partition(values:[2008 04 08, 10:11:12=455], dbName:default, tableName:part_special, createTime:1279737004, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1279737004})	
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+ts                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008 04 08, 10:11:12=455]	 
+Database:           	default             	 
+Table:              	part_special        	 
+CreateTime:         	Tue Sep 14 08:24:14 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455	 
+Partition Parameters:	 	 
+	transient_lastDdlTime	1284477854          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-04_674_1957557010167845537/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-24-14_529_9115667855216344763/-mr-10000
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-30-04_674_1957557010167845537/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-24-14_529_9115667855216344763/-mr-10000
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 1	2	2008 04 08	10:11:12=455

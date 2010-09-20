@@ -69,7 +69,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
     return table;
   }
 
-  public String getSchema() {
+  public static String getSchema() {
     return schema;
   }
 

@@ -23,27 +23,62 @@ PREHOOK: query: DESCRIBE INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL4
 POSTHOOK: type: DESCTABLE
-viewtime	string	
-userid	int	
-page_url	string	
-referrer_url	string	
-friends	array<bigint>	
-properties	map<string,string>	
-ip	string	IP Address of the User
-ds	string	
-country	string	
+col_name            	data_type           	comment             
+	 	 
+viewtime            	string              	None                
+userid              	int                 	None                
+page_url            	string              	None                
+referrer_url        	string              	None                
+friends             	array<bigint>       	None                
+properties          	map<string,string>  	None                
+ip                  	string              	IP Address of the User
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
 PREHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL4
 POSTHOOK: type: DESCTABLE
-viewtime	string	
-userid	int	
-page_url	string	
-referrer_url	string	
-friends	array<bigint>	
-properties	map<string,string>	
-ip	string	IP Address of the User
-ds	string	
-country	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:inputddl4, dbName:default, owner:jssarma, createTime:1279737054, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:viewtime, type:string, comment:null), FieldSchema(name:userid, type:int, comment:null), FieldSchema(name:page_url, type:string, comment:null), FieldSchema(name:referrer_url, type:string, comment:null), FieldSchema(name:friends, type:array<bigint>, comment:null), FieldSchema(name:properties, type:map<string,string>, comment:null), FieldSchema(name:ip, type:string, comment:IP Address of the User)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/inputddl4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[userid], sortCols:[Order(col:viewtime, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737054, comment=This is the page view table}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+viewtime            	string              	None                
+userid              	int                 	None                
+page_url            	string              	None                
+referrer_url        	string              	None                
+friends             	array<bigint>       	None                
+properties          	map<string,string>  	None                
+ip                  	string              	IP Address of the User
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+country             	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 08:20:54 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/inputddl4	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284477654          
+	comment             	This is the page view table
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	32                  	 
+Bucket Columns:     	[userid]            	 
+Sort Columns:       	[Order(col:viewtime, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

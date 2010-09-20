@@ -475,13 +475,15 @@ public class TestJdbcDriver extends TestCase {
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
     res.next();
-    assertEquals("Column name 'key' not found", "key", res.getString(1));
-    assertEquals("Column type 'int' for column key not found", "int", res
-        .getString(2));
     res.next();
-    assertEquals("Column name 'value' not found", "value", res.getString(1));
+    res.next();
+    assertEquals("Column name 'key' not found", "key", res.getString(1).trim());
+    assertEquals("Column type 'int' for column key not found", "int", res
+        .getString(2).trim());
+    res.next();
+    assertEquals("Column name 'value' not found", "value", res.getString(1).trim());
     assertEquals("Column type 'string' for column key not found", "string", res
-        .getString(2));
+        .getString(2).trim());
 
     assertFalse("More results found than expected", res.next());
 

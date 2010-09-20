@@ -7,10 +7,38 @@ PREHOOK: query: describe extended nzhang_part5
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part5
 POSTHOOK: type: DESCTABLE
-key	string	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part5, dbName:default, owner:jssarma, createTime:1279737555, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null)], location:file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/nzhang_part5, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1279737555}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	string              	None                
+	 	 
+# Partition Information	 	 
+col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Tue Sep 14 07:12:09 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part5	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284473529          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: explain
 insert overwrite table nzhang_part5 partition (value) select key, value from src
 PREHOOK: type: QUERY
@@ -1309,11 +1337,11 @@ value=val_98
 PREHOOK: query: select * from nzhang_part5 where value='val_0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_0
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-39-48_159_2504137671156334886/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_552_998166979564751894/-mr-10000
 POSTHOOK: query: select * from nzhang_part5 where value='val_0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_0
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-39-48_159_2504137671156334886/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_552_998166979564751894/-mr-10000
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1629,11 +1657,11 @@ POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_9).key SIMPLE [(src)src.Fiel
 PREHOOK: query: select * from nzhang_part5 where value='val_2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-39-48_475_4435589346967527703/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_918_3983584652479110255/-mr-10000
 POSTHOOK: query: select * from nzhang_part5 where value='val_2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-39-48_475_4435589346967527703/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_918_3983584652479110255/-mr-10000
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

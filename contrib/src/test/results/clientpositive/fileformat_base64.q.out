@@ -44,10 +44,34 @@ PREHOOK: query: DESCRIBE EXTENDED base64_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED base64_test
 POSTHOOK: type: DESCTABLE
-key	int	
-value	string	
+col_name            	data_type           	comment             
 	 	 
-Detailed Table Information	Table(tableName:base64_test, dbName:default, owner:njain, createTime:1282150167, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/contrib/test/data/warehouse/base64_test, inputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat, outputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1282150167}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	thiruvel            	 
+CreateTime:         	Fri Sep 17 01:51:29 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/home/thiruvel/projects/hive/hive.unsecure/build/contrib/test/data/warehouse/base64_test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1284713489          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
@@ -65,11 +89,11 @@ POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: SELECT * FROM base64_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base64_test
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-31_341_7110837578626291672/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-51-32_335_619401707200390008/-mr-10000
 POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-31_341_7110837578626291672/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-51-32_335_619401707200390008/-mr-10000
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
@@ -107,11 +131,11 @@ POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: SELECT * FROM base64_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base64_test
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-35_328_4985371350274176901/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-51-34_808_4140189104352013659/-mr-10000
 POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-49-35_328_4985371350274176901/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-51-34_808_4140189104352013659/-mr-10000
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

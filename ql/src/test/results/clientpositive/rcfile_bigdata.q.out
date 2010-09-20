@@ -31,16 +31,18 @@ POSTHOOK: query: describe columnTable_Bigdata
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-key	string	from deserializer
-value	string	from deserializer
+col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+value               	string              	from deserializer   
 PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable_bigdata
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-04_694_763065487220152863/10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-16-04_020_3830957675073157960/-mr-10000
 POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable_bigdata
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-04_694_763065487220152863/10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-16-04_020_3830957675073157960/-mr-10000
 POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 5005500
