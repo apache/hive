@@ -101,7 +101,7 @@ public class Base64TextOutputFormat<K extends WritableComparable, V extends Writ
     }
 
     private byte[] signature;
-    private final Base64 base64 = new Base64();
+    private final Base64 base64 = Base64TextInputFormat.createBase64();
 
     @Override
     public void configure(JobConf job) {

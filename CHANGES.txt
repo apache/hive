@@ -141,6 +141,10 @@ Trunk -  Unreleased
     HIVE-558. Make describe output better
     (Thiruvel Thirumoolan via namit)
 
+    HIVE-1628. Fix Base64TextInputFormat to be compatible with commons
+    codec 1.4
+    (Todd Lipcon via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
