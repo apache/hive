@@ -21,7 +21,7 @@
   <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
   <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.hadoop.hive.jdbc.TestJdbcDriver"/>
   <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="@PROJECT@"/>
-  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dhive.root.logger=INFO,console -Dtest.tmp.dir=&quot;${workspace_loc:@PROJECT@}/build/ql/tmp&quot; -Dbuild.dir=&quot;${workspace_loc:@PROJECT@}/build/ql&quot; -Dbuild.dir.hive=&quot;${workspace_loc:@PROJECT@}/build&quot; -Dversion=&quot;@HIVE_VERSION@&quot;"/>
+  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dhive.root.logger=INFO,console -Dtest.tmp.dir=&quot;${workspace_loc:@PROJECT@}/build/ql/tmp&quot; -Dbuild.dir=&quot;${workspace_loc:@PROJECT@}/build/ql&quot; -Dbuild.dir.hive=&quot;${workspace_loc:@PROJECT@}/build&quot; -Dversion=&quot;@HIVE_VERSION@&quot; -Dtest.warehouse.dir=&quot;${workspace_loc:@PROJECT@}/build/ql/test/data/warehouse&quot;"/>
   <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:@PROJECT@}/ql"/>
 </launchConfiguration>
 

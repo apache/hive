@@ -278,6 +278,10 @@ Trunk -  Unreleased
     HIVE-1650. TestContribNegativeCliDriver fails
     (namit via He Yongqiang)
 
+    HIVE-1656. All TestJdbcDriver test cases fail in Eclipse unless a
+    property is added in run config
+    (Steven Wong via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
