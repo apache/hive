@@ -1,0 +1,1233 @@
+PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@myinput1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in3.txt' INTO TABLE myinput1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in3.txt' INTO TABLE myinput1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@myinput1
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-38_482_4253492763455214508/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-38_482_4253492763455214508/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-41_984_1404017036016208460/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-41_984_1404017036016208460/-mr-10000
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-44_509_596706236395689814/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-44_509_596706236395689814/-mr-10000
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-46_972_8826665462787108572/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-46_972_8826665462787108572/-mr-10000
+12	35	NULL	NULL
+NULL	NULL	12	35
+12	35	NULL	NULL
+NULL	NULL	NULL	40
+12	35	NULL	NULL
+NULL	NULL	48	NULL
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+NULL	NULL	12	35
+NULL	40	NULL	NULL
+NULL	NULL	NULL	40
+NULL	40	NULL	NULL
+NULL	NULL	48	NULL
+NULL	40	NULL	NULL
+48	NULL	NULL	NULL
+NULL	NULL	12	35
+48	NULL	NULL	NULL
+NULL	NULL	NULL	40
+48	NULL	NULL	NULL
+NULL	NULL	48	NULL
+48	NULL	NULL	NULL
+100	100	NULL	NULL
+NULL	NULL	12	35
+100	100	NULL	NULL
+NULL	NULL	NULL	40
+100	100	NULL	NULL
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-49_330_7993834267870070335/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-49_330_7993834267870070335/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-51_777_1775522590473889578/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-51_777_1775522590473889578/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-54_514_3055505515276264818/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-54_514_3055505515276264818/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-56_914_7869368648765385484/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-56_914_7869368648765385484/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-59_345_8348821981481467015/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-46-59_345_8348821981481467015/-mr-10000
+NULL	40	NULL	NULL
+12	35	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-01_805_8916935466223440076/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-01_805_8916935466223440076/-mr-10000
+48	NULL	NULL	NULL
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-04_163_201454031729532165/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-04_163_201454031729532165/-mr-10000
+NULL	40	NULL	NULL
+12	35	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-06_519_6685823003307707744/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-06_519_6685823003307707744/-mr-10000
+NULL	40	NULL	NULL
+12	35	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-08_851_8596168573839367432/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-08_851_8596168573839367432/-mr-10000
+NULL	NULL	48	NULL
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-11_228_2940393247141065306/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-11_228_2940393247141065306/-mr-10000
+NULL	NULL	NULL	40
+NULL	NULL	12	35
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-13_765_1434505847165518151/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-13_765_1434505847165518151/-mr-10000
+NULL	NULL	48	NULL
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-16_153_6828674351506497993/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-16_153_6828674351506497993/-mr-10000
+NULL	NULL	NULL	40
+NULL	NULL	12	35
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-18_573_1608649968626188202/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-18_573_1608649968626188202/-mr-10000
+NULL	40	NULL	NULL
+NULL	NULL	48	NULL
+12	35	NULL	NULL
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-20_942_7038330881856866779/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-20_942_7038330881856866779/-mr-10000
+NULL	40	NULL	NULL
+NULL	NULL	NULL	40
+12	35	NULL	NULL
+NULL	NULL	12	35
+48	NULL	NULL	NULL
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-23_284_735686730646741149/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-23_284_735686730646741149/-mr-10000
+48	NULL	NULL	NULL
+NULL	NULL	48	NULL
+12	35	NULL	NULL
+NULL	NULL	12	35
+NULL	40	NULL	NULL
+NULL	NULL	NULL	40
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-25_727_1002044816892814388/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-25_727_1002044816892814388/-mr-10000
+48	NULL	NULL	NULL
+NULL	NULL	48	NULL
+12	35	NULL	NULL
+NULL	NULL	12	35
+NULL	40	NULL	NULL
+NULL	NULL	NULL	40
+100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-28_040_4170472088034584318/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-28_040_4170472088034584318/-mr-10000
+NULL	NULL	NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL	12	35
+NULL	NULL	NULL	NULL	NULL	40
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-30_523_3484712031239895587/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-30_523_3484712031239895587/-mr-10000
+NULL	NULL	48	NULL	NULL	NULL
+NULL	NULL	12	35	NULL	NULL
+NULL	NULL	NULL	40	NULL	NULL
+100	100	100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-32_949_9154250441270055850/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-32_949_9154250441270055850/-mr-10000
+NULL	NULL	NULL	NULL	48	NULL
+NULL	NULL	NULL	NULL	12	35
+NULL	NULL	NULL	NULL	NULL	40
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-37_527_5623240344058739971/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-37_527_5623240344058739971/-mr-10000
+NULL	NULL	NULL	NULL	NULL	40
+NULL	NULL	NULL	NULL	12	35
+NULL	NULL	NULL	NULL	48	NULL
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-42_197_5979333762407595753/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-42_197_5979333762407595753/-mr-10000
+NULL	40	NULL	NULL	NULL	NULL
+12	35	NULL	NULL	NULL	NULL
+48	NULL	NULL	NULL	NULL	NULL
+100	100	100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-46_803_7935182496205789888/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-46_803_7935182496205789888/-mr-10000
+NULL	NULL	NULL	NULL	NULL	40
+NULL	NULL	NULL	NULL	12	35
+NULL	NULL	NULL	NULL	48	NULL
+100	100	100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-51_458_2719606684456694078/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-51_458_2719606684456694078/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-53_873_8450075190216469515/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-53_873_8450075190216469515/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-56_379_7991634610230793664/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-56_379_7991634610230793664/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-58_788_7459137888213671915/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-58_788_7459137888213671915/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-01_101_4961683607851152842/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-01_101_4961683607851152842/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-03_472_1159469063851992413/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-03_472_1159469063851992413/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-05_997_7686013488483821788/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-05_997_7686013488483821788/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-08_333_6975500011696284795/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-08_333_6975500011696284795/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-10_874_7775981236553184980/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-10_874_7775981236553184980/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-13_235_8939132598066167922/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-13_235_8939132598066167922/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-15_633_1963885661789983422/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-15_633_1963885661789983422/-mr-10000
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-17_992_182768872529616202/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-17_992_182768872529616202/-mr-10000
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-20_302_5384220556075241992/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-20_302_5384220556075241992/-mr-10000
+12	35	NULL	NULL
+NULL	40	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-22_624_4000358599546069058/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-22_624_4000358599546069058/-mr-10000
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-24_920_5792302744124441625/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-24_920_5792302744124441625/-mr-10000
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-27_344_3248742747692085094/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-27_344_3248742747692085094/-mr-10000
+NULL	NULL	12	35
+NULL	NULL	NULL	40
+NULL	NULL	48	NULL
+100	100	100	100
+PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-30_418_2160337287905547692/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-30_418_2160337287905547692/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-34_971_2824289273211889652/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-34_971_2824289273211889652/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-39_572_7096396043028947704/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-39_572_7096396043028947704/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-44_245_5275781847622349961/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-44_245_5275781847622349961/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-48_777_4946268335984369866/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-48_777_4946268335984369866/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-53_346_1167134393567249497/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-53_346_1167134393567249497/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-58_033_8764203182425878059/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-48-58_033_8764203182425878059/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-02_485_3789267204057548396/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-02_485_3789267204057548396/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-06_912_2559645942341031937/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-06_912_2559645942341031937/-mr-10000
+NULL	35	NULL	NULL
+NULL	135	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+148	NULL	NULL	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-11_502_4304228949266079592/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-11_502_4304228949266079592/-mr-10000
+NULL	35	NULL	NULL
+NULL	135	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+148	NULL	NULL	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-16_098_4827377085588622926/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-16_098_4827377085588622926/-mr-10000
+NULL	35	NULL	NULL
+NULL	135	NULL	NULL
+48	NULL	NULL	NULL
+100	100	100	100
+148	NULL	NULL	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-20_536_1767068254316060888/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-20_536_1767068254316060888/-mr-10000
+NULL	NULL	NULL	35
+NULL	NULL	NULL	135
+NULL	NULL	48	NULL
+100	100	100	100
+NULL	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-25_090_5805931583147933432/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-25_090_5805931583147933432/-mr-10000
+NULL	NULL	NULL	35
+NULL	NULL	NULL	135
+NULL	NULL	48	NULL
+100	100	100	100
+NULL	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-29_800_8155840439054124471/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-29_800_8155840439054124471/-mr-10000
+NULL	NULL	NULL	35
+NULL	NULL	NULL	135
+NULL	NULL	48	NULL
+100	100	100	100
+NULL	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-34_429_867083384661582037/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-34_429_867083384661582037/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-36_761_7230004502175068600/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-36_761_7230004502175068600/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-39_088_1351879123823113705/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-39_088_1351879123823113705/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-41_509_2454186189307935818/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-41_509_2454186189307935818/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-43_852_2388445924124472470/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-43_852_2388445924124472470/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-46_202_5047290766882346775/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-46_202_5047290766882346775/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-48_593_4848328315790735594/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-48_593_4848328315790735594/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-51_000_5724477873620882291/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-51_000_5724477873620882291/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-53_364_1356831519726393095/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-53_364_1356831519726393095/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-55_729_745022263675658132/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-55_729_745022263675658132/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-58_124_7853443970661318521/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-49-58_124_7853443970661318521/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-00_496_4422551504434760044/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-00_496_4422551504434760044/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-02_833_6696619109523926731/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-02_833_6696619109523926731/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-05_144_4226769621970755690/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-05_144_4226769621970755690/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-07_480_5517665074764953585/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-07_480_5517665074764953585/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-09_804_7652349584968638905/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-09_804_7652349584968638905/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-12_208_4573162307050791502/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-12_208_4573162307050791502/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-14_618_8921311276776866146/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-14_618_8921311276776866146/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-16_933_3552313801941984886/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-16_933_3552313801941984886/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-19_282_6720570290836967824/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-19_282_6720570290836967824/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-21_660_3410322504046121891/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-21_660_3410322504046121891/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-24_057_6059746355829752509/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-24_057_6059746355829752509/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-26_487_2946688314771188589/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-26_487_2946688314771188589/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-31_088_6245466240476894316/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-31_088_6245466240476894316/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-35_633_5998916544312129941/-mr-10000
+POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-35_633_5998916544312129941/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-40_279_4015072553346837910/-mr-10000
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-40_279_4015072553346837910/-mr-10000
+100	100	100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-45_115_1681779230969126728/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-45_115_1681779230969126728/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-47_505_2130321206902502113/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-47_505_2130321206902502113/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-49_769_3990939001946827605/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-49_769_3990939001946827605/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-52_173_1558363318951431085/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-52_173_1558363318951431085/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-54_488_5540026474805063776/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-54_488_5540026474805063776/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-56_922_138439369472070848/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-56_922_138439369472070848/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-59_284_4471158441846430634/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-50-59_284_4471158441846430634/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-01_650_731068687203226542/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-01_650_731068687203226542/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-04_078_7640935866963276142/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-04_078_7640935866963276142/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-06_472_6743372953358077761/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-06_472_6743372953358077761/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-08_866_7515012442389672439/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-08_866_7515012442389672439/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-11_378_2667605404313938049/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-11_378_2667605404313938049/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-13_856_3472696322043763617/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-13_856_3472696322043763617/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-16_163_5885384010697521229/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-16_163_5885384010697521229/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-18_555_7421536910568098692/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-18_555_7421536910568098692/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-20_891_7383613400277228576/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-20_891_7383613400277228576/-mr-10000
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-23_329_1839224670350321969/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-23_329_1839224670350321969/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-27_988_2386469642972301023/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-27_988_2386469642972301023/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-32_644_7215265603324998530/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-32_644_7215265603324998530/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-37_147_6533275524335014527/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-37_147_6533275524335014527/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-41_635_8685371701360166059/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-41_635_8685371701360166059/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-46_602_6015665086263901231/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-46_602_6015665086263901231/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-51_263_7563753593060086726/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-51_263_7563753593060086726/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-55_825_2973149037963997371/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-51-55_825_2973149037963997371/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-00_500_1426017437282245276/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-00_500_1426017437282245276/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-04_985_2321844840488276985/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-04_985_2321844840488276985/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-09_468_9024593851459012269/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY a.key, a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-09_468_9024593851459012269/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-13_938_7514469527251576427/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-13_938_7514469527251576427/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-18_449_9158976206838113399/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-18_449_9158976206838113399/-mr-10000
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-22_962_9054464682857860966/-mr-10000
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value ORDER BY b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-52-22_962_9054464682857860966/-mr-10000
+100	100	100	100
+200	200	200	200

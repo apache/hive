@@ -1052,6 +1052,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
 
+    JoinType type = joinTree.getJoinCond()[0].getJoinType();
     switch (joinCond.getToken().getType()) {
     case HiveParser.KW_OR:
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_3
@@ -1076,6 +1077,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rightCondAl2, null);
 
       // is it a filter or a join condition
+      // if it is filter see if it can be pushed above the join
+      // filter cannot be pushed if
+      // * join is full outer or
+      // * join is left outer and filter is on left alias or
+      // * join is right outer and filter is on right alias
       if (((leftCondAl1.size() != 0) && (leftCondAl2.size() != 0))
           || ((rightCondAl1.size() != 0) && (rightCondAl2.size() != 0))) {
         throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1
@@ -1085,7 +1091,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (leftCondAl1.size() != 0) {
         if ((rightCondAl1.size() != 0)
             || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
-          joinTree.getFilters().get(0).add(joinCond);
+          if (type.equals(JoinType.LEFTOUTER) ||
+                type.equals(JoinType.FULLOUTER)) {
+            if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+              joinTree.getFilters().get(0).add(joinCond);
+            } else {
+              LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+              joinTree.getFiltersForPushing().get(0).add(joinCond);
+            }
+          } else {
+            joinTree.getFiltersForPushing().get(0).add(joinCond);
+          }
         } else if (rightCondAl2.size() != 0) {
           populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
               leftSrc);
@@ -1095,7 +1111,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (leftCondAl2.size() != 0) {
         if ((rightCondAl2.size() != 0)
             || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
-          joinTree.getFilters().get(1).add(joinCond);
+          if (type.equals(JoinType.RIGHTOUTER)
+              || type.equals(JoinType.FULLOUTER)) {
+            if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+              joinTree.getFilters().get(1).add(joinCond);
+            } else {
+              LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+              joinTree.getFiltersForPushing().get(1).add(joinCond);
+            }
+          } else {
+            joinTree.getFiltersForPushing().get(1).add(joinCond);
+          }
         } else if (rightCondAl1.size() != 0) {
           populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
               leftSrc);
@@ -1103,9 +1129,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               leftSrc);
         }
       } else if (rightCondAl1.size() != 0) {
-        joinTree.getFilters().get(0).add(joinCond);
+        if (type.equals(JoinType.LEFTOUTER)
+            || type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(0).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(0).add(joinCond);
+          }
+        } else {
+          joinTree.getFiltersForPushing().get(0).add(joinCond);
+        }
       } else {
-        joinTree.getFilters().get(1).add(joinCond);
+        if (type.equals(JoinType.RIGHTOUTER)
+            || type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(1).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(1).add(joinCond);
+          }
+        } else {
+          joinTree.getFiltersForPushing().get(1).add(joinCond);
+        }
       }
 
       break;
@@ -1154,9 +1200,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (!leftAliasNull) {
-        joinTree.getFilters().get(0).add(joinCond);
+        if (type.equals(JoinType.LEFTOUTER)
+            || type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(0).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(0).add(joinCond);
+          }
+        } else {
+          joinTree.getFiltersForPushing().get(0).add(joinCond);
+        }
       } else {
-        joinTree.getFilters().get(1).add(joinCond);
+        if (type.equals(JoinType.RIGHTOUTER)
+            || type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(1).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(1).add(joinCond);
+          }
+        } else {
+          joinTree.getFiltersForPushing().get(1).add(joinCond);
+        }
       }
 
       break;
@@ -4089,6 +4155,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<Byte, List<ExprNodeDesc>> exprMap = new HashMap<Byte, List<ExprNodeDesc>>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     HashMap<Integer, Set<String>> posToAliasMap = new HashMap<Integer, Set<String>>();
+    HashMap<Byte, List<ExprNodeDesc>> filterMap =
+      new HashMap<Byte, List<ExprNodeDesc>>();
 
     for (int pos = 0; pos < right.length; ++pos) {
 
@@ -4098,6 +4166,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       ArrayList<ExprNodeDesc> keyDesc = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> filterDesc = new ArrayList<ExprNodeDesc>();
       Byte tag = Byte.valueOf((byte) (((ReduceSinkDesc) (input.getConf()))
           .getTag()));
 
@@ -4135,8 +4204,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
           }
         }
+        for (ASTNode cond : join.getFilters().get(tag)) {
+          filterDesc.add(genExprNodeDesc(cond, inputRS));
+        }
       }
       exprMap.put(tag, keyDesc);
+      filterMap.put(tag, filterDesc);
       rightOps[pos] = input;
     }
 
@@ -4146,7 +4219,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinCondns[i] = new JoinCondDesc(condn);
     }
 
-    JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, joinCondns);
+    JoinDesc desc = new JoinDesc(exprMap, outputColumnNames,
+        join.getNoOuterJoin(), joinCondns, filterMap);
     desc.setReversedExprs(reversedExprs);
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc,
         new RowSchema(outputRS.getColumnInfos()), rightOps);
@@ -4226,7 +4300,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator joinSrcOp = null;
     if (leftChild != null) {
       Operator joinOp = genJoinOperator(qb, leftChild, map);
-      ArrayList<ASTNode> filter = joinTree.getFilters().get(0);
+      ArrayList<ASTNode> filter = joinTree.getFiltersForPushing().get(0);
       for (ASTNode cond : filter) {
         joinOp = genFilterPlan(qb, cond, joinOp);
       }
@@ -4430,11 +4504,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void pushJoinFilters(QB qb, QBJoinTree joinTree,
       HashMap<String, Operator> map) throws SemanticException {
-    ArrayList<ArrayList<ASTNode>> filters = joinTree.getFilters();
     if (joinTree.getJoinSrc() != null) {
       pushJoinFilters(qb, joinTree.getJoinSrc(), map);
     }
-
+    ArrayList<ArrayList<ASTNode>> filters = joinTree.getFiltersForPushing();
     int pos = 0;
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
@@ -4477,6 +4550,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     joinTree.setExpressions(new ArrayList<ArrayList<ASTNode>>());
     joinTree.setFilters(new ArrayList<ArrayList<ASTNode>>());
+    joinTree.setFiltersForPushing(new ArrayList<ArrayList<ASTNode>>());
 
     // Create joinTree structures to fill them up later
     ArrayList<String> rightAliases = new ArrayList<String>();
@@ -4523,6 +4597,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ArrayList<ASTNode> expressions = new ArrayList<ASTNode>();
         ArrayList<ASTNode> filt = new ArrayList<ASTNode>();
+        ArrayList<ASTNode> filters = new ArrayList<ASTNode>();
 
         for (Node exp : child.getChildren()) {
           expressions.add((ASTNode) exp);
@@ -4530,6 +4605,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         joinTree.getExpressions().add(expressions);
         joinTree.getFilters().add(filt);
+        joinTree.getFiltersForPushing().add(filters);
         break;
 
       case HiveParser.KW_PRESERVE:
@@ -4655,6 +4731,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     filters.add(new ArrayList<ASTNode>());
     joinTree.setFilters(filters);
 
+    ArrayList<ArrayList<ASTNode>> filtersForPushing =
+      new ArrayList<ArrayList<ASTNode>>();
+    filtersForPushing.add(new ArrayList<ASTNode>());
+    filtersForPushing.add(new ArrayList<ASTNode>());
+    joinTree.setFiltersForPushing(filtersForPushing);
+
     ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
     ArrayList<String> leftSrc = new ArrayList<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
@@ -4749,14 +4831,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       expr.add(node.getExpressions().get(i + 1));
     }
 
-    ArrayList<ArrayList<ASTNode>> filter = target.getFilters();
+    ArrayList<ArrayList<ASTNode>> filters = target.getFilters();
     for (int i = 0; i < nodeRightAliases.length; i++) {
-      filter.add(node.getFilters().get(i + 1));
+      filters.add(node.getFilters().get(i + 1));
     }
 
-    if (node.getFilters().get(0).size() != 0) {
+    ArrayList<ArrayList<ASTNode>> filter = target.getFiltersForPushing();
+    for (int i = 0; i < nodeRightAliases.length; i++) {
+      filter.add(node.getFiltersForPushing().get(i + 1));
+    }
+
+    if (node.getFiltersForPushing().get(0).size() != 0) {
       ArrayList<ASTNode> filterPos = filter.get(pos);
-      filterPos.addAll(node.getFilters().get(0));
+      filterPos.addAll(node.getFiltersForPushing().get(0));
     }
 
     if (qb.getQbJoinTree() == node) {
@@ -6379,40 +6466,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input);
     tcCtx.setUnparseTranslator(unparseTranslator);
 
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack. The dispatcher
-    // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-
-    opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
-        TypeCheckProcFactory.getNullExprProcessor());
-    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"),
-        TypeCheckProcFactory.getNumExprProcessor());
-    opRules
-        .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
-        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL
-        + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
-        + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
-        + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
-        + HiveParser.KW_STRUCT + "%"), TypeCheckProcFactory
-        .getStrExprProcessor());
-    opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
-        + HiveParser.KW_FALSE + "%"), TypeCheckProcFactory
-        .getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_TABLE_OR_COL + "%"),
-        TypeCheckProcFactory.getColumnExprProcessor());
-
-    // The dispatcher fires the processor corresponding to the closest matching
-    // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(TypeCheckProcFactory
-        .getDefaultExprProcessor(), opRules, tcCtx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
-
-    // Create a list of topop nodes
-    ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.add(expr);
-    HashMap<Node, Object> nodeOutputs = new HashMap<Node, Object>();
-    ogw.startWalking(topNodes, nodeOutputs);
+    HashMap<Node, Object> nodeOutputs =
+      TypeCheckProcFactory.genExprNode(expr, tcCtx);
     ExprNodeDesc desc = (ExprNodeDesc) nodeOutputs.get(expr);
     if (desc == null) {
       throw new SemanticException(tcCtx.getError());

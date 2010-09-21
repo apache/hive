@@ -48,6 +48,9 @@ public class JoinDesc implements Serializable {
   // alias to key mapping
   private Map<Byte, List<ExprNodeDesc>> exprs;
 
+  // alias to filter mapping
+  private Map<Byte, List<ExprNodeDesc>> filters;
+
   // used for create joinOutputObjectInspector
   protected List<String> outputColumnNames;
 
@@ -67,16 +70,23 @@ public class JoinDesc implements Serializable {
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
-      final JoinCondDesc[] conds) {
+      final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
+    this.filters = filters;
 
     tagOrder = new Byte[exprs.size()];
     for (int i = 0; i < tagOrder.length; i++) {
       tagOrder[i] = (byte) i;
     }
+  }
+
+  public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
+      List<String> outputColumnNames, final boolean noOuterJoin,
+      final JoinCondDesc[] conds) {
+    this(exprs, outputColumnNames, noOuterJoin, conds, null);
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
@@ -86,7 +96,7 @@ public class JoinDesc implements Serializable {
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final JoinCondDesc[] conds) {
-    this(exprs, outputColumnNames, false, conds);
+    this(exprs, outputColumnNames, true, conds, null);
   }
 
   public JoinDesc(JoinDesc clone) {
@@ -102,6 +112,7 @@ public class JoinDesc implements Serializable {
     this.skewKeysValuesTables = clone.skewKeysValuesTables;
     this.smallKeysDirMap = clone.smallKeysDirMap;
     this.tagOrder = clone.tagOrder;
+    this.filters = clone.filters;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -147,6 +158,59 @@ public class JoinDesc implements Serializable {
 
   public void setExprs(final Map<Byte, List<ExprNodeDesc>> exprs) {
     this.exprs = exprs;
+  }
+
+  /**
+   * Get the string representation of filters.
+   *
+   * Returns null if they are no filters.
+   *
+   * @return Map from alias to filters on the alias.
+   */
+  @Explain(displayName = "filter predicates")
+  public Map<Byte, String> getFiltersStringMap() {
+    if (getFilters() == null || getFilters().size() == 0) {
+      return null;
+    }
+
+    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
+    boolean filtersPresent = false;
+
+    for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getFilters().entrySet()) {
+      StringBuilder sb = new StringBuilder();
+      boolean first = true;
+      if (ent.getValue() != null) {
+        if (ent.getValue().size() != 0) {
+          filtersPresent = true;
+        }
+        for (ExprNodeDesc expr : ent.getValue()) {
+          if (!first) {
+            sb.append(" ");
+          }
+
+          first = false;
+          sb.append("{");
+          sb.append(expr.getExprString());
+          sb.append("}");
+        }
+      }
+      ret.put(ent.getKey(), sb.toString());
+    }
+
+    if (filtersPresent) {
+      return ret;
+    } else {
+      return null;
+    }
+  }
+
+
+  public Map<Byte, List<ExprNodeDesc>> getFilters() {
+    return filters;
+  }
+
+  public void setFilters(Map<Byte, List<ExprNodeDesc>> filters) {
+    this.filters = filters;
   }
 
   @Explain(displayName = "outputColumnNames")
@@ -288,14 +352,7 @@ public class JoinDesc implements Serializable {
   }
 
   public boolean isNoOuterJoin() {
-    for (org.apache.hadoop.hive.ql.plan.JoinCondDesc cond : conds) {
-      if (cond.getType() == JoinDesc.FULL_OUTER_JOIN
-          || (cond.getType() == JoinDesc.LEFT_OUTER_JOIN)
-          || cond.getType() == JoinDesc.RIGHT_OUTER_JOIN) {
-        return false;
-      }
-    }
-    return true;
+    return noOuterJoin;
   }
 
   public void setKeyTableDesc(TableDesc keyTblDesc) {

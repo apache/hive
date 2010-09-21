@@ -79,7 +79,8 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
       ArrayList<Object> nr = computeValues(row, joinValues.get(alias),
-          joinValuesObjectInspectors.get(alias));
+          joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
+          joinFilterObjectInspectors.get(alias), noOuterJoin);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);

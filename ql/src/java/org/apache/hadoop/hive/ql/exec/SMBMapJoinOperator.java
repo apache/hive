@@ -208,10 +208,11 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     byte alias = (byte) tag;
     // compute keys and values as StandardObjects
-    ArrayList<Object> key = computeValues(row, joinKeys.get(alias),
+    ArrayList<Object> key = computeKeys(row, joinKeys.get(alias),
         joinKeysObjectInspectors.get(alias));
     ArrayList<Object> value = computeValues(row, joinValues.get(alias),
-        joinValuesObjectInspectors.get(alias));
+        joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
+        joinFilterObjectInspectors.get(alias), noOuterJoin);
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);

@@ -282,6 +282,9 @@ Trunk -  Unreleased
     property is added in run config
     (Steven Wong via jvs)
 
+    HIVE-1534. Join filters do not work correctly with outer joins
+    (Amareshwari Sriramadasu via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

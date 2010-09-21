@@ -1216,6 +1216,21 @@
           </void> 
          </object> 
         </void> 
+        <void property="filters"> 
+         <object class="java.util.HashMap"> 
+          <void method="put"> 
+           <byte>0</byte> 
+           <object class="java.util.ArrayList"/> 
+          </void> 
+          <void method="put"> 
+           <byte>1</byte> 
+           <object class="java.util.ArrayList"/> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="noOuterJoin"> 
+         <boolean>true</boolean> 
+        </void> 
         <void property="outputColumnNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 

@@ -21,21 +21,28 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.AmbiguousMethodException;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -109,6 +116,46 @@ public final class TypeCheckProcFactory {
       return desc;
     }
     return desc;
+  }
+
+  public static HashMap<Node, Object> genExprNode(ASTNode expr,
+      TypeCheckCtx tcCtx) throws SemanticException {
+    // Create the walker, the rules dispatcher and the context.
+    // create a walker which walks the tree in a DFS manner while maintaining
+    // the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+
+    opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
+        getNullExprProcessor());
+    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"),
+        getNumExprProcessor());
+    opRules
+        .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
+        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL
+        + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
+        + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
+        + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
+        + HiveParser.KW_STRUCT + "%"),
+        getStrExprProcessor());
+    opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
+        + HiveParser.KW_FALSE + "%"), getBoolExprProcessor());
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_TABLE_OR_COL + "%"),
+        getColumnExprProcessor());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(),
+        opRules, tcCtx);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(expr);
+    HashMap<Node, Object> nodeOutputs = new HashMap<Node, Object>();
+    ogw.startWalking(topNodes, nodeOutputs);
+
+    return nodeOutputs;
   }
 
   /**

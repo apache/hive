@@ -206,7 +206,7 @@ public final class ColumnPrunerProcFactory {
           needed_columns.add(position);
         }
       }
-      
+
       desc.setVirtualCols(newVirtualCols);
       scanOp.setNeededColumnIDs(needed_columns);
       return null;
@@ -599,6 +599,20 @@ public final class ColumnPrunerProcFactory {
     }
 
     List<String> childColLists = cppCtx.genColLists(op);
+
+    //add the columns in join filters
+    Set<Map.Entry<Byte, List<ExprNodeDesc>>> filters =
+      conf.getFilters().entrySet();
+    Iterator<Map.Entry<Byte, List<ExprNodeDesc>>> iter = filters.iterator();
+    while (iter.hasNext()) {
+      Map.Entry<Byte, List<ExprNodeDesc>> entry = iter.next();
+      Byte tag = entry.getKey();
+      for (ExprNodeDesc desc : entry.getValue()) {
+        List<String> cols = prunedColLists.get(tag);
+        cols = Utilities.mergeUniqElems(cols, desc.getCols());
+        prunedColLists.put(tag, cols);
+     }
+    }
 
     RowResolver joinRR = cppCtx.getOpToParseCtxMap().get(op).getRR();
     RowResolver newJoinRR = new RowResolver();

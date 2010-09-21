@@ -48,6 +48,9 @@ public class QBJoinTree {
   // filters
   private ArrayList<ArrayList<ASTNode>> filters;
 
+  // filters for pushing
+  private ArrayList<ArrayList<ASTNode>> filtersForPushing;
+
   // user asked for map-side join
   private boolean mapSideJoin;
   private List<String> mapAliases;
@@ -169,6 +172,21 @@ public class QBJoinTree {
    */
   public void setFilters(ArrayList<ArrayList<ASTNode>> filters) {
     this.filters = filters;
+  }
+
+  /**
+   * @return the filters for pushing
+   */
+  public ArrayList<ArrayList<ASTNode>> getFiltersForPushing() {
+    return filtersForPushing;
+  }
+
+  /**
+   * @param filters for pushing
+   *          the filters to set
+   */
+  public void setFiltersForPushing(ArrayList<ArrayList<ASTNode>> filters) {
+    this.filtersForPushing = filters;
   }
 
   /**

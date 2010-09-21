@@ -286,6 +286,7 @@ public class HiveConf extends Configuration {
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false),
     HIVEHARPARENTDIRSETTABLE("hive.archive.har.parentdir.settable", false),
+    HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
     ;
 

@@ -164,7 +164,9 @@ public enum ErrorMsg {
   RESERVED_PART_VAL("Partition value contains a reserved substring"),
   HOLD_DDLTIME_ON_NONEXIST_PARTITIONS("HOLD_DDLTIME hint cannot be applied to dynamic " +
   		"partitions or non-existent partitions"),
-  OFFLINE_TABLE_OR_PARTITION("Query against an offline table or partition")
+  OFFLINE_TABLE_OR_PARTITION("Query against an offline table or partition"),
+  OUTERJOIN_USES_FILTERS("The query results could be wrong. " +
+  		"Turn on hive.outerjoin.supports.filters"),
       ;
 
   private String mesg;
