@@ -49,6 +49,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_partition_names(string db_name, string tbl_name, i16 max_parts)'
   print '   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
   print '   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
+  print '   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
   print '  string get_config_value(string name, string defaultValue)'
   print '   partition_name_to_vals(string part_name)'
@@ -273,6 +274,12 @@ elif cmd == 'get_partition_names_ps':
     print 'get_partition_names_ps requires 4 args'
     sys.exit(1)
   pp.pprint(client.get_partition_names_ps(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'get_partitions_by_filter':
+  if len(args) != 4:
+    print 'get_partitions_by_filter requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.get_partitions_by_filter(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'alter_partition':
   if len(args) != 3:

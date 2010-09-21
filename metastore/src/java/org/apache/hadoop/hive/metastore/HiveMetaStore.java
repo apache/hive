@@ -2074,6 +2074,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
+    @Override
+    public List<Partition> get_partitions_by_filter(final String dbName,
+        final String tblName, final String filter, final short maxParts)
+        throws MetaException, NoSuchObjectException, TException {
+      incrementCounter("get_partitions_by_filter");
+      logStartTableFunction("get_partitions_by_filter", dbName, tblName);
+
+      List<Partition> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<Partition>>() {
+          @Override
+          List<Partition> run(RawStore ms) throws Exception {
+            return ms.getPartitionsByFilter(dbName, tblName, filter, maxParts);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
+        throw e;
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException)e;
+      }
+      return ret;
+    }
+
   }
 
   /**

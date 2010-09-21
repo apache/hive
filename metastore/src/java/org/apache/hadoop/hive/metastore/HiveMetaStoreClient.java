@@ -517,6 +517,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * Get list of partitions matching specified filter
+   * @param db_name the database name
+   * @param tbl_name the table name
+   * @param filter the filter string,
+   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    be done only on string partition keys.
+   * @param max_parts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @return list of partitions
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public List<Partition> listPartitionsByFilter(String db_name, String tbl_name,
+      String filter, short max_parts) throws MetaException,
+         NoSuchObjectException, TException {
+    return deepCopyPartitions(
+        client.get_partitions_by_filter(db_name, tbl_name, filter, max_parts));
+  }
+
+  /**
    * @param name
    * @return the database
    * @throws NoSuchObjectException

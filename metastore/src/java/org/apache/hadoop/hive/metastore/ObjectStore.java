@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,10 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
+
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,6 +68,10 @@ import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
+import org.apache.hadoop.hive.metastore.parser.FilterLexer;
+import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -936,6 +946,102 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(mparts);
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for listMPartitions");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mparts;
+  }
+
+  @Override
+  public List<Partition> getPartitionsByFilter(String dbName, String tblName,
+      String filter, short maxParts) throws MetaException, NoSuchObjectException {
+    openTransaction();
+    List<Partition> parts = convertToParts(listMPartitionsByFilter(dbName,
+        tblName, filter, maxParts));
+    commitTransaction();
+    return parts;
+  }
+
+  private List<MPartition> listMPartitionsByFilter(String dbName, String tableName,
+      String filter, short maxParts) throws MetaException, NoSuchObjectException{
+    boolean success = false;
+    List<MPartition> mparts = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listMPartitionsByFilter");
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+
+      MTable mtable = getMTable(dbName, tableName);
+      if( mtable == null ) {
+        throw new NoSuchObjectException("Specified database/table does not exist : " 
+            + dbName + "." + tableName);
+      }
+
+      StringBuilder queryBuilder = new StringBuilder(
+          "table.tableName == t1 && table.database.name == t2");
+
+      Map<String, String> params = new HashMap<String, String>();
+
+      if( filter != null ) {
+
+        Table table = convertToTable(mtable);
+
+        CharStream cs = new ANTLRNoCaseStringStream(filter);
+        FilterLexer lexer = new FilterLexer(cs);
+
+        CommonTokenStream tokens = new CommonTokenStream();
+        tokens.setTokenSource (lexer);
+
+        FilterParser parser = new FilterParser(tokens);
+
+        try {
+          parser.filter();
+        } catch(RecognitionException re) {
+          throw new MetaException("Error parsing partition filter : " + re);
+        }
+
+        String jdoFilter = parser.tree.generateJDOFilter(table, params);
+
+        if( jdoFilter.trim().length() > 0 ) {
+          queryBuilder.append(" && ( ");
+          queryBuilder.append(jdoFilter.trim());
+          queryBuilder.append(" )");
+        }
+      }
+
+      Query query = pm.newQuery(MPartition.class,
+          queryBuilder.toString());
+
+      if( maxParts >= 0 ) {
+        //User specified a row limit, set it on the Query
+        query.setRange(0, maxParts);
+      }
+
+      //Create the parameter declaration string
+      StringBuilder paramDecl = new StringBuilder(
+          "java.lang.String t1, java.lang.String t2");
+      for(String key : params.keySet() ) {
+        paramDecl.append(", java.lang.String  " + key);
+      }
+
+      LOG.debug("Filter specified is " + filter + "," +
+             " JDOQL filter is " + queryBuilder.toString());
+
+      params.put("t1", tableName.trim());
+      params.put("t2", dbName.trim());
+
+      query.declareParameters(paramDecl.toString());
+      query.setOrdering("partitionName ascending");
+
+      mparts = (List<MPartition>) query.executeWithMap(params);
+
+      LOG.debug("Done executing query for listMPartitionsByFilter");
+      pm.retrieveAll(mparts);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listMPartitionsByFilter");
     } finally {
       if (!success) {
         rollbackTransaction();

@@ -128,10 +128,10 @@
            <column name="PARAM_VALUE" length="767" jdbc-type="VARCHAR"/>
         </value>
       </field>
-      <field name="viewOriginalText">
+      <field name="viewOriginalText" default-fetch-group="false">
         <column name="VIEW_ORIGINAL_TEXT" jdbc-type="LONGVARCHAR"/>
       </field>
-      <field name="viewExpandedText">
+      <field name="viewExpandedText" default-fetch-group="false">
         <column name="VIEW_EXPANDED_TEXT" jdbc-type="LONGVARCHAR"/>
       </field>
       <field name="tableType">

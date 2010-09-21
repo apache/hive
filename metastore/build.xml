@@ -29,11 +29,29 @@
     </exec>
   </target>
 
-  <target name="core-compile" depends="init, model-compile,ivy-retrieve">
+  <uptodate property="grammarBuild.notRequired">
+    <srcfiles dir= "${src.dir}/java/org/apache/hadoop/hive/metastore/parser" includes="**/*.g"/>
+    <mapper type="merge" to="${build.dir}/gen-java/org/apache/hadoop/hive/metastore/parser/FilterParser.java"/>
+  </uptodate>
+
+  <target name="build-grammar" unless="grammarBuild.notRequired">
+    <echo>Building Grammar ${src.dir}/java/org/apache/hadoop/hive/metastore/parser/Filter.g  ....</echo>
+    <java classname="org.antlr.Tool" classpathref="classpath" fork="false">
+       <arg value="-fo" />
+       <arg value="${build.dir.hive}/metastore/gen-java/org/apache/hadoop/hive/metastore/parser" />
+       <arg value="${src.dir}/java/org/apache/hadoop/hive/metastore/parser/Filter.g" />
+    </java>
+  </target>
+
+  <target name="metastore-init">
+    <mkdir dir="${build.dir}/gen-java/org/apache/hadoop/hive/metastore/parser"/>
+  </target>
+
+  <target name="core-compile" depends="init,metastore-init,build-grammar,model-compile,ivy-retrieve">
     <echo message="Compiling: "/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${src.dir}/java:${src.dir}/gen-javabean"
+     srcdir="${src.dir}/java:${src.dir}/gen-javabean:${build.dir}/gen-java"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"

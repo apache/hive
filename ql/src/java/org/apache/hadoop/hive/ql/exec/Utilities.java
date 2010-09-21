@@ -89,8 +89,8 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -408,8 +408,8 @@ public final class Utilities {
     e.setPersistenceDelegate(Operator.ProgressCounter.class,
         new EnumDelegate());
 
-    e.setPersistenceDelegate(org.datanucleus.sco.backed.Map.class, new MapDelegate());
-    e.setPersistenceDelegate(org.datanucleus.sco.backed.List.class, new ListDelegate());
+    e.setPersistenceDelegate(org.datanucleus.store.types.sco.backed.Map.class, new MapDelegate());
+    e.setPersistenceDelegate(org.datanucleus.store.types.sco.backed.List.class, new ListDelegate());
 
     e.writeObject(plan);
     e.close();
