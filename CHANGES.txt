@@ -288,6 +288,9 @@ Trunk -  Unreleased
     HIVE-1534. Join filters do not work correctly with outer joins
     (Amareshwari Sriramadasu via namit)
 
+    HIVE-1655.  Adding consistency check at jobClose() when committing dynamic
+    partitions (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
