@@ -151,6 +151,9 @@ public class HiveConf extends Configuration {
     METASTORE_INT_EXTRACTED("hive.metastore.archive.intermediate.extracted",
         "_INTERMEDIATE_EXTRACTED"),
 
+    // Default parameters for creating tables
+    NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),
+
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
 

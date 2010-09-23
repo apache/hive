@@ -2282,6 +2282,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
     Table tbl = new Table(db.getCurrentDatabase(), crtTbl.getTableName());
+
+    if (crtTbl.getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
+    }
+
     if (crtTbl.getPartCols() != null) {
       tbl.setPartCols(crtTbl.getPartCols());
     }
@@ -2328,9 +2333,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Entry<String, String> m = iter.next();
         tbl.setSerdeParam(m.getKey(), m.getValue());
       }
-    }
-    if (crtTbl.getTblProps() != null) {
-      tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
     }
 
     /*

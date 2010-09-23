@@ -77,6 +77,9 @@ Trunk -  Unreleased
     HIVE-1609. Support partition filtering in metastore
     (Ajay Kidave via jvs)
 
+    HIVE-1661. Default values for parameters
+    (Siying Dong via He Yongqiang) 
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

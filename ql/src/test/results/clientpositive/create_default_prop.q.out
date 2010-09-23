@@ -1,0 +1,116 @@
+PREHOOK: query: CREATE TABLE table_p1 (a STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table_p1 (a STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table_p1
+PREHOOK: query: DESC EXTENDED table_p1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC EXTENDED table_p1
+POSTHOOK: type: DESCTABLE
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	sdong               	 
+CreateTime:         	Tue Sep 21 20:51:39 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/data/users/sdong/www/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/table_p1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	p1                  	v1                  
+	transient_lastDdlTime	1285127499          
+	P2                  	v21=v22=v23         
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table_p2 LIKE table_p1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table_p2
+PREHOOK: query: DESC EXTENDED table_p2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC EXTENDED table_p2
+POSTHOOK: type: DESCTABLE
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	sdong               	 
+CreateTime:         	Tue Sep 21 20:51:39 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/data/users/sdong/www/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/table_p2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	EXTERNAL            	FALSE               
+	p1                  	v1                  
+	transient_lastDdlTime	1285127499          
+	P2                  	v21=v22=v23         
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+PREHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: default@table_p1
+POSTHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: default@table_p1
+POSTHOOK: Output: default@table_p3
+PREHOOK: query: DESC EXTENDED table_p3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC EXTENDED table_p3
+POSTHOOK: type: DESCTABLE
+col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	sdong               	 
+CreateTime:         	Tue Sep 21 20:51:43 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/data/users/sdong/www/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/table_p3	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	p3                  	v3                  
+	transient_lastDdlTime	1285127503          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

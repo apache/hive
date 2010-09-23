@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -6644,6 +6645,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Add default properties for table property. If a default parameter exists
+   * in the tblProp, the value in tblProp will be kept.
+   * @param table property map
+   * @return Modified table property map
+   */
+  private Map<String, String> addDefaultProperties(Map<String, String> tblProp) {
+    Map<String, String> retValue;
+    if (tblProp == null) {
+      retValue = new HashMap<String, String>();
+    } else {
+      retValue = tblProp;
+    }
+    String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
+    if (paraString != null && !paraString.isEmpty()) {
+      for (String keyValuePair: paraString.split(",")) {
+        String[] keyValue = keyValuePair.split("=", 2);
+        if (keyValue.length != 2) {
+          continue;
+        }
+        if (!retValue.containsKey(keyValue[0])) {
+          retValue.put(keyValue[0], keyValue[1]);
+        }
+      }
+    }
+    return retValue;
+  }
+
+  /**
    * Analyze the create table command. If it is a regular create-table or
    * create-table-like statements, we create a DDLWork and return true. If it is
    * a create-table-as-select, we get the necessary info such as the SerDe and
@@ -6800,6 +6829,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
+      tblProps = addDefaultProperties(tblProps);
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment,
@@ -6828,6 +6858,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
+
+      tblProps = addDefaultProperties(tblProps);
 
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,

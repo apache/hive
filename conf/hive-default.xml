@@ -712,4 +712,10 @@
   <description>Whether writes to HBase should be forced to the write-ahead log.  Disabling this improves HBase write performance at the risk of lost writes in case of a crash.</description>
 </property>
 
+<property>
+  <name>hive.table.parameters.default</name>
+  <value></value>
+  <description>Default property values for newly created tables</description>
+</property>
+
 </configuration>
