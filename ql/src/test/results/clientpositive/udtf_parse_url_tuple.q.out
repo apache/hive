@@ -1,0 +1,675 @@
+PREHOOK: query: create table url_t (key string, fullurl string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table url_t (key string, fullurl string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@url_t
+PREHOOK: query: insert overwrite table url_t
+select * from (
+  select '1', 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' from src limit 1
+  union all
+  select '2', 'https://www.socs.uts.edu.au:80/MosaicDocs-old/url-primer.html?k1=tps#chapter1' from src limit 1
+  union all
+  select '3', 'ftp://sites.google.com/a/example.com/site/page' from src limit 1
+  union all
+  select '4', cast(null as string) from src limit 1
+  union all
+  select '5', 'htttp://' from src limit 1
+  union all
+  select '6', '[invalid url string]' from src limit 1
+) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@url_t
+POSTHOOK: query: insert overwrite table url_t
+select * from (
+  select '1', 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' from src limit 1
+  union all
+  select '2', 'https://www.socs.uts.edu.au:80/MosaicDocs-old/url-primer.html?k1=tps#chapter1' from src limit 1
+  union all
+  select '3', 'ftp://sites.google.com/a/example.com/site/page' from src limit 1
+  union all
+  select '4', cast(null as string) from src limit 1
+  union all
+  select '5', 'htttp://' from src limit 1
+  union all
+  select '6', '[invalid url string]' from src limit 1
+) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@url_t
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+PREHOOK: query: describe function parse_url_tuple
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function parse_url_tuple
+POSTHOOK: type: DESCFUNCTION
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+parse_url_tuple(url, partname1, partname2, ..., partnameN) - extracts N (N>=1) parts from a URL.
+It takes a URL and one or multiple partnames, and returns a tuple. All the input parameters and output column types are string.
+PREHOOK: query: describe function extended parse_url_tuple
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended parse_url_tuple
+POSTHOOK: type: DESCFUNCTION
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+parse_url_tuple(url, partname1, partname2, ..., partnameN) - extracts N (N>=1) parts from a URL.
+It takes a URL and one or multiple partnames, and returns a tuple. All the input parameters and output column types are string.
+Partname: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, USERINFO, QUERY:<KEY_NAME>
+Note: Partnames are case-sensitive, and should not contain unnecessary white spaces.
+Example:
+  > SELECT b.* FROM src LATERAL VIEW parse_url_tuple(fullurl, 'HOST', 'PATH', 'QUERY', 'QUERY:id') b as host, path, query, query_id LIMIT 1;
+  > SELECT parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE',  'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from src a;
+PREHOOK: query: explain 
+select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF b))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
+                          expr: _col4
+                          type: string
+                          expr: _col5
+                          type: string
+                          expr: _col6
+                          type: string
+                          expr: _col7
+                          type: string
+                          expr: _col8
+                          type: string
+                          expr: _col9
+                          type: string
+                          expr: _col10
+                          type: string
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
+                            expr: _col4
+                            type: string
+                            expr: _col5
+                            type: string
+                            expr: _col6
+                            type: string
+                            expr: _col7
+                            type: string
+                            expr: _col8
+                            type: string
+                            expr: _col9
+                            type: string
+              Select Operator
+                expressions:
+                      expr: fullurl
+                      type: string
+                      expr: 'HOST'
+                      type: string
+                      expr: 'PATH'
+                      type: string
+                      expr: 'QUERY'
+                      type: string
+                      expr: 'REF'
+                      type: string
+                      expr: 'PROTOCOL'
+                      type: string
+                      expr: 'FILE'
+                      type: string
+                      expr: 'AUTHORITY'
+                      type: string
+                      expr: 'USERINFO'
+                      type: string
+                      expr: 'QUERY:k1'
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                UDTF Operator
+                  function name: parse_url_tuple
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
+                            expr: _col4
+                            type: string
+                            expr: _col5
+                            type: string
+                            expr: _col6
+                            type: string
+                            expr: _col7
+                            type: string
+                            expr: _col8
+                            type: string
+                            expr: _col9
+                            type: string
+                            expr: _col10
+                            type: string
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
+                              expr: _col4
+                              type: string
+                              expr: _col5
+                              type: string
+                              expr: _col6
+                              type: string
+                              expr: _col7
+                              type: string
+                              expr: _col8
+                              type: string
+                              expr: _col9
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@url_t
+PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-06_345_6003355090197452651/-mr-10000
+POSTHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@url_t
+POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-06_345_6003355090197452651/-mr-10000
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+1	facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	http	/path1/p.php?k1=v1&k2=v2	facebook.com	NULL	v1
+2	www.socs.uts.edu.au	/MosaicDocs-old/url-primer.html	k1=tps	chapter1	https	/MosaicDocs-old/url-primer.html?k1=tps	www.socs.uts.edu.au:80	NULL	tps
+3	sites.google.com	/a/example.com/site/page	NULL	NULL	ftp	/a/example.com/site/page	sites.google.com	NULL	NULL
+4	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+5	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+6	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: explain 
+select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF url_t a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ho)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL pa)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL qu)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Select Operator
+              expressions:
+                    expr: fullurl
+                    type: string
+                    expr: 'HOST'
+                    type: string
+                    expr: 'PATH'
+                    type: string
+                    expr: 'QUERY'
+                    type: string
+                    expr: 'REF'
+                    type: string
+                    expr: 'PROTOCOL'
+                    type: string
+                    expr: 'FILE'
+                    type: string
+                    expr: 'AUTHORITY'
+                    type: string
+                    expr: 'USERINFO'
+                    type: string
+                    expr: 'QUERY:k1'
+                    type: string
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+              UDTF Operator
+                function name: parse_url_tuple
+                Reduce Output Operator
+                  key expressions:
+                        expr: c0
+                        type: string
+                        expr: c1
+                        type: string
+                        expr: c2
+                        type: string
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: c0
+                        type: string
+                        expr: c1
+                        type: string
+                        expr: c2
+                        type: string
+                        expr: c3
+                        type: string
+                        expr: c4
+                        type: string
+                        expr: c5
+                        type: string
+                        expr: c6
+                        type: string
+                        expr: c7
+                        type: string
+                        expr: c8
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
+PREHOOK: type: QUERY
+PREHOOK: Input: default@url_t
+PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-09_351_1128977597067341681/-mr-10000
+POSTHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@url_t
+POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-09_351_1128977597067341681/-mr-10000
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	http	/path1/p.php?k1=v1&k2=v2	facebook.com	NULL	v1
+sites.google.com	/a/example.com/site/page	NULL	NULL	ftp	/a/example.com/site/page	sites.google.com	NULL	NULL
+www.socs.uts.edu.au	/MosaicDocs-old/url-primer.html	k1=tps	chapter1	https	/MosaicDocs-old/url-primer.html?k1=tps	www.socs.uts.edu.au:80	NULL	tps
+PREHOOK: query: -- should return null for 'host', 'query', 'QUERY:nonExistCol' 
+explain
+select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- should return null for 'host', 'query', 'QUERY:nonExistCol' 
+explain
+select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1' 'host' 'query' 'QUERY:nonExistCol') ho pa qu re pr fi au us qk1 err1 err2 err3 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) ho)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qu)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qk1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err3))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col2
+                          type: string
+                          expr: _col4
+                          type: string
+                          expr: _col10
+                          type: string
+                          expr: _col11
+                          type: string
+                          expr: _col12
+                          type: string
+                          expr: _col13
+                          type: string
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
+                            expr: _col4
+                            type: string
+                            expr: _col5
+                            type: string
+                            expr: _col6
+                            type: string
+              Select Operator
+                expressions:
+                      expr: fullurl
+                      type: string
+                      expr: 'HOST'
+                      type: string
+                      expr: 'PATH'
+                      type: string
+                      expr: 'QUERY'
+                      type: string
+                      expr: 'REF'
+                      type: string
+                      expr: 'PROTOCOL'
+                      type: string
+                      expr: 'FILE'
+                      type: string
+                      expr: 'AUTHORITY'
+                      type: string
+                      expr: 'USERINFO'
+                      type: string
+                      expr: 'QUERY:k1'
+                      type: string
+                      expr: 'host'
+                      type: string
+                      expr: 'query'
+                      type: string
+                      expr: 'QUERY:nonExistCol'
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                UDTF Operator
+                  function name: parse_url_tuple
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col4
+                            type: string
+                            expr: _col10
+                            type: string
+                            expr: _col11
+                            type: string
+                            expr: _col12
+                            type: string
+                            expr: _col13
+                            type: string
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
+                              expr: _col4
+                              type: string
+                              expr: _col5
+                              type: string
+                              expr: _col6
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@url_t
+PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-12_205_3636054115754495430/-mr-10000
+POSTHOOK: query: select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@url_t
+POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-12_205_3636054115754495430/-mr-10000
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+1	facebook.com	k1=v1&k2=v2	v1	NULL	NULL	NULL
+2	www.socs.uts.edu.au	k1=tps	tps	NULL	NULL	NULL
+3	sites.google.com	NULL	NULL	NULL	NULL	NULL
+4	NULL	NULL	NULL	NULL	NULL	NULL
+5	NULL	NULL	NULL	NULL	NULL	NULL
+6	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: explain
+select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ho)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL qk1))) (TOK_GROUPBY (TOK_TABLE_OR_COL ho))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Lateral View Forward
+              Select Operator
+                SELECT * : (no compute)
+                Lateral View Join Operator
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Filter Operator
+                    predicate:
+                        expr: _col10 is not null
+                        type: boolean
+                    Select Operator
+                      expressions:
+                            expr: _col2
+                            type: string
+                      outputColumnNames: _col2
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col2
+                              type: string
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Reduce Output Operator
+                          key expressions:
+                                expr: _col0
+                                type: string
+                          sort order: +
+                          Map-reduce partition columns:
+                                expr: _col0
+                                type: string
+                          tag: -1
+                          value expressions:
+                                expr: _col1
+                                type: bigint
+              Select Operator
+                expressions:
+                      expr: fullurl
+                      type: string
+                      expr: 'HOST'
+                      type: string
+                      expr: 'PATH'
+                      type: string
+                      expr: 'QUERY'
+                      type: string
+                      expr: 'REF'
+                      type: string
+                      expr: 'PROTOCOL'
+                      type: string
+                      expr: 'FILE'
+                      type: string
+                      expr: 'AUTHORITY'
+                      type: string
+                      expr: 'USERINFO'
+                      type: string
+                      expr: 'QUERY:k1'
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                UDTF Operator
+                  function name: parse_url_tuple
+                  Lateral View Join Operator
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Filter Operator
+                      predicate:
+                          expr: _col10 is not null
+                          type: boolean
+                      Select Operator
+                        expressions:
+                              expr: _col2
+                              type: string
+                        outputColumnNames: _col2
+                        Group By Operator
+                          aggregations:
+                                expr: count()
+                          bucketGroup: false
+                          keys:
+                                expr: _col2
+                                type: string
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Reduce Output Operator
+                            key expressions:
+                                  expr: _col0
+                                  type: string
+                            sort order: +
+                            Map-reduce partition columns:
+                                  expr: _col0
+                                  type: string
+                            tag: -1
+                            value expressions:
+                                  expr: _col1
+                                  type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
+PREHOOK: type: QUERY
+PREHOOK: Input: default@url_t
+PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-15_195_8128654165273206766/-mr-10000
+POSTHOOK: query: select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@url_t
+POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-15_195_8128654165273206766/-mr-10000
+POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
+POSTHOOK: Lineage: url_t.key EXPRESSION []
+facebook.com	1
+www.socs.uts.edu.au	1

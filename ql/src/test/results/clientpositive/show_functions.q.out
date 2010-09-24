@@ -95,6 +95,7 @@ ngrams
 not
 or
 parse_url
+parse_url_tuple
 percentile
 percentile_approx
 pi
@@ -191,6 +192,7 @@ like
 locate
 minute
 negative
+parse_url_tuple
 percentile
 positive
 regexp_replace
