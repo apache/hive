@@ -29,6 +29,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -78,6 +79,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: part_special
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
 SELECT 1, 2 FROM src LIMIT 1
@@ -112,12 +116,15 @@ ts                  	string              	None
 Partition Value:    	[2008 04 08, 10:11:12=455]	 
 Database:           	default             	 
 Table:              	part_special        	 
-CreateTime:         	Tue Sep 14 08:24:14 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:55:13 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477854          
+	numFiles            	1                   
+	transient_lastDdlTime	1285052113          
+	numRows             	1                   
+	totalSize           	4                   
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -133,11 +140,11 @@ Storage Desc Params:
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-24-14_529_9115667855216344763/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-55-13_931_8974375359528209894/-mr-10000
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-24-14_529_9115667855216344763/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-55-13_931_8974375359528209894/-mr-10000
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 1	2	2008 04 08	10:11:12=455

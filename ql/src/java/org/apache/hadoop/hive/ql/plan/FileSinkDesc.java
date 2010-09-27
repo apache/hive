@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.apache.hadoop.fs.Path;
+
 /**
  * FileSinkDesc.
  *
@@ -29,6 +31,9 @@ import java.util.ArrayList;
 public class FileSinkDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dirName;
+  // normally statsKeyPref will be the same as dirName, but the latter
+  // could be changed in local execution optimization
+  private String statsKeyPref;
   private TableDesc tableInfo;
   private boolean compressed;
   private int destTableId;
@@ -39,6 +44,8 @@ public class FileSinkDesc implements Serializable {
   private ArrayList<ExprNodeDesc> partitionCols;
   private int     numFiles;
   private DynamicPartitionCtx dpCtx;
+  private String staticSpec; // static partition spec ends with a '/'
+  private boolean gatherStats;
 
   public FileSinkDesc() {
   }
@@ -189,5 +196,55 @@ public class FileSinkDesc implements Serializable {
 
   public DynamicPartitionCtx getDynPartCtx() {
     return this.dpCtx;
+  }
+
+  public void setStaticSpec(String staticSpec) {
+    this.staticSpec = staticSpec;
+  }
+
+  @Explain(displayName = "Static Partition Specification", normalExplain = false)
+  public String getStaticSpec() {
+    return staticSpec;
+  }
+
+  public void setGatherStats(boolean gatherStats) {
+    this.gatherStats = gatherStats;
+  }
+
+  @Explain(displayName = "GatherStats", normalExplain = false)
+  public boolean isGatherStats() {
+    return gatherStats;
+  }
+
+  /**
+   * Construct the key prefix used as (intermediate) statistics publishing
+   * and aggregation. During stats publishing phase, this key prefix will be
+   * appended with the optional dynamic partition spec and the task ID. The
+   * whole key uniquely identifies the output of a task for this job. In the
+   * stats aggregation phase, all rows with the same prefix plus dynamic partition
+   * specs (obtained at run-time after MR job finishes) will be serving as the
+   * prefix: all rows with the same prefix (output of all tasks for this job)
+   * will be aggregated.
+   * @return key prefix used for stats publishing and aggregation.
+   */
+  @Explain(displayName = "Stats Publishing Key Prefix", normalExplain = false)
+  public String getStatsAggPrefix() {
+    // dirName uniquely identifies destination directory of a FileSinkOperator.
+    // If more than one FileSinkOperator write to the same partition, this dirName
+    // should be different.
+    return statsKeyPref;
+  }
+
+  /**
+   * Set the stats aggregation key. If the input string is not terminated by Path.SEPARATOR
+   * aggregation key will add one to make it as a directory name.
+   * @param k input directory name.
+   */
+  public void setStatsAggPrefix(String k) {
+    if (k.endsWith(Path.SEPARATOR)) {
+      statsKeyPref = k;
+    } else {
+      statsKeyPref = k + Path.SEPARATOR;
+    }
   }
 }

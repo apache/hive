@@ -28,13 +28,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-7, Stage-8
+  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-3
-  Stage-6 is a root stage
   Stage-7 is a root stage
+  Stage-8 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -80,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-38-46_962_8522402125517331101/10002 
+        file:/tmp/nzhang/hive_2010-09-15_17-35-28_035_6997518029237523999/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -104,7 +105,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/tmp/jssarma/hive_2010-07-21_13-38-46_962_8522402125517331101/10004 
+        file:/tmp/nzhang/hive_2010-09-15_17-35-28_035_6997518029237523999/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -128,7 +129,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/tmp/jssarma/hive_2010-07-21_13-38-46_962_8522402125517331101/10005 
+        file:/tmp/nzhang/hive_2010-09-15_17-35-28_035_6997518029237523999/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -153,14 +154,14 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
 
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-38-46_962_8522402125517331101/10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_17-35-28_035_6997518029237523999/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -173,9 +174,12 @@ STAGE PLANS:
               name: tmptable
 
   Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_13-38-46_962_8522402125517331101/10003 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_17-35-28_035_6997518029237523999/-ext-10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -198,7 +202,7 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: tmptable
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery2:unionsrc-subquery1-subquery2:s2 
@@ -238,7 +242,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s3 
@@ -302,11 +306,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-38-59_753_3964700298494974564/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-35-51_602_4379629688816539336/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-38-59_753_3964700298494974564/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-35-51_602_4379629688816539336/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s3.null, ]
 tst1	500

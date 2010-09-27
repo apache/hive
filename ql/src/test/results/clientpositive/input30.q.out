@@ -22,6 +22,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -83,6 +84,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: tst_dest30
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: insert overwrite table dest30
 select count(1) from src
@@ -98,10 +102,10 @@ POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from tst_dest30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest30
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-48_308_1489139289605344338/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-29-17_894_4302083977573140725/-mr-10000
 POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-27-48_308_1489139289605344338/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-29-17_894_4302083977573140725/-mr-10000
 POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 18

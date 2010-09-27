@@ -32,22 +32,25 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
-  Stage-7 depends on stages: Stage-4 , consists of Stage-6, Stage-5
+  Stage-8 depends on stages: Stage-4 , consists of Stage-7, Stage-6
+  Stage-7
+  Stage-0 depends on stages: Stage-7, Stage-6
+  Stage-5 depends on stages: Stage-0
   Stage-6
-  Stage-0 depends on stages: Stage-6, Stage-5
-  Stage-5
-  Stage-10 depends on stages: Stage-4 , consists of Stage-9, Stage-8
-  Stage-9
-  Stage-1 depends on stages: Stage-9, Stage-8
-  Stage-8
-  Stage-13 depends on stages: Stage-4 , consists of Stage-12, Stage-11
-  Stage-12
-  Stage-2 depends on stages: Stage-12, Stage-11
+  Stage-12 depends on stages: Stage-4 , consists of Stage-11, Stage-10
   Stage-11
+  Stage-1 depends on stages: Stage-11, Stage-10
+  Stage-9 depends on stages: Stage-1
+  Stage-10
   Stage-16 depends on stages: Stage-4 , consists of Stage-15, Stage-14
   Stage-15
-  Stage-3 depends on stages: Stage-15, Stage-14
+  Stage-2 depends on stages: Stage-15, Stage-14
+  Stage-13 depends on stages: Stage-2
   Stage-14
+  Stage-19 depends on stages: Stage-4 , consists of Stage-18, Stage-17
+  Stage-18
+  Stage-3 depends on stages: Stage-18, Stage-17
+  Stage-17
 
 STAGE PLANS:
   Stage: Stage-4
@@ -146,14 +149,14 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-7
+  Stage: Stage-8
     Conditional Operator
 
-  Stage: Stage-6
+  Stage: Stage-7
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -166,9 +169,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-5
+    Stats-Aggr Operator
+
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10007 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10007 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -178,14 +184,14 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest1
 
-  Stage: Stage-10
+  Stage: Stage-12
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-11
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10002
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -197,10 +203,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
 
-  Stage: Stage-8
+  Stage: Stage-9
+    Stats-Aggr Operator
+
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10008 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10008 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -210,14 +219,14 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest2
 
-  Stage: Stage-13
+  Stage: Stage-16
     Conditional Operator
 
-  Stage: Stage-12
+  Stage: Stage-15
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10004
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10004
 
   Stage: Stage-2
     Move Operator
@@ -232,10 +241,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest3
 
-  Stage: Stage-11
+  Stage: Stage-13
+    Stats-Aggr Operator
+
+  Stage: Stage-14
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10009 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10009 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -245,14 +257,14 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest3
 
-  Stage: Stage-16
+  Stage: Stage-19
     Conditional Operator
 
-  Stage: Stage-15
+  Stage: Stage-18
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10006
+          destination: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10006
 
   Stage: Stage-3
     Move Operator
@@ -260,10 +272,10 @@ STAGE PLANS:
           hdfs directory: true
           destination: ../build/ql/test/data/warehouse/dest4.out
 
-  Stage: Stage-14
+  Stage: Stage-17
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_15-50-17_868_874270772309760488/-ext-10010 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10010 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -302,11 +314,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_603_8204333485013682573/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_288_6309833081797050565/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_603_8204333485013682573/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_288_6309833081797050565/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -399,11 +411,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest2.* FROM dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_865_5466685897994447699/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_636_3380977971901935333/-mr-10000
 POSTHOOK: query: SELECT dest2.* FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-22_865_5466685897994447699/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_636_3380977971901935333/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -517,11 +529,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-23_137_2677954228712032208/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_986_850981660460088519/-mr-10000
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-50-23_137_2677954228712032208/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_986_850981660460088519/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

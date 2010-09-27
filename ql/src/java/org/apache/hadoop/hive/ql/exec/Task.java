@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -57,6 +58,14 @@ public abstract class Task<T extends Serializable> implements Serializable,
   protected transient TaskHandle taskHandle;
   protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
+
+  // Descendants tasks who subscribe feeds from this task
+  protected transient List<Task<? extends Serializable>> feedSubscribers;
+
+  public static enum FeedType {
+    DYNAMIC_PARTITIONS, // list of dynamic partitions
+  };
+
   // Bean methods
 
   protected List<Task<? extends Serializable>> childTasks;
@@ -317,4 +326,59 @@ public abstract class Task<T extends Serializable> implements Serializable,
     }
   }
 
+  /**
+   * Subscribe the feed of publisher. To prevent cycles, a task can only subscribe to its ancestor.
+   * Feed is a generic form of execution-time feedback (type, value) pair from one task to another
+   * task. Examples include dynamic partitions (which are only available at execution time).
+   * The MoveTask may pass the list of dynamic partitions to the StatsTask since after the
+   * MoveTask the list of dynamic partitions are lost (MoveTask moves them to the table's
+   * destination directory which is mixed with old partitions).
+   *
+   * @param publisher this feed provider.
+   */
+  public void subscribeFeed(Task<? extends Serializable> publisher) {
+    if (publisher != this && publisher.ancestorOrSelf(this)) {
+      if (publisher.getFeedSubscribers() == null) {
+        publisher.setFeedSubscribers(new LinkedList<Task<? extends Serializable>>());
+      }
+      publisher.getFeedSubscribers().add(this);
+    }
+  }
+
+  // return true if this task is an ancestor of itself of parameter desc
+  private boolean ancestorOrSelf(Task<? extends Serializable> desc) {
+    if (this == desc) {
+      return true;
+    }
+    List<Task<? extends Serializable>> deps = getDependentTasks();
+    if (deps != null) {
+      for (Task<? extends Serializable> d: deps) {
+        if (d.ancestorOrSelf(desc)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public List<Task<? extends Serializable>> getFeedSubscribers() {
+    return feedSubscribers;
+  }
+
+  public void setFeedSubscribers(List<Task<? extends Serializable>> s) {
+    feedSubscribers = s;
+  }
+
+  // push the feed to its subscribers
+  protected void pushFeed(FeedType feedType, Object feedValue) {
+    if (feedSubscribers != null) {
+      for (Task<? extends Serializable> s: feedSubscribers) {
+        s.receiveFeed(feedType, feedValue);
+      }
+    }
+  }
+
+  // a subscriber accept the feed and do something depending on the Task type
+  protected void receiveFeed(FeedType feedType, Object feedValue) {
+  }
 }

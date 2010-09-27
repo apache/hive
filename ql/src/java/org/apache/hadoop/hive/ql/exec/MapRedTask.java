@@ -18,28 +18,26 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -87,27 +85,28 @@ public class MapRedTask extends ExecDriver implements Serializable {
       if (!ctx.isLocalOnlyExecutionMode() &&
           conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
 
-        if (inputSummary == null)
+        if (inputSummary == null) {
           inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work, null);
+        }
 
         // at this point the number of reducers is precisely defined in the plan
         int numReducers = work.getNumReduceTasks();
 
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Task: " + getId() + ", Summary: " + 
+          LOG.debug("Task: " + getId() + ", Summary: " +
                     inputSummary.getLength() + "," + inputSummary.getFileCount() + ","
                     + numReducers);
         }
 
-	String reason = MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers);
+        String reason = MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers);
         if (reason == null) {
-	  // set the JT to local for the duration of this job
+          // set the JT to local for the duration of this job
           ctx.setOriginalTracker(conf.getVar(HiveConf.ConfVars.HADOOPJT));
           conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
           console.printInfo("Selecting local mode for task: " + getId());
         } else {
           console.printInfo("Cannot run job locally: " + reason);
-	}
+        }
       }
 
       runningViaChild =
@@ -239,8 +238,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
         // creating the context can create a bunch of files. So make
         // sure to clear it out
-        if(ctxCreated) 
+        if(ctxCreated) {
           ctx.clear();
+        }
 
       } catch (Exception e) {
         LOG.error("Exception: " + e.getMessage());
@@ -324,9 +324,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
     long bytesPerReducer = conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
     int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
 
-    if(inputSummary == null)
+    if(inputSummary == null) {
       // compute the summary and stash it away
       inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work, null);
+    }
 
     long totalInputFileSize = inputSummary.getLength();
 
@@ -355,23 +356,26 @@ public class MapRedTask extends ExecDriver implements Serializable {
     long maxTasks = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXTASKS);
 
     // check for max input size
-    if (inputSummary.getLength() > maxBytes)
+    if (inputSummary.getLength() > maxBytes) {
       return "Input Size (= " + inputSummary.getLength() + ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
+    }
 
     // ideally we would like to do this check based on the number of splits
     // in the absence of an easy way to get the number of splits - do this
     // based on the total number of files (pessimistically assumming that
     // splits are equal to number of files in worst case)
-    if (inputSummary.getFileCount() > maxTasks)
+    if (inputSummary.getFileCount() > maxTasks) {
       return "Number of Input Files (= " + inputSummary.getFileCount() +
-        ") is larger than " + 
+        ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
+    }
 
     // since local mode only runs with 1 reducers - make sure that the
     // the number of reducers (set by user or inferred) is <=1
-    if (numReducers > 1) 
+    if (numReducers > 1) {
       return "Number of reducers (= " + numReducers + ") is more than 1";
+    }
 
     return null;
   }

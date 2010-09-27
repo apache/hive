@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -34,8 +35,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -180,7 +181,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           // deal with dynamic partitions
           DynamicPartitionCtx dpCtx = tbd.getDPCtx();
           if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
+
+            List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
+
+            // publish DP columns to its subscribers
+            pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+
             // load the list of DP partitions and return the list of partition specs
+            // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
+            // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
+            // After that check the number of DPs created to not exceed the limit and
+            // iterate over it and call loadPartition() here.
+            // The reason we don't do inside HIVE-1361 is the latter is large and we
+            // want to isolate any potential issue it may introduce.
             ArrayList<LinkedHashMap<String, String>> dp =
               db.loadDynamicPartitions(
                   new Path(tbd.getSourceDir()),
@@ -190,6 +203,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 	new Path(tbd.getTmpDir()),
                 	dpCtx.getNumDPCols(),
                 	tbd.getHoldDDLTime());
+
+
             // for each partition spec, get the partition
             // and put it to WriteEntity for post-exec hook
             for (LinkedHashMap<String, String> partSpec: dp) {

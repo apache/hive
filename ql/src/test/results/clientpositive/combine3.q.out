@@ -62,12 +62,15 @@ hr                  	string              	None
 Partition Value:    	[2010-08-03, 00]    	 
 Database:           	default             	 
 Table:              	combine_3_srcpart_seq_rc	 
-CreateTime:         	Tue Sep 14 08:10:04 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:25:54 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477004          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050355          
+	numRows             	500                 
+	totalSize           	15250               
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -103,12 +106,15 @@ hr                  	string              	None
 Partition Value:    	[2010-08-03, 001]   	 
 Database:           	default             	 
 Table:              	combine_3_srcpart_seq_rc	 
-CreateTime:         	Tue Sep 14 08:10:07 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:26:02 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477007          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050362          
+	numRows             	500                 
+	totalSize           	2076                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
@@ -125,12 +131,12 @@ PREHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-10-07_563_6249036471530626320/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-03_040_1636466126220724204/-mr-10000
 POSTHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-10-07_563_6249036471530626320/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-03_040_1636466126220724204/-mr-10000
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -234,12 +240,12 @@ PREHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-10-16_242_8416235865630529186/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-23_545_2451540426039382986/-mr-10000
 POSTHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-10-16_242_8416235865630529186/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-23_545_2451540426039382986/-mr-10000
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -16,10 +16,11 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-0
   Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -51,14 +52,14 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest4_sequencefile
 
-  Stage: Stage-4
+  Stage: Stage-5
     Conditional Operator
 
-  Stage: Stage-3
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-52-22_667_5909431875573959785/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -71,9 +72,12 @@ STAGE PLANS:
               name: dest4_sequencefile
 
   Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-45_382_5554362484000987602/10002 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-52-22_667_5909431875573959785/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -112,11 +116,11 @@ POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:va
 PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest4_sequencefile
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_15-52-29_156_8928447853233319985/-mr-10000
 POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-13-49_831_520446839437800648/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_15-52-29_156_8928447853233319985/-mr-10000
 POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

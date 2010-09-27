@@ -47,6 +47,7 @@
     <pathelement location="${jasperc.test.jar}"/>
     <pathelement location="${jsp.test.jar}"/>
     <pathelement location="${common.jar}"/>
+    <pathelement location="${hive.root}/lib/derby.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="jsp-2.1/*.jar"/>
@@ -62,7 +63,7 @@
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar:${hive.root}/lib/derby.jar"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 

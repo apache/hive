@@ -34,12 +34,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-7
+  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-3
-  Stage-6 is a root stage
+  Stage-7 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -101,7 +102,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jsichi/hive_2010-08-26_16-08-08_217_4989832071586172776/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-52-08_102_663019916071850448/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -125,7 +126,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest_l1
-        file:/tmp/jsichi/hive_2010-08-26_16-08-08_217_4989832071586172776/-mr-10004 
+        file:/tmp/nzhang/hive_2010-09-14_16-52-08_102_663019916071850448/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -150,14 +151,14 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest_l1
 
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-08_217_4989832071586172776/-ext-10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-52-08_102_663019916071850448/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -170,9 +171,12 @@ STAGE PLANS:
               name: dest_l1
 
   Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_16-08-08_217_4989832071586172776/-ext-10003 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-52-08_102_663019916071850448/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -182,7 +186,7 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest_l1
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:j-subquery2:p2 

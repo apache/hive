@@ -19,15 +19,15 @@ ds                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:01:29 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:12:00 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/clustergroupby	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/clustergroupby	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284472889          
+	transient_lastDdlTime	1285049520          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -139,11 +139,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-32_671_184754291794205519/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-08_471_264777909273341136/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-32_671_184754291794205519/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-08_471_264777909273341136/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	3
@@ -184,17 +184,21 @@ ds                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:01:29 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:12:00 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/clustergroupby	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/clustergroupby	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472895          
-	transient_lastDdlTime	1284472895          
+	numPartitions       	1                   
+	numFiles            	1                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049532          
+	transient_lastDdlTime	1285049532          
+	numRows             	500                 
+	totalSize           	5812                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -312,11 +316,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-37_660_5184895418229732010/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-20_193_4381502362232094489/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-37_660_5184895418229732010/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-20_193_4381502362232094489/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -424,11 +428,11 @@ STAGE PLANS:
 PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-40_136_5333503944919429418/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-24_121_8011305195289924924/-mr-10000
 POSTHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-40_136_5333503944919429418/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-24_121_8011305195289924924/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -527,11 +531,11 @@ STAGE PLANS:
 PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-42_537_6448635417298664043/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-28_041_4377337206683711142/-mr-10000
 POSTHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-42_537_6448635417298664043/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-28_041_4377337206683711142/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -640,11 +644,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-45_085_2973729075661678981/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-31_955_2035389635675970206/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-45_085_2973729075661678981/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-31_955_2035389635675970206/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -757,11 +761,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-47_519_4150023209351271110/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-35_858_682244352816074312/-mr-10000
 POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-47_519_4150023209351271110/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-35_858_682244352816074312/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -859,12 +863,12 @@ PREHOOK: query: select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-49_963_847364919817016340/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-39_667_6993113161354815698/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-49_963_847364919817016340/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-39_667_6993113161354815698/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1299,17 +1303,21 @@ ds                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:01:29 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:12:00 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/clustergroupby	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/clustergroupby	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472912          
-	transient_lastDdlTime	1284472912          
+	numPartitions       	2                   
+	numFiles            	2                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049564          
+	transient_lastDdlTime	1285049564          
+	numRows             	1000                
+	totalSize           	11624               
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -1429,11 +1437,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-55_167_3909629834677935174/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-52_423_5195000162572997399/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-55_167_3909629834677935174/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-52_423_5195000162572997399/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1543,11 +1551,11 @@ STAGE PLANS:
 PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-57_637_509238495868255690/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-56_614_4460480942841985035/-mr-10000
 POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-01-57_637_509238495868255690/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-12-56_614_4460480942841985035/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1667,11 +1675,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-00_148_921063500290226800/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-00_558_2886682989236055618/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-00_148_921063500290226800/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-00_558_2886682989236055618/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1724,17 +1732,21 @@ ds                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:01:29 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:12:00 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/clustergroupby	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/clustergroupby	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472922          
-	transient_lastDdlTime	1284472922          
+	numPartitions       	3                   
+	numFiles            	3                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049584          
+	transient_lastDdlTime	1285049584          
+	numRows             	1500                
+	totalSize           	17436               
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -1858,11 +1870,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-05_044_5429885382737940304/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-11_680_1170880569605249416/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-05_044_5429885382737940304/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-11_680_1170880569605249416/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1986,11 +1998,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-07_481_6550793560447230881/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-15_849_1305890724778001430/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-02-07_481_6550793560447230881/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-13-15_849_1305890724778001430/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

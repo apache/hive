@@ -30,11 +30,11 @@ POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE
 PREHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-50_246_3059048204030358180/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-08-57_327_5944493503891814458/-mr-10000
 POSTHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-50_246_3059048204030358180/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-08-57_327_5944493503891814458/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
@@ -69,17 +69,21 @@ pcol2               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:00:47 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:08:51 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_renamed	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_renamed	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472850          
-	transient_lastDdlTime	1284472850          
+	numPartitions       	1                   
+	numFiles            	1                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049337          
+	transient_lastDdlTime	1285049337          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -111,12 +115,15 @@ pcol2               	string              	None
 Partition Value:    	[test_part, test_part]	 
 Database:           	default             	 
 Table:              	alter3_renamed      	 
-CreateTime:         	Tue Sep 14 07:00:50 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:08:56 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284472850          
+	numFiles            	1                   
+	transient_lastDdlTime	1285049337          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -132,11 +139,11 @@ Storage Desc Params:
 PREHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-50_945_3576751943350456783/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-08-58_285_926659329473097768/-mr-10000
 POSTHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-50_945_3576751943350456783/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-08-58_285_926659329473097768/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_part
 2	test_part	test_part
@@ -187,18 +194,22 @@ pcol2               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:00:47 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:08:51 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_like_renamed	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_like_renamed	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	1                   
 	EXTERNAL            	FALSE               
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472853          
-	transient_lastDdlTime	1284472853          
+	numFiles            	1                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049344          
+	transient_lastDdlTime	1285049344          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -321,11 +332,11 @@ POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part,pcol2=test_part).col1 S
 PREHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part' AND pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: alter3_db@alter3@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-56_813_3326597749899975226/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-09-12_328_7205460480200294317/-mr-10000
 POSTHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part' AND pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter3_db@alter3@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-56_813_3326597749899975226/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-09-12_328_7205460480200294317/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -366,17 +377,21 @@ pcol2               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	alter3_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:00:54 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:09:06 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_db.db/alter3_renamed	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_db.db/alter3_renamed	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472856          
-	transient_lastDdlTime	1284472856          
+	numPartitions       	1                   
+	numFiles            	1                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049352          
+	transient_lastDdlTime	1285049352          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -410,12 +425,15 @@ pcol2               	string              	None
 Partition Value:    	[test_part, test_part]	 
 Database:           	alter3_db           	 
 Table:              	alter3_renamed      	 
-CreateTime:         	Tue Sep 14 07:00:56 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:09:11 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_db.db/alter3_renamed/pcol1=test_part/pcol2=test_part	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_db.db/alter3_renamed/pcol1=test_part/pcol2=test_part	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284472856          
+	numFiles            	1                   
+	transient_lastDdlTime	1285049352          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -431,11 +449,11 @@ Storage Desc Params:
 PREHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part' AND pcol2='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part/pcol2=test_part
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-57_116_2454861448129579790/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-09-13_149_6501372199049102565/-mr-10000
 POSTHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part' AND pcol2='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part/pcol2=test_part
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-00-57_116_2454861448129579790/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-09-13_149_6501372199049102565/-mr-10000
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part,pcol2=test_part).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
@@ -494,18 +512,22 @@ pcol2               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	alter3_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:00:54 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Mon Sep 20 23:09:06 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter3_db.db/alter3_like_renamed	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/alter3_db.db/alter3_like_renamed	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	1                   
 	EXTERNAL            	FALSE               
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284472859          
-	transient_lastDdlTime	1284472859          
+	numFiles            	1                   
+	last_modified_by    	nzhang              
+	last_modified_time  	1285049360          
+	transient_lastDdlTime	1285049360          
+	numRows             	6                   
+	totalSize           	171                 
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

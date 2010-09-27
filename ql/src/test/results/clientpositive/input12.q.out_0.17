@@ -30,18 +30,21 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
-  Stage-6 depends on stages: Stage-3 , consists of Stage-5, Stage-4
+  Stage-7 depends on stages: Stage-3 , consists of Stage-6, Stage-5
+  Stage-6
+  Stage-0 depends on stages: Stage-6, Stage-5
+  Stage-4 depends on stages: Stage-0
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4
-  Stage-4
-  Stage-9 depends on stages: Stage-3 , consists of Stage-8, Stage-7
-  Stage-8
-  Stage-1 depends on stages: Stage-8, Stage-7
-  Stage-7
-  Stage-12 depends on stages: Stage-3 , consists of Stage-11, Stage-10
-  Stage-11
-  Stage-2 depends on stages: Stage-11, Stage-10
+  Stage-11 depends on stages: Stage-3 , consists of Stage-10, Stage-9
   Stage-10
+  Stage-1 depends on stages: Stage-10, Stage-9
+  Stage-8 depends on stages: Stage-1
+  Stage-9
+  Stage-15 depends on stages: Stage-3 , consists of Stage-14, Stage-13
+  Stage-14
+  Stage-2 depends on stages: Stage-14, Stage-13
+  Stage-12 depends on stages: Stage-2
+  Stage-13
 
 STAGE PLANS:
   Stage: Stage-3
@@ -125,14 +128,14 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest3
 
-  Stage: Stage-6
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-5
+  Stage: Stage-6
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -145,9 +148,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10006 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10006 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -170,14 +176,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
-  Stage: Stage-9
+  Stage: Stage-11
     Conditional Operator
 
-  Stage: Stage-8
+  Stage: Stage-10
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10002
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -189,10 +195,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
 
-  Stage: Stage-7
+  Stage: Stage-8
+    Stats-Aggr Operator
+
+  Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10007 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10007 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -215,14 +224,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest2
 
-  Stage: Stage-12
+  Stage: Stage-15
     Conditional Operator
 
-  Stage: Stage-11
+  Stage: Stage-14
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10004
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10004
 
   Stage: Stage-2
     Move Operator
@@ -237,10 +246,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest3
 
-  Stage: Stage-10
+  Stage: Stage-12
+    Stats-Aggr Operator
+
+  Stage: Stage-13
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-41_931_5369380083021091529/10008 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-28_159_7424886637215869609/-ext-10008 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -288,11 +300,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_449_7424653031518092836/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-37_419_4324670001280553754/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_449_7424653031518092836/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-37_419_4324670001280553754/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -385,11 +397,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest2.* FROM dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_504_847793569669105301/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-38_022_3197731740628094077/-mr-10000
 POSTHOOK: query: SELECT dest2.* FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_504_847793569669105301/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-38_022_3197731740628094077/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -503,11 +515,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_553_731816401522380914/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-38_638_3795914837064421728/-mr-10000
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-13-47_553_731816401522380914/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-43-38_638_3795914837064421728/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

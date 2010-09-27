@@ -29,15 +29,15 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 07:05:28 PDT 2010	 
+CreateTime:         	Tue Sep 21 00:13:58 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part10	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part10	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284473128          
+	transient_lastDdlTime	1285053238          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -64,6 +64,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -111,6 +112,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part10
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: from srcpart
 insert overwrite table nzhang_part10 partition(ds='2008-12-31', hr) select key, value, hr where ds > '2008-04-08'
@@ -142,12 +146,12 @@ PREHOOK: query: select * from nzhang_part10 where ds is not null and hr is not n
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-05-31_829_4793616262436642129/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-14-06_981_2043462217259672901/-mr-10000
 POSTHOOK: query: select * from nzhang_part10 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part10@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-05-31_829_4793616262436642129/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-14-06_981_2043462217259672901/-mr-10000
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part10 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

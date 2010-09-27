@@ -18,15 +18,15 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:12:09 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Tue Sep 21 00:16:35 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part5	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part5	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284473529          
+	transient_lastDdlTime	1285053395          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -51,6 +51,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -86,6 +87,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part5
+
+  Stage: Stage-2
+    Stats-Aggr Operator
 
 
 PREHOOK: query: insert overwrite table nzhang_part5 partition (value) select key, value from src
@@ -1337,11 +1341,11 @@ value=val_98
 PREHOOK: query: select * from nzhang_part5 where value='val_0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_0
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_552_998166979564751894/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-22-02_739_6993685440443435128/-mr-10000
 POSTHOOK: query: select * from nzhang_part5 where value='val_0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_0
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_552_998166979564751894/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-22-02_739_6993685440443435128/-mr-10000
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1657,11 +1661,11 @@ POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_9).key SIMPLE [(src)src.Fiel
 PREHOOK: query: select * from nzhang_part5 where value='val_2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_2
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_918_3983584652479110255/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-22-03_529_3084528464376724751/-mr-10000
 POSTHOOK: query: select * from nzhang_part5 where value='val_2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_2
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-12-50_918_3983584652479110255/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-22-03_529_3084528464376724751/-mr-10000
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

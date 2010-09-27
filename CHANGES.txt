@@ -83,6 +83,9 @@ Trunk -  Unreleased
     HIVE-1659. parse_url_tuple: a UDTF version of parse_url
     (Xing Jin via Ning Zhang)
 
+    HIVE-1361. table/partition level statistics
+    (Ning Zhang, Ahmed M Aly via He Yongqiang)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

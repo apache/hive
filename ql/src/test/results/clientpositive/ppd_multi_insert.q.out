@@ -33,8 +33,11 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
   Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
@@ -179,6 +182,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: mi1
 
+  Stage: Stage-5
+    Stats-Aggr Operator
+
   Stage: Stage-1
     Move Operator
       tables:
@@ -188,6 +194,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: mi2
+
+  Stage: Stage-6
+    Stats-Aggr Operator
 
   Stage: Stage-2
     Move Operator
@@ -201,6 +210,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: mi3
+
+  Stage: Stage-7
+    Stats-Aggr Operator
 
   Stage: Stage-3
     Move Operator
@@ -239,11 +251,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-32_780_6038103351737463067/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_120_3503771906127933196/-mr-10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-32_780_6038103351737463067/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_120_3503771906127933196/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -400,11 +412,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_072_1447950994639415029/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_510_8315931585077418228/-mr-10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_072_1447950994639415029/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_510_8315931585077418228/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -624,11 +636,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_365_8344416518806586394/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_947_8456541918849361288/-mr-10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-24-33_365_8344416518806586394/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_947_8456541918849361288/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

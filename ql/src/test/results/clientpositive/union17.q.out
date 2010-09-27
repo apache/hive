@@ -31,12 +31,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2, Stage-6
+  Stage-3 depends on stages: Stage-2, Stage-8
   Stage-4 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-4
-  Stage-5 depends on stages: Stage-3
-  Stage-1 depends on stages: Stage-5
-  Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-0
+  Stage-6 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-6
+  Stage-7 depends on stages: Stage-1
+  Stage-8 is a root stage
 
 STAGE PLANS:
   Stage: Stage-2
@@ -82,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-39-54_258_7891516569971054774/10004 
+        file:/tmp/nzhang/hive_2010-09-14_18-18-09_951_4321959446546233090/-mr-10004 
           Union
             Reduce Output Operator
               key expressions:
@@ -98,7 +100,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/tmp/jssarma/hive_2010-07-21_13-39-54_258_7891516569971054774/10007 
+        file:/tmp/nzhang/hive_2010-09-14_18-18-09_951_4321959446546233090/-mr-10007 
           Union
             Reduce Output Operator
               key expressions:
@@ -152,7 +154,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-39-54_258_7891516569971054774/10005 
+        file:/tmp/nzhang/hive_2010-09-14_18-18-09_951_4321959446546233090/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -202,9 +204,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-5
+    Stats-Aggr Operator
+
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_13-39-54_258_7891516569971054774/10006 
+        file:/tmp/nzhang/hive_2010-09-14_18-18-09_951_4321959446546233090/-mr-10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -261,7 +266,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
 
-  Stage: Stage-6
+  Stage: Stage-7
+    Stats-Aggr Operator
+
+  Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
@@ -308,11 +316,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-07_128_4703708380901938283/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-18-35_533_8334042407221913491/-mr-10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-07_128_4703708380901938283/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-18-35_533_8334042407221913491/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
@@ -631,11 +639,11 @@ tst1	1
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-07_181_8284196145398809075/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-18-35_933_8454563848719230923/-mr-10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-40-07_181_8284196145398809075/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-18-35_933_8454563848719230923/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]

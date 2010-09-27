@@ -1,0 +1,74 @@
+PREHOOK: query: create table analyze_src as select * from src
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: create table analyze_src as select * from src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@analyze_src
+PREHOOK: query: explain analyze table analyze_src compute statistics
+PREHOOK: type: null
+POSTHOOK: query: explain analyze table analyze_src compute statistics
+POSTHOOK: type: null
+ABSTRACT SYNTAX TREE:
+  (TOK_ANALYZE (TOK_TABTYPE analyze_src))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Alias -> Map Operator Tree:
+        analyze_src 
+          TableScan
+            alias: analyze_src
+
+  Stage: Stage-1
+    Stats-Aggr Operator
+
+
+PREHOOK: query: analyze table analyze_src compute statistics
+PREHOOK: type: null
+PREHOOK: Input: default@analyze_src
+PREHOOK: Output: default@analyze_src
+POSTHOOK: query: analyze table analyze_src compute statistics
+POSTHOOK: type: null
+POSTHOOK: Input: default@analyze_src
+POSTHOOK: Output: default@analyze_src
+PREHOOK: query: describe extended analyze_src
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended analyze_src
+POSTHOOK: type: DESCTABLE
+col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	nzhang              	 
+CreateTime:         	Tue Sep 21 01:11:29 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_src	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numPartitions       	0                   
+	numFiles            	1                   
+	transient_lastDdlTime	1285056694          
+	numRows             	500                 
+	totalSize           	5812                
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

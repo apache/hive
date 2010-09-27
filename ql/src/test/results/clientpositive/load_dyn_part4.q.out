@@ -29,15 +29,15 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 07:11:21 PDT 2010	 
+CreateTime:         	Tue Sep 21 00:16:11 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part4	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part4	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284473481          
+	transient_lastDdlTime	1285053371          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -74,6 +74,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -122,6 +123,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part4
+
+  Stage: Stage-2
+    Stats-Aggr Operator
 
 
 PREHOOK: query: insert overwrite table nzhang_part4 partition (ds, hr) select key, value, ds, hr from srcpart where ds is not null and hr is not null
@@ -174,13 +178,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=12
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=existing_value
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-11-27_490_2022214220778594011/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-16-31_503_3440445638314967808/-mr-10000
 POSTHOOK: query: select * from nzhang_part4 where ds='2008-04-08' and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=existing_value
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-11-27_490_2022214220778594011/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-16-31_503_3440445638314967808/-mr-10000
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1698,7 +1702,7 @@ PREHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=12
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=existing_value
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-09/hr=11
 PREHOOK: Input: default@nzhang_part4@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-11-27_862_3063759499371481171/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-16-32_674_3218170732469048135/-mr-10000
 POSTHOOK: query: select * from nzhang_part4 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=11
@@ -1706,7 +1710,7 @@ POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-08/hr=existing_value
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@nzhang_part4@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-11-27_862_3063759499371481171/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-16-32_674_3218170732469048135/-mr-10000
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part4 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

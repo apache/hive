@@ -16,6 +16,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -80,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-07-58_856_3839035257241506046/10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-13-25_960_7399358690321555883/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -118,6 +119,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
 
+  Stage: Stage-3
+    Stats-Aggr Operator
+
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key LIMIT 5
 PREHOOK: type: QUERY
@@ -132,11 +136,11 @@ POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-08-07_221_6317663221836689086/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-36_134_6079751361669392445/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-08-07_221_6317663221836689086/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-36_134_6079751361669392445/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0

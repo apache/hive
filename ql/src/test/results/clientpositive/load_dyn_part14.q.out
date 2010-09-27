@@ -20,15 +20,15 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 07:07:49 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Tue Sep 21 00:14:43 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part14	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part14	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284473269          
+	transient_lastDdlTime	1285053283          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -66,13 +66,14 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-7, Stage-8
+  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-3
-  Stage-6 is a root stage
   Stage-7 is a root stage
+  Stage-8 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -110,7 +111,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/thiruvel/hive_2010-09-14_07-07-49_374_8339491885099239815/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-21_00-14-44_080_840579455257940486/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -127,7 +128,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/thiruvel/hive_2010-09-14_07-07-49_374_8339491885099239815/-mr-10004 
+        file:/tmp/nzhang/hive_2010-09-21_00-14-44_080_840579455257940486/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -144,7 +145,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/thiruvel/hive_2010-09-14_07-07-49_374_8339491885099239815/-mr-10005 
+        file:/tmp/nzhang/hive_2010-09-21_00-14-44_080_840579455257940486/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -162,14 +163,14 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
 
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-07-49_374_8339491885099239815/-ext-10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-14-44_080_840579455257940486/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -184,9 +185,12 @@ STAGE PLANS:
               name: nzhang_part14
 
   Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-07-49_374_8339491885099239815/-ext-10003 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-14-44_080_840579455257940486/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -196,7 +200,7 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: nzhang_part14
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:t-subquery2:src 
@@ -228,7 +232,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-7
+  Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1:t-subquery1-subquery1:src 
@@ -298,13 +302,13 @@ order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-08-01_813_1027212280998565647/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-15-06_708_7234512413045849371/-mr-10000
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-08-01_813_1027212280998565647/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-15-06_708_7234512413045849371/-mr-10000
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__

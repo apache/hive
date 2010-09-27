@@ -52,8 +52,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -102,14 +100,14 @@ public abstract class BaseSemanticAnalyzer {
   protected static final String RCFILE_OUTPUT = RCFileOutputFormat.class
       .getName();
   protected static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
-  
+
   class RowFormatParams {
     String fieldDelim = null;
     String fieldEscape = null;
     String collItemDelim = null;
     String mapKeyDelim = null;
     String lineDelim = null;
-    
+
     protected void analyzeRowFormat(AnalyzeCreateCommonVars shared, ASTNode child) throws SemanticException {
       child = (ASTNode) child.getChild(0);
       int numChildRowFormat = child.getChildCount();
@@ -147,17 +145,17 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
   }
-  
+
   class AnalyzeCreateCommonVars {
     String serde = null;
-    Map<String, String> serdeProps = new HashMap<String, String>();      
+    Map<String, String> serdeProps = new HashMap<String, String>();
   }
 
   class StorageFormat {
     String inputFormat = null;
     String outputFormat = null;
     String storageHandler = null;
-    
+
     protected boolean fillStorageFormat(ASTNode child, AnalyzeCreateCommonVars shared) {
       boolean storageFormat = false;
       switch(child.getToken().getType()) {
@@ -194,7 +192,7 @@ public abstract class BaseSemanticAnalyzer {
       }
       return storageFormat;
     }
-    
+
     protected void fillDefaultStorageFormat(AnalyzeCreateCommonVars shared) {
       if ((inputFormat == null) && (storageHandler == null)) {
         if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
@@ -449,7 +447,7 @@ public abstract class BaseSemanticAnalyzer {
   protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
     return getColumns(ast, true);
   }
-  
+
   /**
    * Get the list of FieldSchema out of the ASTNode.
    */
@@ -553,11 +551,12 @@ public abstract class BaseSemanticAnalyzer {
     public Map<String, String> partSpec; // has to use LinkedHashMap to enforce order
     public Partition partHandle;
     public int numDynParts; // number of dynamic partition columns
+    private List<Partition> partitions; // involved partitions in TableScanOperator/FileSinkOperator
 
     public tableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
 
-      assert (ast.getToken().getType() == HiveParser.TOK_TAB);
+      assert (ast.getToken().getType() == HiveParser.TOK_TAB || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
       int childIndex = 0;
       numDynParts = 0;
 
@@ -661,7 +660,7 @@ public abstract class BaseSemanticAnalyzer {
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
   }
-  
+
   protected HashMap<String, String> extractPartitionSpecs(Tree partspec)
       throws SemanticException {
     HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
@@ -672,5 +671,5 @@ public abstract class BaseSemanticAnalyzer {
     }
     return partSpec;
   }
-  
+
 }

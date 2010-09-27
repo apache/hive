@@ -31,7 +31,10 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 
 /**
  * Processor for the rule - table scan.
@@ -53,13 +56,11 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
-        .getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
-    // create a dummy task
-    Task<? extends Serializable> currTask =
-      TaskFactory.get(GenMapRedUtils.getMapRedWork(parseCtx.getConf()),
-                      parseCtx.getConf());
+    // create a dummy MapReduce task
+    MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+    Task<? extends Serializable> currTask = TaskFactory.get(currWork, parseCtx.getConf());
     Operator<? extends Serializable> currTopOp = op;
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(currTopOp);
@@ -70,6 +71,22 @@ public class GenMRTableScan1 implements NodeProcessor {
         String currAliasId = alias;
         ctx.setCurrAliasId(currAliasId);
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currTopOp, currAliasId));
+
+        QBParseInfo parseInfo = parseCtx.getQB().getParseInfo();
+        if (parseInfo.isAnalyzeCommand()) {
+
+          //   ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS;
+          // The plan consists of a simple MapRedTask followed by a StatsTask.
+          // The MR task is just a simple TableScanOperator
+
+          StatsWork statsWork = new StatsWork(parseCtx.getQB().getParseInfo().getTableSpec());
+          statsWork.setAggKey(op.getConf().getStatsAggPrefix());
+          Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseCtx.getConf());
+          currTask.addDependentTask(statsTask);
+          ctx.getRootTasks().add(currTask);
+          currWork.setGatheringStats(true);
+          GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx);
+        }
         return null;
       }
     }

@@ -15,15 +15,15 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:14 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284477286          
+	transient_lastDdlTime	1285050674          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -60,15 +60,19 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:14 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284477290          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050681          
+	numRows             	500                 
+	totalSize           	5812                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -109,15 +113,19 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:14 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284477290          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050688          
+	numRows             	500                 
+	totalSize           	5812                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -162,15 +170,19 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:14:46 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:14 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284477296          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050696          
+	numRows             	500                 
+	totalSize           	5812                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -218,15 +230,15 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:14:57 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:36 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t2	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284477297          
+	transient_lastDdlTime	1285050696          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -282,12 +294,15 @@ hr                  	string              	None
 Partition Value:    	[2010-06-21, 1]     	 
 Database:           	default             	 
 Table:              	t2                  	 
-CreateTime:         	Tue Sep 14 08:15:00 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:43 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477300          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050703          
+	numRows             	489                 
+	totalSize           	5722                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -315,8 +330,8 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc extended T2 partition (ds = '2010-06-21', hr = '1')
 PREHOOK: type: DESCTABLE
@@ -329,8 +344,8 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 col_name            	data_type           	comment             
 	 	 
@@ -347,12 +362,15 @@ hr                  	string              	None
 Partition Value:    	[2010-06-21, 1]     	 
 Database:           	default             	 
 Table:              	t2                  	 
-CreateTime:         	Tue Sep 14 08:15:00 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:43 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t2/ds=2010-06-21/hr=1	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477300          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050711          
+	numRows             	489                 
+	totalSize           	5722                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -382,8 +400,8 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-01,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-01,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc extended T2 partition(ds='2010-06-01', hr='1')
 PREHOOK: type: DESCTABLE
@@ -398,8 +416,8 @@ POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-01,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-01,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2 PARTITION(ds=2010-06-21,hr=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 col_name            	data_type           	comment             
 	 	 
@@ -416,12 +434,15 @@ hr                  	string              	None
 Partition Value:    	[2010-06-01, 1]     	 
 Database:           	default             	 
 Table:              	t2                  	 
-CreateTime:         	Tue Sep 14 08:15:08 PDT 2010	 
+CreateTime:         	Mon Sep 20 23:31:58 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/t2/ds=2010-06-01/hr=1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/t2/ds=2010-06-01/hr=1	 
 Partition Parameters:	 	 
-	transient_lastDdlTime	1284477308          
+	numFiles            	1                   
+	transient_lastDdlTime	1285050718          
+	numRows             	489                 
+	totalSize           	5722                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

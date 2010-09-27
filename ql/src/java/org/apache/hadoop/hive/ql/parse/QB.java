@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 
 /**
  * Implementation of the query block.
- * 
+ *
  **/
 
 public class QB {
@@ -170,7 +170,7 @@ public class QB {
   }
 
   public boolean isSelectStarQuery() {
-    return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS();
+    return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS() && !qbp.isAnalyzeCommand();
   }
 
   public CreateTableDesc getTableDesc() {

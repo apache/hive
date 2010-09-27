@@ -62,6 +62,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -123,6 +124,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: insert overwrite table smb_join_results
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
@@ -147,11 +151,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-43-58_355_4241912694869470636/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-42-55_279_7791327046962948852/-mr-10000
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-43-58_355_4241912694869470636/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-42-55_279_7791327046962948852/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1213,11 +1217,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-07_386_5215362180353440890/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-08_043_5392784140667926398/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-07_386_5215362180353440890/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-08_043_5392784140667926398/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:from deserializer), ]
@@ -1234,11 +1238,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-10_503_5044933337669213788/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-11_731_2929158753603213416/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-10_503_5044933337669213788/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-11_731_2929158753603213416/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:from deserializer), ]
@@ -1278,6 +1282,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -1339,6 +1344,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: insert overwrite table smb_join_results
 select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
@@ -1403,11 +1411,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-21_789_8349972338199515523/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-31_563_4706124973124003834/-mr-10000
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-21_789_8349972338199515523/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-31_563_4706124973124003834/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:from deserializer), ]
@@ -2493,11 +2501,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-30_839_4771778288932582310/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-45_165_8849292789711497460/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-30_839_4771778288932582310/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-45_165_8849292789711497460/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -2526,11 +2534,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-33_938_44080156296442227/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-48_878_3474963241024457613/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-33_938_44080156296442227/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-43-48_878_3474963241024457613/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]
@@ -2594,6 +2602,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2658,6 +2667,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
+
+  Stage: Stage-2
+    Stats-Aggr Operator
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -2742,6 +2754,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2810,6 +2823,9 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: smb_join_results
+
+  Stage: Stage-2
+    Stats-Aggr Operator
 
 
 PREHOOK: query: insert overwrite table smb_join_results
@@ -2977,12 +2993,12 @@ PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-46_257_446569303031962295/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-44-11_081_2683450931844732628/-mr-10000
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-44-46_257_446569303031962295/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-44-11_081_2683450931844732628/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:from deserializer), ]

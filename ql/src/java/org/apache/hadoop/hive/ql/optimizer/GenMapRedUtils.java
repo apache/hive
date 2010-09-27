@@ -59,16 +59,16 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -92,13 +92,12 @@ public final class GenMapRedUtils {
   public static void initPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx)
       throws SemanticException {
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx
-        .getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     MapredWork plan = (MapredWork) currTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-        .getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap =
+      opProcCtx.getOpTaskMap();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
 
     opTaskMap.put(reducer, currTask);
@@ -149,16 +148,15 @@ public final class GenMapRedUtils {
       GenMRProcContext opProcCtx, boolean readInputMapJoin,
       boolean readInputUnion, boolean setReducer, int pos, boolean createLocalPlan)
       throws SemanticException {
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx
-        .getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
     assert (((pos == -1) && (readInputMapJoin)) || (pos != -1));
     int parentPos = (pos == -1) ? 0 : pos;
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(
         parentPos));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     MapredWork plan = (MapredWork) currTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-        .getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>  opTaskMap =
+      opProcCtx.getOpTaskMap();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
 
     // The mapjoin has already been encountered. Some context must be stored
@@ -166,12 +164,11 @@ public final class GenMapRedUtils {
     if (readInputMapJoin) {
       AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp = opProcCtx.getCurrMapJoinOp();
       assert currMapJoinOp != null;
-      boolean local = ((pos == -1) || (pos == (currMapJoinOp.getConf())
-          .getPosBigTable())) ? false : true;
+      boolean local = ((pos == -1) || (pos == (currMapJoinOp.getConf()).getPosBigTable())) ?
+          false : true;
 
       if (setReducer) {
-        Operator<? extends Serializable> reducer = op.getChildOperators()
-            .get(0);
+        Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
         plan.setReducer(reducer);
         opTaskMap.put(reducer, currTask);
         if (reducer.getClass() == JoinOperator.class) {
@@ -291,13 +288,12 @@ public final class GenMapRedUtils {
   public static void initUnionPlan(ReduceSinkOperator op,
       GenMRProcContext opProcCtx) throws SemanticException {
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx
-        .getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     MapredWork plan = (MapredWork) currTask.getWork();
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-        .getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap =
+      opProcCtx.getOpTaskMap();
 
     opTaskMap.put(reducer, currTask);
     plan.setReducer(reducer);
@@ -369,7 +365,8 @@ public final class GenMapRedUtils {
   public static void joinPlan(Operator<? extends Serializable> op,
       Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
       GenMRProcContext opProcCtx, int pos, boolean split,
-      boolean readMapJoinData, boolean readUnionData, boolean createLocalWork) throws SemanticException {
+      boolean readMapJoinData, boolean readUnionData, boolean createLocalWork)
+      throws SemanticException {
     Task<? extends Serializable> currTask = task;
     MapredWork plan = (MapredWork) currTask.getWork();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
@@ -469,7 +466,7 @@ public final class GenMapRedUtils {
    *          processing context
    */
   public static void splitPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx)
-      throws SemanticException {
+  throws SemanticException {
     // Generate a new task
     ParseContext parseCtx = opProcCtx.getParseCtx();
     MapredWork cplan = getMapRedWork(parseCtx.getConf());
@@ -483,8 +480,8 @@ public final class GenMapRedUtils {
 
     cplan.setNumReduceTasks(new Integer(desc.getNumReducers()));
 
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx
-        .getOpTaskMap();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap =
+      opProcCtx.getOpTaskMap();
     opTaskMap.put(reducer, redTask);
     Task<? extends Serializable> currTask = opProcCtx.getCurrTask();
 
@@ -587,8 +584,9 @@ public final class GenMapRedUtils {
           continue;
         }
         String path = p.toString();
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Adding " + path + " of table" + alias_id);
+        }
 
         partDir.add(p);
         try {
@@ -616,8 +614,9 @@ public final class GenMapRedUtils {
         }
         plan.getPathToAliases().get(path).add(alias_id);
         plan.getPathToPartitionInfo().put(path, prtDesc);
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Information added for path " + path);
+        }
       }
 
       assert plan.getAliasToWork().get(alias_id) == null;
@@ -635,11 +634,9 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToFetchWork().get(alias_id) == null;
       localPlan.getAliasToWork().put(alias_id, topOp);
       if (tblDir == null) {
-        localPlan.getAliasToFetchWork()
-            .put(
+        localPlan.getAliasToFetchWork().put(
             alias_id,
-            new FetchWork(FetchWork.convertPathToStringArray(partDir),
-            partDesc));
+            new FetchWork(FetchWork.convertPathToStringArray(partDir), partDesc));
       } else {
         localPlan.getAliasToFetchWork().put(alias_id,
             new FetchWork(tblDir.toString(), tblDesc));
@@ -718,8 +715,7 @@ public final class GenMapRedUtils {
       }
       tagToSchema.set(tag, rs.getConf().getValueSerializeInfo());
     } else {
-      List<Operator<? extends Serializable>> children = topOp
-          .getChildOperators();
+      List<Operator<? extends Serializable>> children = topOp.getChildOperators();
       if (children != null) {
         for (Operator<? extends Serializable> op : children) {
           setKeyAndValueDesc(plan, op);
@@ -741,7 +737,7 @@ public final class GenMapRedUtils {
     work.setTagToValueDesc(new ArrayList<TableDesc>());
     work.setReducer(null);
     work.setHadoopSupportsSplittable(
-      conf.getBoolVar(HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
+        conf.getBoolVar(HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
     return work;
   }
 
@@ -814,7 +810,7 @@ public final class GenMapRedUtils {
 
     // replace the reduce child with this operator
     List<Operator<? extends Serializable>> childOpList = parent
-        .getChildOperators();
+    .getChildOperators();
     for (int pos = 0; pos < childOpList.size(); pos++) {
       if (childOpList.get(pos) == op) {
         childOpList.set(pos, fs_op);
@@ -823,11 +819,12 @@ public final class GenMapRedUtils {
     }
 
     List<Operator<? extends Serializable>> parentOpList =
-        new ArrayList<Operator<? extends Serializable>>();
+      new ArrayList<Operator<? extends Serializable>>();
     parentOpList.add(parent);
     fs_op.setParentOperators(parentOpList);
 
     // create a dummy tableScan operator on top of op
+    // TableScanOperator is implicitly created here for each MapOperator
     Operator<? extends Serializable> ts_op = putOpInsertMap(OperatorFactory
         .get(TableScanDesc.class, parent.getSchema()), null, parseCtx);
 
@@ -836,8 +833,7 @@ public final class GenMapRedUtils {
     ts_op.setChildOperators(childOpList);
     op.getParentOperators().set(posn, ts_op);
 
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx
-        .getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
     mapCurrCtx.put(ts_op, new GenMapRedCtx(childTask, null, null));
 
     String streamDesc = taskTmpDir;
@@ -961,5 +957,4 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
-
 }

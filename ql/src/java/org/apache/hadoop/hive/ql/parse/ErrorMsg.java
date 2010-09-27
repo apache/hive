@@ -167,6 +167,7 @@ public enum ErrorMsg {
   OFFLINE_TABLE_OR_PARTITION("Query against an offline table or partition"),
   OUTERJOIN_USES_FILTERS("The query results could be wrong. " +
   		"Turn on hive.outerjoin.supports.filters"),
+  NEED_PARTITION_SPECIFICATION("Table is partitioned and partition specification is needed"),
       ;
 
   private String mesg;

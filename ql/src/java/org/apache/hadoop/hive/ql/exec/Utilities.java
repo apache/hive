@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -72,6 +73,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
@@ -89,8 +91,10 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
+import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -313,7 +317,7 @@ public final class Utilities {
     }
   }
 
-  private static String getHiveJobID(Configuration job) {
+  public static String getHiveJobID(Configuration job) {
     String planPath= HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
     if (planPath != null) {
       return (new Path(planPath)).getName();
@@ -354,7 +358,7 @@ public final class Utilities {
       decoder.close();
     }
   }
-  
+
   /**
    * Serialize a single Task.
    */
@@ -1472,6 +1476,60 @@ public final class Utilities {
 
   public static boolean supportCombineFileInputFormat() {
     return ShimLoader.getHadoopShims().getCombineFileInputFormat() != null;
+  }
+
+  /**
+   * Construct a list of full partition spec from Dynamic Partition Context and
+   * the directory names corresponding to these dynamic partitions.
+   */
+  public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf,
+      DynamicPartitionCtx dpCtx)
+      throws HiveException {
+
+    try {
+      Path loadPath = new Path(dpCtx.getRootPath());
+      FileSystem fs = loadPath.getFileSystem(conf);
+    	int numDPCols = dpCtx.getNumDPCols();
+    	FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDPCols, fs);
+
+    	if (status.length == 0) {
+    	  LOG.warn("No partition is genereated by dynamic partitioning");
+    	  return null;
+    	}
+
+    	// partial partition specification
+    	Map<String, String> partSpec = dpCtx.getPartSpec();
+
+    	// list of full partition specification
+    	List<LinkedHashMap<String, String>> fullPartSpecs =
+    	  new ArrayList<LinkedHashMap<String, String>>();
+
+    	// for each dynamically created DP directory, construct a full partition spec
+    	// and load the partition based on that
+    	for (int i= 0; i < status.length; ++i) {
+    	  // get the dynamically created directory
+    	  Path partPath = status[i].getPath();
+    	  assert fs.getFileStatus(partPath).isDir():
+    	    "partitions " + partPath + " is not a directory !";
+
+    	  // generate a full partition specification
+    	  LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
+      	Warehouse.makeSpecFromName(fullPartSpec, partPath);
+      	fullPartSpecs.add(fullPartSpec);
+    	}
+    	return fullPartSpecs;
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public static StatsPublisher getStatsPublisher(JobConf jc) {
+    String statsImplementationClass = HiveConf.getVar(jc, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    if (StatsFactory.setImplementation(statsImplementationClass, jc)) {
+      return StatsFactory.getStatsPublisher();
+    } else {
+      return null;
+    }
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {

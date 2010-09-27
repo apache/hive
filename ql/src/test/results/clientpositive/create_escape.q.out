@@ -26,15 +26,15 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:12:01 PDT 2010	 
+Owner:              	nzhang              	 
+CreateTime:         	Tue Sep 21 07:28:36 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/table1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284477121          
+	transient_lastDdlTime	1285079316          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -45,8 +45,8 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	serialization.format	\t                  
 	escape.delim        	\\                  
+	serialization.format	\t                  
 	field.delim         	\t                  
 	 	 
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
@@ -62,11 +62,11 @@ POSTHOOK: Lineage: table1.b SIMPLE []
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-04_486_8603373820009984461/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_07-28-42_009_3448389970814289659/-mr-10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-12-04_486_8603373820009984461/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_07-28-42_009_3448389970814289659/-mr-10000
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE []
 86	\	\

@@ -16,11 +16,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT * FROM src1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rc
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-47_002_2104750496460432907/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-21-57_139_2164061306153672083/-mr-10000
 POSTHOOK: query: SELECT * FROM src1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rc
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-47_002_2104750496460432907/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-21-57_139_2164061306153672083/-mr-10000
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -93,6 +93,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -223,6 +224,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: dest1_rc
 
+  Stage: Stage-2
+    Stats-Aggr Operator
+
 
 PREHOOK: query: FROM (
  FROM 
@@ -265,11 +269,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_rc
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-50_018_8982453667868960765/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-05_391_6302655231306765287/-mr-10000
 POSTHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_rc
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-50_018_8982453667868960765/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-05_391_6302655231306765287/-mr-10000
 POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]

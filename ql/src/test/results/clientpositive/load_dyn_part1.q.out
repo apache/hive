@@ -34,15 +34,15 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Tue Sep 14 07:09:12 PDT 2010	 
+CreateTime:         	Tue Sep 21 00:13:39 PDT 2010	 
 LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/nzhang_part1	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part1	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	EXTERNAL            	FALSE               
-	transient_lastDdlTime	1284473352          
+	transient_lastDdlTime	1285053219          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -70,14 +70,16 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-3
-  Stage-8 depends on stages: Stage-2 , consists of Stage-7, Stage-6
-  Stage-7
-  Stage-1 depends on stages: Stage-7, Stage-6
-  Stage-6
+  Stage-10 depends on stages: Stage-2 , consists of Stage-9, Stage-8
+  Stage-9
+  Stage-1 depends on stages: Stage-9, Stage-8
+  Stage-7 depends on stages: Stage-1
+  Stage-8
 
 STAGE PLANS:
   Stage: Stage-2
@@ -131,14 +133,14 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: nzhang_part2
 
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-13-39_317_150757677956835790/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -154,9 +156,12 @@ STAGE PLANS:
               name: nzhang_part1
 
   Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10004 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-13-39_317_150757677956835790/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -166,14 +171,14 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: nzhang_part1
 
-  Stage: Stage-8
+  Stage: Stage-10
     Conditional Operator
 
-  Stage: Stage-7
+  Stage: Stage-9
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10002
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-13-39_317_150757677956835790/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -188,10 +193,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: nzhang_part2
 
-  Stage: Stage-6
+  Stage: Stage-7
+    Stats-Aggr Operator
+
+  Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/thiruvel/projects/hive/hive/build/ql/scratchdir/hive_2010-09-14_07-09-12_547_2766535231598964607/-ext-10005 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_00-13-39_317_150757677956835790/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -262,12 +270,12 @@ PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_593_3192732830429365525/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-13-55_874_723157656430223192/-mr-10000
 POSTHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_593_3192732830429365525/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-13-55_874_723157656430223192/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1280,12 +1288,12 @@ PREHOOK: query: select * from nzhang_part2 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_830_3512781667183170568/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-13-56_688_509916876298638236/-mr-10000
 POSTHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_07-09-18_830_3512781667183170568/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_00-13-56_688_509916876298638236/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

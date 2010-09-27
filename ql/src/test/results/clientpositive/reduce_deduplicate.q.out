@@ -17,6 +17,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -25,6 +26,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            GatherStats: false
             Select Operator
               expressions:
                     expr: key
@@ -48,9 +50,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src [src]
+        hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src 
+        hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -61,12 +63,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src
+              location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1279735685
+              transient_lastDdlTime 1284513860
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -77,12 +79,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/src
+                location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279735685
+                transient_lastDdlTime 1284513860
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -98,8 +100,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-48-55_864_1750582395196822547/10000
+              directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-24_563_3727298773264353660/-ext-10000
               NumFilesPerFileSink: 2
+              Stats Publishing Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-24_563_3727298773264353660/-ext-10000/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -110,22 +113,23 @@ STAGE PLANS:
                     columns.types string:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/bucket5_1
+                    location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/bucket5_1
                     name bucket5_1
                     serialization.ddl struct bucket5_1 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1279738135
+                    transient_lastDdlTime 1284514224
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: bucket5_1
               TotalFiles: 2
+              GatherStats: true
               MultiFileSpray: true
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-48-55_864_1750582395196822547/10000
+          source: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-24_563_3727298773264353660/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -136,15 +140,19 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/bucket5_1
+                location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/bucket5_1
                 name bucket5_1
                 serialization.ddl struct bucket5_1 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279738135
+                transient_lastDdlTime 1284514224
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucket5_1
-          tmp directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-48-55_864_1750582395196822547/10001
+          tmp directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-24_563_3727298773264353660/-ext-10001
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-24_563_3727298773264353660/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table bucket5_1
@@ -162,22 +170,22 @@ POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket5_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-58_496_2658667578750181431/10000
+PREHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-32_208_7104739965069811942/-mr-10000
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket5_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-58_496_2658667578750181431/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-32_208_7104739965069811942/-mr-10000
 POSTHOOK: Lineage: bucket5_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 21025334	36210398070
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-01_108_5850998193164493516/10000
+PREHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-39_290_5210415227500445052/-mr-10000
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-49-01_108_5850998193164493516/10000
+POSTHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-39_290_5210415227500445052/-mr-10000
 POSTHOOK: Lineage: bucket5_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 21025334	36210398070
@@ -235,6 +243,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -243,6 +252,7 @@ STAGE PLANS:
         s2:s:complex_tbl_2 
           TableScan
             alias: complex_tbl_2
+            GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
@@ -344,8 +354,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-49-03_763_2468601734060096330/10000
+                  directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-44_238_5377741092673845894/-ext-10000
                   NumFilesPerFileSink: 1
+                  Static Partition Specification: ds=2010-03-29/
+                  Stats Publishing Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-44_238_5377741092673845894/-ext-10000/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -355,16 +367,17 @@ STAGE PLANS:
                         columns.types string:string:int:string:bigint:string:string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/complex_tbl_1
+                        location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/complex_tbl_1
                         name complex_tbl_1
                         partition_columns ds
                         serialization.ddl struct complex_tbl_1 { string aid, string bid, i32 t, string ctime, i64 etime, string l, string et}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1279738143
+                        transient_lastDdlTime 1284514244
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: complex_tbl_1
                   TotalFiles: 1
+                  GatherStats: true
                   MultiFileSpray: false
 
   Stage: Stage-0
@@ -373,7 +386,7 @@ STAGE PLANS:
           partition:
             ds 2010-03-29
           replace: true
-          source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-49-03_763_2468601734060096330/10000
+          source: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-44_238_5377741092673845894/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -383,15 +396,19 @@ STAGE PLANS:
                 columns.types string:string:int:string:bigint:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/test/data/warehouse/complex_tbl_1
+                location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/complex_tbl_1
                 name complex_tbl_1
                 partition_columns ds
                 serialization.ddl struct complex_tbl_1 { string aid, string bid, i32 t, string ctime, i64 etime, string l, string et}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1279738143
+                transient_lastDdlTime 1284514244
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: complex_tbl_1
-          tmp directory: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-49-03_763_2468601734060096330/10001
+          tmp directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-44_238_5377741092673845894/-ext-10001
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-30-44_238_5377741092673845894/-ext-10000/
 
 

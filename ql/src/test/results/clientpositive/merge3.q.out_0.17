@@ -66,6 +66,7 @@ STAGE PLANS:
         merge_src 
           TableScan
             alias: merge_src
+            GatherStats: false
             Select Operator
               expressions:
                     expr: key
@@ -76,8 +77,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002
+                directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002
                 NumFilesPerFileSink: 1
+                Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10001/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -86,12 +88,13 @@ STAGE PLANS:
                       columns.types string:string
                       serialization.format 1
                 TotalFiles: 1
+                GatherStats: false
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src [merge_src]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src [merge_src]
       Path -> Partition:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src 
           Partition
             base file name: merge_src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -102,12 +105,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src
               name merge_src
               serialization.ddl struct merge_src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284354277
+              transient_lastDdlTime 1284593000
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -118,12 +121,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src
                 name merge_src
                 serialization.ddl struct merge_src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354277
+                transient_lastDdlTime 1284593000
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src
             name: merge_src
@@ -135,15 +138,15 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002
-          destination: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10001
+          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10001
 
   Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10001
-          destination: pfile:///data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src2
+          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10001
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src2
 
   Stage: Stage-5
       Create Table Operator:
@@ -159,7 +162,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -173,9 +176,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002 [pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002 [pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002]
       Path -> Partition:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10002 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -196,7 +199,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-04-48_507_309142649354797380/-ext-10001
+            directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-30_684_4127937283493175514/-ext-10001
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -206,6 +209,7 @@ STAGE PLANS:
                   columns.types string:string
                   serialization.format 1
             TotalFiles: 1
+            GatherStats: false
             MultiFileSpray: false
 
 
@@ -225,11 +229,11 @@ POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).value SIMPLE [(srcpar
 PREHOOK: query: select * from merge_src2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-04_739_2492541155495503385/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-23-42_185_8009073830887608610/-mr-10000
 POSTHOOK: query: select * from merge_src2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-04_739_2492541155495503385/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-23-42_185_8009073830887608610/-mr-10000
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2263,6 +2267,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -2271,6 +2276,7 @@ STAGE PLANS:
         merge_src_part 
           TableScan
             alias: merge_src_part
+            GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
@@ -2293,8 +2299,9 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-06_435_7440177713183186553/-ext-10000
+                    directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-42_982_981124947923300348/-ext-10000
                     NumFilesPerFileSink: 1
+                    Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-42_982_981124947923300348/-ext-10000/
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2305,23 +2312,28 @@ STAGE PLANS:
                           columns.types string:string
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+                          location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part2
                           name merge_src_part2
+                          numFiles 4
+                          numPartitions 2
+                          numRows 2000
                           partition_columns ds
                           serialization.ddl struct merge_src_part2 { string key, string value}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          transient_lastDdlTime 1284354306
+                          totalSize 23248
+                          transient_lastDdlTime 1284593022
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: merge_src_part2
                     TotalFiles: 1
+                    GatherStats: true
                     MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [merge_src_part]
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [merge_src_part]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [merge_src_part]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [merge_src_part]
       Path -> Partition:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2334,13 +2346,17 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
               name merge_src_part
+              numFiles 4
+              numPartitions 2
+              numRows 2000
               partition_columns ds
               serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284354277
+              totalSize 23248
+              transient_lastDdlTime 1284593010
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2351,17 +2367,21 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
                 name merge_src_part
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354277
+                totalSize 23248
+                transient_lastDdlTime 1284593010
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part
             name: merge_src_part
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
           Partition
             base file name: ds=2008-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2374,13 +2394,17 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
               name merge_src_part
+              numFiles 4
+              numPartitions 2
+              numRows 2000
               partition_columns ds
               serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284354277
+              totalSize 23248
+              transient_lastDdlTime 1284593010
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2391,13 +2415,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
                 name merge_src_part
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354277
+                totalSize 23248
+                transient_lastDdlTime 1284593010
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part
             name: merge_src_part
@@ -2408,7 +2436,7 @@ STAGE PLANS:
           partition:
             ds 
           replace: true
-          source: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-06_435_7440177713183186553/-ext-10000
+          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-42_982_981124947923300348/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2419,16 +2447,24 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part2
                 name merge_src_part2
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354306
+                totalSize 23248
+                transient_lastDdlTime 1284593022
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part2
-          tmp directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-06_435_7440177713183186553/-ext-10001
+          tmp directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-42_982_981124947923300348/-ext-10001
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-42_982_981124947923300348/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table merge_src_part2 partition(ds)
@@ -2471,12 +2507,12 @@ PREHOOK: query: select * from merge_src_part2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-18_730_5937319765835193571/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-23-53_664_4636083482223443296/-mr-10000
 POSTHOOK: query: select * from merge_src_part2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-18_730_5937319765835193571/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-23-53_664_4636083482223443296/-mr-10000
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -4538,6 +4574,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -4546,6 +4583,7 @@ STAGE PLANS:
         s:merge_src_part 
           TableScan
             alias: merge_src_part
+            GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
@@ -4580,10 +4618,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [s:merge_src_part]
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [s:merge_src_part]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [s:merge_src_part]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [s:merge_src_part]
       Path -> Partition:
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4596,13 +4634,17 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
               name merge_src_part
+              numFiles 4
+              numPartitions 2
+              numRows 2000
               partition_columns ds
               serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284354277
+              totalSize 23248
+              transient_lastDdlTime 1284593010
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4613,17 +4655,21 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
                 name merge_src_part
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354277
+                totalSize 23248
+                transient_lastDdlTime 1284593010
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part
             name: merge_src_part
-        pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
           Partition
             base file name: ds=2008-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4636,13 +4682,17 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
               name merge_src_part
+              numFiles 4
+              numPartitions 2
+              numRows 2000
               partition_columns ds
               serialization.ddl struct merge_src_part { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284354277
+              totalSize 23248
+              transient_lastDdlTime 1284593010
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4653,13 +4703,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part
                 name merge_src_part
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354277
+                totalSize 23248
+                transient_lastDdlTime 1284593010
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part
             name: merge_src_part
@@ -4677,8 +4731,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-23_976_5247091504121728913/-ext-10000
+              directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-56_309_165900465239876610/-ext-10000
               NumFilesPerFileSink: 1
+              Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-56_309_165900465239876610/-ext-10000/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4689,16 +4744,21 @@ STAGE PLANS:
                     columns.types string:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+                    location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part2
                     name merge_src_part2
+                    numFiles 4
+                    numPartitions 2
+                    numRows 2000
                     partition_columns ds
                     serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1284354323
+                    totalSize 23248
+                    transient_lastDdlTime 1284593036
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: merge_src_part2
               TotalFiles: 1
+              GatherStats: true
               MultiFileSpray: false
 
   Stage: Stage-0
@@ -4707,7 +4767,7 @@ STAGE PLANS:
           partition:
             ds 
           replace: true
-          source: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-23_976_5247091504121728913/-ext-10000
+          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-56_309_165900465239876610/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4718,16 +4778,24 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/merge_src_part2
                 name merge_src_part2
+                numFiles 4
+                numPartitions 2
+                numRows 2000
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284354323
+                totalSize 23248
+                transient_lastDdlTime 1284593036
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: merge_src_part2
-          tmp directory: pfile:/data/users/nzhang/reviews/2/apache-hive/build/ql/scratchdir/hive_2010-09-12_22-05-23_976_5247091504121728913/-ext-10001
+          tmp directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-56_309_165900465239876610/-ext-10001
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-23-56_309_165900465239876610/-ext-10000/
 
 
 PREHOOK: query: from (select * from merge_src_part where ds is not null distribute by ds) s
@@ -4778,12 +4846,12 @@ PREHOOK: query: select * from merge_src_part2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-37_206_1580798592522074568/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-24-07_279_6517902631936476088/-mr-10000
 POSTHOOK: query: select * from merge_src_part2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-12_22-05-37_206_1580798592522074568/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-24-07_279_6517902631936476088/-mr-10000
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

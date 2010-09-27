@@ -43,7 +43,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -691,6 +693,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setDestLimit(ctx_1.dest, new Integer(ast.getChild(0).getText()));
         break;
 
+      case HiveParser.TOK_ANALYZE:
+        // Case of analyze command
+        String table_name = unescapeIdentifier(ast.getChild(0).getChild(0).getText());
+        qb.setTabAlias(table_name, table_name);
+        qb.getParseInfo().setIsAnalyzeCommand(true);
+        // Allow analyze the whole table and dynamic partitions
+        HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+        HiveConf.setVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+        break;
+
       case HiveParser.TOK_UNION:
         // currently, we dont support subq1 union subq2 - the user has to
         // explicitly say:
@@ -768,6 +780,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         qb.getMetaData().setSrcForAlias(alias, tab);
+
+        if (qb.getParseInfo().isAnalyzeCommand()) {
+          tableSpec ts = new tableSpec(db, conf, (ASTNode) ast.getChild(0));
+          qb.getParseInfo().addTableSpec(alias, ts);
+        }
       }
 
       LOG.info("Get metadata for subqueries");
@@ -810,6 +827,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // This is a partition
             qb.getMetaData().setDestForAlias(name, ts.partHandle);
+          }
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+            // Set that variable to automatically collect stats during the MapReduce job
+            qb.getParseInfo().setIsInsertToTable(true);
+            // Add the table spec for the destination table.
+            qb.getParseInfo().addTableSpec(ts.tableName.toLowerCase(), ts);
           }
           break;
         }
@@ -3295,6 +3318,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
     Table dest_tab = null;     // destination table if any
+    Partition dest_part = null;// destination partition if any
     String queryTmpdir = null; // the intermediate destination directory
     Path dest_path = null; // the final destination directory
     TableDesc table_desc = null;
@@ -3402,8 +3426,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     case QBMetaData.DEST_PARTITION: {
 
-      Partition dest_part = qbm.getDestPartitionForAlias(dest);
-
+      dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
 
       dest_path = dest_part.getPath()[0];
@@ -3582,20 +3605,36 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     RowSchema fsRS = new RowSchema(vecCol);
 
-    Operator output = putOpInsertMap(
-        OperatorFactory.getAndMakeChild(
-            new FileSinkDesc(
-                queryTmpdir,
-                table_desc,
-                conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT),
-                currentTableId,
-                rsCtx.isMultiFileSpray(),
-                rsCtx.getNumFiles(),
-                rsCtx.getTotalFiles(),
-                rsCtx.getPartnCols(),
-                dpCtx),
-            fsRS, input), inputRR);
+    FileSinkDesc fileSinkDesc = new FileSinkDesc(
+      queryTmpdir,
+      table_desc,
+      conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT),
+      currentTableId,
+      rsCtx.isMultiFileSpray(),
+      rsCtx.getNumFiles(),
+      rsCtx.getTotalFiles(),
+      rsCtx.getPartnCols(),
+      dpCtx);
 
+    // set the stats publishing/aggregating key prefix
+    // the same as directory name. The directory name
+    // can be changed in the optimizer  but the key should not be changed
+    // it should be the same as the MoveWork's sourceDir.
+    fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName());
+
+    if (dest_part != null) {
+      try {
+        String staticSpec = Warehouse.makePartName(dest_part.getSpec());
+        fileSinkDesc.setStaticSpec(staticSpec);
+      } catch (MetaException e) {
+        throw new SemanticException(e);
+      }
+    } else if (dpCtx != null) {
+      fileSinkDesc.setStaticSpec(dpCtx.getSPPath());
+    }
+
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(fileSinkDesc,
+            fsRS, input), inputRR);
 
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
@@ -5159,7 +5198,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // currently. It doesnt matter whether he has asked to do
     // map-side aggregation or not. Map side aggregation is turned off
     boolean optimizeMultiGroupBy = (getCommonDistinctExprs(qb, input) != null);
-    Operator curr = null;
+    Operator curr = input;
 
     // If there are multiple group-bys, map-side aggregation is turned off,
     // there are no filters
@@ -5531,7 +5570,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // Create the root of the operator tree
-      top = putOpInsertMap(OperatorFactory.get(new TableScanDesc(alias, vcList),
+      TableScanDesc tsDesc = new TableScanDesc(alias, vcList);
+      setupStats(tsDesc, qb.getParseInfo(), tab, alias);
+
+      top = putOpInsertMap(OperatorFactory.get(tsDesc,
           new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table
@@ -5596,8 +5638,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // Check if input can be pruned
-      ts
-          .setInputPruning((sampleExprs == null || sampleExprs.size() == 0 || colsEqual));
+      ts.setInputPruning((sampleExprs == null || sampleExprs.size() == 0 || colsEqual));
 
       // check if input pruning is enough
       if ((sampleExprs == null || sampleExprs.size() == 0 || colsEqual)
@@ -5681,6 +5722,55 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return output;
+  }
+
+  private void setupStats(TableScanDesc tsDesc, QBParseInfo qbp, Table tab, String alias)
+      throws SemanticException {
+
+    if (!qbp.isAnalyzeCommand()) {
+      tsDesc.setGatherStats(false);
+    } else {
+      tsDesc.setGatherStats(true);
+
+      String tblName = tab.getTableName();
+    	tableSpec tblSpec = qbp.getTableSpec(alias);
+    	Map<String, String> partSpec = tblSpec.getPartSpec();
+
+    	if (partSpec != null) {
+    	  List<String> cols = new ArrayList<String>();
+    	  cols.addAll(partSpec.keySet());
+    	  tsDesc.setPartColumns(cols);
+    	}
+
+    	// Theoretically the key prefix could be any unique string shared
+    	// between TableScanOperator (when publishing) and StatsTask (when aggregating).
+    	// Here we use
+    	//       table_name + partitionSec
+    	// as the prefix for easy of read during explain and debugging.
+    	// Currently, partition spec can only be static partition.
+    	String k = tblName + Path.SEPARATOR;
+    	tsDesc.setStatsAggPrefix(k);
+
+    	// set up WritenEntity for replication
+    	outputs.add(new WriteEntity(tab));
+
+    	// add WriteEntity for each matching partition
+    	if (tab.isPartitioned()) {
+    	  if (partSpec == null) {
+    	    throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
+    	  }
+    	  // get all partitions that matches with the partition spec
+    	  try {
+    	    List<Partition> partitions = db.getPartitions(tab, partSpec);
+    	    for (Partition partn : partitions) {
+    	      // inputs.add(new ReadEntity(partn)); // is this needed at all?
+    	      outputs.add(new WriteEntity(partn));
+    	    }
+    	  } catch (HiveException e) {
+    	    throw new SemanticException(e);
+    	  }
+    	}
+    }
   }
 
   private Operator genPlan(QBExpr qbexpr) throws SemanticException {
@@ -5988,7 +6078,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
       setFetchTask(fetchTask);
     } else {
-      new ArrayList<MoveWork>();
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
             conf);

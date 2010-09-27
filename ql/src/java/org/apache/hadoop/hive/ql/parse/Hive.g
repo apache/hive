@@ -182,6 +182,7 @@ TOK_RECORDWRITER;
 TOK_LEFTSEMIJOIN;
 TOK_LATERAL_VIEW;
 TOK_TABALIAS;
+TOK_ANALYZE;
 }
 
 
@@ -249,6 +250,7 @@ ddlStatement
     | dropIndexStatement
     | alterIndexRebuild
     | dropFunctionStatement
+    | analyzeStatement
     | lockStatement
     | unlockStatement
     ;
@@ -620,6 +622,12 @@ descStatement
 @after { msgs.pop(); }
     : (KW_DESCRIBE|KW_DESC) (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
+    ;
+    
+analyzeStatement
+@init { msgs.push("analyze statement"); }
+@after { msgs.pop(); }
+    : KW_ANALYZE KW_TABLE (parttype=partTypeExpr) KW_COMPUTE KW_STATISTICS -> ^(TOK_ANALYZE $parttype)
     ;
 
 showStatement
@@ -1871,6 +1879,8 @@ KW_LATERAL: 'LATERAL';
 KW_TOUCH: 'TOUCH';
 KW_ARCHIVE: 'ARCHIVE';
 KW_UNARCHIVE: 'UNARCHIVE';
+KW_COMPUTE: 'COMPUTE';
+KW_STATISTICS: 'STATISTICS';
 KW_USE: 'USE';
 
 // Operators

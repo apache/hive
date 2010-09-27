@@ -20,12 +20,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-6
-  Stage-5 depends on stages: Stage-2 , consists of Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-7
+  Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
+  Stage-5
+  Stage-0 depends on stages: Stage-5, Stage-4
+  Stage-3 depends on stages: Stage-0
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3
-  Stage-3
-  Stage-6 is a root stage
+  Stage-7 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -87,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10002 
+        file:/tmp/nzhang/hive_2010-09-15_15-56-48_781_6190155030135598307/-mr-10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -138,11 +139,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
+            file:/tmp/nzhang/hive_2010-09-15_15-56-48_781_6190155030135598307/-mr-10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/tmp/jssarma/hive_2010-07-21_11-32-59_660_3940646832112023058/10004 
+            file:/tmp/nzhang/hive_2010-09-15_15-56-48_781_6190155030135598307/-mr-10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -191,14 +192,14 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: dest_j1
 
-  Stage: Stage-5
+  Stage: Stage-6
     Conditional Operator
 
-  Stage: Stage-4
+  Stage: Stage-5
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-56-48_781_6190155030135598307/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -211,9 +212,12 @@ STAGE PLANS:
               name: dest_j1
 
   Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-32-59_660_3940646832112023058/10003 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_15-56-48_781_6190155030135598307/-ext-10003 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -238,7 +242,7 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest_j1
 
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
         subq1:x 
@@ -317,11 +321,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_15-57-02_171_3968415237561428855/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-08_454_5846290866810953063/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_15-57-02_171_3968415237561428855/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

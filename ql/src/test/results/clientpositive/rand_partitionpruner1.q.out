@@ -18,6 +18,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
@@ -33,8 +34,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-22-27_455_4988263281914631499/10001
+                  directory: file:/tmp/nzhang/hive_2010-09-14_17-19-52_616_4921474467166008696/-ext-10001
                   NumFilesPerFileSink: 1
+                  Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-14_17-19-52_616_4921474467166008696/-ext-10001/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -43,12 +45,13 @@ STAGE PLANS:
                         columns.types string:string
                         serialization.format 1
                   TotalFiles: 1
+                  GatherStats: false
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -59,12 +62,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1266452546
+              transient_lastDdlTime 1284504429
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -75,12 +78,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1266452546
+                transient_lastDdlTime 1284504429
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -93,11 +96,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-22-27_673_4814026618120977628/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-19-52_716_1485476896153547687/-mr-10000
 POSTHOOK: query: select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-02-17_16-22-27_673_4814026618120977628/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-19-52_716_1485476896153547687/-mr-10000
 409	val_409
 429	val_429
 209	val_209

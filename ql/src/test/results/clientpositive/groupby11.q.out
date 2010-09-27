@@ -29,8 +29,10 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-4
+  Stage-4 depends on stages: Stage-0
+  Stage-5 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -91,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-22-39_568_3957054152816650703/10004 
+        file:/tmp/nzhang/hive_2010-09-14_16-13-06_619_2524206957556241682/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -157,9 +159,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-22-39_568_3957054152816650703/10005 
+        file:/tmp/nzhang/hive_2010-09-14_16-13-06_619_2524206957556241682/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -224,6 +229,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest2
 
+  Stage: Stage-6
+    Stats-Aggr Operator
+
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 partition(ds='111')
@@ -252,11 +260,11 @@ POSTHOOK: Lineage: dest2 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1@ds=111
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-47_442_688004092056696440/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-23_878_7631144378551966147/-mr-10000
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1@ds=111
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-47_442_688004092056696440/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-23_878_7631144378551966147/-mr-10000
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -575,11 +583,11 @@ val_98	2	1	111
 PREHOOK: query: SELECT * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2@ds=111
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-47_517_4221724803022357819/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-24_357_749669543090460434/-mr-10000
 POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2@ds=111
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-22-47_517_4221724803022357819/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-13-24_357_749669543090460434/-mr-10000
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

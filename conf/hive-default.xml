@@ -613,6 +613,30 @@
 </property>
 
 <property>
+  <name>hive.stats.dbclass</name>
+  <value>jdbc:derby</value>
+  <description>The default database that stores temporary hive statistics.</description>
+</property>
+
+<property>
+  <name>hive.stats.autogather</name>
+  <value>true</value>
+  <description>A flag to gather statistics automatically during the INSERT OVERWRITE command.</description>
+</property>
+
+<property>
+  <name>hive.stats.jdbcdriver</name>
+  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+  <description>The JDBC driver for the database that stores temporary hive statistics.</description>
+</property>
+
+<property>
+  <name>hive.stats.dbconnectionstring</name>
+  <value>jdbc:derby:;databaseName=TempStatsStore;create=true</value>
+  <description>The default connection string for the database that stores temporary hive statistics.</description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

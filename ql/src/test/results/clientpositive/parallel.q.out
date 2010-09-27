@@ -25,8 +25,10 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-4
+  Stage-4 depends on stages: Stage-0
+  Stage-5 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
@@ -129,7 +131,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-08-09_22-25-23_894_8240793898629070545/-mr-10004 
+        file:/tmp/nzhang/hive_2010-09-14_17-13-50_531_2890192072832942497/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -180,9 +182,12 @@ STAGE PLANS:
               name: src_a
 
   Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-08-09_22-25-23_894_8240793898629070545/-mr-10005 
+        file:/tmp/nzhang/hive_2010-09-14_17-13-50_531_2890192072832942497/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -232,6 +237,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src_b
 
+  Stage: Stage-6
+    Stats-Aggr Operator
+
 
 PREHOOK: query: from (select key, value from src group by key, value) s
 insert overwrite table src_a select s.key, s.value group by s.key, s.value
@@ -254,11 +262,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_a order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-25-37_362_5325705374349052168/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-02_165_5274023346481856318/-mr-10000
 POSTHOOK: query: select * from src_a order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-25-37_362_5325705374349052168/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-02_165_5274023346481856318/-mr-10000
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -575,11 +583,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_b order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-25-43_561_4685920856018764066/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-06_366_5156248632763644240/-mr-10000
 POSTHOOK: query: select * from src_b order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-25-43_561_4685920856018764066/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-06_366_5156248632763644240/-mr-10000
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -918,11 +926,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_a order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-26-02_417_889900537103370052/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-23_195_3253242643234574753/-mr-10000
 POSTHOOK: query: select * from src_a order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-26-02_417_889900537103370052/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-23_195_3253242643234574753/-mr-10000
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1243,11 +1251,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_b order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-26-08_562_2161651706050856117/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-27_387_483746667057079187/-mr-10000
 POSTHOOK: query: select * from src_b order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-09_22-26-08_562_2161651706050856117/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-14-27_387_483746667057079187/-mr-10000
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

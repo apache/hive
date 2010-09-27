@@ -22,10 +22,11 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-5
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
-  Stage-4 is a root stage
+  Stage-4 depends on stages: Stage-0
+  Stage-5 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -85,7 +86,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-33-22_239_7108281462009864168/10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-40-03_429_6963096500471959468/-mr-10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -107,11 +108,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/tmp/jssarma/hive_2010-07-21_11-33-22_239_7108281462009864168/10004 
+            file:/tmp/nzhang/hive_2010-09-14_16-40-03_429_6963096500471959468/-mr-10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/tmp/jssarma/hive_2010-07-21_11-33-22_239_7108281462009864168/10004 
+            file:/tmp/nzhang/hive_2010-09-14_16-40-03_429_6963096500471959468/-mr-10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -134,7 +135,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-33-22_239_7108281462009864168/10003 
+        file:/tmp/nzhang/hive_2010-09-14_16-40-03_429_6963096500471959468/-mr-10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -210,6 +211,9 @@ STAGE PLANS:
               name: dest_j1
 
   Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
         subq1:x 
@@ -287,11 +291,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-32_487_8490983650111837625/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-40-20_215_8713512212643872558/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-33-32_487_8490983650111837625/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-40-20_215_8713512212643872558/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 128	1

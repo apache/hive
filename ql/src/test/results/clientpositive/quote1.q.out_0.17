@@ -16,10 +16,11 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-0
   Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -59,14 +60,14 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: dest1
 
-  Stage: Stage-4
+  Stage: Stage-5
     Conditional Operator
 
-  Stage: Stage-3
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-07_718_7391802451805086474/10000
+          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-37-41_859_8495731890416087402/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -81,9 +82,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-07_718_7391802451805086474/10002 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_16-37-41_859_8495731890416087402/-ext-10002 
             Reduce Output Operator
               sort order: 
               Map-reduce partition columns:
@@ -171,11 +175,11 @@ POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.Field
 PREHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1@table=2008-04-08
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-12_969_4532161059633752072/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-37-48_451_6351211037432823469/-mr-10000
 POSTHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1@table=2008-04-08
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_1/build/ql/scratchdir/hive_2010-04-05_18-26-12_969_4532161059633752072/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_16-37-48_451_6351211037432823469/-mr-10000
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).location EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-04-08

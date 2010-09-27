@@ -1,0 +1,89 @@
+PREHOOK: query: create table analyze_srcbucket like srcbucket
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table analyze_srcbucket like srcbucket
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@analyze_srcbucket
+PREHOOK: query: insert overwrite table analyze_srcbucket select * from srcbucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@analyze_srcbucket
+POSTHOOK: query: insert overwrite table analyze_srcbucket select * from srcbucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@analyze_srcbucket
+POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain analyze table analyze_srcbucket compute statistics
+PREHOOK: type: null
+POSTHOOK: query: explain analyze table analyze_srcbucket compute statistics
+POSTHOOK: type: null
+POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_ANALYZE (TOK_TABTYPE analyze_srcbucket))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Alias -> Map Operator Tree:
+        analyze_srcbucket 
+          TableScan
+            alias: analyze_srcbucket
+
+  Stage: Stage-1
+    Stats-Aggr Operator
+
+
+PREHOOK: query: analyze table analyze_srcbucket compute statistics
+PREHOOK: type: null
+PREHOOK: Input: default@analyze_srcbucket
+PREHOOK: Output: default@analyze_srcbucket
+POSTHOOK: query: analyze table analyze_srcbucket compute statistics
+POSTHOOK: type: null
+POSTHOOK: Input: default@analyze_srcbucket
+POSTHOOK: Output: default@analyze_srcbucket
+POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended analyze_srcbucket
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended analyze_srcbucket
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	nzhang              	 
+CreateTime:         	Tue Sep 21 01:13:15 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_srcbucket	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numPartitions       	0                   
+	EXTERNAL            	FALSE               
+	numFiles            	1                   
+	transient_lastDdlTime	1285056808          
+	numRows             	1000                
+	totalSize           	11603               
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

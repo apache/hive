@@ -33,8 +33,21 @@ public class TableScanDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String alias;
-  
+
   private List<VirtualColumn> virtualCols;
+  private String statsAggKeyPrefix;   // stats publishing/aggregating key prefix
+
+ /**
+  * A list of the partition columns of the table.
+  * Set by the semantic analyzer only in case of the analyze command.
+  */
+  private List<String> partColumns;
+
+  /**
+   * A boolean variable set to true by the semantic analyzer only in case of the analyze command.
+   *
+   */
+  private boolean gatherStats;
 
   private ExprNodeDesc filterExpr;
 
@@ -51,7 +64,7 @@ public class TableScanDesc implements Serializable {
   public TableScanDesc(final String alias) {
     this.alias = alias;
   }
-  
+
   public TableScanDesc(final String alias, List<VirtualColumn> vcs) {
     this.alias = alias;
     this.virtualCols = vcs;
@@ -75,6 +88,23 @@ public class TableScanDesc implements Serializable {
     this.alias = alias;
   }
 
+  public void setPartColumns (List<String> partColumns) {
+    this.partColumns = partColumns;
+  }
+
+  public List<String> getPartColumns () {
+    return partColumns;
+  }
+
+  public void setGatherStats(boolean gatherStats) {
+    this.gatherStats = gatherStats;
+  }
+
+  @Explain(displayName = "GatherStats", normalExplain = false)
+  public boolean isGatherStats() {
+    return gatherStats;
+  }
+
   public List<VirtualColumn> getVirtualCols() {
     return virtualCols;
   }
@@ -83,4 +113,12 @@ public class TableScanDesc implements Serializable {
     this.virtualCols = virtualCols;
   }
 
+  public void setStatsAggPrefix(String k) {
+    statsAggKeyPrefix = k;
+  }
+
+  @Explain(displayName = "Statistics Aggregation Key Prefix", normalExplain = false)
+  public String getStatsAggPrefix() {
+    return statsAggKeyPrefix;
+  }
 }

@@ -31,6 +31,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -82,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-21_11-28-28_770_5844411471048586267/10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-30-52_861_1975779672781338215/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -113,6 +114,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: t2
 
+  Stage: Stage-3
+    Stats-Aggr Operator
+
 
 PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
 PREHOOK: type: QUERY
@@ -127,11 +131,11 @@ POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, 
 PREHOOK: query: SELECT * FROM T2 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-33_846_8194327293225084148/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-31-03_039_904488643585504415/-mr-10000
 POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-33_846_8194327293225084148/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-31-03_039_904488643585504415/-mr-10000
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0

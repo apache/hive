@@ -6,11 +6,11 @@ POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_tmp
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-49-56_789_8053581931767422236/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-08-50_551_5274699533452501897/-mr-10000
 POSTHOOK: query: select * from nzhang_Tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_tmp
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-49-56_789_8053581931767422236/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-08-50_551_5274699533452501897/-mr-10000
 PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
@@ -64,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-25_11-49-56_885_8970318104409365566/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-08-50_746_7813189274106710723/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -92,7 +92,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/nzhang_ctas1
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_ctas1
 
   Stage: Stage-3
       Create Table Operator:
@@ -116,11 +116,11 @@ POSTHOOK: Output: default@nzhang_CTAS1
 PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-05_215_7362711844632151790/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-08-57_963_8224718269640555492/-mr-10000
 POSTHOOK: query: select * from nzhang_CTAS1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-05_215_7362711844632151790/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-08-57_963_8224718269640555492/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -184,7 +184,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-05_522_404897969004847381/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-08-58_369_8941154562114122989/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -212,7 +212,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/nzhang_ctas2
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_ctas2
 
   Stage: Stage-3
       Create Table Operator:
@@ -236,11 +236,11 @@ POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas2
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-10_969_3097102178230917187/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-06_188_7275645807830573530/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas2
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-10_969_3097102178230917187/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-06_188_7275645807830573530/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -304,7 +304,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-11_230_7851706392742680650/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-09-06_591_311725779652798393/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -332,7 +332,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/nzhang_ctas3
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_ctas3
 
   Stage: Stage-3
       Create Table Operator:
@@ -357,11 +357,11 @@ POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-16_423_4984706586442992530/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-14_409_3860619873030897976/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-16_423_4984706586442992530/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-14_409_3860619873030897976/-mr-10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -390,11 +390,11 @@ POSTHOOK: type: CREATETABLE
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-16_812_7382695559497137315/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-15_055_2704821239289766796/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-16_812_7382695559497137315/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-15_055_2704821239289766796/-mr-10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -458,7 +458,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-17_128_289519796406783178/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-09-15_571_515417720676742183/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -486,7 +486,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/nzhang_ctas4
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_ctas4
 
   Stage: Stage-3
       Create Table Operator:
@@ -511,11 +511,11 @@ POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas4
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-22_425_2648812324905078461/-mr-10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-22_874_9020816893750253212/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas4
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-25_11-50-22_425_2648812324905078461/-mr-10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-09-22_874_9020816893750253212/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -546,6 +546,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            GatherStats: false
             Select Operator
               expressions:
                     expr: key
@@ -568,9 +569,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src 
+        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -581,12 +582,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
+              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
               name src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1280082972
+              transient_lastDdlTime 1284504429
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -597,12 +598,12 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/src
+                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
                 name src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1280082972
+                transient_lastDdlTime 1284504429
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -612,7 +613,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/jssarma/hive_2010-07-25_11-50-22_687_6004057340342647746/-mr-10002
+              directory: file:/tmp/nzhang/hive_2010-09-14_16-09-23_273_3246979497224742620/-mr-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -622,12 +623,13 @@ STAGE PLANS:
                     columns.types string,string
                     escape.delim \
               TotalFiles: 1
+              GatherStats: false
               MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-22_687_6004057340342647746/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-09-23_273_3246979497224742620/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -643,9 +645,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-22_687_6004057340342647746/-mr-10002 [file:/tmp/jssarma/hive_2010-07-25_11-50-22_687_6004057340342647746/-mr-10002]
+        file:/tmp/nzhang/hive_2010-09-14_16-09-23_273_3246979497224742620/-mr-10002 [file:/tmp/nzhang/hive_2010-09-14_16-09-23_273_3246979497224742620/-mr-10002]
       Path -> Partition:
-        file:/tmp/jssarma/hive_2010-07-25_11-50-22_687_6004057340342647746/-mr-10002 
+        file:/tmp/nzhang/hive_2010-09-14_16-09-23_273_3246979497224742620/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -667,8 +669,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-50-22_687_6004057340342647746/-ext-10001
+              directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-09-23_273_3246979497224742620/-ext-10001
               NumFilesPerFileSink: 1
+              Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-09-23_273_3246979497224742620/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -680,14 +683,15 @@ STAGE PLANS:
 
                     serialization.format ,
               TotalFiles: 1
+              GatherStats: false
               MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/jssarma/hive_trunk/build/ql/scratchdir/hive_2010-07-25_11-50-22_687_6004057340342647746/-ext-10001
-          destination: pfile:///data/users/jssarma/hive_trunk/build/ql/test/data/warehouse/nzhang_ctas5
+          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-09-23_273_3246979497224742620/-ext-10001
+          destination: pfile:///data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_ctas5
 
   Stage: Stage-3
       Create Table Operator:

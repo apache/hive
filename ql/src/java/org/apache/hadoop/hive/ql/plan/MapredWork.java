@@ -65,6 +65,7 @@ public class MapredWork implements Serializable {
 
   private MapredLocalWork mapLocalWork;
   private String inputformat;
+  private boolean gatheringStats;
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -320,5 +321,13 @@ public class MapredWork implements Serializable {
 
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
+  }
+
+  public void setGatheringStats(boolean gatherStats) {
+    this.gatheringStats = gatherStats;
+  }
+
+  public boolean isGatheringStats() {
+    return this.gatheringStats;
   }
 }
