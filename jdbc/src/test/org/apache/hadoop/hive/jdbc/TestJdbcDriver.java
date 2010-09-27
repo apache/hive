@@ -49,8 +49,11 @@ public class TestJdbcDriver extends TestCase {
   private static String viewComment = "Simple view";
   private static String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
   private static String partitionedTableComment = "Partitioned table";
+  private static String dataTypeTableName = "testDataTypeTable";
+  private static String dataTypeTableComment = "Table with many column data types";
   private final HiveConf conf;
   private final Path dataFilePath;
+  private final Path dataTypeDataFilePath;
   private Connection con;
   private boolean standAloneServer = false;
 
@@ -60,6 +63,7 @@ public class TestJdbcDriver extends TestCase {
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
     standAloneServer = "true".equals(System
         .getProperty("test.service.standalone.server"));
   }
@@ -118,6 +122,31 @@ public class TestJdbcDriver extends TestCase {
         + " PARTITION (dt='20090619')");
     assertFalse(res.next());
 
+    // drop table. ignore error.
+    try {
+      stmt.executeQuery("drop table " + dataTypeTableName);
+    } catch (Exception ex) {
+      fail(ex.toString());
+    }
+
+    res = stmt.executeQuery("create table " + dataTypeTableName
+        + " (c1 int, c2 boolean, c3 double, c4 string,"
+        + " c5 array<int>, c6 map<int,string>, c7 map<string,string>,"
+        + " c8 struct<r:string,s:int,t:double>,"
+        + " c9 tinyint, c10 smallint, c11 float, c12 bigint,"
+        + " c13 array<array<string>>,"
+        + " c14 map<int, map<int,int>>,"
+        + " c15 struct<r:int,s:struct<a:int,b:string>>,"
+        + " c16 array<struct<m:map<string,string>,n:int>>) comment '"+dataTypeTableComment
+            +"' partitioned by (dt STRING)");
+    assertFalse(res.next());
+
+    // load data
+    res = stmt.executeQuery("load data local inpath '"
+        + dataTypeDataFilePath.toString() + "' into table " + dataTypeTableName
+        + " PARTITION (dt='20090619')");
+    assertFalse(res.next());
+
     // drop view. ignore error.
     try {
       stmt.executeQuery("drop view " + viewName);
@@ -140,6 +169,8 @@ public class TestJdbcDriver extends TestCase {
     ResultSet res = stmt.executeQuery("drop table " + tableName);
     assertFalse(res.next());
     res = stmt.executeQuery("drop table " + partitionedTableName);
+    assertFalse(res.next());
+    res = stmt.executeQuery("drop table " + dataTypeTableName);
     assertFalse(res.next());
 
     con.close();
@@ -173,6 +204,65 @@ public class TestJdbcDriver extends TestCase {
     doTestSelectAll(tableName, 100);
   }
 
+  public void testDataTypes() throws Exception {
+    Statement stmt = con.createStatement();
+
+    ResultSet res = stmt.executeQuery(
+        "select * from " + dataTypeTableName + " order by c1");
+    ResultSetMetaData meta = res.getMetaData();
+
+    // row 1
+    assertTrue(res.next());
+    for (int i = 1; i <= meta.getColumnCount(); i++) {
+      assertNull(res.getObject(i));
+    }
+
+    // row 2
+    assertTrue(res.next());
+    assertEquals(-1, res.getInt(1));
+    assertEquals(false, res.getBoolean(2));
+    assertEquals(-1.1d, res.getDouble(3));
+    assertEquals("", res.getString(4));
+    assertEquals("[]", res.getString(5));
+    assertEquals("{}", res.getString(6));
+    assertEquals("{}", res.getString(7));
+    assertEquals("[null, null, null]", res.getString(8));
+    assertEquals(-1, res.getByte(9));
+    assertEquals(-1, res.getShort(10));
+    assertEquals(-1.0f, res.getFloat(11));
+    assertEquals(-1, res.getLong(12));
+    assertEquals("[]", res.getString(13));
+    assertEquals("{}", res.getString(14));
+    assertEquals("[null, null]", res.getString(15));
+    assertEquals("[]", res.getString(16));
+
+    // row 3
+    assertTrue(res.next());
+    assertEquals(1, res.getInt(1));
+    assertEquals(true, res.getBoolean(2));
+    assertEquals(1.1d, res.getDouble(3));
+    assertEquals("1", res.getString(4));
+    assertEquals("[1, 2]", res.getString(5));
+    assertEquals("{1=x, 2=y}", res.getString(6));
+    assertEquals("{k=v}", res.getString(7));
+    assertEquals("[a, 9, 2.2]", res.getString(8));
+    assertEquals(1, res.getByte(9));
+    assertEquals(1, res.getShort(10));
+    assertEquals(1.0f, res.getFloat(11));
+    assertEquals(1, res.getLong(12));
+    assertEquals("[[a, b], [c, d]]", res.getString(13));
+    assertEquals("{1={11=12, 13=14}, 2={21=22}}", res.getString(14));
+    assertEquals("[1, [2, x]]", res.getString(15));
+    assertEquals("[[{}, 1], [{c=d, a=b}, 2]]", res.getString(16));
+
+    // test getBoolean rules on non-boolean columns
+    assertEquals(true, res.getBoolean(1));
+    assertEquals(true, res.getBoolean(4));
+
+    // no more rows
+    assertFalse(res.next());
+  }
+
   private void doTestSelectAll(String tableName, int maxRows) throws Exception {
     Statement stmt = con.createStatement();
     if (maxRows >= 0) {
@@ -196,6 +286,9 @@ public class TestJdbcDriver extends TestCase {
         .getResultSet());
     assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
+
+    ResultSetMetaData meta = res.getMetaData();
+    assertEquals("Unexpected column count", 2, meta.getColumnCount());
 
     boolean moreRow = res.next();
     while (moreRow) {
@@ -506,50 +599,82 @@ public class TestJdbcDriver extends TestCase {
 
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
-    ResultSet res = stmt.executeQuery("drop table " + tableName);
-
-    // creating a table with tinyint is failing currently so not including
-    res = stmt.executeQuery("create table " + tableName
-        + " (a string, b boolean, c bigint, d int, f double)");
-    res = stmt.executeQuery(
-        "select a,b,c,d,f as e,f*2 from " + tableName + " limit 1");
-
+    ResultSet res = stmt.executeQuery(
+        "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
+        "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
-    assertEquals("Unexpected column count", 6, meta.getColumnCount());
-    assertEquals("Unexpected column name", "a", meta.getColumnName(1));
-    assertEquals("Unexpected column name", "b", meta.getColumnName(2));
-    assertEquals("Unexpected column name", "c", meta.getColumnName(3));
-    assertEquals("Unexpected column name", "d", meta.getColumnName(4));
-    assertEquals("Unexpected column name", "e", meta.getColumnName(5));
-    assertEquals("Unexpected column name", "_c5", meta.getColumnName(6));
-    assertEquals("Unexpected column type", Types.VARCHAR, meta.getColumnType(1));
-    assertEquals("Unexpected column type", Types.BOOLEAN, meta.getColumnType(2));
-    assertEquals("Unexpected column type", Types.BIGINT, meta.getColumnType(3));
-    assertEquals("Unexpected column type", Types.INTEGER, meta.getColumnType(4));
-    assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(5));
-    assertEquals("Unexpected column type", Types.DOUBLE, meta.getColumnType(6));
-    assertEquals("Unexpected column type name", "string", meta.getColumnTypeName(1));
-    assertEquals("Unexpected column type name", "boolean", meta.getColumnTypeName(2));
-    assertEquals("Unexpected column type name", "bigint", meta.getColumnTypeName(3));
-    assertEquals("Unexpected column type name", "int", meta.getColumnTypeName(4));
-    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(5));
-    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(6));
-    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(1));
-    assertEquals("Unexpected column display size", 8, meta.getColumnDisplaySize(2));
-    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(3));
-    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(4));
-    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(5));
-    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(6));
 
-    for (int i = 1; i <= 6; i++) {
+    assertEquals(14, meta.getColumnCount());
+
+    assertEquals("c1", meta.getColumnName(1));
+    assertEquals("c2", meta.getColumnName(2));
+    assertEquals("c3", meta.getColumnName(3));
+    assertEquals("c4", meta.getColumnName(4));
+    assertEquals("a", meta.getColumnName(5));
+    assertEquals("c6", meta.getColumnName(6));
+    assertEquals("c7", meta.getColumnName(7));
+    assertEquals("c8", meta.getColumnName(8));
+    assertEquals("c9", meta.getColumnName(9));
+    assertEquals("c10", meta.getColumnName(10));
+    assertEquals("c11", meta.getColumnName(11));
+    assertEquals("c12", meta.getColumnName(12));
+    assertEquals("_c12", meta.getColumnName(13));
+    assertEquals("b", meta.getColumnName(14));
+
+    assertEquals(Types.INTEGER, meta.getColumnType(1));
+    assertEquals(Types.BOOLEAN, meta.getColumnType(2));
+    assertEquals(Types.DOUBLE, meta.getColumnType(3));
+    assertEquals(Types.VARCHAR, meta.getColumnType(4));
+    assertEquals(Types.VARCHAR, meta.getColumnType(5));
+    assertEquals(Types.VARCHAR, meta.getColumnType(6));
+    assertEquals(Types.VARCHAR, meta.getColumnType(7));
+    assertEquals(Types.VARCHAR, meta.getColumnType(8));
+    assertEquals(Types.TINYINT, meta.getColumnType(9));
+    assertEquals(Types.SMALLINT, meta.getColumnType(10));
+    assertEquals(Types.FLOAT, meta.getColumnType(11));
+    assertEquals(Types.BIGINT, meta.getColumnType(12));
+    assertEquals(Types.INTEGER, meta.getColumnType(13));
+    assertEquals(Types.VARCHAR, meta.getColumnType(14));
+
+    assertEquals("int", meta.getColumnTypeName(1));
+    assertEquals("boolean", meta.getColumnTypeName(2));
+    assertEquals("double", meta.getColumnTypeName(3));
+    assertEquals("string", meta.getColumnTypeName(4));
+    assertEquals("string", meta.getColumnTypeName(5));
+    assertEquals("string", meta.getColumnTypeName(6));
+    assertEquals("string", meta.getColumnTypeName(7));
+    assertEquals("string", meta.getColumnTypeName(8));
+    assertEquals("tinyint", meta.getColumnTypeName(9));
+    assertEquals("smallint", meta.getColumnTypeName(10));
+    assertEquals("float", meta.getColumnTypeName(11));
+    assertEquals("bigint", meta.getColumnTypeName(12));
+    assertEquals("int", meta.getColumnTypeName(13));
+    assertEquals("string", meta.getColumnTypeName(14));
+
+    assertEquals(16, meta.getColumnDisplaySize(1));
+    assertEquals(8, meta.getColumnDisplaySize(2));
+    assertEquals(16, meta.getColumnDisplaySize(3));
+    assertEquals(32, meta.getColumnDisplaySize(4));
+    assertEquals(32, meta.getColumnDisplaySize(5));
+    assertEquals(32, meta.getColumnDisplaySize(6));
+    assertEquals(32, meta.getColumnDisplaySize(7));
+    assertEquals(32, meta.getColumnDisplaySize(8));
+    assertEquals(2, meta.getColumnDisplaySize(9));
+    assertEquals(32, meta.getColumnDisplaySize(10));
+    assertEquals(32, meta.getColumnDisplaySize(11));
+    assertEquals(32, meta.getColumnDisplaySize(12));
+    assertEquals(16, meta.getColumnDisplaySize(13));
+    assertEquals(32, meta.getColumnDisplaySize(14));
+
+    for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
 
-      int expectedPrecision = i >= 5 ? -1 : 0;
-      int expectedScale = i >= 5 ? -1 : 0;
-      assertEquals("Unexpected precision", expectedPrecision, meta.getPrecision(i));
-      assertEquals("Unexpected scale", expectedScale, meta.getScale(i));
+      int expectedPrecision = i == 3 ? -1 : 0;
+      int expectedScale = i == 3 ? -1 : 0;
+      assertEquals(expectedPrecision, meta.getPrecision(i));
+      assertEquals(expectedScale, meta.getScale(i));
     }
   }
 

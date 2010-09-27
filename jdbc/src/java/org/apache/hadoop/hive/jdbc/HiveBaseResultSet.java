@@ -48,7 +48,7 @@ import java.util.Map;
 public abstract class HiveBaseResultSet implements ResultSet{
   protected SQLWarning warningChain = null;
   protected boolean wasNull = false;
-  protected List<?> row;
+  protected List<Object> row;
   protected List<String> columnNames;
   protected List<String> columnTypes;
 
@@ -135,8 +135,14 @@ public abstract class HiveBaseResultSet implements ResultSet{
 
   public boolean getBoolean(int columnIndex) throws SQLException {
     Object obj = getObject(columnIndex);
-    if (Number.class.isInstance(obj)) {
+    if (Boolean.class.isInstance(obj)) {
+      return (Boolean) obj;
+    } else if (obj == null) {
+      return false;
+    } else if (Number.class.isInstance(obj)) {
       return ((Number) obj).intValue() != 0;
+    } else if (String.class.isInstance(obj)) {
+      return !((String) obj).equals("0");
     }
     throw new SQLException("Cannot convert column " + columnIndex + " to boolean");
   }
@@ -149,6 +155,8 @@ public abstract class HiveBaseResultSet implements ResultSet{
     Object obj = getObject(columnIndex);
     if (Number.class.isInstance(obj)) {
       return ((Number) obj).byteValue();
+    } else if (obj == null) {
+      return 0;
     }
     throw new SQLException("Cannot convert column " + columnIndex + " to byte");
   }

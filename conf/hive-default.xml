@@ -705,6 +705,12 @@
 </property>
 
 <property>
+  <name>hive.fetch.output.serde</name>
+  <value>org.apache.hadoop.hive.serde2.DelimitedJSONSerDe</value>
+  <description>The serde used by FetchTask to serialize the fetch output.</description>
+</property>
+
+<property>
   <name>hive.exec.mode.local.auto</name>
   <value>false</value>
   <description> Let hive determine whether to run in local mode automatically </description>

@@ -18,97 +18,106 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.io.BytesWritable;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * HiveQueryResultSet.
  *
  */
 public class HiveQueryResultSet extends HiveBaseResultSet {
+
+  public static final Log LOG = LogFactory.getLog(HiveQueryResultSet.class);
+
   private HiveInterface client;
-  private DynamicSerDe ds;
+  private SerDe serde;
 
   private int maxRows = 0;
   private int rowsFetched = 0;
 
-  @SuppressWarnings("unchecked")
   public HiveQueryResultSet(HiveInterface client, int maxRows) throws SQLException {
     this.client = client;
-    row = new ArrayList();
     this.maxRows = maxRows;
-    initDynamicSerde();
+    initSerde();
+    row = Arrays.asList(new Object[columnNames.size()]);
   }
 
-  @SuppressWarnings("unchecked")
   public HiveQueryResultSet(HiveInterface client) throws SQLException {
     this(client, 0);
   }
 
   /**
-   * Instantiate the dynamic serde used to deserialize the result row.
+   * Instantiate the serde used to deserialize the result rows.
    */
-  private void initDynamicSerde() throws SQLException {
+  private void initSerde() throws SQLException {
     try {
-      Schema fullSchema = client.getThriftSchema();
+      Schema fullSchema = client.getSchema();
       List<FieldSchema> schema = fullSchema.getFieldSchemas();
       columnNames = new ArrayList<String>();
       columnTypes = new ArrayList<String>();
-
-      String serDDL;
+      StringBuilder namesSb = new StringBuilder();
+      StringBuilder typesSb = new StringBuilder();
 
       if ((schema != null) && (!schema.isEmpty())) {
-        serDDL = new String("struct result { ");
         for (int pos = 0; pos < schema.size(); pos++) {
           if (pos != 0) {
-            serDDL = serDDL.concat(",");
+            namesSb.append(",");
+            typesSb.append(",");
           }
-          columnTypes.add(schema.get(pos).getType());
           columnNames.add(schema.get(pos).getName());
-          serDDL = serDDL.concat(schema.get(pos).getType());
-          serDDL = serDDL.concat(" ");
-          serDDL = serDDL.concat(schema.get(pos).getName());
+          columnTypes.add(schema.get(pos).getType());
+          namesSb.append(schema.get(pos).getName());
+          typesSb.append(schema.get(pos).getType());
         }
-        serDDL = serDDL.concat("}");
-      } else {
-        serDDL = new String("struct result { string empty }");
       }
+      String names = namesSb.toString();
+      String types = typesSb.toString();
 
-      ds = new DynamicSerDe();
-      Properties dsp = new Properties();
-      dsp.setProperty(Constants.SERIALIZATION_FORMAT,
-          org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
-          .getName());
-      dsp.setProperty(
-          org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
-          "result");
-      dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
-      dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
-      dsp.setProperty(Constants.FIELD_DELIM, "9");
-      ds.initialize(new Configuration(), dsp);
+      serde = new LazySimpleSerDe();
+      Properties props = new Properties();
+      if (names.length() > 0) {
+        LOG.info("Column names: " + names);
+        props.setProperty(Constants.LIST_COLUMNS, names);
+      }
+      if (types.length() > 0) {
+        LOG.info("Column types: " + types);
+        props.setProperty(Constants.LIST_COLUMN_TYPES, types);
+      }
+      serde.initialize(new Configuration(), props);
+
     } catch (Exception ex) {
       ex.printStackTrace();
       throw new SQLException("Could not create ResultSet: " + ex.getMessage());
     }
   }
 
+  @Override
   public void close() throws SQLException {
     client = null;
   }
 
   /**
    * Moves the cursor down one row from its current position.
-   * 
+   *
    * @see java.sql.ResultSet#next()
    * @throws SQLException
    *           if a database access error occurs.
@@ -122,10 +131,28 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     try {
       rowStr = (String) client.fetchOne();
       rowsFetched++;
-      if (!"".equals(rowStr)) {
-        Object o = ds.deserialize(new BytesWritable(rowStr.getBytes()));
-        row = (ArrayList<?>) o;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Fetched row string: " + rowStr);
       }
+
+      if (!"".equals(rowStr)) {
+        StructObjectInspector soi = (StructObjectInspector) serde.getObjectInspector();
+        List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+        Object data = serde.deserialize(new BytesWritable(rowStr.getBytes()));
+
+        assert row.size() == fieldRefs.size() : row.size() + ", " + fieldRefs.size();
+        for (int i = 0; i < fieldRefs.size(); i++) {
+          StructField fieldRef = fieldRefs.get(i);
+          ObjectInspector oi = fieldRef.getFieldObjectInspector();
+          Object obj = soi.getStructFieldData(data, fieldRef);
+          row.set(i, convertLazyToJava(obj, oi));
+        }
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Deserialized row: " + row);
+        }
+      }
+
     } catch (Exception ex) {
       ex.printStackTrace();
       throw new SQLException("Error retrieving next row");
@@ -134,4 +161,21 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     return !"".equals(rowStr);
   }
 
+  /**
+   * Convert a LazyObject to a standard Java object in compliance with JDBC 3.0 (see JDBC 3.0
+   * Specification, Table B-3: Mapping from JDBC Types to Java Object Types).
+   *
+   * This method is kept consistent with {@link HiveResultSetMetaData#hiveTypeToSqlType}.
+   */
+  private static Object convertLazyToJava(Object o, ObjectInspector oi) {
+    Object obj = ObjectInspectorUtils.copyToStandardObject(o, oi, ObjectInspectorCopyOption.JAVA);
+
+    // for now, expose non-primitive as a string
+    // TODO: expose non-primitive as a structured object while maintaining JDBC compliance
+    if (obj != null && oi.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      obj = obj.toString();
+    }
+
+    return obj;
+  }
 }

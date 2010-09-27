@@ -100,23 +100,31 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    * @return Integer java.sql.Types values
    * @throws SQLException
    */
-  public static Integer hiveTypeToSqlType(String type) throws SQLException {
+  public static int hiveTypeToSqlType(String type) throws SQLException {
     if ("string".equalsIgnoreCase(type)) {
       return Types.VARCHAR;
-    } else if ("bool".equalsIgnoreCase(type) || "boolean".equalsIgnoreCase(type)) {
-      return Types.BOOLEAN;
     } else if ("float".equalsIgnoreCase(type)) {
       return Types.FLOAT;
     } else if ("double".equalsIgnoreCase(type)) {
       return Types.DOUBLE;
-    } else if ("byte".equalsIgnoreCase(type) || "tinyint".equalsIgnoreCase(type)) {
+    } else if ("boolean".equalsIgnoreCase(type)) {
+      return Types.BOOLEAN;
+    } else if ("tinyint".equalsIgnoreCase(type)) {
       return Types.TINYINT;
-    } else if ("i32".equalsIgnoreCase(type) || "int".equalsIgnoreCase(type)) {
+    } else if ("smallint".equalsIgnoreCase(type)) {
+      return Types.SMALLINT;
+    } else if ("int".equalsIgnoreCase(type)) {
       return Types.INTEGER;
-    } else if ("i64".equalsIgnoreCase(type) || "bigint".equalsIgnoreCase(type)) {
+    } else if ("bigint".equalsIgnoreCase(type)) {
       return Types.BIGINT;
+    } else if (type.startsWith("map<")) {
+      return Types.VARCHAR;
+    } else if (type.startsWith("array<")) {
+      return Types.VARCHAR;
+    } else if (type.startsWith("struct<")) {
+      return Types.VARCHAR;
     }
-     throw new SQLException("Unrecognized column type: " + type);
+    throw new SQLException("Unrecognized column type: " + type);
   }
 
 
@@ -130,24 +138,34 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
       throw new SQLException("Invalid column value: " + column);
     }
 
-    // we need to convert the thrift type to the SQL type name
+    // we need to convert the Hive type to the SQL type name
     // TODO: this would be better handled in an enum
     String type = columnTypes.get(column - 1);
     if ("string".equalsIgnoreCase(type)) {
       return Constants.STRING_TYPE_NAME;
+    } else if ("float".equalsIgnoreCase(type)) {
+      return Constants.FLOAT_TYPE_NAME;
     } else if ("double".equalsIgnoreCase(type)) {
       return Constants.DOUBLE_TYPE_NAME;
-    } else if ("bool".equalsIgnoreCase(type)) {
+    } else if ("boolean".equalsIgnoreCase(type)) {
       return Constants.BOOLEAN_TYPE_NAME;
-    } else if ("byte".equalsIgnoreCase(type)) {
+    } else if ("tinyint".equalsIgnoreCase(type)) {
       return Constants.TINYINT_TYPE_NAME;
-    } else if ("i32".equalsIgnoreCase(type)) {
+    } else if ("smallint".equalsIgnoreCase(type)) {
+      return Constants.SMALLINT_TYPE_NAME;
+    } else if ("int".equalsIgnoreCase(type)) {
       return Constants.INT_TYPE_NAME;
-    } else if ("i64".equalsIgnoreCase(type)) {
+    } else if ("bigint".equalsIgnoreCase(type)) {
       return Constants.BIGINT_TYPE_NAME;
+    } else if (type.startsWith("map<")) {
+      return Constants.STRING_TYPE_NAME;
+    } else if (type.startsWith("array<")) {
+      return Constants.STRING_TYPE_NAME;
+    } else if (type.startsWith("struct<")) {
+      return Constants.STRING_TYPE_NAME;
     }
 
-    throw new SQLException("Inrecognized column type: " + type);
+    throw new SQLException("Unrecognized column type: " + type);
   }
 
   public int getPrecision(int column) throws SQLException {

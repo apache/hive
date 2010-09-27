@@ -301,6 +301,8 @@ public class HiveConf extends Configuration {
     HIVEHARPARENTDIRSETTABLE("hive.archive.har.parentdir.settable", false),
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
+    // Serde for FetchTask
+    HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe")
     ;
 
 

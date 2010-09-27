@@ -24,12 +24,12 @@ import java.sql.SQLException;
  * Column metadata.
  */
 public class JdbcColumn {
-  private String columnName;
-  private String tableName;
-  private String tableCatalog;
-  private String type;
-  private String comment;
-  private int ordinalPos;
+  private final String columnName;
+  private final String tableName;
+  private final String tableCatalog;
+  private final String type;
+  private final String comment;
+  private final int ordinalPos;
 
   JdbcColumn(String columnName, String tableName, String tableCatalog
           , String type, String comment, int ordinalPos) {

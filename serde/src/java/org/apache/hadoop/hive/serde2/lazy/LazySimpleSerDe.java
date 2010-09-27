@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -40,7 +39,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -52,10 +50,10 @@ import org.apache.hadoop.io.Writable;
 /**
  * LazySimpleSerDe can be used to read the same data format as
  * MetadataTypedColumnsetSerDe and TCTLSeparatedProtocol.
- * 
+ *
  * However, LazySimpleSerDe creates Objects in a lazy way, to provide better
  * performance.
- * 
+ *
  * Also LazySimpleSerDe outputs typed columns instead of treating all columns as
  * String like MetadataTypedColumnsetSerDe.
  */
@@ -67,7 +65,6 @@ public class LazySimpleSerDe implements SerDe {
   public static final byte[] DefaultSeparators = {(byte) 1, (byte) 2, (byte) 3};
 
   private ObjectInspector cachedObjectInspector;
-  private boolean useJSONSerialize; // use json to serialize
 
   @Override
   public String toString() {
@@ -86,7 +83,7 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Return the byte value of the number string.
-   * 
+   *
    * @param altValue
    *          The string containing a number.
    * @param defaultVal
@@ -120,7 +117,6 @@ public class LazySimpleSerDe implements SerDe {
     boolean escaped;
     byte escapeChar;
     boolean[] needsEscape;
-    boolean jsonSerialize;
 
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
@@ -161,22 +157,6 @@ public class LazySimpleSerDe implements SerDe {
     public boolean[] getNeedsEscape() {
       return needsEscape;
     }
-
-    /**
-     * @return the jsonSerialize
-     */
-    public boolean isJsonSerialize() {
-      return jsonSerialize;
-    }
-
-    /**
-     * @param jsonSerialize
-     *          the jsonSerialize to set
-     */
-    public void setJsonSerialize(boolean jsonSerialize) {
-      this.jsonSerialize = jsonSerialize;
-    }
-
   }
 
   SerDeParameters serdeParams = null;
@@ -186,7 +166,7 @@ public class LazySimpleSerDe implements SerDe {
    * char or byte code (only supports byte-value up to 127) columns:
    * ","-separated column names columns.types: ",", ":", or ";"-separated column
    * types
-   * 
+   *
    * @see SerDe#initialize(Configuration, Properties)
    */
   public void initialize(Configuration job, Properties tbl)
@@ -202,14 +182,10 @@ public class LazySimpleSerDe implements SerDe {
         .isLastColumnTakesRest(), serdeParams.isEscaped(), serdeParams
         .getEscapeChar());
 
-    if (serdeParams.isJsonSerialize()) {
-      setUseJSONSerialize(true);
-    }
-
     cachedLazyStruct = (LazyStruct) LazyFactory
         .createLazyObject(cachedObjectInspector);
 
-    LOG.debug("LazySimpleSerDe initialized with: columnNames="
+    LOG.debug(getClass().getName() + " initialized with: columnNames="
         + serdeParams.columnNames + " columnTypes=" + serdeParams.columnTypes
         + " separator=" + Arrays.asList(serdeParams.separators)
         + " nullstring=" + serdeParams.nullString + " lastColumnTakesRest="
@@ -240,11 +216,6 @@ public class LazySimpleSerDe implements SerDe {
     String lastColumnTakesRestString = tbl
         .getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     serdeParams.lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
-        .equalsIgnoreCase("true"));
-
-    String useJsonSerialize = tbl
-        .getProperty(Constants.SERIALIZATION_USE_JSON_OBJECTS);
-    serdeParams.jsonSerialize = (useJsonSerialize != null && useJsonSerialize
         .equalsIgnoreCase("true"));
 
     // Read the configuration parameters
@@ -313,7 +284,7 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Deserialize a row from the Writable to a LazyObject.
-   * 
+   *
    * @param field
    *          the Writable that contains the data
    * @return The deserialized row Object.
@@ -348,7 +319,7 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Returns the Writable Class after serialization.
-   * 
+   *
    * @see SerDe#getSerializedClass()
    */
   public Class<? extends Writable> getSerializedClass() {
@@ -360,7 +331,7 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Serialize a row of data.
-   * 
+   *
    * @param obj
    *          The row object
    * @param objInspector
@@ -389,48 +360,27 @@ public class LazySimpleSerDe implements SerDe {
 
     serializeStream.reset();
 
-    try {
-      // Serialize each field
-      for (int i = 0; i < fields.size(); i++) {
-        // Append the separator if needed.
-        if (i > 0) {
-          serializeStream.write(serdeParams.separators[0]);
-        }
-        // Get the field objectInspector and the field object.
-        ObjectInspector foi = fields.get(i).getFieldObjectInspector();
-        Object f = (list == null ? null : list.get(i));
-
-        if (declaredFields != null && i >= declaredFields.size()) {
-          throw new SerDeException("Error: expecting " + declaredFields.size()
-              + " but asking for field " + i + "\n" + "data=" + obj + "\n"
-              + "tableType=" + serdeParams.rowTypeInfo.toString() + "\n"
-              + "dataType="
-              + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
-        }
-
-        // If the field that is passed in is NOT a primitive, and either the
-        // field is not declared (no schema was given at initialization), or
-        // the field is declared as a primitive in initialization, serialize
-        // the data to JSON string. Otherwise serialize the data in the
-        // delimited way.
-        if (!foi.getCategory().equals(Category.PRIMITIVE)
-            && (declaredFields == null
-            || declaredFields.get(i).getFieldObjectInspector()
-            .getCategory().equals(Category.PRIMITIVE) || useJSONSerialize)) {
-          serialize(serializeStream, SerDeUtils.getJSONString(f, foi),
-              PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              serdeParams.separators, 1, serdeParams.nullSequence,
-              serdeParams.escaped, serdeParams.escapeChar,
-              serdeParams.needsEscape);
-        } else {
-          serialize(serializeStream, f, foi, serdeParams.separators, 1,
-              serdeParams.nullSequence, serdeParams.escaped,
-              serdeParams.escapeChar, serdeParams.needsEscape);
-        }
+    // Serialize each field
+    for (int i = 0; i < fields.size(); i++) {
+      // Append the separator if needed.
+      if (i > 0) {
+        serializeStream.write(serdeParams.separators[0]);
       }
-    } catch (IOException e) {
-      throw new SerDeException(e);
+      // Get the field objectInspector and the field object.
+      ObjectInspector foi = fields.get(i).getFieldObjectInspector();
+      Object f = (list == null ? null : list.get(i));
+
+      if (declaredFields != null && i >= declaredFields.size()) {
+        throw new SerDeException("Error: expecting " + declaredFields.size()
+            + " but asking for field " + i + "\n" + "data=" + obj + "\n"
+            + "tableType=" + serdeParams.rowTypeInfo.toString() + "\n"
+            + "dataType="
+            + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
+      }
+
+      serializeField(serializeStream, f, foi, serdeParams);
     }
+
     // TODO: The copy of data is unnecessary, but there is no work-around
     // since we cannot directly set the private byte[] field inside Text.
     serializeCache
@@ -438,9 +388,19 @@ public class LazySimpleSerDe implements SerDe {
     return serializeCache;
   }
 
+  protected void serializeField(ByteStream.Output out, Object obj, ObjectInspector objInspector,
+      SerDeParameters serdeParams) throws SerDeException {
+    try {
+      serialize(out, obj, objInspector, serdeParams.separators, 1, serdeParams.nullSequence,
+          serdeParams.escaped, serdeParams.escapeChar, serdeParams.needsEscape);
+    } catch (IOException e) {
+      throw new SerDeException(e);
+    }
+  }
+
   /**
    * Serialize the row into the StringBuilder.
-   * 
+   *
    * @param out
    *          The StringBuilder to store the serialized data.
    * @param obj
@@ -547,20 +507,5 @@ public class LazySimpleSerDe implements SerDe {
 
     throw new RuntimeException("Unknown category type: "
         + objInspector.getCategory());
-  }
-
-  /**
-   * @return the useJSONSerialize
-   */
-  public boolean isUseJSONSerialize() {
-    return useJSONSerialize;
-  }
-
-  /**
-   * @param useJSONSerialize
-   *          the useJSONSerialize to set
-   */
-  public void setUseJSONSerialize(boolean useJSONSerialize) {
-    this.useJSONSerialize = useJSONSerialize;
   }
 }

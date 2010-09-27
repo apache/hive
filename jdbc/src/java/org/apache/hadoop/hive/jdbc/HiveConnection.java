@@ -58,7 +58,6 @@ public class HiveConnection implements java.sql.Connection {
   private HiveInterface client;
   private boolean isClosed = true;
   private SQLWarning warningChain = null;
-  private String uri;
 
   private static final String URI_PREFIX = "jdbc:hive://";
 
@@ -66,7 +65,6 @@ public class HiveConnection implements java.sql.Connection {
    * TODO: - parse uri (use java.net.URI?).
    */
   public HiveConnection(String uri, Properties info) throws SQLException {
-    this.uri = uri;
     session = new JdbcSessionState(new HiveConf(SessionState.class));
     session.in = null;
     session.out = null;
@@ -110,6 +108,14 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     isClosed = false;
+    configureConnection();
+  }
+
+  private void configureConnection() throws SQLException {
+    Statement stmt = createStatement();
+    stmt.execute(
+        "set hive.fetch.output.serde = org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe");
+    stmt.close();
   }
 
   /*

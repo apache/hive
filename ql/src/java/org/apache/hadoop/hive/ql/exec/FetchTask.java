@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -31,10 +32,12 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -45,7 +48,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
   private int maxRows = 100;
   private FetchOperator ftOp;
-  private LazySimpleSerDe mSerde;
+  private SerDe mSerde;
   private int totalRows;
 
   public FetchTask() {
@@ -60,13 +63,21 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       // Create a file system handle
       JobConf job = new JobConf(conf, ExecDriver.class);
 
-      mSerde = new LazySimpleSerDe();
-      Properties mSerdeProp = new Properties();
-      mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-      mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, (work)
-          .getSerializationNullFormat());
-      mSerde.initialize(job, mSerdeProp);
-      mSerde.setUseJSONSerialize(true);
+      String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
+      Class<? extends SerDe> serdeClass = Class.forName(serdeName, true,
+          JavaUtils.getClassLoader()).asSubclass(SerDe.class);
+      // cast only needed for Hadoop 0.17 compatibility
+      mSerde = (SerDe) ReflectionUtils.newInstance(serdeClass, null);
+
+      Properties serdeProp = new Properties();
+
+      // this is the default serialization format
+      if (mSerde instanceof DelimitedJSONSerDe) {
+        serdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
+        serdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, work.getSerializationNullFormat());
+      }
+
+      mSerde.initialize(job, serdeProp);
 
       ftOp = new FetchOperator(work, job);
     } catch (Exception e) {

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -151,16 +152,16 @@ public final class PlanUtils {
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
-      boolean useJSONForLazy) {
+      boolean useDelimitedJSON) {
 
     return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
-        lastColumnTakesRestOfTheLine, useJSONForLazy, "TextFile");
+        lastColumnTakesRestOfTheLine, useDelimitedJSON, "TextFile");
  }
 
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
-      boolean useJSONForLazy, String fileFormat) {
+      boolean useDelimitedJSON, String fileFormat) {
 
     Properties properties = Utilities.makeProperties(
         Constants.SERIALIZATION_FORMAT, separatorCode, Constants.LIST_COLUMNS,
@@ -184,8 +185,8 @@ public final class PlanUtils {
     // user sees the results as json for custom scripts and has no way for
     // specifying that.
     // Right now, it is hard-coded in the code
-    if (useJSONForLazy) {
-      properties.setProperty(Constants.SERIALIZATION_USE_JSON_OBJECTS, "true");
+    if (useDelimitedJSON) {
+      serdeClass = DelimitedJSONSerDe.class;
     }
 
     Class inputFormat, outputFormat;

@@ -513,7 +513,7 @@
                   <void property="scriptInputInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
                     <void property="deserializerClass"> 
-                     <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                     <class>org.apache.hadoop.hive.serde2.DelimitedJSONSerDe</class> 
                     </void> 
                     <void property="inputFileFormatClass"> 
                      <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -530,10 +530,6 @@
                       <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
-                      </void> 
-                      <void method="put"> 
-                       <string>serialization.use.json.object</string> 
-                       <string>true</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 

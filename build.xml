@@ -172,6 +172,7 @@
   <!-- create an html report from junit output files -->
   <target name="testreport"
           description="Generate JUnit HTML test report">
+    <mkdir dir="${test.build.dir}"/>
     <junitreport todir="${test.build.dir}">
       <fileset dir="${build.dir.hive}">
         <include name="**/TEST-*.xml"/>

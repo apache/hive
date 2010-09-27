@@ -86,7 +86,6 @@ STAGE PLANS:
                       field.delim 9
                       serialization.format 9
                       serialization.last.column.takes.rest true
-                      serialization.use.json.object true
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1

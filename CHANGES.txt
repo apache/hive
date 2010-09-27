@@ -157,6 +157,9 @@ Trunk -  Unreleased
     codec 1.4
     (Todd Lipcon via jvs)
 
+    HIVE-1378. Return value for map, array, and struct needs to return a string
+    (Steven Wong via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
