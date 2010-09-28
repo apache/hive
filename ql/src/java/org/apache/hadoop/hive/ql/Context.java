@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
@@ -59,7 +59,7 @@ public class Context {
   private int resDirFilesNum;
   boolean initialized;
   String originalTracker = null;
-  private HashMap<String, ContentSummary> pathToCS;
+  private Map<String, ContentSummary> pathToCS = new ConcurrentHashMap<String, ContentSummary>();
 
   // scratch path to use for all non-local (ie. hdfs) file system tmp folders
   private final Path nonLocalScratchPath;
@@ -495,14 +495,10 @@ public class Context {
   }
 
   public void addCS(String path, ContentSummary cs) {
-    if(pathToCS == null)
-      pathToCS = new HashMap<String, ContentSummary> ();
     pathToCS.put(path, cs);
   }
 
   public ContentSummary getCS(String path) {
-    if(pathToCS == null)
-      pathToCS = new HashMap<String, ContentSummary> ();
     return pathToCS.get(path);
   }
 

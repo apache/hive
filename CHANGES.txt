@@ -78,7 +78,7 @@ Trunk -  Unreleased
     (Ajay Kidave via jvs)
 
     HIVE-1661. Default values for parameters
-    (Siying Dong via He Yongqiang) 
+    (Siying Dong via He Yongqiang)
 
     HIVE-1659. parse_url_tuple: a UDTF version of parse_url
     (Xing Jin via Ning Zhang)
@@ -305,6 +305,9 @@ Trunk -  Unreleased
 
     HIVE-1664. Eclipse build broken
     (Steven Wong via jvs)
+
+    HIVE-1671 multithreading on Context.pathToCS
+    (Bennie Schut via namit)
 
   TESTS
 
