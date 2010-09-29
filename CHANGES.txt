@@ -607,6 +607,9 @@ Release 0.6.0 -  Unreleased
     metastore methods
     (Edward Capriolo via jvs)
 
+    HIVE-1524. parallel execution failed if mapred.job.name is set
+    (Yuanjun Li via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

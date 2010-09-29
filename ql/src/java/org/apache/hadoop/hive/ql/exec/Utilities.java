@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +62,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -139,22 +141,26 @@ public final class Utilities {
     } catch (Exception e) {
     } finally {
       // where a single process works with multiple plans - we must clear
-      // the cache before working with the next plan.
-      gWorkMap.remove(getJobName(job));
+      // the cache before working with the next plan.      
+      String jobID = getHiveJobID(job);
+      if (jobID != null) {
+        gWorkMap.remove(jobID);
+     }
     }
   }
 
   public static MapredWork getMapRedWork(Configuration job) {
     MapredWork gWork = null;
     try {
-      gWork = gWorkMap.get(getJobName(job));
+       String jobID = getHiveJobID(job);
+       assert jobID != null;
+       gWork = gWorkMap.get(jobID);
       if (gWork == null) {
-        InputStream in = new FileInputStream("HIVE_PLAN"
-                                             + sanitizedJobId(job));
+        InputStream in = new FileInputStream("HIVE_PLAN" + jobID);
         MapredWork ret = deserializeMapRedWork(in, job);
         gWork = ret;
         gWork.initialize();
-        gWorkMap.put(getJobName(job), gWork);
+        gWorkMap.put(jobID, gWork);
       }
       return (gWork);
     } catch (Exception e) {
@@ -272,6 +278,10 @@ public final class Utilities {
 
   public static void setMapRedWork(Configuration job, MapredWork w, String hiveScratchDir) {
     try {
+      // this is the unique job ID, which is kept in JobConf as part of the plan file name
+      String jobID = UUID.randomUUID().toString();
+      Path planPath = new Path(hiveScratchDir, jobID);
+      HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
 
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
@@ -280,45 +290,33 @@ public final class Utilities {
       if(!HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local")) {
         // use the default file system of the job
         FileSystem fs = FileSystem.get(job);
-        Path planPath = new Path(hiveScratchDir, "plan." + randGen.nextInt());
+        
         FSDataOutputStream out = fs.create(planPath);
         serializeMapRedWork(w, out);
-        HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toString());
+        
         // Set up distributed cache
         DistributedCache.createSymlink(job);
-        String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN"
-          + sanitizedJobId(job);
+        String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;
         DistributedCache.addCacheFile(new URI(uriWithLink), job);
       }
 
       // Cache the plan in this process
       w.initialize();
-      gWorkMap.put(getJobName(job), w);
+      gWorkMap.put(jobID, w);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
 
-  public static String getJobName(Configuration job) {
-    String s = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJOBNAME);
-    // This is just a backup case. We would like Hive to always have jobnames.
-    if (s == null) {
-      // There is no job name => we set one
-      s = "JOB" + randGen.nextInt();
-      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, s);
-    }
-    return s;
-  }
-
-  /**
-   * Returns a unique ID for the job.
-   */
-
-  public static int sanitizedJobId(Configuration job) {
-    String s = getJobName(job);
-    return s.hashCode();
-  }
+  private static String getHiveJobID(Configuration job) {
+    String planPath= HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
+    if (planPath != null) {
+      return (new Path(planPath)).getName();
+     }
+     return null;
+  }  
+ 
 
   /**
    * Serialize a single Task.
