@@ -309,6 +309,9 @@ Trunk -  Unreleased
     HIVE-1671 multithreading on Context.pathToCS
     (Bennie Schut via namit)
 
+    HIVE-1670 MapJoin throws an error if no column from the mapjoined table is selected
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
