@@ -86,6 +86,9 @@ Trunk -  Unreleased
     HIVE-1361. table/partition level statistics
     (Ning Zhang, Ahmed M Aly via He Yongqiang)
 
+    HIVE-1624. Patch to allows scripts in S3 location
+    (Vaibhav Aggarwal via He Yongqiang)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.session;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -33,9 +35,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -97,10 +102,11 @@ public class SessionState {
   }
 
   public boolean getIsSilent() {
-    if(conf != null)
+    if(conf != null) {
       return conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
-    else
+    } else {
       return isSilent;
+    }
   }
 
   public void setIsSilent(boolean isSilent) {
@@ -425,6 +431,18 @@ public class SessionState {
     new HashMap<ResourceType, HashSet<String>>();
 
   public void add_resource(ResourceType t, String value) {
+    // By default don't convert to unix
+    add_resource(t, value, false);
+  }
+
+  public String add_resource(ResourceType t, String value, boolean convertToUnix) {
+    try {
+      value = downloadResource(value, convertToUnix);
+    } catch (Exception e) {
+      getConsole().printError(e.getMessage());
+      return null;
+    }
+
     if (resource_map.get(t) == null) {
       resource_map.put(t, new HashSet<String>());
     }
@@ -433,10 +451,52 @@ public class SessionState {
     if (t.hook != null) {
       fnlVal = t.hook.preHook(resource_map.get(t), value);
       if (fnlVal == null) {
-        return;
+        return fnlVal;
       }
     }
+    getConsole().printInfo("Added resource: " + fnlVal);
     resource_map.get(t).add(fnlVal);
+
+    return fnlVal;
+  }
+
+  /**
+   * Returns the list of filesystem schemas as regex which
+   * are permissible for download as a resource.
+   */
+  public static String getMatchingSchemaAsRegex() {
+    String[] matchingSchema = {"s3", "s3n", "hdfs"};
+    return StringUtils.join(matchingSchema, "|");
+  }
+
+  private String downloadResource(String value, boolean convertToUnix) {
+    if (value.matches("("+ getMatchingSchemaAsRegex() +")://.*")) {
+      getConsole().printInfo("converting to local " + value);
+      File resourceDir = new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
+      String destinationName = new Path(value).getName();
+      File destinationFile = new File(resourceDir, destinationName);
+      if ( resourceDir.exists() && ! resourceDir.isDirectory() ) {
+        throw new RuntimeException("The resource directory is not a directory, resourceDir is set to" + resourceDir);
+      }
+      if ( ! resourceDir.exists() && ! resourceDir.mkdirs() ) {
+        throw new RuntimeException("Couldn't create directory " + resourceDir);
+      }
+      try {
+        FileSystem fs = FileSystem.get(new URI(value), conf);
+        fs.copyToLocalFile(new Path(value), new Path(destinationFile.getCanonicalPath()));
+        value = destinationFile.getCanonicalPath();
+        if (convertToUnix && DosToUnix.isWindowsScript(destinationFile)) {
+          try {
+            DosToUnix.convertWindowsScriptToUnix(destinationFile);
+          } catch (Exception e) {
+            throw new RuntimeException("Caught exception while converting to unix line endings", e);
+          }
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to read external resource " + value, e);
+      }
+    }
+    return value;
   }
 
   public boolean delete_resource(ResourceType t, String value) {

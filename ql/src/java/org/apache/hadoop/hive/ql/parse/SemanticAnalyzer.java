@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
@@ -1387,9 +1388,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Set<String> files = ss
           .list_resource(SessionState.ResourceType.FILE, null);
       if ((files != null) && !files.isEmpty()) {
-        int end = cmd.indexOf(" ");
-        String prog = (end == -1) ? cmd : cmd.substring(0, end);
-        String args = (end == -1) ? "" : cmd.substring(end, cmd.length());
+        String prog = getScriptProgName(cmd);
+        String args = getScriptArgs(cmd);
 
         for (String oneFile : files) {
           Path p = new Path(oneFile);
@@ -1399,6 +1399,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
       }
+    }
+
+    return cmd;
+  }
+
+  private String getScriptProgName(String cmd) {
+    int end = cmd.indexOf(" ");
+    return (end == -1) ? cmd : cmd.substring(0, end);
+  }
+
+  private String getScriptArgs(String cmd) {
+    int end = cmd.indexOf(" ");
+    return (end == -1) ? "" : cmd.substring(end, cmd.length());
+  }
+
+  private String fetchFilesNotInLocalFilesystem(String cmd) {
+    SessionState ss = SessionState.get();
+    String progName = getScriptProgName(cmd);
+
+    if (progName.matches("("+ SessionState.getMatchingSchemaAsRegex() +")://.*")) {
+      String filePath = ss.add_resource(ResourceType.FILE, progName, true);
+      if (filePath == null) {
+        throw new RuntimeException("Could not download the resource: " + progName);
+      }
+      Path p = new Path(filePath);
+      String fileName = p.getName();
+      String scriptArgs = getScriptArgs(cmd);
+      String finalCmd = fileName + scriptArgs;
+      return finalCmd;
     }
 
     return cmd;
@@ -1638,8 +1667,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new ScriptDesc(
-        getFixedCmd(stripQuotes(trfm.getChild(execPos).getText())), inInfo,
-        inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
+        getFixedCmd(fetchFilesNotInLocalFilesystem(stripQuotes(trfm.getChild(execPos).getText()))),
+        inInfo, inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
         new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
 
     return output;
