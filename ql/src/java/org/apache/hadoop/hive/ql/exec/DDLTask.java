@@ -2301,40 +2301,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    if (crtTbl.getSerName() != null) {
-      tbl.setSerializationLib(crtTbl.getSerName());
-    } else {
-      if (crtTbl.getFieldDelim() != null) {
-        tbl.setSerdeParam(Constants.FIELD_DELIM, crtTbl.getFieldDelim());
-        tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, crtTbl
-            .getFieldDelim());
-      }
-      if (crtTbl.getFieldEscape() != null) {
-        tbl.setSerdeParam(Constants.ESCAPE_CHAR, crtTbl.getFieldEscape());
-      }
-
-      if (crtTbl.getCollItemDelim() != null) {
-        tbl
-            .setSerdeParam(Constants.COLLECTION_DELIM, crtTbl
-            .getCollItemDelim());
-      }
-      if (crtTbl.getMapKeyDelim() != null) {
-        tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
-      }
-      if (crtTbl.getLineDelim() != null) {
-        tbl.setSerdeParam(Constants.LINE_DELIM, crtTbl.getLineDelim());
-      }
-    }
-
-    if (crtTbl.getSerdeProps() != null) {
-      Iterator<Entry<String, String>> iter = crtTbl.getSerdeProps().entrySet()
-        .iterator();
-      while (iter.hasNext()) {
-        Entry<String, String> m = iter.next();
-        tbl.setSerdeParam(m.getKey(), m.getValue());
-      }
-    }
-
     /*
      * We use LazySimpleSerDe by default.
      *
@@ -2354,6 +2320,34 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else {
       // let's validate that the serde exists
       validateSerDe(crtTbl.getSerName());
+      tbl.setSerializationLib(crtTbl.getSerName());
+    }
+    
+    if (crtTbl.getFieldDelim() != null) {
+      tbl.setSerdeParam(Constants.FIELD_DELIM, crtTbl.getFieldDelim());
+      tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, crtTbl.getFieldDelim());
+    }
+    if (crtTbl.getFieldEscape() != null) {
+      tbl.setSerdeParam(Constants.ESCAPE_CHAR, crtTbl.getFieldEscape());
+    }
+
+    if (crtTbl.getCollItemDelim() != null) {
+      tbl.setSerdeParam(Constants.COLLECTION_DELIM, crtTbl.getCollItemDelim());
+    }
+    if (crtTbl.getMapKeyDelim() != null) {
+      tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
+    }
+    if (crtTbl.getLineDelim() != null) {
+      tbl.setSerdeParam(Constants.LINE_DELIM, crtTbl.getLineDelim());
+    }
+
+    if (crtTbl.getSerdeProps() != null) {
+      Iterator<Entry<String, String>> iter = crtTbl.getSerdeProps().entrySet()
+        .iterator();
+      while (iter.hasNext()) {
+        Entry<String, String> m = iter.next();
+        tbl.setSerdeParam(m.getKey(), m.getValue());
+      }
     }
 
     if (crtTbl.getCols() != null) {
