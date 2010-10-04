@@ -186,7 +186,7 @@ public final class GenMapRedUtils {
         TableDesc tt_desc;
         Operator<? extends Serializable> rootOp;
 
-        if (mjCtx.getOldMapJoin() == null) {
+        if (mjCtx.getOldMapJoin() == null || setReducer) {
           taskTmpDir = mjCtx.getTaskTmpDir();
           tt_desc = mjCtx.getTTDesc();
           rootOp = mjCtx.getRootMapJoinOp();

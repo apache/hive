@@ -318,6 +318,9 @@ Trunk -  Unreleased
     HIVE-1673 Create table bug causes the row format property lost when serde is specified
     (He Yongqiang via namit)
 
+    HIVE-1678 Bug in mapjoin followed by another mapjoin
+    (Amareshwari Sriramadasu via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
