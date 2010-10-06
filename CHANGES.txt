@@ -172,6 +172,9 @@ Trunk -  Unreleased
     HIVE-1693 Make the compile target depend on thrift.home
     (Eli Collins via namit)
 
+    HIVE-1697. Migration scripts should increase size of PARAM_VALUE in
+    PARTITION_PARAMS (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
