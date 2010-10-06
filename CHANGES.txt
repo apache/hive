@@ -248,6 +248,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1531. Make Hive build work with Ivy versions < 2.1.0
     (Carl Steinbach via jvs)
 
+    HIVE-1364 Increase the maximum length of various metastore fields,
+    and remove TYPE_NAME from COLUMNS primary key (Carl Steinbach via namit)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
