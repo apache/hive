@@ -145,6 +145,10 @@
   <target name="compile-cpp"
           depends="init"
           description="Build CPP artifacts" >
+    <fail unless="thrift.home">
+      You must set thrift.home to the absolute path of your
+      local Thrift installation.
+    </fail>
     <iterate-cpp target="compile-cpp"/>
   </target>
 
