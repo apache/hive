@@ -3379,7 +3379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
-          validatePartSpec(dest_tab, partSpec);
+          // validatePartSpec(dest_tab, partSpec);
           dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
               conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
               conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
@@ -3678,19 +3678,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private void validatePartSpec(Table tbl, Map<String, String> partSpec)
-      throws SemanticException {
-    List<FieldSchema> parts = tbl.getPartitionKeys();
-    Set<String> partCols = new HashSet<String>(parts.size());
-    for (FieldSchema col: parts) {
-      partCols.add(col.getName());
-    }
-    for (String col: partSpec.keySet()) {
-      if (!partCols.contains(col)) {
-        throw new SemanticException(ErrorMsg.NONEXISTPARTCOL.getMsg());
-      }
-    }
-  }
 
   /**
    * Generate the conversion SelectOperator that converts the columns into the

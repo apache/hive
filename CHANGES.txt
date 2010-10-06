@@ -321,6 +321,9 @@ Trunk -  Unreleased
     HIVE-1678 Bug in mapjoin followed by another mapjoin
     (Amareshwari Sriramadasu via namit)
 
+    HIVE-1691 Validate partition spec in analyze
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

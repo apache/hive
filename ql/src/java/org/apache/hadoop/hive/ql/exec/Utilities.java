@@ -1549,4 +1549,19 @@ public final class Utilities {
       Constants.LIST_COLUMNS,
       columnNamesString);
   }
+
+  public static void validatePartSpec(Table tbl, Map<String, String> partSpec)
+      throws SemanticException {
+
+    List<FieldSchema> parts = tbl.getPartitionKeys();
+    Set<String> partCols = new HashSet<String>(parts.size());
+    for (FieldSchema col: parts) {
+      partCols.add(col.getName());
+    }
+    for (String col: partSpec.keySet()) {
+      if (!partCols.contains(col)) {
+        throw new SemanticException(ErrorMsg.NONEXISTPARTCOL.getMsg(col));
+      }
+    }
+  }
 }

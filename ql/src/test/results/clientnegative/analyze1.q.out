@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Non-Partition column appears in the partition specification:  key

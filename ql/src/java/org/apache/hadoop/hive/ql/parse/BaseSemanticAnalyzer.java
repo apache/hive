@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -577,6 +578,7 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(ast
             .getChild(childIndex), e.getMessage()), e);
       }
+
       // get partition metadata if partition specified
       if (ast.getChildCount() == 2) {
         childIndex = 1;
@@ -586,13 +588,17 @@ public abstract class BaseSemanticAnalyzer {
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
           String val = null;
+          String colName = unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase());
           if (partspec_val.getChildCount() < 2) { // DP in the form of T partition (ds, hr)
             ++numDynParts;
           } else { // in the form of T partition (ds="2010-03-03")
             val = stripQuotes(partspec_val.getChild(1).getText());
           }
-          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase()), val);
+          partSpec.put(colName, val);
         }
+
+        Utilities.validatePartSpec(tableHandle, partSpec);
+
         // check if the partition spec is valid
         if (numDynParts > 0) {
           List<FieldSchema> parts = tableHandle.getPartitionKeys();
@@ -671,5 +677,4 @@ public abstract class BaseSemanticAnalyzer {
     }
     return partSpec;
   }
-
 }

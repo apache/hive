@@ -145,7 +145,7 @@ public enum ErrorMsg {
   DYNAMIC_PARTITION_MERGE("Dynamic partition does not support merging mapfiles/mapredfiles yet."
       + "Please set hive.merge.mapfiles and hive.merge.mapredfiles to false or use static "
       +	"partitions"),
-  NONEXISTPARTCOL("Partition column in the partition specification does not exist"),
+  NONEXISTPARTCOL("Non-Partition column appears in the partition specification: "),
   UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
       + "STRING instead."),
   CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
@@ -323,15 +323,15 @@ public enum ErrorMsg {
     sb.append(getCharPositionInLine(tree));
   }
 
-  String getMsg(Tree tree) {
+  public String getMsg(Tree tree) {
     return getMsg((ASTNode) tree);
   }
 
-  String getMsg(ASTNode tree, String reason) {
+  public String getMsg(ASTNode tree, String reason) {
     return getMsg(tree) + ": " + reason;
   }
 
-  String getMsg(Tree tree, String reason) {
+  public String getMsg(Tree tree, String reason) {
     return getMsg((ASTNode) tree, reason);
   }
 
