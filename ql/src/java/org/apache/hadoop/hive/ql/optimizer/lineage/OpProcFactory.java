@@ -146,14 +146,14 @@ public class OpProcFactory {
       for(FieldSchema col : cols) {
         fieldSchemaMap.put(col.getName(), col);
       }
-      
+
       Iterator<VirtualColumn> vcs = VirtualColumn.registry.values().iterator();
       while (vcs.hasNext()) {
         VirtualColumn vc = vcs.next();
         fieldSchemaMap.put(vc.getName(), new FieldSchema(vc.getName(),
             vc.getTypeInfo().getTypeName(), ""));
       }
-      
+
       TableAliasInfo tai = new TableAliasInfo();
       tai.setAlias(top.getConf().getAlias());
       tai.setTable(tab);
@@ -162,7 +162,7 @@ public class OpProcFactory {
         Dependency dep = new Dependency();
         BaseColumnInfo bci = new BaseColumnInfo();
         bci.setTabAlias(tai);
-        bci.setColumn(fieldSchemaMap.get(ci.getInternalName()));          
+        bci.setColumn(fieldSchemaMap.get(ci.getInternalName()));
 
         // Populate the dependency
         dep.setType(LineageInfo.DependencyType.SIMPLE);
@@ -347,15 +347,17 @@ public class OpProcFactory {
         // the dependency list of the input operator.
         if (bci_set.isEmpty()) {
           Set<TableAliasInfo> tai_set = new LinkedHashSet<TableAliasInfo>();
-          for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
-            Dependency inp_dep = lctx.getIndex().getDependency(inpOp, ci);
-            // The dependency can be null as some of the input cis may not have
-            // been set in case of joins.
-            if (inp_dep != null) {
-              for(BaseColumnInfo bci : inp_dep.getBaseCols()) {
-                new_type = LineageCtx.getNewDependencyType(inp_dep.getType(), new_type);
-                tai_set.add(bci.getTabAlias());
-              }
+          if (inpOp.getSchema() != null && inpOp.getSchema().getSignature() != null ) {
+            for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
+              Dependency inp_dep = lctx.getIndex().getDependency(inpOp, ci);
+            	// The dependency can be null as some of the input cis may not have
+            	// been set in case of joins.
+            	if (inp_dep != null) {
+            	  for(BaseColumnInfo bci : inp_dep.getBaseCols()) {
+            	    new_type = LineageCtx.getNewDependencyType(inp_dep.getType(), new_type);
+            	    tai_set.add(bci.getTabAlias());
+            	  }
+            	}
             }
           }
 

@@ -74,11 +74,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(key) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-26_584_2445455362948160825/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-41_208_4400041131469894408/-mr-10000
 POSTHOOK: query: SELECT count(key) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-26_584_2445455362948160825/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-41_208_4400041131469894408/-mr-10000
 500
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
@@ -148,11 +148,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-31_832_6294236640527541514/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-45_054_1308573560669467912/-mr-10000
 POSTHOOK: query: SELECT count(DISTINCT key) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-31_832_6294236640527541514/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-45_054_1308573560669467912/-mr-10000
 309
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
@@ -228,11 +228,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-35_826_4104856806164432180/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-48_609_6289034930587379052/-mr-10000
 POSTHOOK: query: SELECT count(DISTINCT key, value) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-35_826_4104856806164432180/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-48_609_6289034930587379052/-mr-10000
 309
 PREHOOK: query: EXPLAIN SELECT count(*) FROM src
 PREHOOK: type: QUERY
@@ -292,11 +292,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(*) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-40_398_2344399307637124134/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-52_155_8998470975585414020/-mr-10000
 POSTHOOK: query: SELECT count(*) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-40_398_2344399307637124134/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-52_155_8998470975585414020/-mr-10000
 500
 PREHOOK: query: EXPLAIN SELECT count(1) FROM src
 PREHOOK: type: QUERY
@@ -356,9 +356,27 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(1) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-45_028_714373071146042914/10000
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-55_652_6830399124243606163/-mr-10000
 POSTHOOK: query: SELECT count(1) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/rF/rFg7A9swER0pyf9VBov+VU+++TM/-Tmp-/arvind/hive_2010-07-06_14-12-45_028_714373071146042914/10000
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-55_652_6830399124243606163/-mr-10000
 500
+PREHOOK: query: select count(1) from src where false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-59_254_6453543783867223758/-mr-10000
+POSTHOOK: query: select count(1) from src where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-09-59_254_6453543783867223758/-mr-10000
+0
+PREHOOK: query: select count(*) from src where false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-10-02_792_1217690019692171518/-mr-10000
+POSTHOOK: query: select count(*) from src where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-01_11-10-02_792_1217690019692171518/-mr-10000
+0

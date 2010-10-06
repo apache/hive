@@ -43,9 +43,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuf
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
@@ -874,8 +874,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           // This is based on the assumption that a null row is ignored by
           // aggregation functions
           for (int ai = 0; ai < aggregations.length; ai++) {
+
+            // o is set to NULL in order to distinguish no rows at all
+            Object[] o;
+            if (aggregationParameterFields[ai].length > 0) {
+              o = new Object[aggregationParameterFields[ai].length];
+            } else {
+              o = null;
+            }
+
             // Calculate the parameters
-            Object[] o = new Object[aggregationParameterFields[ai].length];
             for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
               o[pi] = null;
             }

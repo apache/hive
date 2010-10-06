@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -40,6 +42,8 @@ import org.apache.hadoop.io.LongWritable;
           + "_FUNC_(DISTINCT expr[, expr...]) - Returns the number of rows for "
           +        "which the supplied expression(s) are unique and non-NULL.")
 public class GenericUDAFCount implements GenericUDAFResolver2 {
+
+  private static final Log LOG = LogFactory.getLog(GenericUDAFCount.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters)
@@ -114,6 +118,10 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters)
       throws HiveException {
+      // parameters == null means the input table/split is empty
+      if (parameters == null) {
+        return;
+      }
       if (countAllColumns) {
         assert parameters.length == 0;
         ((CountAgg) agg).value++;

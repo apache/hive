@@ -324,6 +324,9 @@ Trunk -  Unreleased
     HIVE-1691 Validate partition spec in analyze
     (Ning Zhang via namit)
 
+    HIVE-1674 count(*) returns wrong result when a mapper returns empty results
+    (Ning Zhang via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

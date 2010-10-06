@@ -15,3 +15,6 @@ SELECT count(*) FROM src;
 
 EXPLAIN SELECT count(1) FROM src;
 SELECT count(1) FROM src;
+
+select count(1) from src where false;
+select count(*) from src where false;
