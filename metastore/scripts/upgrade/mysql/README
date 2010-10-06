@@ -1,0 +1,9 @@
+
+1) Shutdown your metastore instance.
+
+2) Perform a backup of your MySQL metastore database:
+   % mysqldump --opt <metastore_db_name> > metastore_backup.sql
+
+3) Execute the upgrade script:
+   % mysql --user=<username> --password=<password> \
+     <metastore_db_name> < upgrade-0.6.0.mysql.sql
