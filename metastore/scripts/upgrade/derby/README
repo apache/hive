@@ -1,0 +1,17 @@
+
+1) Shutdown your metastore instance.
+
+2) Perform a backup of your Derby metastore database. Probably
+   the easiest way of doing this is to just create a copy of the
+   Derby database "metastore_db" directory.
+
+3) Execute the upgrade script:
+   % ij
+   ij version 10.4
+   ij> CONNECT 'jdbc:derby:/Users/bob/hive/metastore_db;databaseName=metastore_db';
+   ij> RUN 'upgrade-0.6.0.derby.sql';
+   ij> quit;
+
+NOTE: You may need to install the Derby 'ij' utility.
+      Look here for installation instructions:
+      http://db.apache.org/derby/docs/10.4/getstart/
