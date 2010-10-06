@@ -251,6 +251,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1364 Increase the maximum length of various metastore fields,
     and remove TYPE_NAME from COLUMNS primary key (Carl Steinbach via namit)
 
+    HIVE-1693 Make the compile target depend on thrift.home
+    (Eli Collins via namit)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
