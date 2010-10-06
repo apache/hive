@@ -163,6 +163,9 @@ Trunk -  Unreleased
     HIVE-1378. Return value for map, array, and struct needs to return a string
     (Steven Wong via Ning Zhang)
 
+    HIVE-1364 Increase the maximum length of various metastore fields, and
+    remove TYPE_NAME from COLUMNS primary key (Carl Steinbach via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
