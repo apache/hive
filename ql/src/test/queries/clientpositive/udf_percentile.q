@@ -68,3 +68,5 @@ SELECT CAST(key AS INT) DIV 10,
        percentile(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), array(0.0, 0.5, 0.99, 1.0))
 FROM src
 GROUP BY CAST(key AS INT) DIV 10;
+
+select percentile(cast(key as bigint), 0.5) from src where false;

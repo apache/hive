@@ -339,6 +339,9 @@ Trunk -  Unreleased
     HIVE-1674 count(*) returns wrong result when a mapper returns empty results
     (Ning Zhang via He Yongqiang)
 
+    HIVE-1376 Simple UDAFs with more than 1 parameter crash on empty row query
+    (Ning Zhang via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
