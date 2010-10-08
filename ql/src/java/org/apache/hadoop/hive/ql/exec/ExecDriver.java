@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -84,6 +85,8 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.varia.NullAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Appender;
 
 /**
  * ExecDriver.
@@ -985,7 +988,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       printUsage();
     }
 
-    console.printInfo("plan = " + planFileName);
+    // print out the location of the log file for the user so
+    // that it's easy to find reason for local mode execution failures
+    for (Appender appender: Collections.list
+           ((Enumeration<Appender>)LogManager.getRootLogger().getAllAppenders())) {
+      if (appender instanceof FileAppender) {
+        console.printInfo("Execution log at: " + ((FileAppender)appender).getFile());
+      }
+    }
 
     // log the list of job conf parameters for reference
     LOG.info(sb.toString());

@@ -13,7 +13,7 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING '../data/scripts/input20_script'
+USING 'input20_script'
 AS key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
@@ -26,11 +26,11 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING '../data/scripts/input20_script'
+USING 'input20_script'
 AS key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) key)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL tmap) key) (. (TOK_TABLE_OR_COL tmap) value)) TOK_SERDE TOK_RECORDWRITER '../data/scripts/input20_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key value))))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) key)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL tmap) key) (. (TOK_TABLE_OR_COL tmap) value)) TOK_SERDE TOK_RECORDWRITER 'input20_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key value))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -82,7 +82,7 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1
             Transform Operator
-              command: ../data/scripts/input20_script
+              command: input20_script
               output info:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -125,7 +125,7 @@ PREHOOK: query: FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING '../data/scripts/input20_script'
+USING 'input20_script'
 AS key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -139,7 +139,7 @@ POSTHOOK: query: FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING '../data/scripts/input20_script'
+USING 'input20_script'
 AS key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -149,11 +149,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 PREHOOK: query: SELECT * FROM dest1 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-28-07_786_8910183540779340449/-mr-10000
+PREHOOK: Output: file:/tmp/jssarma/hive_2010-10-04_16-33-06_819_3128330973662451588/-mr-10000
 POSTHOOK: query: SELECT * FROM dest1 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-28-07_786_8910183540779340449/-mr-10000
+POSTHOOK: Output: file:/tmp/jssarma/hive_2010-10-04_16-33-06_819_3128330973662451588/-mr-10000
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	105_105

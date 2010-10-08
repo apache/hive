@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.io.File;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -164,9 +166,23 @@ public class MapRedTask extends ExecDriver implements Serializable {
       String cmdLine = hadoopExec + " jar " + jarCmd + " -plan "
           + planPath.toString() + " " + isSilent + " " + hiveConfArgs;
 
+      String workDir = (new File(".")).getCanonicalPath();
       String files = getResourceFiles(conf, SessionState.ResourceType.FILE);
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
+
+        workDir = (new Path(ctx.getLocalTmpFileURI())).toUri().getPath();
+
+        if (! (new File(workDir)).mkdir())
+          throw new IOException ("Cannot create tmp working dir: " + workDir);
+
+        for (String f: StringUtils.split(files, ',')) {
+          Path p = new Path(f);
+          String target = p.toUri().getPath();
+          String link = workDir + Path.SEPARATOR + p.getName();
+          if (FileUtil.symLink(target, link) != 0)
+            throw new IOException ("Cannot link to added file: " + target + " from: " + link);
+        }
       }
 
       LOG.info("Executing: " + cmdLine);
@@ -186,13 +202,26 @@ public class MapRedTask extends ExecDriver implements Serializable {
       String[] env;
       Map<String, String> variables = new HashMap(System.getenv());
       // The user can specify the hadoop memory
-      int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
-      if (hadoopMem == 0) {
-        variables.remove(HADOOP_MEM_KEY);
+
+      if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
+        // if we are running in local mode - then the amount of memory used
+        // by the child jvm can no longer default to the memory used by the
+        // parent jvm
+        int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+        if (hadoopMem == 0) {
+          // remove env var that would default child jvm to use parent's memory
+          // as default. child jvm would use default memory for a hadoop client
+          variables.remove(HADOOP_MEM_KEY);
+        } else {
+          // user specified the memory for local mode hadoop run
+          variables.put(HADOOP_MEM_KEY, String.valueOf(hadoopMem));
+        }
       } else {
-        // user specified the memory - only applicable for local mode
-        variables.put(HADOOP_MEM_KEY, String.valueOf(hadoopMem));
+        // nothing to do - we are not running in local mode - only submitting
+        // the job via a child process. in this case it's appropriate that the
+        // child jvm use the same memory as the parent jvm
       }
+
       if (variables.containsKey(HADOOP_OPTS_KEY)) {
         variables.put(HADOOP_OPTS_KEY, variables.get(HADOOP_OPTS_KEY)
             + hadoopOpts);
@@ -207,7 +236,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         env[pos++] = name + "=" + value;
       }
       // Run ExecDriver in another JVM
-      executor = Runtime.getRuntime().exec(cmdLine, env);
+      executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
       StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
           null, System.out);

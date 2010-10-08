@@ -1373,37 +1373,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return HiveConf.getColumnInternalName(pos);
   }
 
-  /**
-   * If the user script command needs any modifications - do it here.
-   */
-  private String getFixedCmd(String cmd) {
-    SessionState ss = SessionState.get();
-    if (ss == null) {
-      return cmd;
-    }
-
-    // for local mode - replace any references to packaged files by name with
-    // the reference to the original file path
-    if (ss.getConf().get("mapred.job.tracker", "local").equals("local")) {
-      Set<String> files = ss
-          .list_resource(SessionState.ResourceType.FILE, null);
-      if ((files != null) && !files.isEmpty()) {
-        String prog = getScriptProgName(cmd);
-        String args = getScriptArgs(cmd);
-
-        for (String oneFile : files) {
-          Path p = new Path(oneFile);
-          if (p.getName().equals(prog)) {
-            cmd = oneFile + args;
-            break;
-          }
-        }
-      }
-    }
-
-    return cmd;
-  }
-
   private String getScriptProgName(String cmd) {
     int end = cmd.indexOf(" ");
     return (end == -1) ? cmd : cmd.substring(0, end);
@@ -1667,7 +1636,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new ScriptDesc(
-        getFixedCmd(fetchFilesNotInLocalFilesystem(stripQuotes(trfm.getChild(execPos).getText()))),
+        fetchFilesNotInLocalFilesystem(stripQuotes(trfm.getChild(execPos).getText())),
         inInfo, inRecordWriter, outInfo, outRecordReader, errRecordReader, errInfo),
         new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
 

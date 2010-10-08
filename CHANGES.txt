@@ -943,6 +943,9 @@ Release 0.6.0 -  Unreleased
     metastore methods
     (Edward Capriolo via jvs)
 
+    HIVE-1570 referencing an added file by it's name in a transform script does
+    not work in hive local mode (Joydeep Sen Sarma via namit)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

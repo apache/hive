@@ -302,10 +302,16 @@ public final class Utilities {
         FileSystem fs = planPath.getFileSystem(job);
         FSDataOutputStream out = fs.create(planPath);
         serializeMapRedWork(w, out);
+        
         // Set up distributed cache
         DistributedCache.createSymlink(job);
         String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;
         DistributedCache.addCacheFile(new URI(uriWithLink), job);
+
+        // set replication of the plan file to a high number. we use the same
+        // replication factor as used by the hadoop jobclient for job.xml etc.
+        short replication = (short)job.getInt("mapred.submit.replication", 10);
+        fs.setReplication(planPath, replication);
       }
 
       // Cache the plan in this process
