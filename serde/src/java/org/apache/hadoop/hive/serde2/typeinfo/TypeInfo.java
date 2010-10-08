@@ -25,11 +25,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 /**
  * Stores information about a type. Always use the TypeInfoFactory to create new
  * TypeInfo objects.
- * 
- * We support 4 categories of types: 1. Primitive objects (String, Number, etc)
+ *
+ * We support 5 categories of types: 1. Primitive objects (String, Number, etc)
  * 2. List objects (a list of objects of a single type) 3. Map objects (a map
  * from objects of one type to objects of another type) 4. Struct objects (a
- * list of fields with names and their own types)
+ * list of fields with names and their own types) 5. Union objects
  */
 public abstract class TypeInfo implements Serializable {
 
@@ -39,8 +39,8 @@ public abstract class TypeInfo implements Serializable {
   }
 
   /**
-   * The Category of this TypeInfo. Possible values are Primitive, List, Map and
-   * Struct, which corresponds to the 4 sub-classes of TypeInfo.
+   * The Category of this TypeInfo. Possible values are Primitive, List, Map,
+   * Struct and Union, which corresponds to the 5 sub-classes of TypeInfo.
    */
   public abstract Category getCategory();
 

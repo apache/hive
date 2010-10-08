@@ -1,0 +1,55 @@
+PREHOOK: query: explain create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
+strct struct<a:int, b:string, c:string>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: explain create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
+strct struct<a:int, b:string, c:string>)
+POSTHOOK: type: CREATETABLE
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE abc TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL mydata (TOK_UNIONTYPE (TOK_COLTYPELIST TOK_INT TOK_DOUBLE (TOK_LIST TOK_STRING) (TOK_STRUCT (TOK_TABCOLLIST (TOK_TABCOL a TOK_INT) (TOK_TABCOL b TOK_STRING)))))) (TOK_TABCOL strct (TOK_STRUCT (TOK_TABCOLLIST (TOK_TABCOL a TOK_INT) (TOK_TABCOL b TOK_STRING) (TOK_TABCOL c TOK_STRING))))))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: mydata uniontype<int,double,array<string>,struct<a:int,b:string>>, strct struct<a:int,b:string,c:string>
+          if not exists: false
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          name: abc
+          isExternal: false
+
+
+PREHOOK: query: create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
+strct struct<a:int, b:string, c:string>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table abc(mydata uniontype<int,double,array<string>,struct<a:int,b:string>>,
+strct struct<a:int, b:string, c:string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@abc
+PREHOOK: query: load data local inpath '../data/files/union_input.txt'
+overwrite into table abc
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/union_input.txt'
+overwrite into table abc
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@abc
+PREHOOK: query: SELECT * FROM abc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abc
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-28_21-39-36_818_1147210259746108693/-mr-10000
+POSTHOOK: query: SELECT * FROM abc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abc
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-28_21-39-36_818_1147210259746108693/-mr-10000
+{0:1}	{"a":1,"b":"one","c":"one"}
+{1:2.0}	{"a":2,"b":"two","c":"two"}
+{2:["three","four"]}	{"a":3,"b":"three","c":"four"}
+{3:{"a":5,"b":"five"}}	{"a":5,"b":"five","c":"five"}
+{2:["six","seven"]}	{"a":6,"b":"six","c":"seven"}
+{3:{"a":8,"b":"eight"}}	{"a":8,"b":"eight","c":"eight"}
+{0:9}	{"a":9,"b":"nine","c":"nine"}
+{1:10.0}	{"a":10,"b":"ten","c":"ten"}

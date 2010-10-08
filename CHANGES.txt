@@ -92,8 +92,11 @@ Trunk -  Unreleased
     HIVE-1427. Add metastore schema migration scripts (0.5 -> 0.6)
     (Carl Steinback via namit)
 
-    HIVE-1546 Ability to plug custom Semantic Analyzers for Hive Grammar
+    HIVE-1546. Ability to plug custom Semantic Analyzers for Hive Grammar
     (Ashutosh Chauhan via namit)
+
+    HIVE-537. Hive TypeInfo/ObjectInspector to support union
+    (Amareshwari Sriramadasu via namit)
 
   IMPROVEMENTS
 

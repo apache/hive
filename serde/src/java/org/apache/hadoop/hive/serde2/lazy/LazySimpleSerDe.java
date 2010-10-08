@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -499,6 +501,22 @@ public class LazySimpleSerDe implements SerDe {
               separators, level + 1, nullSequence, escaped, escapeChar,
               needsEscape);
         }
+      }
+      return;
+    case UNION:
+      separator = (char) separators[level];
+      UnionObjectInspector uoi = (UnionObjectInspector) objInspector;
+      List<? extends ObjectInspector> ois = uoi.getObjectInspectors();
+      if (ois == null) {
+        out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
+      } else {
+        LazyUtils.writePrimitiveUTF8(out, new Byte(uoi.getTag(obj)),
+            PrimitiveObjectInspectorFactory.javaByteObjectInspector,
+            escaped, escapeChar, needsEscape);
+        out.write(separator);
+        serialize(out, uoi.getField(obj), ois.get(uoi.getTag(obj)),
+            separators, level + 1, nullSequence, escaped, escapeChar,
+            needsEscape);
       }
       return;
     default:

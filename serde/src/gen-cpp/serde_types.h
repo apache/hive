@@ -7,6 +7,7 @@
 #define serde_TYPES_H
 
 #include <Thrift.h>
+#include <TApplicationException.h>
 #include <protocol/TProtocol.h>
 #include <transport/TTransport.h>
 

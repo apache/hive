@@ -112,6 +112,29 @@ public final class LazyObjectInspectorFactory {
     return result;
   }
 
+  static HashMap<List<Object>, LazyUnionObjectInspector>
+    cachedLazyUnionObjectInspector =
+      new HashMap<List<Object>, LazyUnionObjectInspector>();
+
+  public static LazyUnionObjectInspector getLazyUnionObjectInspector(
+      List<ObjectInspector> ois, byte separator, Text nullSequence,
+      boolean escaped, byte escapeChar) {
+    List<Object> signature = new ArrayList<Object>();
+    signature.add(ois);
+    signature.add(Byte.valueOf(separator));
+    signature.add(nullSequence.toString());
+    signature.add(Boolean.valueOf(escaped));
+    signature.add(Byte.valueOf(escapeChar));
+    LazyUnionObjectInspector result = cachedLazyUnionObjectInspector
+        .get(signature);
+    if (result == null) {
+      result = new LazyUnionObjectInspector(ois, separator,
+          nullSequence, escaped, escapeChar);
+      cachedLazyUnionObjectInspector.put(signature, result);
+    }
+    return result;
+  }
+
   private LazyObjectInspectorFactory() {
     // prevent instantiation
   }

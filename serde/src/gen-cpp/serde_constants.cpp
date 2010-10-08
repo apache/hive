@@ -24,6 +24,8 @@ serdeConstants::serdeConstants() {
 
   SERIALIZATION_SORT_ORDER = "serialization.sort.order";
 
+  SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object";
+
   FIELD_DELIM = "field.delim";
 
   COLLECTION_DELIM = "colelction.delim";
@@ -65,6 +67,8 @@ serdeConstants::serdeConstants() {
   MAP_TYPE_NAME = "map";
 
   STRUCT_TYPE_NAME = "struct";
+
+  UNION_TYPE_NAME = "uniontype";
 
   LIST_COLUMNS = "columns";
 

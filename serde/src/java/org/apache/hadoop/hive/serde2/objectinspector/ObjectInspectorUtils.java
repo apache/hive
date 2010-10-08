@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -137,6 +138,15 @@ public final class ObjectInspectorUtils {
           fieldNames, fieldObjectInspectors);
       break;
     }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
+      for (ObjectInspector eoi : uoi.getObjectInspectors()) {
+        ois.add(getStandardObjectInspector(eoi, objectInspectorOption));
+      }
+      result = ObjectInspectorFactory.getStandardUnionObjectInspector(ois);
+      break;
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -243,6 +253,16 @@ public final class ObjectInspectorUtils {
       result = struct;
       break;
     }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector)oi;
+      List<ObjectInspector> objectInspectors = uoi.getObjectInspectors();
+      Object object = copyToStandardObject(
+              uoi.getField(o),
+              objectInspectors.get(uoi.getTag(o)),
+              objectInspectorOption);
+      result = object;
+      break;
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -261,6 +281,20 @@ public final class ObjectInspectorUtils {
       sb.append(fields.get(i).getFieldName());
       sb.append(":");
       sb.append(fields.get(i).getFieldObjectInspector().getTypeName());
+    }
+    sb.append(">");
+    return sb.toString();
+  }
+
+  public static String getStandardUnionTypeName(UnionObjectInspector uoi) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(Constants.UNION_TYPE_NAME + "<");
+    List<ObjectInspector> ois = uoi.getObjectInspectors();
+    for(int i = 0; i < ois.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
+      }
+      sb.append(ois.get(i).getTypeName());
     }
     sb.append(">");
     return sb.toString();
@@ -344,6 +378,20 @@ public final class ObjectInspectorUtils {
       }
       return result.toString();
     }
+    case UNION: {
+      StringBuffer result = new StringBuffer();
+      result.append(oi.getClass().getSimpleName() + "<");
+      UnionObjectInspector uoi = (UnionObjectInspector)oi;
+      List<ObjectInspector> ois = uoi.getObjectInspectors();
+      for (int i = 0; i < ois.size(); i++) {
+        if (i > 0) {
+          result.append(",");
+        }
+        result.append(getObjectInspectorName(ois.get(i)));
+      }
+      result.append(">");
+      return result.toString();
+    }
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }
@@ -400,6 +448,7 @@ public final class ObjectInspectorUtils {
     case STRUCT:
     case LIST:
     case MAP:
+    case UNION:
     default:
       throw new RuntimeException(
           "Hash code on complex types not supported yet.");
@@ -447,6 +496,14 @@ public final class ObjectInspectorUtils {
       return true;
     case MAP:
       return false;
+    case UNION:
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      for (ObjectInspector eoi : uoi.getObjectInspectors()) {
+        if (!compareSupported(eoi)) {
+          return false;
+        }
+      }
+      return true;
     default:
       return false;
     }
@@ -564,6 +621,18 @@ public final class ObjectInspectorUtils {
     }
     case MAP: {
       throw new RuntimeException("Compare on map type not supported!");
+    }
+    case UNION: {
+      UnionObjectInspector uoi1 = (UnionObjectInspector) oi1;
+      UnionObjectInspector uoi2 = (UnionObjectInspector) oi2;
+      byte tag1 = uoi1.getTag(o1);
+      byte tag2 = uoi2.getTag(o2);
+      if (tag1 != tag2) {
+        return tag1 - tag2;
+      }
+      return compare(uoi1.getField(o1),
+          uoi1.getObjectInspectors().get(tag1),
+          uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2));
     }
     default:
       throw new RuntimeException("Compare on unknown type: "
@@ -711,6 +780,29 @@ public final class ObjectInspectorUtils {
         }
       }
 
+      return true;
+    }
+
+    if (c1.equals(Category.UNION)) {
+      UnionObjectInspector uoi1 = (UnionObjectInspector) o1;
+      UnionObjectInspector uoi2 = (UnionObjectInspector) o2;
+      List<ObjectInspector> ois1 = uoi1.getObjectInspectors();
+      List<ObjectInspector> ois2 = uoi2.getObjectInspectors();
+
+      if (ois1 == null && ois2 == null) {
+        return true;
+      } else if (ois1 == null || ois2 == null) {
+        return false;
+      } else if (ois1.size() != ois2.size()) {
+        return false;
+      }
+      Iterator<? extends ObjectInspector> it1 = ois1.iterator();
+      Iterator<? extends ObjectInspector> it2 = ois2.iterator();
+      while (it1.hasNext()) {
+        if (!compareTypes(it1.next(), it2.next())) {
+          return false;
+        }
+      }
       return true;
     }
 

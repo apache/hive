@@ -523,6 +523,8 @@ public abstract class BaseSemanticAnalyzer {
           + getTypeStringFromAST((ASTNode) typeNode.getChild(1)) + ">";
     case HiveParser.TOK_STRUCT:
       return getStructTypeStringFromAST(typeNode);
+    case HiveParser.TOK_UNIONTYPE:
+      return getUnionTypeStringFromAST(typeNode);
     default:
       return DDLSemanticAnalyzer.getTypeName(typeNode.getType());
     }
@@ -545,6 +547,24 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
+    typeStr += ">";
+    return typeStr;
+  }
+
+  private static String getUnionTypeStringFromAST(ASTNode typeNode)
+      throws SemanticException {
+    String typeStr = Constants.UNION_TYPE_NAME + "<";
+    typeNode = (ASTNode) typeNode.getChild(0);
+    int children = typeNode.getChildCount();
+    if (children <= 0) {
+      throw new SemanticException("empty union not allowed.");
+    }
+    for (int i = 0; i < children; i++) {
+      typeStr += getTypeStringFromAST((ASTNode) typeNode.getChild(i));
+      if (i < children - 1) {
+        typeStr += ",";
+      }
+    }
     typeStr += ">";
     return typeStr;
   }

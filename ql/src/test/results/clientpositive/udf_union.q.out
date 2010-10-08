@@ -1,0 +1,73 @@
+PREHOOK: query: DESCRIBE FUNCTION create_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION create_union
+POSTHOOK: type: DESCFUNCTION
+create_union(tag, obj1, obj2, obj3, ...) - Creates a union with the object for given tag
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED create_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED create_union
+POSTHOOK: type: DESCFUNCTION
+create_union(tag, obj1, obj2, obj3, ...) - Creates a union with the object for given tag
+Example:
+  > SELECT create_union(1, 1, "one") FROM src LIMIT 1;
+  one
+PREHOOK: query: EXPLAIN
+SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src LIMIT 2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src LIMIT 2
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION create_union 0 (TOK_TABLE_OR_COL key))) (TOK_SELEXPR (TOK_FUNCTION create_union (TOK_FUNCTION if (< (TOK_TABLE_OR_COL key) 100) 0 1) 2.0 (TOK_TABLE_OR_COL value))) (TOK_SELEXPR (TOK_FUNCTION create_union 1 "a" (TOK_FUNCTION struct 2 "b")))) (TOK_LIMIT 2)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: create_union(0,key)
+                    type: uniontype<string>
+                    expr: create_union(if((key < 100), 0, 1),2.0,value)
+                    type: uniontype<double,string>
+                    expr: create_union(1,'a',struct(2,'b'))
+                    type: uniontype<string,struct<col1:int,col2:string>>
+              outputColumnNames: _col0, _col1, _col2
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 2
+
+
+PREHOOK: query: SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-07_21-34-09_385_8152840394893561074/-mr-10000
+POSTHOOK: query: SELECT create_union(0, key), create_union(if(key<100, 0, 1), 2.0, value),
+create_union(1, "a", struct(2, "b"))
+FROM src LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-07_21-34-09_385_8152840394893561074/-mr-10000
+{0:"238"}	{1:"val_238"}	{1:{"col1":2,"col2":"b"}}
+{0:"86"}	{0:2.0}	{1:{"col1":2,"col2":"b"}}

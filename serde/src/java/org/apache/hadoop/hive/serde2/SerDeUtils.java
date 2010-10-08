@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -326,6 +327,20 @@ public final class SerDeUtils {
       }
       break;
     }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      if (o == null) {
+        sb.append("null");
+      } else {
+        sb.append(LBRACE);
+        sb.append(uoi.getTag(o));
+        sb.append(COLON);
+        buildJSONString(sb, uoi.getField(o),
+              uoi.getObjectInspectors().get(uoi.getTag(o)));
+        sb.append(RBRACE);
+      }
+      break;
+    }
     default:
       throw new RuntimeException("Unknown type in ObjectInspector!");
     }
@@ -410,6 +425,19 @@ public final class SerDeUtils {
           }
         }
         return false;
+      }
+    }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      if (o == null) {
+        return true;
+      } else {
+        // there are no elements in the union
+        if (uoi.getObjectInspectors().size() == 0) {
+          return false;
+        }
+        return hasAnyNullObject(uoi.getField(o),
+            uoi.getObjectInspectors().get(uoi.getTag(o)));
       }
     }
     default:

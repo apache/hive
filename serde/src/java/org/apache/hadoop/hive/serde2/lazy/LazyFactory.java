@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyListObjectInspecto
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -92,6 +94,8 @@ public final class LazyFactory {
       return new LazyArray((LazyListObjectInspector) oi);
     case STRUCT:
       return new LazyStruct((LazySimpleStructObjectInspector) oi);
+    case UNION:
+      return new LazyUnion((LazyUnionObjectInspector) oi);
     }
 
     throw new RuntimeException("Hive LazySerDe Internal error.");
@@ -152,6 +156,16 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazySimpleStructObjectInspector(
           fieldNames, fieldObjectInspectors, separator[separatorIndex],
           nullSequence, false, escaped, escapeChar);
+    case UNION:
+      UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+      List<ObjectInspector> lazyOIs = new ArrayList<ObjectInspector>();
+      for (TypeInfo uti : unionTypeInfo.getAllUnionObjectTypeInfos()) {
+        lazyOIs.add(createLazyObjectInspector(uti, separator,
+            separatorIndex + 1, nullSequence, escaped,
+            escapeChar));
+      }
+      return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
+          separator[separatorIndex], nullSequence, escaped, escapeChar);
     }
 
     throw new RuntimeException("Hive LazySerDe Internal error.");

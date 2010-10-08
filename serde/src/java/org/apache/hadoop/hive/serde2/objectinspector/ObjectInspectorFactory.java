@@ -223,6 +223,21 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
+  static HashMap<List<ObjectInspector>, StandardUnionObjectInspector>
+    cachedStandardUnionObjectInspector =
+      new HashMap<List<ObjectInspector>, StandardUnionObjectInspector>();
+
+  public static StandardUnionObjectInspector getStandardUnionObjectInspector(
+      List<ObjectInspector> unionObjectInspectors) {
+    StandardUnionObjectInspector result = cachedStandardUnionObjectInspector
+        .get(unionObjectInspectors);
+    if (result == null) {
+      result = new StandardUnionObjectInspector(unionObjectInspectors);
+      cachedStandardUnionObjectInspector.put(unionObjectInspectors, result);
+    }
+    return result;
+  }
+
   static HashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector = new HashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
 
   public static StandardStructObjectInspector getStandardStructObjectInspector(

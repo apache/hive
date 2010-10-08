@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -390,6 +393,17 @@ public class BinarySortableSerDe implements SerDe {
       }
       return r;
     }
+    case UNION: {
+      UnionTypeInfo utype = (UnionTypeInfo) type;
+      StandardUnion r = reuse == null ? new StandardUnion()
+          : (StandardUnion) reuse;
+      // Read the tag
+      byte tag = buffer.read(invert);
+      r.setTag(tag);
+      r.setObject(deserialize(buffer, utype.getAllUnionObjectTypeInfos().get(tag),
+          invert, null));
+      return r;
+    }
     default: {
       throw new RuntimeException("Unrecognized type: " + type.getCategory());
     }
@@ -568,6 +582,14 @@ public class BinarySortableSerDe implements SerDe {
         serialize(buffer, soi.getStructFieldData(o, fields.get(i)), fields.get(
             i).getFieldObjectInspector(), invert);
       }
+      return;
+    }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      byte tag = uoi.getTag(o);
+      buffer.write(tag, invert);
+      serialize(buffer, uoi.getField(o), uoi.getObjectInspectors().get(tag),
+          invert);
       return;
     }
     default: {

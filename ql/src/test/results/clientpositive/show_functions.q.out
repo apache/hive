@@ -44,6 +44,7 @@ cos
 count
 covar_pop
 covar_samp
+create_union
 date_add
 date_sub
 datediff
@@ -176,6 +177,7 @@ cos
 count
 covar_pop
 covar_samp
+create_union
 PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'

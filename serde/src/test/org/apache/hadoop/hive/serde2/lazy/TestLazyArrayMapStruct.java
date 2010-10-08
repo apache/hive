@@ -32,7 +32,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
 /**
- * TestLazyArrayMapStruct.
+ * Tests LazyArray, LazyMap, LazyStruct and LazyUnion
  *
  */
 public class TestLazyArrayMapStruct extends TestCase {
@@ -244,4 +244,71 @@ public class TestLazyArrayMapStruct extends TestCase {
     }
   }
 
+  /**
+   * Test the LazyUnion class.
+   */
+  public void testLazyUnion() throws Throwable {
+    try {
+      {
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+            "uniontype<int,array<string>,map<string,string>,string>");
+        Text nullSequence = new Text("\\N");
+
+        ObjectInspector oi = LazyFactory.createLazyObjectInspector(typeInfo,
+            new byte[] {'^', ':', '='}, 0, nullSequence, false, (byte) 0);
+        LazyUnion o = (LazyUnion) LazyFactory.createLazyObject(oi);
+
+        Text data;
+
+        data = new Text("0^123");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals("{0:123}", SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("1^a:b:c");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals(
+            "{1:[\"a\",\"b\",\"c\"]}", SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("2^d=e:f=g");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals(
+            "{2:{\"d\":\"e\",\"f\":\"g\"}}", SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("3^hi");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals("{3:\"hi\"}", SerDeUtils.getJSONString(o, oi));
+
+
+        data = new Text("0^\\N");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals("{0:null}", SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("1^ :a::");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals(
+            "{1:[\" \",\"a\",\"\",\"\"]}", SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("2^d=\\N:f=g:h");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals(
+            "{2:{\"d\":null,\"f\":\"g\",\"h\":null}}",
+            SerDeUtils.getJSONString(o, oi));
+
+        data = new Text("2^= ");
+        TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0,
+            data.getLength());
+        assertEquals("{2:{\"\":\" \"}}", SerDeUtils.getJSONString(o, oi));
+      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
 }

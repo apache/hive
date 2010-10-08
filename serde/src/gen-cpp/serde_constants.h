@@ -21,6 +21,7 @@ class serdeConstants {
   std::string SERIALIZATION_NULL_FORMAT;
   std::string SERIALIZATION_LAST_COLUMN_TAKES_REST;
   std::string SERIALIZATION_SORT_ORDER;
+  std::string SERIALIZATION_USE_JSON_OBJECTS;
   std::string FIELD_DELIM;
   std::string COLLECTION_DELIM;
   std::string LINE_DELIM;
@@ -42,6 +43,7 @@ class serdeConstants {
   std::string LIST_TYPE_NAME;
   std::string MAP_TYPE_NAME;
   std::string STRUCT_TYPE_NAME;
+  std::string UNION_TYPE_NAME;
   std::string LIST_COLUMNS;
   std::string LIST_COLUMN_TYPES;
   std::set<std::string>  PrimitiveTypes;

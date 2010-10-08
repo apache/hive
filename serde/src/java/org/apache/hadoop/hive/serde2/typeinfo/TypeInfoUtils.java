@@ -19,6 +19,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -276,6 +277,7 @@ public final class TypeInfoUtils {
         if (!Constants.LIST_TYPE_NAME.equals(t.text)
             && !Constants.MAP_TYPE_NAME.equals(t.text)
             && !Constants.STRUCT_TYPE_NAME.equals(t.text)
+            && !Constants.UNION_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
@@ -354,6 +356,26 @@ public final class TypeInfoUtils {
 
         return TypeInfoFactory.getStructTypeInfo(fieldNames, fieldTypeInfos);
       }
+      // Is this a union type?
+      if (Constants.UNION_TYPE_NAME.equals(t.text)) {
+        List<TypeInfo> objectTypeInfos = new ArrayList<TypeInfo>();
+        boolean first = true;
+        do {
+          if (first) {
+            expect("<");
+            first = false;
+          } else {
+            Token separator = expect(">", ",");
+            if (separator.text.equals(">")) {
+              // end of union
+              break;
+            }
+          }
+          objectTypeInfos.add(parseType());
+        } while (true);
+
+        return TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
+      }
 
       throw new RuntimeException("Internal error parsing position "
           + t.position + " of '" + typeInfoString + "'");
@@ -413,6 +435,22 @@ public final class TypeInfoUtils {
             fieldNames, fieldObjectInspectors);
         break;
       }
+      case UNION: {
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        List<TypeInfo> objectTypeInfos = unionTypeInfo
+            .getAllUnionObjectTypeInfos();
+        List<ObjectInspector> fieldObjectInspectors =
+          new ArrayList<ObjectInspector>(objectTypeInfos.size());
+        for (int i = 0; i < objectTypeInfos.size(); i++) {
+          fieldObjectInspectors
+              .add(getStandardWritableObjectInspectorFromTypeInfo(objectTypeInfos
+              .get(i)));
+        }
+        result = ObjectInspectorFactory.getStandardUnionObjectInspector(
+            fieldObjectInspectors);
+        break;
+      }
+
       default: {
         result = null;
       }
@@ -476,7 +514,22 @@ public final class TypeInfoUtils {
             fieldNames, fieldObjectInspectors);
         break;
       }
-      default: {
+      case UNION: {
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        List<TypeInfo> objectTypeInfos = unionTypeInfo
+            .getAllUnionObjectTypeInfos();
+        List<ObjectInspector> fieldObjectInspectors =
+          new ArrayList<ObjectInspector>(objectTypeInfos.size());
+        for (int i = 0; i < objectTypeInfos.size(); i++) {
+          fieldObjectInspectors
+              .add(getStandardJavaObjectInspectorFromTypeInfo(objectTypeInfos
+              .get(i)));
+        }
+        result = ObjectInspectorFactory.getStandardUnionObjectInspector(
+            fieldObjectInspectors);
+        break;
+      }
+     default: {
         result = null;
       }
       }
@@ -530,6 +583,15 @@ public final class TypeInfoUtils {
             .getFieldObjectInspector()));
       }
       result = TypeInfoFactory.getStructTypeInfo(fieldNames, fieldTypeInfos);
+      break;
+    }
+    case UNION: {
+      UnionObjectInspector uoi = (UnionObjectInspector) oi;
+      List<TypeInfo> objectTypeInfos = new ArrayList<TypeInfo>();
+      for (ObjectInspector eoi : uoi.getObjectInspectors()) {
+        objectTypeInfos.add(getTypeInfoFromObjectInspector(eoi));
+      }
+      result = TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
       break;
     }
     default: {
