@@ -449,10 +449,17 @@ public abstract class BaseSemanticAnalyzer {
     return getColumns(ast, true);
   }
 
+  protected void handleGenericFileFormat(ASTNode node) throws SemanticException{
+
+  ASTNode child = (ASTNode)node.getChild(0);
+  throw new SemanticException("Unrecognized file format in STORED AS clause:"+
+         " "+ (child == null ? "" : child.getText()));
+  }
+
   /**
    * Get the list of FieldSchema out of the ASTNode.
    */
-  protected List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
+  public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {

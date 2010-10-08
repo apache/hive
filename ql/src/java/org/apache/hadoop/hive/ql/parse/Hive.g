@@ -140,6 +140,7 @@ TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
+TOK_FILEFORMAT_GENERIC;
 TOK_OFFLINE;
 TOK_ENABLE;
 TOK_DISABLE;
@@ -600,8 +601,9 @@ fileFormat
     : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
     | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
-    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral
-      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt)
+    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
+      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
+    | genericSpec=Identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec) 
     ;
 
 tabTypeExpr
@@ -849,11 +851,13 @@ tableFileFormat
       KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
       | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
       | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
-      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral
-      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt)
+      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?      
+      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
       -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
+      | KW_STORED KW_AS genericSpec=Identifier      
+      -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
 tableLocation
@@ -1793,6 +1797,8 @@ KW_TEXTFILE: 'TEXTFILE';
 KW_RCFILE: 'RCFILE';
 KW_INPUTFORMAT: 'INPUTFORMAT';
 KW_OUTPUTFORMAT: 'OUTPUTFORMAT';
+KW_INPUTDRIVER: 'INPUTDRIVER';
+KW_OUTPUTDRIVER: 'OUTPUTDRIVER';
 KW_OFFLINE: 'OFFLINE';
 KW_ENABLE: 'ENABLE';
 KW_DISABLE: 'DISABLE';

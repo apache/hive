@@ -1,0 +1,36 @@
+PREHOOK: query: create table test (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table test (a int) stored as inputformat 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'RCFileInDriver' outputdriver 'RCFileOutDriver'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test
+PREHOOK: query: desc extended test
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc extended test
+POSTHOOK: type: DESCTABLE
+col_name            	data_type           	comment             
+	 	 
+a                   	int                 	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	chauhana            	 
+CreateTime:         	Wed Sep 29 10:52:37 PDT 2010	 
+LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/Users/chauhana/workspace/howl-sprint2-hooks/build/ql/test/data/warehouse/test	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1285782757          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 

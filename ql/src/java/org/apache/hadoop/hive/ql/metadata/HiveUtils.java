@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -168,4 +169,18 @@ public final class HiveUtils {
     }
   }
 
+  public static AbstractSemanticAnalyzerHook getSemanticAnalyzerHook(
+      HiveConf conf, String hookName) throws HiveException{
+    try {
+      Class<? extends AbstractSemanticAnalyzerHook> hookClass =
+        (Class<? extends AbstractSemanticAnalyzerHook>)
+        Class.forName(hookName, true, JavaUtils.getClassLoader());
+      return (AbstractSemanticAnalyzerHook) ReflectionUtils.newInstance(
+          hookClass, conf);
+    } catch (ClassNotFoundException e) {
+      throw new HiveException("Error in loading semantic analyzer hook: "+
+          hookName +e.getMessage(),e);
+    }
+
+  }
 }

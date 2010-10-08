@@ -303,7 +303,9 @@ public class HiveConf extends Configuration {
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
     // Serde for FetchTask
-    HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe")
+    HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
+
+    SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
     ;
 
 
