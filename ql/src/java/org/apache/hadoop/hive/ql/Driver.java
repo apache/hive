@@ -85,10 +85,10 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.UnixUserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class Driver implements CommandProcessor {
@@ -285,21 +285,11 @@ public class Driver implements CommandProcessor {
    */
   public Driver(HiveConf conf) {
     this.conf = conf;
-    try {
-      UnixUserGroupInformation.login(conf, true);
-    } catch (Exception e) {
-      LOG.warn("Ignoring " + e.getMessage());
-    }
   }
 
   public Driver() {
     if (SessionState.get() != null) {
       conf = SessionState.get().getConf();
-      try {
-        UnixUserGroupInformation.login(conf, true);
-      } catch (Exception e) {
-        LOG.warn("Ignoring " + e.getMessage());
-      }
     }
   }
 
@@ -739,8 +729,7 @@ public class Driver implements CommandProcessor {
       // Get all the pre execution hooks and execute them.
       for (PreExecute peh : getPreExecHooks()) {
         peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
-            UnixUserGroupInformation.readFromConf(conf,
-                UnixUserGroupInformation.UGI_PROPERTY_NAME));
+                ShimLoader.getHadoopShims().getUGIForConf(conf));
       }
 
       int jobs = Utilities.getMRTasks(plan.getRootTasks()).size();
@@ -822,8 +811,7 @@ public class Driver implements CommandProcessor {
       for (PostExecute peh : getPostExecHooks()) {
         peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
             (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo() : null),
-            UnixUserGroupInformation.readFromConf(conf,
-                UnixUserGroupInformation.UGI_PROPERTY_NAME));
+                ShimLoader.getHadoopShims().getUGIForConf(conf));
       }
 
       if (SessionState.get() != null) {

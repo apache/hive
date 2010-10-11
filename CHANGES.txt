@@ -181,6 +181,9 @@ Trunk -  Unreleased
     HIVE-1697. Migration scripts should increase size of PARAM_VALUE in
     PARTITION_PARAMS (Paul Yang via namit)
 
+    HIVE-1264. Make Hive work with Hadoop security
+    (Todd Lipcon via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

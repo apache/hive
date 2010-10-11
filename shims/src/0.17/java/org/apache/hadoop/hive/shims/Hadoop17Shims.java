@@ -29,6 +29,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.UnixUserGroupInformation;
+import javax.security.auth.login.LoginException;
 
 import java.io.IOException;
 
@@ -134,4 +137,13 @@ public class Hadoop17Shims implements HadoopShims {
     throw new RuntimeException("Not implemented in this Hadoop version");
   }
 
+  @Override
+  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException {
+    UserGroupInformation ugi =
+      UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME);
+    if(ugi == null) {
+      ugi = UserGroupInformation.login(conf);
+    }
+    return ugi;
+  }
 }

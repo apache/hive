@@ -40,7 +40,8 @@
     <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
     <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
-    <pathelement location="${hadoop.test.jar}"/>
+    <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
+    <pathelement location="${hadoop.newstyle-name.test.jar}"/>
     <pathelement location="${jetty.test.jar}"/>
     <pathelement location="${servlet.test.jar}"/>
     <pathelement location="${jasper.test.jar}"/>

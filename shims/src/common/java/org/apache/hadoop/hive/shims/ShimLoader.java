@@ -41,6 +41,7 @@ public abstract class ShimLoader {
     HADOOP_SHIM_CLASSES.put("0.18", "org.apache.hadoop.hive.shims.Hadoop18Shims");
     HADOOP_SHIM_CLASSES.put("0.19", "org.apache.hadoop.hive.shims.Hadoop19Shims");
     HADOOP_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Hadoop20Shims");
+    HADOOP_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Hadoop20SShims");
   }
 
   /**
@@ -55,6 +56,7 @@ public abstract class ShimLoader {
     JETTY_SHIM_CLASSES.put("0.18", "org.apache.hadoop.hive.shims.Jetty18Shims");
     JETTY_SHIM_CLASSES.put("0.19", "org.apache.hadoop.hive.shims.Jetty19Shims");
     JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
+    JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
   }
 
   /**
@@ -105,7 +107,16 @@ public abstract class ShimLoader {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
           " (expected A.B.* format)");
     }
-    return parts[0] + "." + parts[1];
+    String majorVersion = parts[0] + "." + parts[1];
+
+    // If we are running a security release, we won't have UnixUserGroupInformation
+    // (removed by HADOOP-6299 when switching to JAAS for Login)
+    try {
+      Class.forName("org.apache.hadoop.security.UnixUserGroupInformation");
+    } catch (ClassNotFoundException cnf) {
+      majorVersion += "S";
+    }
+    return majorVersion;
   }
 
   private ShimLoader() {

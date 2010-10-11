@@ -31,6 +31,9 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.UnixUserGroupInformation;
+import javax.security.auth.login.LoginException;
 
 import java.io.IOException;
 
@@ -136,5 +139,15 @@ public class Hadoop18Shims implements HadoopShims {
 
   public void setNullOutputFormat(JobConf conf) {
     conf.setOutputFormat(NullOutputFormat.class);
+  }
+
+  @Override
+  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException {
+    UserGroupInformation ugi =
+      UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME);
+    if(ugi == null) {
+      ugi = UserGroupInformation.login(conf);
+    }
+    return ugi;
   }
 }

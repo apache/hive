@@ -50,14 +50,13 @@ import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.UnixUserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
  * Implemention of shims against Hadoop 0.20.0.
  */
-public class Hadoop20Shims implements HadoopShims {
+public class Hadoop20SShims implements HadoopShims {
   public boolean usesJobShell() {
     return false;
   }
@@ -441,12 +440,7 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
-  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException {
-    UserGroupInformation ugi =
-      UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME);
-    if(ugi == null) {
-      ugi = UserGroupInformation.login(conf);
-    }
-    return ugi;
+  public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
+    return UserGroupInformation.getCurrentUser();
   }
 }

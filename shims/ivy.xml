@@ -13,6 +13,10 @@
         <dependency org="hadoop" name="core" rev="0.20.0">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
         </dependency> 
+        <dependency org="hadoop" name="core" rev="${hadoop.security.version}">
+          <artifact name="hadoop" type="source" ext="tar.gz"
+            url="${hadoop.security.url}" />
+        </dependency> 
         <conflict manager="all" />
     </dependencies>
 </ivy-module>

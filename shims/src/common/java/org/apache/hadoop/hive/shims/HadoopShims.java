@@ -34,6 +34,11 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.security.UserGroupInformation;
+import javax.security.auth.login.LoginException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * In order to be compatible with multiple versions of Hadoop, all parts
@@ -44,6 +49,8 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
  * classpath.
  */
 public interface HadoopShims {
+
+  static final Log LOG = LogFactory.getLog(HadoopShims.class);
 
   /**
    * Return true if the current version of Hadoop uses the JobShell for
@@ -142,6 +149,14 @@ public interface HadoopShims {
    * options related to bypass setup/cleanup/commit support in the MR framework
    */
   void setNullOutputFormat(JobConf conf);
+
+  /**
+   * Get the UGI that the given job configuration will run as.
+   *
+   * In secure versions of Hadoop, this simply returns the current
+   * access control context's user, ignoring the configuration.
+   */
+  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
   /**
    * InputSplitShim.
