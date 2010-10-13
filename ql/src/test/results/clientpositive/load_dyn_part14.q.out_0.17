@@ -9,38 +9,10 @@ PREHOOK: query: describe extended nzhang_part14
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part14
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	
+value	string	
 	 	 
-key                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-value               	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	nzhang              	 
-CreateTime:         	Tue Sep 21 08:18:52 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part14	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1285082332          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:thiruvel, createTime:1286880420, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1286880420}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
@@ -108,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-21_08-18-52_887_7592187800387913855/-mr-10002 
+        file:/tmp/thiruvel/hive_2010-10-12_03-47-00_618_7713758260856456661/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -125,7 +97,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/nzhang/hive_2010-09-21_08-18-52_887_7592187800387913855/-mr-10003 
+        file:/tmp/thiruvel/hive_2010-10-12_03-47-00_618_7713758260856456661/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -142,7 +114,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part14
-        file:/tmp/nzhang/hive_2010-09-21_08-18-52_887_7592187800387913855/-mr-10004 
+        file:/tmp/thiruvel/hive_2010-10-12_03-47-00_618_7713758260856456661/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -277,13 +249,13 @@ order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_08-19-12_540_8445609877851421931/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-47-11_974_2396253823016980243/-mr-10000
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_08-19-12_540_8445609877851421931/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-47-11_974_2396253823016980243/-mr-10000
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__

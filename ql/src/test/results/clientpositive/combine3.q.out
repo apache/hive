@@ -47,42 +47,12 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key 
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
+ds	string	
+hr	string	
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2010-08-03, 00]    	 
-Database:           	default             	 
-Table:              	combine_3_srcpart_seq_rc	 
-CreateTime:         	Mon Sep 20 23:25:54 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285050355          
-	numRows             	500                 
-	totalSize           	15250               
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2010-08-03, 00], dbName:default, tableName:combine_3_srcpart_seq_rc, createTime:1286798296, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=00, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286798297, numRows=500, totalSize=15250})	
 PREHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended combine_3_srcpart_seq_rc partition(ds="2010-08-03", hr="001")
@@ -91,52 +61,22 @@ POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key 
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
+ds	string	
+hr	string	
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2010-08-03, 001]   	 
-Database:           	default             	 
-Table:              	combine_3_srcpart_seq_rc	 
-CreateTime:         	Mon Sep 20 23:26:02 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285050362          
-	numRows             	500                 
-	totalSize           	2076                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2010-08-03, 001], dbName:default, tableName:combine_3_srcpart_seq_rc, createTime:1286798300, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/combine_3_srcpart_seq_rc/ds=2010-08-03/hr=001, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286798300, numRows=500, totalSize=2076})	
 PREHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 PREHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-03_040_1636466126220724204/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_04-58-21_151_2378487651404482598/-mr-10000
 POSTHOOK: query: select key, value, ds, hr from combine_3_srcpart_seq_rc where ds="2010-08-03" order by key, hr limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=00
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc@ds=2010-08-03/hr=001
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-03_040_1636466126220724204/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_04-58-21_151_2378487651404482598/-mr-10000
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -240,12 +180,12 @@ PREHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 PREHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-23_545_2451540426039382986/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_04-58-31_121_8495821577127810126/-mr-10000
 POSTHOOK: query: select key, ds from combine_3_srcpart_seq_rc_bucket tablesample (bucket 1 out of 2) s where ds = '1' or ds= '11' order by key, ds limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=1
 POSTHOOK: Input: default@combine_3_srcpart_seq_rc_bucket@ds=11
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-20_23-26-23_545_2451540426039382986/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_04-58-31_121_8495821577127810126/-mr-10000
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: combine_3_srcpart_seq_rc PARTITION(ds=2010-08-03,hr=00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

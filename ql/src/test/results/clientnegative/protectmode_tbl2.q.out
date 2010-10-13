@@ -46,39 +46,8 @@ PREHOOK: query: desc extended tbl_protectmode2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl_protectmode2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:28:04 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	OFFLINE             	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl_protectmode2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284478084          
-	PROTECT_MODE        	OFFLINE             
-	transient_lastDdlTime	1284478084          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl_protectmode2, dbName:default, owner:thiruvel, createTime:1286801076, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl_protectmode2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286801077, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1286801077}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode2

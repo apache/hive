@@ -25,10 +25,8 @@ POSTHOOK: query: describe table_test_output_format
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	
 PREHOOK: query: CREATE TABLE table_test_output_format_sequencefile(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
@@ -62,10 +60,8 @@ POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema
 POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	
 PREHOOK: query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
@@ -105,7 +101,5 @@ POSTHOOK: Lineage: table_test_output_format_hivesequencefile.key EXPRESSION [(sr
 POSTHOOK: Lineage: table_test_output_format_hivesequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_test_output_format_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	

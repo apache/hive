@@ -2,14 +2,12 @@ PREHOOK: query: DESCRIBE src_thrift
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE src_thrift
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-aint                	int                 	from deserializer   
-astring             	string              	from deserializer   
-lint                	array<int>          	from deserializer   
-lstring             	array<string>       	from deserializer   
-lintstring          	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer   
-mstringstring       	map<string,string>  	from deserializer   
+aint	int	from deserializer
+astring	string	from deserializer
+lint	array<int>	from deserializer
+lstring	array<string>	from deserializer
+lintstring	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer
+mstringstring	map<string,string>	from deserializer
 PREHOOK: query: EXPLAIN
 SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
@@ -97,14 +95,14 @@ JOIN src_thrift s2
 ON s1.aint = s2.aint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_06-26-12_924_8135736318784593858/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-29-58_166_5982818522525769910/-mr-10000
 POSTHOOK: query: SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_06-26-12_924_8135736318784593858/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-29-58_166_5982818522525769910/-mr-10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

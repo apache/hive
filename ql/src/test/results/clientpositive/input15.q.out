@@ -33,7 +33,5 @@ PREHOOK: query: DESCRIBE TEST15
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST15
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	

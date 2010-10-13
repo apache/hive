@@ -7,34 +7,10 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
+value	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:08:59 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284476939          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798855, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286798855}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter_partition_format_test set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -47,36 +23,10 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:08:59 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476940          
-	transient_lastDdlTime	1284476940          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798855, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286798856, transient_lastDdlTime=1286798856}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
@@ -89,36 +39,10 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:08:59 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	file:/test/test     	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476940          
-	transient_lastDdlTime	1284476940          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798855, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/test/test/, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286798856, transient_lastDdlTime=1286798856}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test
@@ -145,38 +69,11 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
+value	string	
+ds	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2010]              	 
-Database:           	default             	 
-Table:              	alter_partition_format_test	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010	 
-Partition Parameters:	 	 
-	transient_lastDdlTime	1284476940          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1286798856, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1286798856})	
 PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
 PREHOOK: type: ALTERPARTITION_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -191,40 +88,11 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
+value	string	
+ds	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2010]              	 
-Database:           	default             	 
-Table:              	alter_partition_format_test	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010	 
-Partition Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476941          
-	transient_lastDdlTime	1284476941          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1286798856, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=thiruvel, last_modified_time=1286798856, transient_lastDdlTime=1286798856})	
 PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set location "file:/test/test/ds=2010"
 PREHOOK: type: ALTERPARTITION_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
@@ -239,77 +107,20 @@ PREHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test partition(ds='2010')
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
+value	string	
+ds	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2010]              	 
-Database:           	default             	 
-Table:              	alter_partition_format_test	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	file:/test/test/ds=2010	 
-Partition Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476941          
-	transient_lastDdlTime	1284476941          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1286798856, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/test/test/ds=2010, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=thiruvel, last_modified_time=1286798857, transient_lastDdlTime=1286798857})	
 PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
+value	string	
+ds	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284476940          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798856, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1286798856}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter_partition_format_test set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -322,41 +133,11 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
+ds	string	
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter_partition_format_test	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476941          
-	transient_lastDdlTime	1284476941          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798856, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798857, transient_lastDdlTime=1286798857}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
@@ -369,41 +150,11 @@ PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	from deserializer
+value	string	from deserializer
+ds	string	
 	 	 
-key                 	int                 	from deserializer   
-value               	string              	from deserializer   
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:09:00 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	file:/test/test     	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284476941          
-	transient_lastDdlTime	1284476941          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:thiruvel, createTime:1286798856, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/test/test/, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798857, transient_lastDdlTime=1286798857}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test

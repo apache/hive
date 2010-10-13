@@ -367,6 +367,9 @@ Trunk -  Unreleased
     HIVE-1601. Hadoop 0.17 ant test broken by HIVE-1523
     (Joydeep Sen Sarma via jvs)
 
+    HIVE-1658. Fix describe [extended] column formatting
+    (Thiruvel Thirumoolan via Ning Zhang)
+
 Release 0.6.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

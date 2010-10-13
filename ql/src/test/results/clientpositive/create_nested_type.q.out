@@ -17,46 +17,20 @@ PREHOOK: query: DESCRIBE table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	string              	None                
-b                   	array<string>       	None                
-c                   	array<map<string,string>>	None                
-d                   	map<string,array<string>>	None                
+a	string	
+b	array<string>	
+c	array<map<string,string>>	
+d	map<string,array<string>>	
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	string	
+b	array<string>	
+c	array<map<string,string>>	
+d	map<string,array<string>>	
 	 	 
-a                   	string              	None                
-b                   	array<string>       	None                
-c                   	array<map<string,string>>	None                
-d                   	map<string,array<string>>	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:13:22 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/table1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477202          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:thiruvel, createTime:1286798540, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:array<string>, comment:null), FieldSchema(name:c, type:array<map<string,string>>, comment:null), FieldSchema(name:d, type:map<string,array<string>>, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286798540}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
 PREHOOK: type: LOAD
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
@@ -65,11 +39,11 @@ POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * from table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-13-22_643_4121694117297917611/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-02-20_476_2486617507933287344/-mr-10000
 POSTHOOK: query: SELECT * from table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-13-22_643_4121694117297917611/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-02-20_476_2486617507933287344/-mr-10000
 a0	["b00","b01"]	[{"c001":"C001","c002":"C002"},{"c011":null,"c012":"C012"}]	{"d01":["d011","d012"],"d02":["d021","d022"]}
 a1	["b10"]	[{"c001":"C001","c002":"C002"}]	{"d01":["d011","d012"],"d02":null}
 a2	[]	[{"c001":null,"c002":"C002"},{"c011":"C011","c012":"C012"}]	{"d01":[null,"d012"],"d02":["d021","d022"]}

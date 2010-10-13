@@ -77,64 +77,64 @@ POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: SELECT * FROM src WHERE key=86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-39_073_4331695812166394450/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-10_551_3637085098701766092/-mr-10000
 POSTHOOK: query: SELECT * FROM src WHERE key=86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-39_073_4331695812166394450/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-10_551_3637085098701766092/-mr-10000
 86	val_86
 PREHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_699_6577504921273227931/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_306_4139188974283958374/-mr-10000
 POSTHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_699_6577504921273227931/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_306_4139188974283958374/-mr-10000
 PREHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_733_5063594338559547665/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_364_7839241760376428189/-mr-10000
 POSTHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view2
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_733_5063594338559547665/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_364_7839241760376428189/-mr-10000
 PREHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_765_721716076067394179/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_388_609199425773597868/-mr-10000
 POSTHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view3
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_765_721716076067394179/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_388_609199425773597868/-mr-10000
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_801_851891993671205938/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_435_9153002080031804732/-mr-10000
 POSTHOOK: query: SELECT * from view1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-41_801_851891993671205938/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-13_435_9153002080031804732/-mr-10000
 val_86
 PREHOOK: query: SELECT * from view2 where key=18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-44_148_3708937564748911823/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-15_712_7401367662005949637/-mr-10000
 POSTHOOK: query: SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-44_148_3708937564748911823/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-15_712_7401367662005949637/-mr-10000
 18	val_18
 18	val_18
 PREHOOK: query: SELECT * from view3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-46_437_8680230085965728455/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-17_977_2421866663762902510/-mr-10000
 POSTHOOK: query: SELECT * from view3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-46_437_8680230085965728455/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-17_977_2421866663762902510/-mr-10000
 VAL_86
 PREHOOK: query: -- test EXPLAIN output for CREATE VIEW
 EXPLAIN
@@ -228,27 +228,32 @@ PREHOOK: query: DESCRIBE view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-value               	string              	None                
+value	string	
 PREHOOK: query: DESCRIBE EXTENDED view1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:view1, dbName:default, owner:thiruvel, createTime:1286917513, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917513}, viewOriginalText:SELECT value FROM src WHERE key=86, viewExpandedText:SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
 	 	 
 value               	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:41 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:13 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649601          
+	transient_lastDdlTime	1286917513          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -262,20 +267,25 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT value FROM src WHERE key=86	 
 View Expanded Text: 	SELECT `src`.`value` FROM `src` WHERE `src`.`key`=86	 
-	 	 
 PREHOOK: query: DESCRIBE view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-key                 	string              	None                
-value               	string              	None                
+key	string	
+value	string	
 PREHOOK: query: DESCRIBE EXTENDED view2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:view2, dbName:default, owner:thiruvel, createTime:1286917513, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917513}, viewOriginalText:SELECT * FROM src, viewExpandedText:SELECT `src`.`key`, `src`.`value` FROM `src`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
 	 	 
 key                 	string              	None                
 value               	string              	None                
@@ -283,13 +293,13 @@ value               	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:41 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:13 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649601          
+	transient_lastDdlTime	1286917513          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -303,33 +313,37 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT * FROM src   	 
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `src`	 
-	 	 
 PREHOOK: query: DESCRIBE view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view3
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-valoo               	string              	None                
+valoo	string	
 PREHOOK: query: DESCRIBE EXTENDED view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+valoo	string	
+	 	 
+Detailed Table Information	Table(tableName:view3, dbName:default, owner:thiruvel, createTime:1286917513, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917513, fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
 	 	 
 valoo               	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:41 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:13 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649601          
 	fear                	factor              
+	transient_lastDdlTime	1286917513          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -343,7 +357,6 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
 View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`	 
-	 	 
 PREHOOK: query: ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser")
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@view3
@@ -356,24 +369,31 @@ PREHOOK: query: DESCRIBE EXTENDED view3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view3
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+valoo	string	
+	 	 
+Detailed Table Information	Table(tableName:view3, dbName:default, owner:thiruvel, createTime:1286917513, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:valoo, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286917520, biggest=loser, transient_lastDdlTime=1286917520, fear=factor}, viewOriginalText:SELECT upper(value) FROM src WHERE key=86, viewExpandedText:SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
 	 	 
 valoo               	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:41 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:13 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284649609          
 	biggest             	loser               
-	transient_lastDdlTime	1284649609          
 	fear                	factor              
+	last_modified_by    	thiruvel            
+	last_modified_time  	1286917520          
+	transient_lastDdlTime	1286917520          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -387,7 +407,6 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
 View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `src` WHERE `src`.`key`=86) `view3`	 
-	 	 
 PREHOOK: query: CREATE TABLE table1 (key int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table1 (key int)
@@ -401,65 +420,17 @@ POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table and an external table 
 -- of comparison for view descriptions
 DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
 	 	 
-key                 	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/table1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284649609          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:thiruvel, createTime:1286917521, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.test.build/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917521}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: DESCRIBE EXTENDED src1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED src1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Thu Sep 16 08:06:37 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284649597          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:src1, dbName:default, owner:null, createTime:1286917508, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.test.build/build/ql/test/data/warehouse/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917508}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparison for
 -- view descriptions
 DESCRIBE EXTENDED table1
@@ -468,33 +439,9 @@ POSTHOOK: query: -- use DESCRIBE EXTENDED on a base table as a point of comparis
 -- view descriptions
 DESCRIBE EXTENDED table1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	int	
 	 	 
-key                 	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:06:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/table1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284649609          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:thiruvel, createTime:1286917521, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.test.build/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917521}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -507,29 +454,29 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-51_955_429770824293875896/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_398_5083766567999773259/-mr-10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-51_955_429770824293875896/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_398_5083766567999773259/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-52_023_778305098175330392/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_491_5672533777952890103/-mr-10000
 POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view4
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-52_023_778305098175330392/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_491_5672533777952890103/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-52_054_3714301723144249852/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_517_7630680093927648101/-mr-10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-52_054_3714301723144249852/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-25_517_7630680093927648101/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: DESCRIBE view4
@@ -537,9 +484,7 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
+key	int	
 PREHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table1
@@ -552,21 +497,21 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-54_342_5683804169850783351/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-27_924_8235501556399089224/-mr-10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-54_342_5683804169850783351/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-27_924_8235501556399089224/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	NULL
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-54_420_1341033788862490620/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-28_070_2242029634461475178/-mr-10000
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-54_420_1341033788862490620/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-28_070_2242029634461475178/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
 PREHOOK: query: DESCRIBE table1
@@ -574,36 +519,32 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE table1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	
 PREHOOK: query: DESCRIBE view4
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
+key	int	
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-56_747_3417956684208928677/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-30_573_2882710192966326294/-mr-10000
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view5
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-56_747_3417956684208928677/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-30_573_2882710192966326294/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-56_826_980833180973926961/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-30_662_8181364519563853437/-mr-10000
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-56_826_980833180973926961/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-30_662_8181364519563853437/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	86
 PREHOOK: query: DESCRIBE view5
@@ -611,32 +552,28 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view5
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-key1                	int                 	None                
-key2                	int                 	None                
+key1	int	
+key2	int	
 PREHOOK: query: -- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_242_8203786766579545400/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_208_1880715843088636581/-mr-10000
 POSTHOOK: query: -- verify that column name and comment in DDL portion
 -- overrides column alias in SELECT
 CREATE VIEW view6(valoo COMMENT 'I cannot spell') AS
 SELECT upper(value) as blarg FROM src WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view6
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_242_8203786766579545400/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_208_1880715843088636581/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE view6
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE view6
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
-	 	 
-valoo               	string              	I cannot spell      
+valoo	string	I cannot spell
 PREHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
 SELECT * FROM src
@@ -644,7 +581,7 @@ WHERE key > 80 AND key < 100
 ORDER BY key, value
 LIMIT 10
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_316_7272552853130792617/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_276_3132802354481241409/-mr-10000
 POSTHOOK: query: -- verify that ORDER BY and LIMIT are both supported in view def
 CREATE VIEW view7 AS
 SELECT * FROM src
@@ -653,16 +590,16 @@ ORDER BY key, value
 LIMIT 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view7
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_316_7272552853130792617/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_276_3132802354481241409/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_360_3821250111557768727/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_329_2045151730237518038/-mr-10000
 POSTHOOK: query: SELECT * FROM view7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-06-59_360_3821250111557768727/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-33_329_2045151730237518038/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -680,14 +617,14 @@ PREHOOK: query: -- top-level ORDER BY should override the one inside the view
 SELECT * FROM view7 ORDER BY key DESC, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-01_729_443492965601496117/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-35_696_3022257331501033163/-mr-10000
 POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
 -- (however, the inside ORDER BY should still influence the evaluation
 -- of the limit)
 SELECT * FROM view7 ORDER BY key DESC, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-01_729_443492965601496117/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-35_696_3022257331501033163/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 90	val_90
 90	val_90
@@ -703,12 +640,12 @@ PREHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-06_182_7157214690414763158/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-40_164_6325821025588450451/-mr-10000
 POSTHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-06_182_7157214690414763158/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-40_164_6325821025588450451/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -719,12 +656,12 @@ PREHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-08_636_4509506049598604013/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-42_579_2924923344732897706/-mr-10000
 POSTHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-08_636_4509506049598604013/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-42_579_2924923344732897706/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
 83	val_83
@@ -749,33 +686,43 @@ PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-10_957_8575489250173174996/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-44_967_4459391102689756677/-mr-10000
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view8
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-10_957_8575489250173174996/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-44_967_4459391102689756677/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view8
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+c	string	
+	 	 
+Detailed Table Information	Table(tableName:view8, dbName:default, owner:thiruvel, createTime:1286917544, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917544}, viewOriginalText:SELECT test_translate('abc', 'a', 'b')	 
+FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
+FROM `table1`) `view8`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view8
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view8
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 c                   	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:10 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:44 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649630          
+	transient_lastDdlTime	1286917544          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -791,15 +738,14 @@ View Original Text: 	SELECT test_translate('abc', 'a', 'b')
 FROM table1	 	 
 View Expanded Text: 	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
 FROM `table1`) `view8`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-11_029_397010186781084438/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-45_092_4451948742614606711/-mr-10000
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-11_029_397010186781084438/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-45_092_4451948742614606711/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 bbc
 PREHOOK: query: -- test usage of a UDAF within a view
@@ -815,33 +761,43 @@ PREHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-13_229_6085876418870591712/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-47_353_527746081775328154/-mr-10000
 POSTHOOK: query: CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view9
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-13_229_6085876418870591712/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-47_353_527746081775328154/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+m	int	
+	 	 
+Detailed Table Information	Table(tableName:view9, dbName:default, owner:thiruvel, createTime:1286917547, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:m, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917547}, viewOriginalText:SELECT test_max(length(value))	 
+FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
+FROM `src`) `view9`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view9
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view9
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 m                   	int                 	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:13 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:47 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649633          
+	transient_lastDdlTime	1286917547          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -857,35 +813,43 @@ View Original Text: 	SELECT test_max(length(value))
 FROM src	 	 
 View Expanded Text: 	SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 
 FROM `src`) `view9`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-13_312_940960957066623082/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-47_519_4749661905561425203/-mr-10000
 POSTHOOK: query: SELECT * FROM view9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-13_312_940960957066623082/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-47_519_4749661905561425203/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 7
 PREHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-15_644_9148833211654473308/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-49_752_8915523958026582572/-mr-10000
 POSTHOOK: query: -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view10
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-15_644_9148833211654473308/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-49_752_8915523958026582572/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view10
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view10
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:view10, dbName:default, owner:thiruvel, createTime:1286917549, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917549}, viewOriginalText:SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp, viewExpandedText:SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view10
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view10
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 key                 	string              	None                
 value               	string              	None                
@@ -893,13 +857,13 @@ value               	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:15 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:49 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649635          
+	transient_lastDdlTime	1286917549          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -913,15 +877,14 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp	 
 View Expanded Text: 	SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`key`, `src`.`value` FROM `src` WHERE `src`.`key`=86) `slurp`	 
-	 	 
 PREHOOK: query: SELECT * FROM view10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-15_714_3287064615924384883/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-49_865_8304727683591864611/-mr-10000
 POSTHOOK: query: SELECT * FROM view10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-15_714_3287064615924384883/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-49_865_8304727683591864611/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	val_86
 PREHOOK: query: -- test usage of a UDTF within a view
@@ -937,33 +900,43 @@ PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-17_962_2432836084539613786/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-52_110_1827381888808697010/-mr-10000
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view11
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-17_962_2432836084539613786/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-52_110_1827381888808697010/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view11
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view11
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+boom	int	
+	 	 
+Detailed Table Information	Table(tableName:view11, dbName:default, owner:thiruvel, createTime:1286917552, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:boom, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917552}, viewOriginalText:SELECT test_explode(array(1,2,3)) AS (boom)	 
+FROM table1, viewExpandedText:SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 	 
+FROM `table1`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view11
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view11
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 boom                	int                 	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:17 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:52 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649637          
+	transient_lastDdlTime	1286917552          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -979,15 +952,14 @@ View Original Text: 	SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1	 	 
 View Expanded Text: 	SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 
 FROM `table1`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-18_038_8154161429012452269/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-52_244_8959374380613455328/-mr-10000
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-18_038_8154161429012452269/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-52_244_8959374380613455328/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -996,20 +968,30 @@ PREHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-20_328_6755689286532808467/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-54_491_798450406848201162/-mr-10000
 POSTHOOK: query: -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view12
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-20_328_6755689286532808467/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-54_491_798450406848201162/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	
+value	string	
+mycol	int	
+	 	 
+Detailed Table Information	Table(tableName:view12, dbName:default, owner:thiruvel, createTime:1286917554, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:mycol, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917554}, viewOriginalText:SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol, viewExpandedText:SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: DESCRIBE FORMATTED view12
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 key                 	string              	None                
 value               	string              	None                
@@ -1018,13 +1000,13 @@ mycol               	int                 	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:20 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:54 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649640          
+	transient_lastDdlTime	1286917554          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -1038,17 +1020,16 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol	 
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value`, `mytable`.`mycol` FROM `src` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`	 
-	 	 
 PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-20_399_7335319028574833923/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-54_630_213594290770490997/-mr-10000
 POSTHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-20_399_7335319028574833923/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-54_630_213594290770490997/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- test usage of LATERAL with a view as the LHS
@@ -1056,13 +1037,13 @@ SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-23_700_1702193720539633983/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-56_976_2640741045374156674/-mr-10000
 POSTHOOK: query: -- test usage of LATERAL with a view as the LHS
 SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-23_700_1702193720539633983/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-56_976_2640741045374156674/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- test usage of TABLESAMPLE within a view
@@ -1070,34 +1051,44 @@ CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-26_978_8634847717177152845/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-59_351_1231368893141192734/-mr-10000
 POSTHOOK: query: -- test usage of TABLESAMPLE within a view
 CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view13
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-26_978_8634847717177152845/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-59_351_1231368893141192734/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view13
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	int	
+	 	 
+Detailed Table Information	Table(tableName:view13, dbName:default, owner:thiruvel, createTime:1286917559, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917559}, viewOriginalText:SELECT s.key	 
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s, viewExpandedText:SELECT `s`.`key`	 	 
+FROM `srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view13
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 key                 	int                 	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:26 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:05:59 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649646          
+	transient_lastDdlTime	1286917559          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -1113,17 +1104,16 @@ View Original Text: 	SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s	 	 
 View Expanded Text: 	SELECT `s`.`key`	 
 FROM `srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-27_048_5658141799629597224/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-59_495_6005799548326478008/-mr-10000
 POSTHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-27_048_5658141799629597224/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-05-59_495_6005799548326478008/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0
 0
@@ -1150,7 +1140,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-29_246_6870121975257527119/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-02_304_7258192808526405585/-mr-10000
 POSTHOOK: query: -- test usage of JOIN+UNION+AGG all within same view
 CREATE VIEW view14 AS
 SELECT unionsrc1.key as k1, unionsrc1.value as v1,
@@ -1165,14 +1155,43 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view14
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-29_246_6870121975257527119/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-02_304_7258192808526405585/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view14
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+k1	string	
+v1	string	
+k2	string	
+v2	string	
+	 	 
+Detailed Table Information	Table(tableName:view14, dbName:default, owner:thiruvel, createTime:1286917562, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:k1, type:string, comment:null), FieldSchema(name:v1, type:string, comment:null), FieldSchema(name:k2, type:string, comment:null), FieldSchema(name:v2, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917562}, viewOriginalText:SELECT unionsrc1.key as k1, unionsrc1.value as v1,	 
+       unionsrc2.key as k2, unionsrc2.value as v2	 	 
+FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1	 	 
+                         UNION  ALL	 	 
+      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1	 	 
+JOIN	 	 
+     (select 'tst1' as key, cast(count(1) as string) as value from src s3	 	 
+                         UNION  ALL	 	 
+      select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2	 	 
+ON (unionsrc1.key = unionsrc2.key), viewExpandedText:SELECT `unionsrc1`.`key` as `k1`, `unionsrc1`.`value` as `v1`,	 	 
+       `unionsrc2`.`key` as `k2`, `unionsrc2`.`value` as `v2`	 	 
+FROM (select 'tst1' as `key`, cast(count(1) as string) as `value` from `src` `s1`	 	 
+                         UNION  ALL	 	 
+      select `s2`.`key` as `key`, `s2`.`value` as `value` from `src` `s2` where `s2`.`key` < 10) `unionsrc1`	 	 
+JOIN	 	 
+     (select 'tst1' as `key`, cast(count(1) as string) as `value` from `src` `s3`	 	 
+                         UNION  ALL	 	 
+      select `s4`.`key` as `key`, `s4`.`value` as `value` from `src` `s4` where `s4`.`key` < 10) `unionsrc2`	 	 
+ON (`unionsrc1`.`key` = `unionsrc2`.`key`), tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view14
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view14
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 k1                  	string              	None                
 v1                  	string              	None                
@@ -1182,13 +1201,13 @@ v2                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:29 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:06:02 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649649          
+	transient_lastDdlTime	1286917562          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -1220,17 +1239,16 @@ JOIN
                          UNION  ALL	 	 
       select `s4`.`key` as `key`, `s4`.`value` as `value` from `src` `s4` where `s4`.`key` < 10) `unionsrc2`	 	 
 ON (`unionsrc1`.`key` = `unionsrc2`.`key`)	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view14
 ORDER BY k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-29_377_734117335711146528/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-02_508_2715756150914930169/-mr-10000
 POSTHOOK: query: SELECT * FROM view14
 ORDER BY k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-29_377_734117335711146528/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-02_508_2715756150914930169/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1261,7 +1279,7 @@ SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-45_072_4210231337861482287/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-18_342_6394406994472080746/-mr-10000
 POSTHOOK: query: -- test usage of GROUP BY within view
 CREATE VIEW view15 AS
 SELECT key,COUNT(value) AS value_count
@@ -1269,14 +1287,27 @@ FROM src
 GROUP BY key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view15
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-45_072_4210231337861482287/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-18_342_6394406994472080746/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view15
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	
+value_count	bigint	
+	 	 
+Detailed Table Information	Table(tableName:view15, dbName:default, owner:thiruvel, createTime:1286917578, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value_count, type:bigint, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917578}, viewOriginalText:SELECT key,COUNT(value) AS value_count	 
+FROM src	 	 
+GROUP BY key, viewExpandedText:SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 	 
+FROM `src`	 	 
+GROUP BY `src`.`key`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view15
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view15
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 key                 	string              	None                
 value_count         	bigint              	None                
@@ -1284,13 +1315,13 @@ value_count         	bigint              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:45 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:06:18 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649665          
+	transient_lastDdlTime	1286917578          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -1308,19 +1339,18 @@ GROUP BY key
 View Expanded Text: 	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 
 FROM `src`	 	 
 GROUP BY `src`.`key`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-45_149_3743913644815066120/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-18_509_3720287369023887339/-mr-10000
 POSTHOOK: query: SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-45_149_3743913644815066120/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-18_509_3720287369023887339/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 230	5
 348	5
@@ -1337,34 +1367,44 @@ CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-49_518_7880482078097886864/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-22_952_5314544607161648316/-mr-10000
 POSTHOOK: query: -- test usage of DISTINCT within view
 CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view16
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-49_518_7880482078097886864/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-22_952_5314544607161648316/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view16
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-col_name            	data_type           	comment             
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:view16, dbName:default, owner:thiruvel, createTime:1286917582, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286917582}, viewOriginalText:SELECT DISTINCT value	 
+FROM src, viewExpandedText:SELECT DISTINCT `src`.`value`	 	 
+FROM `src`, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED view16
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED view16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+# col_name            	data_type           	comment             
 	 	 
 value               	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	thiruvel            	 
-CreateTime:         	Thu Sep 16 08:07:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
+CreateTime:         	Tue Oct 12 14:06:22 PDT 2010	 
+LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1284649669          
+	transient_lastDdlTime	1286917582          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -1380,19 +1420,18 @@ View Original Text: 	SELECT DISTINCT value
 FROM src	 	 
 View Expanded Text: 	SELECT DISTINCT `src`.`value`	 
 FROM `src`	 	 
-	 	 
 PREHOOK: query: SELECT * FROM view16
 ORDER BY value
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-49_584_2584663697395168272/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-23_064_3944778547825966318/-mr-10000
 POSTHOOK: query: SELECT * FROM view16
 ORDER BY value
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_08-07-49_584_2584663697395168272/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_14-06-23_064_3944778547825966318/-mr-10000
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 val_0
 val_10

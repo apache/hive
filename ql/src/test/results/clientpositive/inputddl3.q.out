@@ -33,7 +33,5 @@ PREHOOK: query: DESCRIBE INPUTDDL3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE INPUTDDL3
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-key                 	int                 	None                
-value               	string              	None                
+key	int	
+value	string	

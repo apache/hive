@@ -39,6 +39,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   HashMap<String, String> partSpec;
   String resFile;
   boolean isExt;
+  boolean isFormatted;
   /**
    * table name for the result of describe table.
    */
@@ -52,14 +53,14 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param isExt
    * @param partSpec
    * @param resFile
    * @param tableName
    */
   public DescTableDesc(Path resFile, String tableName,
-      HashMap<String, String> partSpec, boolean isExt) {
-    this.isExt = isExt;
+      HashMap<String, String> partSpec) {
+    this.isExt = false;
+    this.isFormatted = false;
     this.partSpec = partSpec;
     this.resFile = resFile.toString();
     this.tableName = tableName;
@@ -86,6 +87,21 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    */
   public void setExt(boolean isExt) {
     this.isExt = isExt;
+  }
+
+    /**
+   * @return the isFormatted
+   */
+  public boolean isFormatted() {
+    return isFormatted;
+  }
+
+  /**
+   * @param isFormatted
+   *          the isFormat to set
+   */
+  public void setFormatted(boolean isFormat) {
+    this.isFormatted = isFormat;
   }
 
   /**

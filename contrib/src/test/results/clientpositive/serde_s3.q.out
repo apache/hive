@@ -15,25 +15,23 @@ PREHOOK: query: DESCRIBE s3log
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE s3log
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-bucketowner         	string              	from deserializer   
-bucketname          	string              	from deserializer   
-rdatetime           	string              	from deserializer   
-rip                 	string              	from deserializer   
-requester           	string              	from deserializer   
-requestid           	string              	from deserializer   
-operation           	string              	from deserializer   
-rkey                	string              	from deserializer   
-requesturi          	string              	from deserializer   
-httpstatus          	int                 	from deserializer   
-errorcode           	string              	from deserializer   
-bytessent           	int                 	from deserializer   
-objsize             	int                 	from deserializer   
-totaltime           	int                 	from deserializer   
-turnaroundtime      	int                 	from deserializer   
-referer             	string              	from deserializer   
-useragent           	string              	from deserializer   
+bucketowner	string	from deserializer
+bucketname	string	from deserializer
+rdatetime	string	from deserializer
+rip	string	from deserializer
+requester	string	from deserializer
+requestid	string	from deserializer
+operation	string	from deserializer
+rkey	string	from deserializer
+requesturi	string	from deserializer
+httpstatus	int	from deserializer
+errorcode	string	from deserializer
+bytessent	int	from deserializer
+objsize	int	from deserializer
+totaltime	int	from deserializer
+turnaroundtime	int	from deserializer
+referer	string	from deserializer
+useragent	string	from deserializer
 PREHOOK: query: LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log
 PREHOOK: type: LOAD
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log
@@ -42,11 +40,11 @@ POSTHOOK: Output: default@s3log
 PREHOOK: query: SELECT a.* FROM s3log a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s3log
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-52-54_413_2340174263889776647/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-29-52_645_7274865857229017916/-mr-10000
 POSTHOOK: query: SELECT a.* FROM s3log a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s3log
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-17_01-52-54_413_2340174263889776647/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-29-52_645_7274865857229017916/-mr-10000
 04ff331638adc13885d6c42059584deabbdeabcd55bf0bee491172a79a87b196	img.zemanta.com	09/Apr/2009:22:00:01 +0000	212.143.99.188	65a011a29cdf8ec533ec3d1ccaae921c	D987234E52141DE7	REST.GET.OBJECT	pixy.gif	GET /pixy.gif?x-id=4560525f-2864-495c-842c-159ede7143f8 HTTP/1.1	200	-	828	828	3	2	http://www.mediafuturist.com/2009/02/marc-andreessen-on-the-charlie-rose-show-talking-about-mobile-technology-video.html	Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.53 Safari/525.19
 04ff331638adc13885d6c42059584deabbdeabcd55bf0bee491172a79a87b196	img.zemanta.com	09/Apr/2009:22:00:01 +0000	74.244.182.35	65a011a29cdf8ec533ec3d1ccaae921c	626EECA20AB12A5C	REST.GET.OBJECT	pixy.gif	GET /pixy.gif HTTP/1.1	200	-	828	828	20	20	http://trueslant.com/	Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; en-us) AppleWebKit/528.16 (KHTML, like Gecko) Version/4 Public Beta Safari/528.16
 04ff331638adc13885d6c42059584deabbdeabcd55bf0bee491172a79a87b196	img.zemanta.com	09/Apr/2009:22:00:02 +0000	62.149.175.120	65a011a29cdf8ec533ec3d1ccaae921c	3E93D70E69292C98	REST.GET.OBJECT	pixy.gif	GET /pixy.gif?x-id=9fec752e-2318-4da3-864e-ac5b9e47c4ae HTTP/1.0	200	-	828	828	4	3	-	-

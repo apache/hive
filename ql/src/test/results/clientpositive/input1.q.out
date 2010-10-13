@@ -31,7 +31,5 @@ PREHOOK: query: DESCRIBE TEST1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	int                 	None                
-b                   	double              	None                
+a	int	
+b	double	

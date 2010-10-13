@@ -7,34 +7,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284472770          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286798957}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -47,38 +23,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	c                   	3                   
-	last_modified_time  	1284472770          
-	a                   	1                   
-	transient_lastDdlTime	1284472770          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, c=3, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -91,39 +39,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -136,40 +55,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	EXTERNAL_TABLE      	 
-Table Parameters:	 	 
-	EXTERNAL            	TRUE                
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=TRUE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
 PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@alter1
@@ -182,40 +71,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -228,41 +87,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@alter1
@@ -275,42 +103,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	10                  
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20, s1=10, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@alter1
@@ -323,42 +119,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	string	from deserializer
+b	string	from deserializer
 	 	 
-a                   	string              	from deserializer   
-b                   	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472771          
-	a                   	1                   
-	transient_lastDdlTime	1284472771          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.TestSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:from deserializer), FieldSchema(name:b, type:int, comment:from deserializer)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.TestSerDe, parameters:{s2=20, s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@alter1
@@ -371,42 +135,10 @@ PREHOOK: query: describe extended alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	string	from deserializer
+b	string	from deserializer
 	 	 
-a                   	string              	from deserializer   
-b                   	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:30 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472772          
-	a                   	1                   
-	transient_lastDdlTime	1284472772          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:thiruvel, createTime:1286798957, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:from deserializer), FieldSchema(name:b, type:string, comment:from deserializer)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20, s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798958, a=1, transient_lastDdlTime=1286798958}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table alter1 replace columns (a int, b int, c string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter1
@@ -419,11 +151,9 @@ PREHOOK: query: describe alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-c                   	string              	None                
+a	int	
+b	int	
+c	string	
 PREHOOK: query: -- Cleanup
 DROP TABLE alter1
 PREHOOK: type: DROPTABLE
@@ -471,34 +201,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284472772          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286798959}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -511,38 +217,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	c                   	3                   
-	last_modified_time  	1284472772          
-	a                   	1                   
-	transient_lastDdlTime	1284472772          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, c=3, last_modified_time=1286798959, a=1, transient_lastDdlTime=1286798959}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -555,39 +233,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472772          
-	a                   	1                   
-	transient_lastDdlTime	1284472772          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798959, a=1, transient_lastDdlTime=1286798959}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -600,40 +249,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	EXTERNAL_TABLE      	 
-Table Parameters:	 	 
-	EXTERNAL            	TRUE                
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=TRUE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -646,40 +265,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET SERDEPROPERTIES('s1'='9')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -692,41 +281,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: alter1_db@alter1
@@ -739,42 +297,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	int	
+b	int	
 	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	10                  
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20, s1=10, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' WITH SERDEPROPERTIES ('s1'='9')
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: alter1_db@alter1
@@ -787,42 +313,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	string	from deserializer
+b	string	from deserializer
 	 	 
-a                   	string              	from deserializer   
-b                   	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.TestSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:from deserializer), FieldSchema(name:b, type:int, comment:from deserializer)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.TestSerDe, parameters:{s2=20, s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: alter1_db@alter1
@@ -835,42 +329,10 @@ PREHOOK: query: DESCRIBE EXTENDED alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+a	string	from deserializer
+b	string	from deserializer
 	 	 
-a                   	string              	from deserializer   
-b                   	string              	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	alter1_db           	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 06:59:32 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/alter1_db.db/alter1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	FALSE               
-	d                   	3                   
-	last_modified_by    	thiruvel            
-	c                   	4                   
-	last_modified_time  	1284472773          
-	a                   	1                   
-	transient_lastDdlTime	1284472773          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	s2                  	20                  
-	s1                  	9                   
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:alter1, dbName:alter1_db, owner:thiruvel, createTime:1286798959, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:from deserializer), FieldSchema(name:b, type:string, comment:from deserializer)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter1_db.db/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20, s1=9, serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE, d=3, last_modified_by=thiruvel, c=4, last_modified_time=1286798960, a=1, transient_lastDdlTime=1286798960}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: ALTER TABLE alter1 REPLACE COLUMNS (a int, b int, c string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: alter1_db@alter1
@@ -883,11 +345,9 @@ PREHOOK: query: DESCRIBE alter1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE alter1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	int                 	None                
-b                   	int                 	None                
-c                   	string              	None                
+a	int	
+b	int	
+c	string	
 PREHOOK: query: DROP TABLE alter1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter1_db@alter1

@@ -40,13 +40,17 @@ SELECT * from view2 where key=18;
 SHOW TABLES 'view.*';
 DESCRIBE view1;
 DESCRIBE EXTENDED view1;
+DESCRIBE FORMATTED view1;
 DESCRIBE view2;
 DESCRIBE EXTENDED view2;
+DESCRIBE FORMATTED view2;
 DESCRIBE view3;
 DESCRIBE EXTENDED view3;
+DESCRIBE FORMATTED view3;
 
 ALTER VIEW view3 SET TBLPROPERTIES ("biggest" = "loser");
 DESCRIBE EXTENDED view3;
+DESCRIBE FORMATTED view3;
 
 CREATE TABLE table1 (key int);
 
@@ -110,6 +114,7 @@ CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
 FROM table1;
 DESCRIBE EXTENDED view8;
+DESCRIBE FORMATTED view8;
 SELECT * FROM view8;
 
 -- test usage of a UDAF within a view
@@ -119,12 +124,14 @@ CREATE VIEW view9(m) AS
 SELECT test_max(length(value))
 FROM src;
 DESCRIBE EXTENDED view9;
+DESCRIBE FORMATTED view9;
 SELECT * FROM view9;
 
 -- test usage of a subselect within a view
 CREATE VIEW view10 AS
 SELECT slurp.* FROM (SELECT * FROM src WHERE key=86) slurp;
 DESCRIBE EXTENDED view10;
+DESCRIBE FORMATTED view10;
 SELECT * FROM view10;
 
 -- test usage of a UDTF within a view
@@ -134,12 +141,14 @@ CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
 FROM table1;
 DESCRIBE EXTENDED view11;
+DESCRIBE FORMATTED view11;
 SELECT * FROM view11;
 
 -- test usage of LATERAL within a view
 CREATE VIEW view12 AS
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol;
 DESCRIBE EXTENDED view12;
+DESCRIBE FORMATTED view12;
 SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1;
 
@@ -152,6 +161,7 @@ CREATE VIEW view13 AS
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s;
 DESCRIBE EXTENDED view13;
+DESCRIBE FORMATTED view13;
 SELECT * FROM view13
 ORDER BY key LIMIT 12;
 
@@ -168,6 +178,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key);
 DESCRIBE EXTENDED view14;
+DESCRIBE FORMATTED view14;
 SELECT * FROM view14
 ORDER BY k1;
 
@@ -177,6 +188,7 @@ SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key;
 DESCRIBE EXTENDED view15;
+DESCRIBE FORMATTED view15;
 SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10;
@@ -186,6 +198,7 @@ CREATE VIEW view16 AS
 SELECT DISTINCT value
 FROM src;
 DESCRIBE EXTENDED view16;
+DESCRIBE FORMATTED view16;
 SELECT * FROM view16
 ORDER BY value
 LIMIT 10;

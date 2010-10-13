@@ -624,7 +624,7 @@ partTypeExpr
 descStatement
 @init { msgs.push("describe statement"); }
 @after { msgs.pop(); }
-    : (KW_DESCRIBE|KW_DESC) (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
+    : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     ;
     
@@ -1836,6 +1836,7 @@ KW_TEMPORARY: 'TEMPORARY';
 KW_FUNCTION: 'FUNCTION';
 KW_EXPLAIN: 'EXPLAIN';
 KW_EXTENDED: 'EXTENDED';
+KW_FORMATTED: 'FORMATTED';	 
 KW_SERDE: 'SERDE';
 KW_WITH: 'WITH';
 KW_DEFERRED: 'DEFERRED';

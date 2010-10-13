@@ -96,42 +96,12 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-04-08, 11]    	 
-Database:           	default             	 
-Table:              	analyze_srcpart     	 
-CreateTime:         	Tue Sep 21 01:12:14 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056743          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:analyze_srcpart, createTime:1286826409, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826413, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
@@ -144,42 +114,12 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-04-08, 12]    	 
-Database:           	default             	 
-Table:              	analyze_srcpart     	 
-CreateTime:         	Tue Sep 21 01:12:15 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056743          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-04-08, 12], dbName:default, tableName:analyze_srcpart, createTime:1286826409, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826413, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended analyze_srcpart
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended analyze_srcpart
@@ -192,42 +132,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 21 01:12:03 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_srcpart	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numPartitions       	2                   
-	EXTERNAL            	FALSE               
-	numFiles            	2                   
-	transient_lastDdlTime	1285056743          
-	numRows             	1000                
-	totalSize           	11624               
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:analyze_srcpart, dbName:default, owner:null, createTime:1286826404, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/analyze_srcpart, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=2, EXTERNAL=FALSE, numFiles=2, transient_lastDdlTime=1286826413, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

@@ -30,35 +30,11 @@ PREHOOK: query: desc extended default__src_src_index_2__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_2__
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	default
+_bucketname	string	
+_offsets	array<bigint>	
 	 	 
-key                 	string              	default             
-_bucketname         	string              	                    
-_offsets            	array<bigint>       	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:33 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/default__src_src_index_2__	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477633          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:default__src_src_index_2__, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/default__src_src_index_2__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286799495}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
 PREHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
@@ -67,35 +43,11 @@ PREHOOK: query: desc extended src_idx_src_index_3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_3
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	default
+_bucketname	string	
+_offsets	array<bigint>	
 	 	 
-key                 	string              	default             
-_bucketname         	string              	                    
-_offsets            	array<bigint>       	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:33 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/src_idx_src_index_3	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477633          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:src_idx_src_index_3, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src_idx_src_index_3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286799495}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
 PREHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
@@ -104,36 +56,11 @@ PREHOOK: query: desc extended default__src_src_index_4__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_4__
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	default
+_bucketname	string	
+_offsets	array<bigint>	
 	 	 
-key                 	string              	default             
-_bucketname         	string              	                    
-_offsets            	array<bigint>       	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:33 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/default__src_src_index_4__	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477633          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	\t                  
-	field.delim         	\t                  
-	 	 
+Detailed Table Information	Table(tableName:default__src_src_index_4__, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/default__src_src_index_4__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=	, field.delim=
 PREHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
@@ -142,37 +69,11 @@ PREHOOK: query: desc extended default__src_src_index_5__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_5__
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	default
+_bucketname	string	
+_offsets	array<bigint>	
 	 	 
-key                 	string              	default             
-_bucketname         	string              	                    
-_offsets            	array<bigint>       	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:33 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/default__src_src_index_5__	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477633          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	escape.delim        	\\                  
-	serialization.format	\t                  
-	field.delim         	\t                  
-	 	 
+Detailed Table Information	Table(tableName:default__src_src_index_5__, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/default__src_src_index_5__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{escape.delim=\, serialization.format=	, field.delim=
 PREHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
@@ -181,35 +82,11 @@ PREHOOK: query: desc extended default__src_src_index_6__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_6__
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	from deserializer
+_bucketname	string	from deserializer
+_offsets	array<bigint>	from deserializer
 	 	 
-key                 	string              	from deserializer   
-_bucketname         	string              	from deserializer   
-_offsets            	array<bigint>       	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:34 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/default__src_src_index_6__	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477634          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:default__src_src_index_6__, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/default__src_src_index_6__, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286799495}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
 PREHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
@@ -218,35 +95,11 @@ PREHOOK: query: desc extended src_idx_src_index_7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_7
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+key	string	from deserializer
+_bucketname	string	from deserializer
+_offsets	array<bigint>	from deserializer
 	 	 
-key                 	string              	from deserializer   
-_bucketname         	string              	from deserializer   
-_offsets            	array<bigint>       	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 14 08:20:34 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/src_idx_src_index_7	 
-Table Type:         	INDEX_TABLE         	 
-Table Parameters:	 	 
-	transient_lastDdlTime	1284477634          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[Order(col:key, order:1)]	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:src_idx_src_index_7, dbName:default, owner:null, createTime:1286799495, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src_idx_src_index_7, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1286799495}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
 PREHOOK: query: drop index src_index_2 on src
 PREHOOK: type: DROPINDEX
 POSTHOOK: query: drop index src_index_2 on src

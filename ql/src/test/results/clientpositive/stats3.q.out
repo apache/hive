@@ -33,11 +33,11 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-48_741_4666382027997974463/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-05_659_2221029887224696014/-mr-10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-48_741_4666382027997974463/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-05_659_2221029887224696014/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
 2	test_part	test_Part
@@ -48,11 +48,11 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-49_252_7452474459995369471/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-05_953_2557790695855173848/-mr-10000
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-49_252_7452474459995369471/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-05_953_2557790695855173848/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 6
 PREHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
@@ -67,31 +67,31 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-58_576_6980096604094616479/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-12_148_1009430033459434884/-mr-10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-58_576_6980096604094616479/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-12_148_1009430033459434884/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select count(1) from hive_test_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-58_626_4368103866978336718/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-12_203_7564156689753325528/-mr-10000
 POSTHOOK: query: select count(1) from hive_test_dst
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-10-58_626_4368103866978336718/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-12_203_7564156689753325528/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 6
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-02_419_7815117641043388974/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_501_1219457432996411183/-mr-10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-02_419_7815117641043388974/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_501_1219457432996411183/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
@@ -102,18 +102,18 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6	test_part	test_Part
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-02_947_2022421415266096272/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_632_4106385047710132007/-mr-10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-02_947_2022421415266096272/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_632_4106385047710132007/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-03_001_4419154579807959228/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_678_6099443731469838470/-mr-10000
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-03_001_4419154579807959228/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-14_678_6099443731469838470/-mr-10000
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: describe extended hive_test_dst
@@ -122,43 +122,11 @@ POSTHOOK: query: describe extended hive_test_dst
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
-col_name            	data_type           	comment             
+col1	string	
+pcol1	string	
+pcol2	string	
 	 	 
-col1                	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-pcol1               	string              	None                
-pcol2               	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	nzhang              	 
-CreateTime:         	Tue Sep 21 01:10:42 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/hive_test_dst	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numPartitions       	1                   
-	numFiles            	1                   
-	transient_lastDdlTime	1285056658          
-	numRows             	6                   
-	totalSize           	171                 
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:hive_test_dst, dbName:default, owner:thiruvel, createTime:1286826241, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null), FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/hive_test_dst, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, transient_lastDdlTime=1286826252, numRows=6, totalSize=171}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: drop table hive_test_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_src

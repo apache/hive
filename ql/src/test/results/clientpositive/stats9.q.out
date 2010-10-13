@@ -54,36 +54,7 @@ POSTHOOK: query: describe extended analyze_srcbucket
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
-col_name            	data_type           	comment             
+key	int	
+value	string	
 	 	 
-key                 	int                 	None                
-value               	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	nzhang              	 
-CreateTime:         	Tue Sep 21 01:13:15 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/analyze_srcbucket	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numPartitions       	0                   
-	EXTERNAL            	FALSE               
-	numFiles            	1                   
-	transient_lastDdlTime	1285056808          
-	numRows             	1000                
-	totalSize           	11603               
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	2                   	 
-Bucket Columns:     	[key]               	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:analyze_srcbucket, dbName:default, owner:thiruvel, createTime:1286826500, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/analyze_srcbucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, EXTERNAL=FALSE, numFiles=1, transient_lastDdlTime=1286826508, numRows=1000, totalSize=11603}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

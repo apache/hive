@@ -7,10 +7,8 @@ PREHOOK: query: DESCRIBE TEST3a
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST3a
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	int                 	None                
-b                   	double              	None                
+a	int	
+b	double	
 PREHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
@@ -20,11 +18,9 @@ PREHOOK: query: DESCRIBE TEST3b
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST3b
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
+a	array<int>	
+b	double	
+c	map<double,int>	
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -72,12 +68,10 @@ PREHOOK: query: DESCRIBE TEST3b
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST3b
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
-x                   	double              	None                
+a	array<int>	
+b	double	
+c	map<double,int>	
+x	double	
 PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME
@@ -112,12 +106,10 @@ PREHOOK: query: DESCRIBE TEST3c
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST3c
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	array<int>          	None                
-b                   	double              	None                
-c                   	map<double,int>     	None                
-x                   	double              	None                
+a	array<int>	
+b	double	
+c	map<double,int>	
+x	double	
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
@@ -165,33 +157,7 @@ PREHOOK: query: DESCRIBE EXTENDED TEST3c
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED TEST3c
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+r1	int	
+r2	double	
 	 	 
-r1                  	int                 	None                
-r2                  	double              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:23:52 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/test3c	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477832          
-	transient_lastDdlTime	1284477832          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:thiruvel, createTime:1286799236, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286799237, transient_lastDdlTime=1286799237}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

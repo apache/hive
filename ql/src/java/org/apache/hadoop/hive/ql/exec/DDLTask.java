@@ -1613,26 +1613,52 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 			DataOutput outStream = fs.create(resFile);
 
       if (colPath.equals(tableName)) {
-				outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(tbl));
+        if (!descTbl.isFormatted()) {
+          List<FieldSchema> cols = tbl.getCols();
+          if (tableName.equals(colPath)) {
+            cols.addAll(tbl.getPartCols());
+          }
+          outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
+        } else {
+          outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(tbl));
+        }
       } else {
-				List<FieldSchema> cols = null;
-        cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
-				outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
+        List<FieldSchema> cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
+        if (descTbl.isFormatted()) {
+          outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(cols));
+        } else {
+          outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
+        }
       }
 
       if (tableName.equals(colPath)) {
+
+        if (descTbl.isFormatted()) {
+          if (part != null) {
+            outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
+          } else {
+            outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
+          }
+        }
+
         // if extended desc table then show the complete details of the table
         if (descTbl.isExt()) {
           // add empty line
           outStream.write(terminator);
           if (part != null) {
             // show partition information
-            outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
+            outStream.writeBytes("Detailed Partition Information");
+            outStream.write(separator);
+            outStream.writeBytes(part.getTPartition().toString());
+            outStream.write(separator);
             // comment column is empty
             outStream.write(terminator);
           } else {
             // show table information
-            outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
+            outStream.writeBytes("Detailed Table Information");
+            outStream.write(separator);
+            outStream.writeBytes(tbl.getTTable().toString());
+            outStream.write(separator);
             outStream.write(terminator);
           }
         }

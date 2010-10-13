@@ -7,10 +7,8 @@ PREHOOK: query: DESCRIBE tmp_select
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE tmp_select
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
-	 	 
-a                   	int                 	None                
-b                   	string              	None                
+a	int	
+b	string	
 PREHOOK: query: INSERT OVERWRITE TABLE tmp_select SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -24,11 +22,11 @@ POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: SELECT a, b FROM tmp_select ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_select
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_06-38-20_433_3190875309888534016/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-23-09_960_7194078402854087529/-mr-10000
 POSTHOOK: query: SELECT a, b FROM tmp_select ORDER BY a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_select
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-16_06-38-20_433_3190875309888534016/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-23-09_960_7194078402854087529/-mr-10000
 POSTHOOK: Lineage: tmp_select.a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_select.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0

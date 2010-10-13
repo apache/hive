@@ -121,10 +121,10 @@ public class TestHWISessionManager extends TestCase {
 
     ArrayList<ArrayList<String>> searchBlockRes = searchItem.getResultBucket();
 
-    String resLine = searchBlockRes.get(0).get(2);
+    String resLine = searchBlockRes.get(0).get(0);
     assertEquals(true, resLine.contains("key"));
     assertEquals(true, resLine.contains("int"));
-    String resLine2 = searchBlockRes.get(0).get(3);
+    String resLine2 = searchBlockRes.get(0).get(1);
     assertEquals(true, resLine2.contains("value"));
     assertEquals(true, resLine2.contains("string"));
 

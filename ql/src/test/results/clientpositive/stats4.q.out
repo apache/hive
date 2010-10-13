@@ -109,7 +109,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_01-11-04_741_3724891305932718079/-ext-10000
+          destination: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-44-46_065_4222115374123373050/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -130,7 +130,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_01-11-04_741_3724891305932718079/-ext-10004 
+        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-44-46_065_4222115374123373050/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -147,7 +147,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_01-11-04_741_3724891305932718079/-ext-10002
+          destination: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-44-46_065_4222115374123373050/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -168,7 +168,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-21_01-11-04_741_3724891305932718079/-ext-10005 
+        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-44-46_065_4222115374123373050/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -239,12 +239,12 @@ PREHOOK: query: select * from nzhang_part1 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-21_462_8751318034647954787/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-54_869_5006994440494596642/-mr-10000
 POSTHOOK: query: select * from nzhang_part1 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part1@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-21_462_8751318034647954787/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-54_869_5006994440494596642/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1257,12 +1257,12 @@ PREHOOK: query: select * from nzhang_part2 where ds is not null and hr is not nu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 PREHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-22_337_917757126992605846/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-55_116_4151751705269536147/-mr-10000
 POSTHOOK: query: select * from nzhang_part2 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=11
 POSTHOOK: Input: default@nzhang_part2@ds=2008-12-31/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-21_01-11-22_337_917757126992605846/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-44-55_116_4151751705269536147/-mr-10000
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part1 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2283,42 +2283,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-04-08, 11]    	 
-Database:           	default             	 
-Table:              	nzhang_part1        	 
-CreateTime:         	Tue Sep 21 01:11:18 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part1/ds=2008-04-08/hr=11	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056678          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:nzhang_part1, createTime:1286826293, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part1/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826293, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=12)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part1 partition(ds='2008-04-08',hr=12)
@@ -2331,42 +2301,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-04-08, 12]    	 
-Database:           	default             	 
-Table:              	nzhang_part1        	 
-CreateTime:         	Tue Sep 21 01:11:18 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part1/ds=2008-04-08/hr=12	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056679          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-04-08, 12], dbName:default, tableName:nzhang_part1, createTime:1286826293, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part1/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826293, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=11)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=11)
@@ -2379,42 +2319,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-12-31, 11]    	 
-Database:           	default             	 
-Table:              	nzhang_part2        	 
-CreateTime:         	Tue Sep 21 01:11:20 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part2/ds=2008-12-31/hr=11	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056680          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-12-31, 11], dbName:default, tableName:nzhang_part2, createTime:1286826294, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part2/ds=2008-12-31/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826294, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=12)
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part2 partition(ds='2008-12-31',hr=12)
@@ -2427,42 +2337,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-12-31, 12]    	 
-Database:           	default             	 
-Table:              	nzhang_part2        	 
-CreateTime:         	Tue Sep 21 01:11:20 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part2/ds=2008-12-31/hr=12	 
-Partition Parameters:	 	 
-	numFiles            	1                   
-	transient_lastDdlTime	1285056681          
-	numRows             	500                 
-	totalSize           	5812                
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[2008-12-31, 12], dbName:default, tableName:nzhang_part2, createTime:1286826294, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part2/ds=2008-12-31/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826294, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended nzhang_part1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part1
@@ -2475,45 +2355,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 21 01:11:04 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numPartitions       	2                   
-	EXTERNAL            	FALSE               
-	numFiles            	2                   
-	transient_lastDdlTime	1285056679          
-	numRows             	1000                
-	totalSize           	11624               
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:nzhang_part1, dbName:default, owner:null, createTime:1286826286, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=2, EXTERNAL=FALSE, numFiles=2, transient_lastDdlTime=1286826293, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: describe extended nzhang_part2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended nzhang_part2
@@ -2526,45 +2373,12 @@ POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).key SIMPLE [(srcp
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part2 PARTITION(ds=2008-12-31,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-col_name            	data_type           	comment             
+key	string	default
+value	string	default
+ds	string	
+hr	string	
 	 	 
-key                 	string              	default             
-value               	string              	default             
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-ds                  	string              	None                
-hr                  	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	null                	 
-CreateTime:         	Tue Sep 21 01:11:04 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/nzhang_part2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numPartitions       	2                   
-	EXTERNAL            	FALSE               
-	numFiles            	2                   
-	transient_lastDdlTime	1285056681          
-	numRows             	1000                
-	totalSize           	11624               
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:nzhang_part2, dbName:default, owner:null, createTime:1286826286, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/nzhang_part2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=2, EXTERNAL=FALSE, numFiles=2, transient_lastDdlTime=1286826294, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: drop table nzhang_part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part1

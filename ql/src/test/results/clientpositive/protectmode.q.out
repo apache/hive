@@ -18,19 +18,19 @@ POSTHOOK: Output: default@tbl1
 PREHOOK: query: select * from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-44_204_5200678719528751162/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-31_476_4515339611013455991/-mr-10000
 POSTHOOK: query: select * from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-44_204_5200678719528751162/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-31_476_4515339611013455991/-mr-10000
 PREHOOK: query: select col from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-44_410_3116016317581246388/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-31_638_1101319849914301170/-mr-10000
 POSTHOOK: query: select col from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-44_410_3116016317581246388/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-31_638_1101319849914301170/-mr-10000
 PREHOOK: query: alter table tbl1 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl1
@@ -43,36 +43,9 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:44 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	OFFLINE             	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477526          
-	PROTECT_MODE        	OFFLINE             
-	transient_lastDdlTime	1284477526          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:thiruvel, createTime:1286798911, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286798914, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1286798914}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table tbl1 disable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl1
@@ -85,51 +58,25 @@ PREHOOK: query: desc extended tbl1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:44 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl1	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477526          
-	transient_lastDdlTime	1284477526          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:thiruvel, createTime:1286798911, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286798914, transient_lastDdlTime=1286798914}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select * from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-47_071_5796000117996838565/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-34_256_3955988268350475784/-mr-10000
 POSTHOOK: query: select * from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-47_071_5796000117996838565/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-34_256_3955988268350475784/-mr-10000
 PREHOOK: query: select col from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-47_133_5745323122679121918/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-34_405_8359234130543394694/-mr-10000
 POSTHOOK: query: select col from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-47_133_5745323122679121918/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-34_405_8359234130543394694/-mr-10000
 PREHOOK: query: create table tbl2  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tbl2  (col string) partitioned by (p string)
@@ -165,19 +112,19 @@ POSTHOOK: Input: default@tbl2
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-49_993_330775998736653121/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-37_067_483902882123618984/-mr-10000
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-49_993_330775998736653121/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-37_067_483902882123618984/-mr-10000
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-50_113_8495177326193613878/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-37_187_7573865201096655538/-mr-10000
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-50_113_8495177326193613878/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-37_187_7573865201096655538/-mr-10000
 PREHOOK: query: alter table tbl2 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -192,40 +139,10 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[p1]                	 
-Database:           	default             	 
-Table:              	tbl2                	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	OFFLINE             	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2/p=p1	 
-Partition Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477530          
-	PROTECT_MODE        	OFFLINE             
-	transient_lastDdlTime	1284477530          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1286798916, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=thiruvel, last_modified_time=1286798917, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1286798917})	
 PREHOOK: query: alter table tbl2 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -238,41 +155,10 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	OFFLINE             	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477530          
-	PROTECT_MODE        	OFFLINE             
-	transient_lastDdlTime	1284477530          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:thiruvel, createTime:1286798916, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798917, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1286798917}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table tbl2 enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -285,41 +171,10 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	OFFLINE,NO_DROP     	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477530          
-	PROTECT_MODE        	OFFLINE,NO_DROP     
-	transient_lastDdlTime	1284477530          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:thiruvel, createTime:1286798916, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798917, PROTECT_MODE=OFFLINE,NO_DROP, transient_lastDdlTime=1286798917}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table tbl2 drop partition (p='p3')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@tbl2
@@ -340,41 +195,10 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	NO_DROP             	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477530          
-	PROTECT_MODE        	NO_DROP             
-	transient_lastDdlTime	1284477530          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:thiruvel, createTime:1286798916, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798917, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1286798917}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: alter table tbl2 disable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -387,56 +211,26 @@ PREHOOK: query: desc extended tbl2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2	 
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477531          
-	transient_lastDdlTime	1284477531          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:thiruvel, createTime:1286798916, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=thiruvel, last_modified_time=1286798918, transient_lastDdlTime=1286798918}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-51_381_75919177097290803/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-38_066_2185936582247020299/-mr-10000
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-51_381_75919177097290803/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-38_066_2185936582247020299/-mr-10000
 PREHOOK: query: select col from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-51_472_535925465163597692/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-38_143_3716448971940234870/-mr-10000
 POSTHOOK: query: select col from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-51_472_535925465163597692/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-38_143_3716448971940234870/-mr-10000
 PREHOOK: query: alter table tbl2 partition (p='p1') disable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -451,55 +245,26 @@ PREHOOK: query: desc extended tbl2 partition (p='p1')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended tbl2 partition (p='p1')
 POSTHOOK: type: DESCTABLE
-col_name            	data_type           	comment             
+col	string	
+p	string	
 	 	 
-col                 	string              	None                
-	 	 
-# Partition Information	 	 
-col_name            	data_type           	comment             
-	 	 
-p                   	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[p1]                	 
-Database:           	default             	 
-Table:              	tbl2                	 
-CreateTime:         	Tue Sep 14 08:18:49 PDT 2010	 
-LastAccessTime:     	Wed Dec 31 16:00:00 PST 1969	 
-Protect Mode:       	None                	 
-Location:           	pfile:/home/thiruvel/projects/hive/hive/build/ql/test/data/warehouse/tbl2/p=p1	 
-Partition Parameters:	 	 
-	last_modified_by    	thiruvel            
-	last_modified_time  	1284477533          
-	transient_lastDdlTime	1284477533          
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-	 	 
+Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1286798916, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=thiruvel, last_modified_time=1286798920, transient_lastDdlTime=1286798920})	
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-53_931_2424791435771957392/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-40_488_6927546031831134671/-mr-10000
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-53_931_2424791435771957392/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-40_488_6927546031831134671/-mr-10000
 PREHOOK: query: select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-54_013_1094236570501427496/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-40_571_5074072043256621472/-mr-10000
 POSTHOOK: query: select col from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-09-14_08-18-54_013_1094236570501427496/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-08-40_571_5074072043256621472/-mr-10000
 PREHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1

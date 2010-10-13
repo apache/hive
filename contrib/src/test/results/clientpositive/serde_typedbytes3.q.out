@@ -34,10 +34,11 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-4 depends on stages: Stage-1 , consists of Stage-3, Stage-2
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-0
   Stage-3
-  Stage-0 depends on stages: Stage-3, Stage-2
-  Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -74,14 +75,14 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
 
-  Stage: Stage-4
+  Stage: Stage-5
     Conditional Operator
 
-  Stage: Stage-3
+  Stage: Stage-4
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive1/hive1/build/contrib/scratchdir/hive_2010-08-23_13-24-15_729_7647225505062209828/-ext-10000
+          destination: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/contrib/scratchdir/hive_2010-10-12_03-32-28_617_3175042933764903801/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -94,9 +95,12 @@ STAGE PLANS:
               name: dest1
 
   Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive1/hive1/build/contrib/scratchdir/hive_2010-08-23_13-24-15_729_7647225505062209828/-ext-10002 
+        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/contrib/scratchdir/hive_2010-10-12_03-32-28_617_3175042933764903801/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -136,11 +140,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-23_13-24-19_894_8743234042285819656/-mr-10000
+PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-32-32_283_6994704300925389180/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-23_13-24-19_894_8743234042285819656/-mr-10000
+POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-12_03-32-32_283_6994704300925389180/-mr-10000
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
