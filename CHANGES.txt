@@ -111,6 +111,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1427. Add metastore schema migration scripts (0.5 -> 0.6)
     (Carl Steinback via namit)
 
+    HIVE-1709. Add Postgres database migration scripts (0.5 -> 0.6)
+    (Yuanjun Li via namit)
+
   IMPROVEMENTS
     HIVE-983. Function from_unixtime takes long.
     (Ning Zhang via zshao)
