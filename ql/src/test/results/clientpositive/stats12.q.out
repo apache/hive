@@ -27,16 +27,12 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
+PREHOOK: query: explain extended
+analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 PREHOOK: type: null
-PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: default@analyze_srcpart
-PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
-POSTHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
+POSTHOOK: query: explain extended
+analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 POSTHOOK: type: null
-POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@analyze_srcpart
-POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -45,15 +41,132 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
+ABSTRACT SYNTAX TREE:
+  (TOK_ANALYZE (TOK_TABTYPE analyze_srcpart (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr))))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Alias -> Map Operator Tree:
+        analyze_srcpart 
+          TableScan
+            alias: analyze_srcpart
+            Statistics Aggregation Key Prefix: analyze_srcpart/
+            GatherStats: true
+      Needs Tagging: false
+      Path -> Alias:
+        pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11 [analyze_srcpart]
+        pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12 [analyze_srcpart]
+      Path -> Partition:
+        pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11 
+          Partition
+            base file name: hr=11
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2008-04-08
+              hr 11
+            properties:
+              EXTERNAL FALSE
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+              file.inputformat org.apache.hadoop.mapred.TextInputFormat
+              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              location pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart
+              name analyze_srcpart
+              partition_columns ds/hr
+              serialization.ddl struct analyze_srcpart { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1286984927
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                EXTERNAL FALSE
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart
+                name analyze_srcpart
+                partition_columns ds/hr
+                serialization.ddl struct analyze_srcpart { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1286984927
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: analyze_srcpart
+            name: analyze_srcpart
+        pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12 
+          Partition
+            base file name: hr=12
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 2008-04-08
+              hr 12
+            properties:
+              EXTERNAL FALSE
+              bucket_count -1
+              columns key,value
+              columns.types string:string
+              file.inputformat org.apache.hadoop.mapred.TextInputFormat
+              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              location pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart
+              name analyze_srcpart
+              partition_columns ds/hr
+              serialization.ddl struct analyze_srcpart { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              transient_lastDdlTime 1286984927
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                EXTERNAL FALSE
+                bucket_count -1
+                columns key,value
+                columns.types string:string
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart
+                name analyze_srcpart
+                partition_columns ds/hr
+                serialization.ddl struct analyze_srcpart { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                transient_lastDdlTime 1286984927
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: analyze_srcpart
+            name: analyze_srcpart
+
+  Stage: Stage-1
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: analyze_srcpart/
+
+
+PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 PREHOOK: type: null
+PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@analyze_srcpart
+PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
-POSTHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
+POSTHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 POSTHOOK: type: null
+POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart
+POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -63,9 +176,9 @@ POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(s
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: desc extended analyze_srcpart
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: desc extended analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -80,10 +193,10 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:analyze_srcpart, createTime:1286985835, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286985841, numRows=500, totalSize=5812})	
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+Detailed Table Information	Table(tableName:analyze_srcpart, dbName:default, owner:null, createTime:1286984927, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=2, EXTERNAL=FALSE, numFiles=2, transient_lastDdlTime=1286984952, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-08', hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-08',hr=12)
+POSTHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-08', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -98,10 +211,10 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-08, 12], dbName:default, tableName:analyze_srcpart, createTime:1286985835, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286985846, numRows=500, totalSize=5812})	
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:analyze_srcpart, createTime:1286984943, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286984952, numRows=500, totalSize=5812})	
+PREHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-08', hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=11)
+POSTHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-08', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -116,10 +229,10 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09, 11], dbName:default, tableName:analyze_srcpart, createTime:1286985835, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-09/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1286985835})	
-PREHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+Detailed Partition Information	Partition(values:[2008-04-08, 12], dbName:default, tableName:analyze_srcpart, createTime:1286984943, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-08/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286984952, numRows=500, totalSize=5812})	
+PREHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-09', hr=11)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart PARTITION(ds='2008-04-09',hr=12)
+POSTHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-09', hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -134,10 +247,10 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09, 12], dbName:default, tableName:analyze_srcpart, createTime:1286985836, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-09/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1286985836})	
-PREHOOK: query: describe extended analyze_srcpart
+Detailed Partition Information	Partition(values:[2008-04-09, 11], dbName:default, tableName:analyze_srcpart, createTime:1286984944, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-09/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1286984944})	
+PREHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-09', hr=12)
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe extended analyze_srcpart
+POSTHOOK: query: desc extended analyze_srcpart partition (ds='2008-04-09', hr=12)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_srcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
@@ -152,4 +265,4 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:analyze_srcpart, dbName:default, owner:null, createTime:1286985823, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=2, EXTERNAL=FALSE, numFiles=2, transient_lastDdlTime=1286985846, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Partition Information	Partition(values:[2008-04-09, 12], dbName:default, tableName:analyze_srcpart, createTime:1286984944, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/analyze_srcpart/ds=2008-04-09/hr=12, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1286984944})	

@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -29,13 +31,15 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
-
 /**
  * Processor for the rule - table scan.
  */
@@ -85,7 +89,23 @@ public class GenMRTableScan1 implements NodeProcessor {
           currTask.addDependentTask(statsTask);
           ctx.getRootTasks().add(currTask);
           currWork.setGatheringStats(true);
-          GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx);
+          // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
+          // and pass it to setTaskPlan as the last parameter
+          Set<Partition> confirmedPartns = new HashSet<Partition>();
+          tableSpec tblSpec = parseInfo.getTableSpec();
+          if (tblSpec.specType == tableSpec.SpecType.STATIC_PARTITION) {
+            // static partition
+            confirmedPartns.add(tblSpec.partHandle);
+          } else if (tblSpec.specType == tableSpec.SpecType.DYNAMIC_PARTITION) {
+            // dynamic partition
+            confirmedPartns.addAll(tblSpec.partitions);
+          }
+          if (confirmedPartns.size() > 0) {
+            PrunedPartitionList partList = new PrunedPartitionList(confirmedPartns, new HashSet<Partition>(), null);
+            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx, partList);
+          } else { // non-partitioned table
+            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx);
+          }
         }
         return null;
       }

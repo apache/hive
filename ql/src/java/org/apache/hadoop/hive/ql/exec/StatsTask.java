@@ -406,9 +406,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         return null;
       }
       // get all partitions that matches with the partition spec
-      List<Partition> partitions = db.getPartitions(table, tblSpec.getPartSpec());
-      for (Partition partn : partitions) {
-        list.add(partn);
+      List<Partition> partitions = tblSpec.partitions;
+      if (partitions != null) {
+        for (Partition partn : partitions) {
+          list.add(partn);
+        }
       }
     } else if (work.getLoadTableDesc() != null) {
 

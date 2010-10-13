@@ -354,6 +354,9 @@ Trunk -  Unreleased
     HIVE-1376 Simple UDAFs with more than 1 parameter crash on empty row query
     (Ning Zhang via He Yongqiang)
 
+    HIVE-1699 Incorrect partition pruning ANALYZE TABLE
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

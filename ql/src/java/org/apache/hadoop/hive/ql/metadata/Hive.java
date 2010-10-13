@@ -1279,6 +1279,45 @@ public class Hive {
   }
 
   /**
+   * get all the partitions of the table that matches the given partial
+   * specification. partition columns whose value is can be anything should be
+   * an empty string.
+   *
+   * @param tbl
+   *          object for which partition is needed. Must be partitioned.
+   * @return list of partition objects
+   * @throws HiveException
+   */
+  public List<Partition> getPartitionsByNames(Table tbl,
+      Map<String, String> partialPartSpec)
+      throws HiveException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException("Partition spec should only be supplied for a " +
+      		"partitioned table");
+    }
+
+    List<String> names = getPartitionNames(tbl.getDbName(), tbl.getTableName(),
+        partialPartSpec, (short)-1);
+
+    List<Partition> partitions = new ArrayList<Partition>();
+
+    for (String pval: names) {
+      try {
+        org.apache.hadoop.hive.metastore.api.Partition tpart =
+          getMSC().getPartition(tbl.getDbName(), tbl.getTableName(), pval);
+        if (tpart != null) {
+          Partition p = new Partition(tbl, tpart);
+          partitions.add(p);
+        }
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
+    }
+
+    return partitions;
+  }
+  /**
    * Get the name of the current database
    * @return
    */

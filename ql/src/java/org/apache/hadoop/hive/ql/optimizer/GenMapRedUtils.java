@@ -506,6 +506,28 @@ public final class GenMapRedUtils {
   public static void setTaskPlan(String alias_id,
       Operator<? extends Serializable> topOp, MapredWork plan, boolean local,
       GenMRProcContext opProcCtx) throws SemanticException {
+    setTaskPlan(alias_id, topOp, plan, local, opProcCtx, null);
+  }
+
+  /**
+   * set the current task in the mapredWork.
+   *
+   * @param alias_id
+   *          current alias
+   * @param topOp
+   *          the top operator of the stack
+   * @param plan
+   *          current plan
+   * @param local
+   *          whether you need to add to map-reduce or local work
+   * @param opProcCtx
+   *          processing context
+   * @param pList
+   *          pruned partition list. If it is null it will be computed on-the-fly.
+   */
+  public static void setTaskPlan(String alias_id,
+      Operator<? extends Serializable> topOp, MapredWork plan, boolean local,
+      GenMRProcContext opProcCtx, PrunedPartitionList pList) throws SemanticException {
     ParseContext parseCtx = opProcCtx.getParseCtx();
     Set<ReadEntity> inputs = opProcCtx.getInputs();
 
@@ -515,17 +537,19 @@ public final class GenMapRedUtils {
     Path tblDir = null;
     TableDesc tblDesc = null;
 
-    PrunedPartitionList partsList = null;
+    PrunedPartitionList partsList = pList;
 
-    try {
-      partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-          parseCtx.getOpToPartPruner().get(topOp), opProcCtx.getConf(),
-          alias_id, parseCtx.getPrunedPartitions());
-    } catch (SemanticException e) {
-      throw e;
-    } catch (HiveException e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      throw new SemanticException(e.getMessage(), e);
+    if (partsList == null) {
+      try {
+        partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
+            parseCtx.getOpToPartPruner().get(topOp), opProcCtx.getConf(),
+            alias_id, parseCtx.getPrunedPartitions());
+      } catch (SemanticException e) {
+        throw e;
+      } catch (HiveException e) {
+        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+        throw new SemanticException(e.getMessage(), e);
+      }
     }
 
     // Generate the map work for this alias_id
