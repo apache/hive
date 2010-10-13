@@ -37,9 +37,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    HADOOP_SHIM_CLASSES.put("0.17", "org.apache.hadoop.hive.shims.Hadoop17Shims");
-    HADOOP_SHIM_CLASSES.put("0.18", "org.apache.hadoop.hive.shims.Hadoop18Shims");
-    HADOOP_SHIM_CLASSES.put("0.19", "org.apache.hadoop.hive.shims.Hadoop19Shims");
     HADOOP_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Hadoop20Shims");
     HADOOP_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Hadoop20SShims");
   }
@@ -52,9 +49,6 @@ public abstract class ShimLoader {
       new HashMap<String, String>();
 
   static {
-    JETTY_SHIM_CLASSES.put("0.17", "org.apache.hadoop.hive.shims.Jetty17Shims");
-    JETTY_SHIM_CLASSES.put("0.18", "org.apache.hadoop.hive.shims.Jetty18Shims");
-    JETTY_SHIM_CLASSES.put("0.19", "org.apache.hadoop.hive.shims.Jetty19Shims");
     JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
     JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
   }

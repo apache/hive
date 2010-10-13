@@ -184,6 +184,9 @@ Trunk -  Unreleased
     HIVE-1264. Make Hive work with Hadoop security
     (Todd Lipcon via jvs)
 
+    HIVE-1701. drop support for pre-0.20 Hadoop versions
+    (jvs via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
