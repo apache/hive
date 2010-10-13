@@ -98,6 +98,9 @@ Trunk -  Unreleased
     HIVE-537. Hive TypeInfo/ObjectInspector to support union
     (Amareshwari Sriramadasu via namit)
 
+    HIVE-1709. Add Postgres metastore schema migration scripts (0.5 -> 0.6)
+    (Yuanjun Li via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
