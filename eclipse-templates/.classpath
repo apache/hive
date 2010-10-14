@@ -25,7 +25,7 @@
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-3.0.1.jar"/>
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-3.0.1.jar"/>
   <classpathentry exported="true" kind="lib" path="testlibs/junit-3.8.1.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/jdo-api-3.0.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/jdo-api-3.1-SNAPSHOT.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-core-2.1.1.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-enhancer-2.1.0-release.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-rdbms-2.1.1.jar"/>

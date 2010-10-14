@@ -360,6 +360,9 @@ Trunk -  Unreleased
     HIVE-1699 Incorrect partition pruning ANALYZE TABLE
     (Ning Zhang via namit)
 
+    HIVE-1713 Duplicated MapRedTask in Multi-table inserts mixed with FileSinkOperator
+    and ReduceSinkOperator (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

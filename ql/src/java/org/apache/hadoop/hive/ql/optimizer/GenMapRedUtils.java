@@ -108,7 +108,9 @@ public final class GenMapRedUtils {
 
     List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
 
-    rootTasks.add(currTask);
+    if (!rootTasks.contains(currTask)) {
+        rootTasks.add(currTask);
+    }
     if (reducer.getClass() == JoinOperator.class) {
       plan.setNeedsTagging(true);
     }
@@ -117,8 +119,10 @@ public final class GenMapRedUtils {
     List<Operator<? extends Serializable>> seenOps = opProcCtx.getSeenOps();
     String currAliasId = opProcCtx.getCurrAliasId();
 
-    seenOps.add(currTopOp);
-    setTaskPlan(currAliasId, currTopOp, plan, false, opProcCtx);
+    if (!seenOps.contains(currTopOp)) {
+      seenOps.add(currTopOp);
+      setTaskPlan(currAliasId, currTopOp, plan, false, opProcCtx);
+    }
 
     currTopOp = null;
     currAliasId = null;
