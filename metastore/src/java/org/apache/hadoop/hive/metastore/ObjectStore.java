@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import javax.jdo.datastore.DataStoreCache;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
@@ -68,10 +66,9 @@ import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MType;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -255,7 +252,14 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
-    assert (openTrasactionCalls >= 1);
+    if (TXN_STATUS.ROLLBACK == transactionStatus) {
+      return false;
+    }
+    if (openTrasactionCalls <= 0) {
+      throw new RuntimeException("commitTransaction was called but openTransactionCalls = "
+          + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
+          		"calls to openTransaction/commitTransaction");
+    }
     if (!currentTransaction.isActive()) {
       throw new RuntimeException(
           "Commit is called, but transaction is not active. Either there are"
@@ -976,7 +980,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       MTable mtable = getMTable(dbName, tableName);
       if( mtable == null ) {
-        throw new NoSuchObjectException("Specified database/table does not exist : " 
+        throw new NoSuchObjectException("Specified database/table does not exist : "
             + dbName + "." + tableName);
       }
 

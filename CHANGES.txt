@@ -369,6 +369,10 @@ Trunk -  Unreleased
     HIVE-307 "LOAD DATA LOCAL INPATH" fails when the table already contains a file of
     the same name (Kirk True via namit)
 
+    HIVE-1681. ObjectStore.commitTransaction() does not properly handle transactions 
+    that have already been rolled back
+    (Carl Steinbach via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
