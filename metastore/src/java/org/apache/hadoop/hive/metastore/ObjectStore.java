@@ -243,7 +243,14 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
-    assert (openTrasactionCalls >= 1);
+    if (TXN_STATUS.ROLLBACK == transactionStatus) {
+      return false;
+    }
+    if (openTrasactionCalls <= 0) {
+      throw new RuntimeException("commitTransaction was called but openTransactionCalls = "
+          + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
+          		"calls to openTransaction/commitTransaction");
+    }
     if (!currentTransaction.isActive()) {
       throw new RuntimeException(
           "Commit is called, but transaction is not active. Either there are"

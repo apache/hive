@@ -625,6 +625,10 @@ Release 0.6.0 -  Unreleased
     HIVE-1524. parallel execution failed if mapred.job.name is set
     (Yuanjun Li via Ning Zhang)
 
+    HIVE-1681. ObjectStore.commitTransaction() does not properly handle transactions 
+    that have already been rolled back
+    (Carl Steinbach via Ning Zhang)
+
 Release 0.5.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
