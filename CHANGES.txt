@@ -190,6 +190,9 @@ Trunk -  Unreleased
     HIVE-1701. drop support for pre-0.20 Hadoop versions
     (jvs via Ning Zhang)
 
+    HIVE-1704. remove Hadoop 0.17 specific test reference logs
+    (jvs via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES
