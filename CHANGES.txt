@@ -363,6 +363,9 @@ Trunk -  Unreleased
     HIVE-1713 Duplicated MapRedTask in Multi-table inserts mixed with FileSinkOperator
     and ReduceSinkOperator (Ning Zhang via namit)
 
+    HIVE-307 "LOAD DATA LOCAL INPATH" fails when the table already contains a file of
+    the same name (Kirk True via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

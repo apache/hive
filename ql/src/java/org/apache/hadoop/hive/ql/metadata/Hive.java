@@ -1342,22 +1342,52 @@ public class Hive {
       for (FileStatus src : srcs) {
         FileStatus[] items = fs.listStatus(src.getPath());
         for (FileStatus item : items) {
+          Path itemStaging = item.getPath();
 
           if (Utilities.isTempPath(item)) {
             // This check is redundant because temp files are removed by
             // execution layer before
             // calling loadTable/Partition. But leaving it in just in case.
-            fs.delete(item.getPath(), true);
+            fs.delete(itemStaging, true);
             continue;
           }
           if (item.isDir()) {
             throw new HiveException("checkPaths: " + src.getPath()
-                + " has nested directory" + item.getPath());
+                + " has nested directory" + itemStaging);
           }
-          Path tmpDest = new Path(destf, item.getPath().getName());
-          if (!replace && fs.exists(tmpDest)) {
-            throw new HiveException("checkPaths: " + tmpDest
-                + " already exists");
+          if (!replace) {
+            // It's possible that the file we're copying may have the same
+            // relative name as an existing file in the "destf" directory.
+            // So let's make a quick check to see if we can rename any
+            // potential offenders so as to allow them to move into the
+            // "destf" directory. The scheme is dead simple: simply tack
+            // on "_copy_N" where N starts at 1 and works its way up until
+            // we find a free space.
+
+            // Note: there are race conditions here, but I don't believe
+            // they're worse than what was already present.
+            int counter = 1;
+            Path itemDest = new Path(destf, itemStaging.getName());
+
+            while (fs.exists(itemDest)) {
+              Path proposedStaging = itemStaging.suffix("_copy_" + counter++);
+              Path proposedDest = new Path(destf, proposedStaging.getName());
+
+              if (fs.exists(proposedDest)) {
+                // There's already a file in our destination directory with our
+                // _copy_N suffix. We've been here before...
+                LOG.trace(proposedDest + " already exists");
+                continue;
+              }
+
+              if (!fs.rename(itemStaging, proposedStaging)) {
+                LOG.debug("Unsuccessfully in attempt to rename " + itemStaging + " to " + proposedStaging + "...");
+                continue;
+              }
+
+              LOG.debug("Successfully renamed " + itemStaging + " to " + proposedStaging);
+              itemDest = proposedDest;
+            }
           }
         }
       }
