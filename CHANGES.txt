@@ -376,6 +376,9 @@ Trunk -  Unreleased
     HIVE-1717. ant clean should delete stats database
     (Ning Zhang via namit)
 
+    HIVE-1707. Bug when different partitions are present in different dfs
+    (Yongqiang He via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

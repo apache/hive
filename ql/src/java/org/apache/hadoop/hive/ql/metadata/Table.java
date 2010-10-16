@@ -524,13 +524,8 @@ public class Table implements Serializable {
    *          Temporary directory
    */
   protected void replaceFiles(Path srcf, Path tmpd) throws HiveException {
-    FileSystem fs;
-    try {
-      fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.replaceFiles(srcf, new Path(getDataLocation().getPath()), fs, tmpd);
-    } catch (IOException e) {
-      throw new HiveException("addFiles: filesystem error in check phase", e);
-    }
+    Hive.replaceFiles(srcf, new Path(getDataLocation().getPath()), null, tmpd,
+        Hive.get().getConf());
   }
 
   /**

@@ -3435,8 +3435,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
+      Path tabPath = dest_tab.getPath();
+      Path partPath = dest_part.getPartitionPath(); 
+      
+        // if the table is in a different dfs than the partition,
+        // replace the partition's dfs with the table's dfs.
+      dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
+          .getAuthority(), partPath.toUri().getPath());
 
-      dest_path = dest_part.getPath()[0];
       if ("har".equalsIgnoreCase(dest_path.toUri().getScheme())) {
         throw new SemanticException(ErrorMsg.OVERWRITE_ARCHIVED_PART
             .getMsg());
