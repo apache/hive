@@ -190,6 +190,7 @@
           description="Clean test results">
     <iterate target="clean-test"/>
     <delete dir="${build.dir.hive}/test"/>
+    <delete dir="${hive.root}/ql/TempStatsStore"/>
   </target>
 
   <target name="clean"
