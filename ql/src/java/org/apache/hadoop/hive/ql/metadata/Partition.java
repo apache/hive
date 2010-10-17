@@ -488,6 +488,10 @@ public class Partition implements Serializable {
   public ProtectMode getProtectMode(){
     Map<String, String> parameters = tPartition.getParameters();
 
+    if (parameters == null) {
+      return null;
+    }
+
     if (!parameters.containsKey(ProtectMode.PARAMETER_NAME)) {
       return new ProtectMode();
     } else {
@@ -500,7 +504,12 @@ public class Partition implements Serializable {
    * @return True protect mode indicates the partition if offline.
    */
   public boolean isOffline(){
-    return getProtectMode().offline;
+    ProtectMode pm = getProtectMode();
+    if (pm == null) {
+      return false;
+    } else {
+      return pm.offline;
+    }
   }
 
   /**

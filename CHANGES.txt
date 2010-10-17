@@ -379,6 +379,9 @@ Trunk -  Unreleased
     HIVE-1707. Bug when different partitions are present in different dfs
     (Yongqiang He via namit)
 
+    HIVE-1720. hbase_stats.q is failing
+    (Ning Zhang via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
