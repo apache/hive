@@ -17,3 +17,6 @@ desc extended analyze_srcpart partition (ds='2008-04-08', hr=12);
 desc extended analyze_srcpart partition (ds='2008-04-09', hr=11);
 desc extended analyze_srcpart partition (ds='2008-04-09', hr=12);
 
+create table analyze_srcpart2 like analyze_srcpart;
+
+desc extended analyze_srcpart2;

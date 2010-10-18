@@ -382,6 +382,9 @@ Trunk -  Unreleased
     HIVE-1720. hbase_stats.q is failing
     (Ning Zhang via jvs)
 
+    HIVE-1711. CREATE TABLE LIKE should not set stats in the new table
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -37,19 +37,18 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Fri Oct 15 23:16:18 PDT 2010	 
+CreateTime:         	Sun Oct 17 21:42:31 PDT 2010	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/reviews/3/apache-hive/build/hbase-handler/test/data/warehouse/stats_src	 
+Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/stats_src	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	EXTERNAL            	FALSE               
 	numFiles            	1                   
 	numPartitions       	0                   
 	numRows             	500                 
 	totalSize           	5812                
-	transient_lastDdlTime	1287209788          
+	transient_lastDdlTime	1287376963          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -146,19 +145,18 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Fri Oct 15 23:16:29 PDT 2010	 
+CreateTime:         	Sun Oct 17 21:42:44 PDT 2010	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/nzhang/reviews/3/apache-hive/build/hbase-handler/test/data/warehouse/hbase_part	 
+Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	EXTERNAL            	FALSE               
 	numFiles            	2                   
 	numPartitions       	2                   
 	numRows             	1000                
 	totalSize           	11624               
-	transient_lastDdlTime	1287209805          
+	transient_lastDdlTime	1287376983          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -195,15 +193,15 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 11]    	 
 Database:           	default             	 
 Table:              	hbase_part          	 
-CreateTime:         	Fri Oct 15 23:16:33 PDT 2010	 
+CreateTime:         	Sun Oct 17 21:42:49 PDT 2010	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/reviews/3/apache-hive/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=11	 
+Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=11	 
 Partition Parameters:	 	 
 	numFiles            	1                   
 	numRows             	500                 
 	totalSize           	5812                
-	transient_lastDdlTime	1287209793          
+	transient_lastDdlTime	1287376969          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -240,15 +238,15 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 12]    	 
 Database:           	default             	 
 Table:              	hbase_part          	 
-CreateTime:         	Fri Oct 15 23:16:37 PDT 2010	 
+CreateTime:         	Sun Oct 17 21:42:54 PDT 2010	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/nzhang/reviews/3/apache-hive/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=12	 
+Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=12	 
 Partition Parameters:	 	 
 	numFiles            	1                   
 	numRows             	500                 
 	totalSize           	5812                
-	transient_lastDdlTime	1287209798          
+	transient_lastDdlTime	1287376974          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
