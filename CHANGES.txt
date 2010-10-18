@@ -649,6 +649,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1725. Include metastore upgrade scripts in release tarball
     (Carl Steinbach via jvs)
 
+    HIVE-1726. Update README file for 0.6.0 release
+    (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
