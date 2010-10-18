@@ -29,6 +29,7 @@
   <property name="target.lib.dir" location="${target.dir}/lib"/>
   <property name="target.conf.dir" location="${target.dir}/conf"/>
   <property name="target.bin.dir" location="${target.dir}/bin"/>
+  <property name="target.scripts.dir" location="${target.dir}/scripts"/>
   <property name="target.example.dir" location="${target.dir}/examples"/>
   <property name="ql.test.query.dir" location="${basedir}/ql/src/test/queries"/>
   <property name="test.data.dir" location="${basedir}/data"/>
@@ -45,6 +46,7 @@
   <property name="final.name" value="${name}-${version}"/>
   <property name="dev.final.name" value="${final.name}-dev"/>
   <property name="bin.final.name" value="${final.name}-bin"/>
+  <property name="vcs.excludes" value="**/.svn,**/.svn/**,**/.git,**/.git/**"/>
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
 
@@ -247,14 +249,18 @@
     <mkdir dir="${target.lib.dir}"/>
     <mkdir dir="${target.conf.dir}"/>
     <mkdir dir="${target.bin.dir}"/>
+    <mkdir dir="${target.scripts.dir}/metastore/upgrade"/>
     <mkdir dir="${target.example.dir}"/>
     <mkdir dir="${target.example.dir}/files"/>
     <mkdir dir="${target.example.dir}/queries"/>
     <mkdir dir="${target.lib.dir}/py"/>
     <mkdir dir="${target.lib.dir}/php"/>
     <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
+    <copy todir="${target.scripts.dir}/metastore/upgrade">
+      <fileset dir="${hive.root}/metastore/scripts/upgrade" excludes="${vcs.excludes}"/>
+    </copy>
     <copy todir="${target.bin.dir}/ext">
-      <fileset dir="${hive.root}/bin/ext" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/bin/ext" excludes="${vcs.excludes}"/>
     </copy>
     <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
     <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}">
@@ -270,37 +276,37 @@
     </copy>
     <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
-     <fileset dir="${hive.root}/service/lib/php" excludes="**.svn"/>
+     <fileset dir="${hive.root}/service/lib/php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/serde">
-      <fileset dir="${hive.root}/serde/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/serde/src/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/hive_metastore">
-      <fileset dir="${hive.root}/metastore/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/metastore/src/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/hive_service">
-      <fileset dir="${hive.root}/service/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/service/src/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/queryplan">
-      <fileset dir="${hive.root}/ql/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/ql/src/gen-php" excludes="${vcs.excludes}"/>
     </copy>
 
 
     <!-- Create the python thrift package -->
     <copy todir="${target.lib.dir}/py">
-      <fileset dir="${hive.root}/service/lib/py" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/service/lib/py" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_serde">
-      <fileset dir="${hive.root}/serde/src/gen-py/org_apache_hadoop_hive_serde" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/serde/src/gen-py/org_apache_hadoop_hive_serde" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_metastore">
-      <fileset dir="${hive.root}/metastore/src/gen-py/hive_metastore" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/metastore/src/gen-py/hive_metastore" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_service">
-      <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/queryplan">
-      <fileset dir="${hive.root}/ql/src/gen-py/queryplan" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/ql/src/gen-py/queryplan" excludes="${vcs.excludes}"/>
     </copy>
 
     <!-- copy jar files -->
@@ -319,11 +325,11 @@
       </fileset>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
-      <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>
+      <fileset dir="${test.data.dir}/files" includes="*.*" excludes="${vcs.excludes}"/>
     </copy>
     <copy file="${basedir}/README.txt" todir="${target.dir}"/>
     <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
-      <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="**/.svn"/>
+      <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="${vcs.excludes}"/>
     </copy>
     <chmod perm="ugo+x" type="file" parallel="false">
       <fileset dir="${target.bin.dir}"/>
@@ -368,7 +374,7 @@
     <copy todir="." overwrite="true">
       <fileset dir="eclipse-templates">
         <exclude name="**/README.txt"/>
-        <exclude name="**/.svn"/>
+        <exclude name="${vcs.excludes}"/>
       </fileset>
       <filterset>
         <filter token="PROJECT" value="${eclipse.project}"/>
@@ -476,18 +482,22 @@
   <target name="tar" depends="package, docs, javadoc" description="Make release tarball">
     <macro_tar param.destfile="${build.dir.hive}/${dev.final.name}.tar.gz">
       <param.listofitems>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="bin/**"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="lib/py/**/*-remote"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${dev.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${dev.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="**"/>
           <exclude name="bin/**"/>
           <exclude name="lib/py/**/*-remote"/>
         </tarfileset>
-        <tarfileset dir="${hive.root}" mode="664" prefix="${dev.final.name}/src">
+        <tarfileset dir="${hive.root}" mode="664" prefix="${dev.final.name}/src"
+                    excludes="${vcs.excludes}">
           <exclude name="build/**" />
           <exclude name="bin/**" />
           <exclude name="**/py/**/*-remote" />
@@ -495,7 +505,8 @@
           <exclude name="metastore/scripts/**" />
           <exclude name="ql/src/test/scripts/**" />
         </tarfileset>
-        <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src">
+        <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src"
+                    excludes="${vcs.excludes}">
           <exclude name="build/**" />
           <include name="bin/**" />
           <include name="**/py/**/*-remote" />
@@ -510,13 +521,16 @@
   <target name="binary" depends="package, docs, javadoc" description="Make tarball without source and documentation">
     <macro_tar param.destfile="${build.dir.hive}/${bin.final.name}.tar.gz">
       <param.listofitems>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="bin/**"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="lib/py/**/*-remote"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${bin.final.name}">
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${bin.final.name}"
+                    excludes="${vcs.excludes}">
           <include name="**"/>
           <exclude name="bin/**"/>
           <exclude name="docs/**"/>
