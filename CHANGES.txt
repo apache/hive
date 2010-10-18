@@ -263,6 +263,9 @@ Release 0.6.0 -  Unreleased
     HIVE-1697 Migration scripts should increase size of PARAM_VALUE in
     PARTITION_PARAMS (Paul Yang via namit)
 
+    HIVE-1725. Include metastore upgrade scripts in release tarball
+    (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
@@ -625,7 +628,7 @@ Release 0.6.0 -  Unreleased
     HIVE-1524. parallel execution failed if mapred.job.name is set
     (Yuanjun Li via Ning Zhang)
 
-    HIVE-1681. ObjectStore.commitTransaction() does not properly handle transactions 
+    HIVE-1681. ObjectStore.commitTransaction() does not properly handle transactions
     that have already been rolled back
     (Carl Steinbach via Ning Zhang)
 
