@@ -2,18 +2,18 @@ PREHOOK: query: DESCRIBE FUNCTION >=
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION >=
 POSTHOOK: type: DESCFUNCTION
-a >= b - Returns TRUE if b is not smaller than a
+a >= b - Returns TRUE if a is not smaller than b
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED >=
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED >=
 POSTHOOK: type: DESCFUNCTION
-a >= b - Returns TRUE if b is not smaller than a
+a >= b - Returns TRUE if a is not smaller than b
 PREHOOK: query: SELECT true>=false, false>=true, false>=false, true>=true FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-38-26_830_745034439856049454/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-09-29_14-46-47_233_3050706776311320694/-mr-10000
 POSTHOOK: query: SELECT true>=false, false>=true, false>=false, true>=true FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-38-26_830_745034439856049454/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-09-29_14-46-47_233_3050706776311320694/-mr-10000
 true	false	true	true

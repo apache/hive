@@ -73,25 +73,16 @@ import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.UDFLpad;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
-import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
-import org.apache.hadoop.hive.ql.udf.UDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.UDFOPEqualOrGreaterThan;
-import org.apache.hadoop.hive.ql.udf.UDFOPEqualOrLessThan;
-import org.apache.hadoop.hive.ql.udf.UDFOPGreaterThan;
-import org.apache.hadoop.hive.ql.udf.UDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
 import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.UDFOPMod;
 import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPNot;
-import org.apache.hadoop.hive.ql.udf.UDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.UDFOPOr;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFPI;
@@ -168,8 +159,17 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSentences;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize;
@@ -319,25 +319,24 @@ public final class FunctionRegistry {
     registerUDF("^", UDFOPBitXor.class, true);
     registerUDF("~", UDFOPBitNot.class, true);
 
-    registerUDF("=", UDFOPEqual.class, true);
-    registerUDF("==", UDFOPEqual.class, true, "=");
-    registerUDF("<>", UDFOPNotEqual.class, true);
-    registerUDF("!=", UDFOPNotEqual.class, true, "<>");
-    registerUDF("<", UDFOPLessThan.class, true);
-    registerUDF("<=", UDFOPEqualOrLessThan.class, true);
-    registerUDF(">", UDFOPGreaterThan.class, true);
-    registerUDF(">=", UDFOPEqualOrGreaterThan.class, true);
-
-    registerUDF("and", UDFOPAnd.class, true);
-    registerUDF("or", UDFOPOr.class, true);
-    registerUDF("not", UDFOPNot.class, true);
-    registerUDF("!", UDFOPNot.class, true, "not");
-
     registerGenericUDF("isnull", GenericUDFOPNull.class);
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
 
     registerGenericUDF("if", GenericUDFIf.class);
     registerGenericUDF("in", GenericUDFIn.class);
+    registerGenericUDF("and", GenericUDFOPAnd.class);
+    registerGenericUDF("or", GenericUDFOPOr.class);
+    registerGenericUDF("=", GenericUDFOPEqual.class);
+    registerGenericUDF("==", GenericUDFOPEqual.class);
+    registerGenericUDF("!=", GenericUDFOPNotEqual.class);
+    registerGenericUDF("<>", GenericUDFOPNotEqual.class);
+    registerGenericUDF("<", GenericUDFOPLessThan.class);
+    registerGenericUDF("<=", GenericUDFOPEqualOrLessThan.class);
+    registerGenericUDF(">", GenericUDFOPGreaterThan.class);
+    registerGenericUDF(">=", GenericUDFOPEqualOrGreaterThan.class);
+    registerGenericUDF("not", GenericUDFOPNot.class);
+    registerGenericUDF("!", GenericUDFOPNot.class);
+
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
@@ -388,7 +387,7 @@ public final class FunctionRegistry {
 
     // Generic UDFs
     registerGenericUDF("reflect", GenericUDFReflect.class);
-    
+
     registerGenericUDF("array", GenericUDFArray.class);
     registerGenericUDF("map", GenericUDFMap.class);
     registerGenericUDF("struct", GenericUDFStruct.class);
@@ -975,6 +974,18 @@ public final class FunctionRegistry {
    * Get the UDF class from an exprNodeDesc. Returns null if the exprNodeDesc
    * does not contain a UDF class.
    */
+  private static Class<? extends GenericUDF> getGenericUDFClassFromExprDesc(ExprNodeDesc desc) {
+    if (!(desc instanceof ExprNodeGenericFuncDesc)) {
+      return null;
+    }
+    ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
+    return genericFuncDesc.getGenericUDF().getClass();
+  }
+
+  /**
+   * Get the UDF class from an exprNodeDesc. Returns null if the exprNodeDesc
+   * does not contain a UDF class.
+   */
   private static Class<? extends UDF> getUDFClassFromExprDesc(ExprNodeDesc desc) {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return null;
@@ -1012,17 +1023,17 @@ public final class FunctionRegistry {
    * Returns whether the exprNodeDesc is a node of "and", "or", "not".
    */
   public static boolean isOpAndOrNot(ExprNodeDesc desc) {
-    Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
-    return UDFOPAnd.class == udfClass || UDFOPOr.class == udfClass
-        || UDFOPNot.class == udfClass;
+    Class<? extends GenericUDF> genericUdfClass = getGenericUDFClassFromExprDesc(desc);
+    return GenericUDFOPAnd.class == genericUdfClass
+        || GenericUDFOPOr.class == genericUdfClass
+        || GenericUDFOPNot.class == genericUdfClass;
   }
 
   /**
    * Returns whether the exprNodeDesc is a node of "and".
    */
   public static boolean isOpAnd(ExprNodeDesc desc) {
-    Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
-    return UDFOPAnd.class == udfClass;
+    return GenericUDFOPAnd.class == getGenericUDFClassFromExprDesc(desc);
   }
 
   /**

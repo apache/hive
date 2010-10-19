@@ -193,6 +193,9 @@ Trunk -  Unreleased
     HIVE-1704. remove Hadoop 0.17 specific test reference logs
     (jvs via Ning Zhang)
 
+    HIVE-1638. convert commonly used udfs to generic udfs
+    (Siyong Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
