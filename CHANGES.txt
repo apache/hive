@@ -410,7 +410,7 @@ Trunk -  Unreleased
     HIVE-1658. Fix describe [extended] column formatting
     (Thiruvel Thirumoolan via Ning Zhang)
 
-Release 0.6.0 -  Unreleased
+Release 0.6.0 - 2010-10-19
 
   INCOMPATIBLE CHANGES
 
@@ -1007,7 +1007,7 @@ Release 0.6.0 -  Unreleased
     HIVE-1570 referencing an added file by it's name in a transform script does
     not work in hive local mode (Joydeep Sen Sarma via namit)
 
-Release 0.5.0 -  Unreleased
+Release 0.5.0 - 2010-02-22
 
   INCOMPATIBLE CHANGES
 
@@ -1455,7 +1455,7 @@ Release 0.5.0 -  Unreleased
     HIVE-1059. Date/DateTime/TimeStamp types should throw an error.
     (Paul Yang via zshao)
 
-Release 0.4.0 -  Unreleased
+Release 0.4.0 - 2009-10-11
 
   INCOMPATIBLE CHANGES
 
