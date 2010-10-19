@@ -912,9 +912,9 @@ public class Hive {
       if(oldPart != null) {
         oldPartPath = oldPart.getPartitionPath();
       }
-      
+
       Path partPath = new Path(tbl.getDataLocation().getPath(),
-          Warehouse.makePartName(partSpec));
+          Warehouse.makePartPath(partSpec));
 
       Path newPartPath = new Path(loadPath.toUri().getScheme(), loadPath
           .toUri().getAuthority(), partPath.toUri().getPath());
@@ -1085,7 +1085,7 @@ public class Hive {
 
     return new Partition(tbl, partition);
   }
-  
+
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
     return getPartition(tbl, partSpec, forceCreate, null);
@@ -1448,7 +1448,7 @@ public class Hive {
   /**
    * Replaces files in the partition with new data set specifed by srcf. Works
    * by moving files.
-   * srcf, destf, and tmppath should resident in the same dfs, but the oldPath can be in a 
+   * srcf, destf, and tmppath should resident in the same dfs, but the oldPath can be in a
    * different dfs.
    *
    * @param srcf
@@ -1462,7 +1462,7 @@ public class Hive {
    */
   static protected void replaceFiles(Path srcf, Path destf, Path oldPath,
       Path tmppath, Configuration conf) throws HiveException {
-    
+
     FileSystem fs = null;
     FsShell fshell = new FsShell();
     fshell.setConf(conf);

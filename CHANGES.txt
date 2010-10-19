@@ -196,6 +196,9 @@ Trunk -  Unreleased
     HIVE-1638. convert commonly used udfs to generic udfs
     (Siying Dong via namit)
 
+    HIVE-1660. Change get_partitions_ps to pass partition filter to
+    database (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

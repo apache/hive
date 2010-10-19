@@ -3637,7 +3637,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (dest_part != null) {
       try {
-        String staticSpec = Warehouse.makePartName(dest_part.getSpec());
+        String staticSpec = Warehouse.makePartPath(dest_part.getSpec());
         fileSinkDesc.setStaticSpec(staticSpec);
       } catch (MetaException e) {
         throw new SemanticException(e);
@@ -7148,7 +7148,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ExecDriver mrtask: mrtasks) {
       try {
         ContentSummary inputSummary = Utilities.getInputSummary
-          (ctx, (MapredWork)mrtask.getWork(), p);
+          (ctx, mrtask.getWork(), p);
         int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
 
         if (LOG.isDebugEnabled()) {

@@ -38,7 +38,7 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
 
   @Override
   protected int execute(DriverContext driverContext) {
-    
+
     try {
       Hive db = Hive.get(conf);
       IndexMetadataChangeWork work = this.getWork();
@@ -58,19 +58,20 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
         console.printError("Index table is partitioned, but no partition specified.");
         return 1;
       }
-      
+
       if (work.getPartSpec() != null) {
         Partition part = db.getPartition(tbl, work.getPartSpec(), false);
         if (part == null) {
-          console.printError("Partition " + Warehouse.makePartName(work.getPartSpec()).toString()
+          console.printError("Partition " +
+              Warehouse.makePartName(work.getPartSpec(), false).toString()
               + " does not exist.");
           return 1;
         }
-        
+
         Path url = new Path(part.getDataLocation().toString());
         FileSystem fs = url.getFileSystem(conf);
         FileStatus fstat = fs.getFileStatus(url);
-        
+
         part.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
         db.alterPartition(tbl.getTableName(), part);
       } else {
@@ -93,7 +94,7 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
   public String getName() {
     return "IndexMetadataChangeTask";
   }
-  
+
   @Override
   public int getType() {
     return StageType.DDL;

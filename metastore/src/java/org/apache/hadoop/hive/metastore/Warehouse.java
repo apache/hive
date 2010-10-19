@@ -223,21 +223,40 @@ public class Warehouse {
    * @return string representation of the partition specification.
    * @throws MetaException
    */
-  public static String makePartName(Map<String, String> spec)
+  public static String makePartPath(Map<String, String> spec)
+      throws MetaException {
+    return makePartName(spec, true);
+  }
+
+  /**
+   * Makes a partition name from a specification
+   * @param spec
+   * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
+   * @return
+   * @throws MetaException
+   */
+  public static String makePartName(Map<String, String> spec,
+      boolean addTrailingSeperator)
       throws MetaException {
     StringBuilder suffixBuf = new StringBuilder();
+    int i = 0;
     for (Entry<String, String> e : spec.entrySet()) {
       if (e.getValue() == null || e.getValue().length() == 0) {
         throw new MetaException("Partition spec is incorrect. " + spec);
       }
+      if (i>0) {
+        suffixBuf.append(Path.SEPARATOR);
+      }
       suffixBuf.append(escapePathName(e.getKey()));
       suffixBuf.append('=');
       suffixBuf.append(escapePathName(e.getValue()));
+      i++;
+    }
+    if (addTrailingSeperator) {
       suffixBuf.append(Path.SEPARATOR);
     }
     return suffixBuf.toString();
   }
-
   /**
    * Given a dynamic partition specification, return the path corresponding to the
    * static part of partition specification. This is basically a copy of makePartName
@@ -296,12 +315,12 @@ public class Warehouse {
 
   public Path getPartitionPath(String dbName, String tableName,
       LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm));
+    return new Path(getDefaultTablePath(dbName, tableName), makePartPath(pm));
   }
 
   public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm)
       throws MetaException {
-    return new Path(tblPath, makePartName(pm));
+    return new Path(tblPath, makePartPath(pm));
   }
 
   public boolean isDir(Path f) throws MetaException {

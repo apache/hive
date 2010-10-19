@@ -448,7 +448,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       Partition part = db.getPartition(baseTbl, partSpec, false);
       if (part == null) {
         throw new HiveException("Partition "
-            + Warehouse.makePartName(partSpec) + " does not exist in table "
+            + Warehouse.makePartName(partSpec, false)
+            + " does not exist in table "
             + baseTbl.getTableName());
       }
       baseTblPartitions.add(part);

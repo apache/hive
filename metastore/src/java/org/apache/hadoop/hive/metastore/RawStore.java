@@ -106,6 +106,9 @@ public interface RawStore extends Configurable {
   public abstract List<String> listPartitionNames(String db_name,
       String tbl_name, short max_parts) throws MetaException;
 
+  public abstract List<String> listPartitionNamesByFilter(String db_name,
+      String tbl_name, String filter, short max_parts) throws MetaException;
+
   public abstract void alterPartition(String db_name, String tbl_name,
       Partition new_part) throws InvalidObjectException, MetaException;
 

@@ -123,6 +123,10 @@ public abstract class TestHiveMetaStore extends TestCase {
       vals3 = new ArrayList<String>(2);
       vals3.add("2008-07-02 14:13:12");
       vals3.add("15");
+      List <String> vals4 = new ArrayList<String>(2);
+      vals4 = new ArrayList<String>(2);
+      vals4.add("2008-07-03 14:13:12");
+      vals4.add("151");
 
       client.dropTable(dbName, tblName);
       silentDropDatabase(dbName);
@@ -163,7 +167,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       tbl.getPartitionKeys().add(
           new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
       tbl.getPartitionKeys().add(
-          new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+          new FieldSchema("hr", Constants.STRING_TYPE_NAME, ""));
 
       client.createTable(tbl);
 
@@ -200,7 +204,16 @@ public abstract class TestHiveMetaStore extends TestCase {
       part3.setParameters(new HashMap<String, String>());
       part3.setSd(tbl.getSd());
       part3.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part3.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
+      part3.getSd().setLocation(tbl.getSd().getLocation() + "/part3");
+
+      Partition part4 = new Partition();
+      part4.setDbName(dbName);
+      part4.setTableName(tblName);
+      part4.setValues(vals4);
+      part4.setParameters(new HashMap<String, String>());
+      part4.setSd(tbl.getSd());
+      part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part4.getSd().setLocation(tbl.getSd().getLocation() + "/part4");
 
       // check if the partition exists (it shouldn;t)
       boolean exceptionThrown = false;
@@ -218,6 +231,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertNotNull("Unable to create partition " + part2, retp2);
       Partition retp3 = client.add_partition(part3);
       assertNotNull("Unable to create partition " + part3, retp3);
+      Partition retp4 = client.add_partition(part4);
+      assertNotNull("Unable to create partition " + part4, retp4);
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
       if(isThriftClient) {
@@ -268,7 +283,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       partialVals.add(vals2.get(1));
 
       partial = client.listPartitions(dbName, tblName, partialVals, (short) -1);
-      assertTrue("Should have returned 2 partitions", partial.size() == 2);
+      assertEquals("Should have returned 2 partitions", 2, partial.size());
       assertTrue("Not all parts returned", partial.containsAll(parts));
 
       partNames.clear();
@@ -276,7 +291,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       partNames.add(part3Name);
       partialNames = client.listPartitionNames(dbName, tblName, partialVals,
           (short) -1);
-      assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertEquals("Should have returned 2 partition names", 2, partialNames.size());
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Verify escaped partition names don't return partitions
@@ -299,15 +314,15 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       // Test append_partition_by_name
       client.appendPartition(dbName, tblName, partName);
-      Partition part4 = client.getPartition(dbName, tblName, part.getValues());
-      assertTrue("Append partition by name failed", part4.getValues().equals(vals));;
-      Path part4Path = new Path(part4.getSd().getLocation());
-      assertTrue(fs.exists(part4Path));
+      Partition part5 = client.getPartition(dbName, tblName, part.getValues());
+      assertTrue("Append partition by name failed", part5.getValues().equals(vals));;
+      Path part5Path = new Path(part5.getSd().getLocation());
+      assertTrue(fs.exists(part5Path));
 
       // Test drop_partition_by_name
       assertTrue("Drop partition by name failed",
           client.dropPartition(dbName, tblName, partName, true));
-      assertFalse(fs.exists(part4Path));
+      assertFalse(fs.exists(part5Path));
 
       // add the partition again so that drop table with a partition can be
       // tested
@@ -1062,9 +1077,9 @@ public abstract class TestHiveMetaStore extends TestCase {
          "(p1=\"p13\" aNd p2=\"p24\")", 4);
       //test for and or precedence
       checkFilter(client, dbName, tblName,
-         "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1); 
+         "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
       checkFilter(client, dbName, tblName,
-         "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2); 
+         "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
 
       checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
       checkFilter(client, dbName, tblName, "p1 >= \"p12\"", 4);

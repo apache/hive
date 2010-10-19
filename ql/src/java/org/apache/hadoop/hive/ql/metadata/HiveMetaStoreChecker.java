@@ -42,7 +42,7 @@ public class HiveMetaStoreChecker {
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
-   * 
+   *
    * @param dbName
    *          name of the database, if not specified the default will be used.
    * @param tableName
@@ -95,7 +95,7 @@ public class HiveMetaStoreChecker {
 
   /**
    * Check for table directories that aren't in the metastore.
-   * 
+   *
    * @param dbName
    *          Name of the database
    * @param tables
@@ -144,7 +144,7 @@ public class HiveMetaStoreChecker {
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
-   * 
+   *
    * @param dbName
    *          Name of the database
    * @param tableName
@@ -189,7 +189,7 @@ public class HiveMetaStoreChecker {
           if (part == null) {
             PartitionResult pr = new PartitionResult();
             pr.setTableName(tableName);
-            pr.setPartitionName(Warehouse.makePartName(map));
+            pr.setPartitionName(Warehouse.makePartPath(map));
             result.getPartitionsNotInMs().add(pr);
           } else {
             parts.add(part);
@@ -204,7 +204,7 @@ public class HiveMetaStoreChecker {
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
-   * 
+   *
    * @param table
    *          Table to check
    * @param parts
@@ -259,7 +259,7 @@ public class HiveMetaStoreChecker {
 
   /**
    * Find partitions on the fs that are unknown to the metastore.
-   * 
+   *
    * @param table
    *          Table where the partitions would be located
    * @param partPaths
@@ -301,7 +301,7 @@ public class HiveMetaStoreChecker {
 
   /**
    * Get the partition name from the path.
-   * 
+   *
    * @param tablePath
    *          Path of the table.
    * @param partitionPath
@@ -326,9 +326,9 @@ public class HiveMetaStoreChecker {
   /**
    * Recursive method to get the leaf directories of a base path. Example:
    * base/dir1/dir2 base/dir3
-   * 
+   *
    * This will return dir2 and dir3 but not dir1.
-   * 
+   *
    * @param basePath
    *          Start directory
    * @param allDirs

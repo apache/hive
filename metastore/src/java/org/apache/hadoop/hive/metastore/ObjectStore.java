@@ -968,6 +968,51 @@ public class ObjectStore implements RawStore, Configurable {
     return parts;
   }
 
+  private String makeQueryFilterString(MTable mtable, String filter,
+      Map<String, String> params)
+      throws MetaException {
+    StringBuilder queryBuilder = new StringBuilder(
+        "table.tableName == t1 && table.database.name == t2");
+
+    if( filter != null && filter.length() > 0) {
+
+      Table table = convertToTable(mtable);
+
+      CharStream cs = new ANTLRNoCaseStringStream(filter);
+      FilterLexer lexer = new FilterLexer(cs);
+
+      CommonTokenStream tokens = new CommonTokenStream();
+      tokens.setTokenSource (lexer);
+
+      FilterParser parser = new FilterParser(tokens);
+
+      try {
+        parser.filter();
+      } catch(RecognitionException re) {
+        throw new MetaException("Error parsing partition filter : " + re);
+      }
+
+      String jdoFilter = parser.tree.generateJDOFilter(table, params);
+
+      if( jdoFilter.trim().length() > 0 ) {
+        queryBuilder.append(" && ( ");
+        queryBuilder.append(jdoFilter.trim());
+        queryBuilder.append(" )");
+      }
+    }
+
+    return queryBuilder.toString();
+  }
+
+  private String makeParameterDeclarationString(Map<String, String> params) {
+    //Create the parameter declaration string
+    StringBuilder paramDecl = new StringBuilder();
+    for(String key : params.keySet() ) {
+      paramDecl.append(", java.lang.String  " + key);
+    }
+    return paramDecl.toString();
+  }
+
   private List<MPartition> listMPartitionsByFilter(String dbName, String tableName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException{
     boolean success = false;
@@ -983,61 +1028,26 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Specified database/table does not exist : "
             + dbName + "." + tableName);
       }
-
-      StringBuilder queryBuilder = new StringBuilder(
-          "table.tableName == t1 && table.database.name == t2");
-
       Map<String, String> params = new HashMap<String, String>();
-
-      if( filter != null ) {
-
-        Table table = convertToTable(mtable);
-
-        CharStream cs = new ANTLRNoCaseStringStream(filter);
-        FilterLexer lexer = new FilterLexer(cs);
-
-        CommonTokenStream tokens = new CommonTokenStream();
-        tokens.setTokenSource (lexer);
-
-        FilterParser parser = new FilterParser(tokens);
-
-        try {
-          parser.filter();
-        } catch(RecognitionException re) {
-          throw new MetaException("Error parsing partition filter : " + re);
-        }
-
-        String jdoFilter = parser.tree.generateJDOFilter(table, params);
-
-        if( jdoFilter.trim().length() > 0 ) {
-          queryBuilder.append(" && ( ");
-          queryBuilder.append(jdoFilter.trim());
-          queryBuilder.append(" )");
-        }
-      }
+      String queryFilterString =
+        makeQueryFilterString(mtable, filter, params);
 
       Query query = pm.newQuery(MPartition.class,
-          queryBuilder.toString());
+          queryFilterString);
 
       if( maxParts >= 0 ) {
         //User specified a row limit, set it on the Query
         query.setRange(0, maxParts);
       }
 
-      //Create the parameter declaration string
-      StringBuilder paramDecl = new StringBuilder(
-          "java.lang.String t1, java.lang.String t2");
-      for(String key : params.keySet() ) {
-        paramDecl.append(", java.lang.String  " + key);
-      }
-
       LOG.debug("Filter specified is " + filter + "," +
-             " JDOQL filter is " + queryBuilder.toString());
+             " JDOQL filter is " + queryFilterString);
 
       params.put("t1", tableName.trim());
       params.put("t2", dbName.trim());
 
-      query.declareParameters(paramDecl.toString());
+      String parameterDeclaration = makeParameterDeclarationString(params);
+      query.declareParameters(parameterDeclaration);
       query.setOrdering("partitionName ascending");
 
       mparts = (List<MPartition>) query.executeWithMap(params);
@@ -1054,6 +1064,64 @@ public class ObjectStore implements RawStore, Configurable {
     return mparts;
   }
 
+  @Override
+  public List<String> listPartitionNamesByFilter(String dbName, String tableName,
+      String filter, short maxParts) throws MetaException {
+    boolean success = false;
+    List<String> partNames = new ArrayList<String>();
+    try {
+      openTransaction();
+      LOG.debug("Executing listMPartitionsByFilter");
+      dbName = dbName.toLowerCase();
+      tableName = tableName.toLowerCase();
+
+      MTable mtable = getMTable(dbName, tableName);
+      if( mtable == null ) {
+        // To be consistent with the behavior of listPartitionNames, if the
+        // table or db does not exist, we return an empty list
+        return partNames;
+      }
+      Map<String, String> params = new HashMap<String, String>();
+      String queryFilterString =
+        makeQueryFilterString(mtable, filter, params);
+
+      Query query = pm.newQuery(
+          "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+          + "where " + queryFilterString);
+
+      if( maxParts >= 0 ) {
+        //User specified a row limit, set it on the Query
+        query.setRange(0, maxParts);
+      }
+
+      LOG.debug("Filter specified is " + filter + "," +
+          " JDOQL filter is " + queryFilterString);
+      LOG.debug("Parms is " + params);
+
+      params.put("t1", tableName.trim());
+      params.put("t2", dbName.trim());
+
+      String parameterDeclaration = makeParameterDeclarationString(params);
+      query.declareParameters(parameterDeclaration);
+      query.setOrdering("partitionName ascending");
+      query.setResult("partitionName");
+
+      Collection names = (Collection) query.executeWithMap(params);
+      partNames = new ArrayList<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        partNames.add((String) i.next());
+      }
+
+      LOG.debug("Done executing query for listMPartitionNamesByFilter");
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listMPartitionNamesByFilter");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return partNames;
+  }
   public void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     boolean success = false;

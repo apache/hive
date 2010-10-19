@@ -299,7 +299,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           PartitionStatistics newPartStats = new PartitionStatistics();
 
           // In that case of a partition, the key for stats temporary store is "rootDir/[dynamic_partition_specs/]%"
-          String partitionID = work.getAggKey() + Warehouse.makePartName(partn.getSpec());
+          String partitionID = work.getAggKey() + Warehouse.makePartPath(partn.getSpec());
 
           String rows = statsAggregator.aggregateStats(partitionID, StatsSetupConst.ROW_COUNT);
           if (rows != null) {

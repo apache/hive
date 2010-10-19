@@ -423,7 +423,7 @@ public class Partition implements Serializable {
   public String toString() {
     String pn = "Invalid Partition";
     try {
-      pn = Warehouse.makePartName(getSpec());
+      pn = Warehouse.makePartName(getSpec(), false);
     } catch (MetaException e) {
       // ignore as we most probably in an exception path already otherwise this
       // error wouldn't occur

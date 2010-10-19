@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde.Constants;
-
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -94,7 +94,7 @@ public class ExpressionTree {
     private TreeNode rhs;
 
     public TreeNode() {
-    } 
+    }
 
     public TreeNode(TreeNode lhs, LogicalOperator andOr, TreeNode rhs) {
       this.lhs = lhs;
@@ -140,22 +140,25 @@ public class ExpressionTree {
     @Override
     public String generateJDOFilter(Table table, Map<String, String> params)
     throws MetaException {
-      int partitionIndex;
-      for(partitionIndex = 0;
-      partitionIndex < table.getPartitionKeys().size();
-      partitionIndex++ ) {
-        if( table.getPartitionKeys().get(partitionIndex).getName().
+
+      int partitionColumnCount = table.getPartitionKeys().size();
+      int partitionColumnIndex;
+      for(partitionColumnIndex = 0;
+      partitionColumnIndex < partitionColumnCount;
+      partitionColumnIndex++ ) {
+        if( table.getPartitionKeys().get(partitionColumnIndex).getName().
             equalsIgnoreCase(keyName)) {
           break;
         }
       }
+      assert (table.getPartitionKeys().size() > 0);
 
-      if( partitionIndex == table.getPartitionKeys().size() ) {
+      if( partitionColumnIndex == table.getPartitionKeys().size() ) {
         throw new MetaException("Specified key <" + keyName +
             "> is not a partitioning key for the table");
       }
 
-      if( ! table.getPartitionKeys().get(partitionIndex).
+      if( ! table.getPartitionKeys().get(partitionColumnIndex).
           getType().equals(Constants.STRING_TYPE_NAME) ) {
         throw new MetaException
         ("Filtering is supported only on partition keys of type string");
@@ -173,17 +176,24 @@ public class ExpressionTree {
               "Value should be on the RHS for LIKE operator : " +
               "Key <" + keyName + ">");
         }
-
-        filter = paramName +
-          " " + operator.getJdoOp() + " " +
-          " this.values.get(" + partitionIndex + ")";
-      } else {
-        if( operator == Operator.LIKE ) {
-          //generate this.values.get(i).matches("abc%")
-          filter = " this.values.get(" + partitionIndex + ")."
-              + operator.getJdoOp() + "(" + paramName + ") ";
+        else if (operator == Operator.EQUALS) {
+          filter = makeFilterForEquals(keyName, value, paramName, params,
+              partitionColumnIndex, partitionColumnCount);
         } else {
-          filter = " this.values.get(" + partitionIndex + ") "
+          filter = paramName +
+          " " + operator.getJdoOp() + " " +
+          " this.values.get(" + partitionColumnIndex + ")";
+        }
+      } else {
+        if (operator == Operator.LIKE ) {
+          //generate this.values.get(i).matches("abc%")
+          filter = " this.values.get(" + partitionColumnIndex + ")."
+              + operator.getJdoOp() + "(" + paramName + ") ";
+        } else if (operator == Operator.EQUALS) {
+          filter = makeFilterForEquals(keyName, value, paramName, params,
+              partitionColumnIndex, partitionColumnCount);
+        } else {
+          filter = " this.values.get(" + partitionColumnIndex + ") "
               + operator.getJdoOp() + " " + paramName;
         }
       }
@@ -191,6 +201,46 @@ public class ExpressionTree {
     }
   }
 
+  /**
+   * For equals, we can make the JDO query much faster by filtering based on the
+   * partition name. For a condition like ds="2010-10-01", we can see if there
+   * are any partitions with a name that contains the substring "ds=2010-10-01/"
+   * False matches aren't possible since "=" is escaped for partition names
+   * and the trailing '/' ensures that we won't get a match with ds=2010-10-011
+   *
+   * Two cases to keep in mind: Case with only one partition column (no '/'s)
+   * Case where the partition key column is at the end of the name. (no
+   * tailing '/')
+   *
+   * @param keyName name of the partition col e.g. ds
+   * @param value
+   * @param paramName name of the parameter to use for JDOQL
+   * @param params a map from the parameter name to their values
+   * @return
+   * @throws MetaException
+   */
+  private static String makeFilterForEquals(String keyName, String value,
+      String paramName, Map<String, String> params, int keyPos, int keyCount)
+      throws MetaException {
+    Map<String, String> partKeyToVal = new HashMap<String, String>();
+    partKeyToVal.put(keyName, value);
+    // If a partition has multiple partition keys, we make the assumption that
+    // makePartName with one key will return a substring of the name made
+    // with both all the keys.
+    String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+
+    if (keyCount == 1) {
+      // Case where this is no other partition columns
+      params.put(paramName, escapedNameFragment);
+    } else if (keyPos + 1 == keyCount) {
+      // Case where the partition column is at the end of the name. There will
+      // be a leading '/' but no trailing '/'
+      params.put(paramName, ".*/" + escapedNameFragment);
+    } else {
+      params.put(paramName, ".*" + escapedNameFragment + "/.*");
+    }
+    return "partitionName.matches(" + paramName + ")";
+  }
   /**
    * The root node for the tree.
    */
@@ -250,6 +300,7 @@ public class ExpressionTree {
       super(input);
     }
 
+    @Override
     public int LA (int i) {
       int returnChar = super.LA (i);
 
