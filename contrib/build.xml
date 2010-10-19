@@ -121,6 +121,7 @@
         <attribute name="Implementation-Version" value="${version}"/>
         <attribute name="Implementation-Vendor" value="Apache"/>
       </manifest>
+      <metainf dir="${hive.root}" includes="LICENSE,NOTICE"/>
     </jar>
   </target>
 

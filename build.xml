@@ -328,6 +328,9 @@
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="${vcs.excludes}"/>
     </copy>
     <copy file="${basedir}/README.txt" todir="${target.dir}"/>
+    <copy file="${basedir}/NOTICE" todir="${target.dir}"/>
+    <copy file="${basedir}/LICENSE" todir="${target.dir}"/>
+    <copy file="${basedir}/RELEASE_NOTES.txt" todir="${target.dir}"/>
     <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
       <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="${vcs.excludes}"/>
     </copy>
@@ -518,7 +521,8 @@
     </macro_tar>
   </target>
 
-  <target name="binary" depends="package, docs, javadoc" description="Make tarball without source and documentation">
+  <target name="binary" depends="package, docs, javadoc"
+          description="Make release tarball without source and documentation">
     <macro_tar param.destfile="${build.dir.hive}/${bin.final.name}.tar.gz">
       <param.listofitems>
         <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}"
