@@ -44,7 +44,16 @@
 
   <!--hive_hwi.war file contains only the JSP sources -->
   <target name="war">
-    <jar jarfile="${build.dir.hive}/hwi/hive-hwi-${version}.war" basedir="${basedir}/web"/>
+    <jar jarfile="${build.dir.hive}/hwi/hive-hwi-${version}.war" basedir="${basedir}/web">
+      <manifest>
+        <!-- Not putting these in their own manifest section, since that inserts
+             a new-line, which breaks the reading of the attributes. -->
+        <attribute name="Implementation-Title" value="Hive"/>
+        <attribute name="Implementation-Version" value="${version}"/>
+        <attribute name="Implementation-Vendor" value="Apache"/>
+      </manifest>
+      <metainf dir="${hive.root}" includes="LICENSE,NOTICE"/>
+    </jar>
   </target>
 
   <!-- Compile is a clone of the build-common.xml compile, with one exception:

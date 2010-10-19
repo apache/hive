@@ -1,0 +1,228 @@
+
+Release Notes - Hive - Version 0.6.0
+
+** New Feature
+    * [HIVE-259] - Add PERCENTILE aggregate function
+    * [HIVE-675] - add database/schema support Hive QL
+    * [HIVE-705] - Hive HBase Integration (umbrella)
+    * [HIVE-801] - row-wise IN would be useful
+    * [HIVE-862] - CommandProcessor should return DriverResponse
+    * [HIVE-894] - add udaf max_n, min_n to contrib
+    * [HIVE-917] - Bucketed Map Join
+    * [HIVE-972] - support views
+    * [HIVE-1002] - multi-partition inserts
+    * [HIVE-1027] - Create UDFs for XPath expression evaluation
+    * [HIVE-1032] - Better Error Messages for Execution Errors
+    * [HIVE-1087] - Let user script write out binary data into a table
+    * [HIVE-1121] - CombinedHiveInputFormat for hadoop 19
+    * [HIVE-1127] - Add UDF to create struct
+    * [HIVE-1131] - Add column lineage information to the pre execution hooks
+    * [HIVE-1132] - Add metastore API method to get partition by name
+    * [HIVE-1134] - bucketing mapjoin where the big table contains more than 1 big partition
+    * [HIVE-1178] - enforce bucketing for a table
+    * [HIVE-1179] - Add UDF array_contains
+    * [HIVE-1193] - ensure sorting properties for a table
+    * [HIVE-1194] - sorted merge join
+    * [HIVE-1197] - create a new input format where a mapper spans a file
+    * [HIVE-1219] - More robust handling of metastore connection failures
+    * [HIVE-1238] - Get  partitions with a partial specification
+    * [HIVE-1255] - Add mathematical UDFs PI, E, degrees, radians, tan, sign, and atan
+    * [HIVE-1270] - Thread pool size in Thrift metastore server should be configurable
+    * [HIVE-1272] - Add SymlinkTextInputFormat to Hive
+    * [HIVE-1278] - Partition name to values conversion conversion method
+    * [HIVE-1307] - More generic and efficient merge method
+    * [HIVE-1332] - Archiving partitions
+    * [HIVE-1351] - Tool to cat rcfiles
+    * [HIVE-1397] - histogram() UDAF for a numerical column
+    * [HIVE-1401] - Web Interface can ony browse default
+    * [HIVE-1410] - Add TCP keepalive option for the metastore server
+    * [HIVE-1439] - Alter the number of buckets for a table
+
+
+** Bug
+    * [HIVE-287] - support count(*) and count distinct on multiple columns
+    * [HIVE-763] - getSchema returns invalid column names, getThriftSchema does not return old style string schemas
+    * [HIVE-1011] - GenericUDTFExplode() throws NPE when given nulls
+    * [HIVE-1022] - desc Table should work
+    * [HIVE-1029] - typedbytes does not support nulls
+    * [HIVE-1042] - function in a transform with more than 1 argument fails
+    * [HIVE-1056] - Predicate push down does not work with UDTF's
+    * [HIVE-1064] - NPE when operating HiveCLI in distributed mode
+    * [HIVE-1066] - TestContribCliDriver failure in serde_typedbytes.q, serde_typedbytes2.q, and serde_typedbytes3.q
+    * [HIVE-1075] - Make it possible for users to recover data when moveTask fails
+    * [HIVE-1085] - ColumnarSerde should not be the default Serde when user specified a fileformat using 'stored as'.
+    * [HIVE-1086] - Add "-Doffline=true" option to ant
+    * [HIVE-1090] - Skew Join does not work in distributed env.
+    * [HIVE-1092] - Conditional task does not increase finished job counter when filter job out.
+    * [HIVE-1094] - Disable streaming last table if there is a skew key in previous tables.
+    * [HIVE-1116] - bug with alter table rename when table has property EXTERNAL=FALSE
+    * [HIVE-1124] - create view should expand the query text consistently
+    * [HIVE-1125] - Hive CLI shows 'Ended Job=' at the beginning of the job
+    * [HIVE-1129] - Assertion in ExecDriver.execute when assertions are enabled in HADOOP_OPTS
+    * [HIVE-1142] - "datanucleus" typos in conf/hive-default.xml
+    * [HIVE-1167] - Use TreeMap instead of Property to make explain extended deterministic
+    * [HIVE-1174] - Job counter error if "hive.merge.mapfiles" equals true
+    * [HIVE-1176] - 'create if not exists' fails for a table name with 'select' in it
+    * [HIVE-1184] - Expression Not In Group By Key error is sometimes masked
+    * [HIVE-1185] - Fix RCFile resource leak when opening a non-RCFile
+    * [HIVE-1195] - Increase ObjectInspector[] length on demand
+    * [HIVE-1200] - Fix CombineHiveInputFormat to work with multi-level of directories in a single table/partition
+    * [HIVE-1204] - typedbytes: writing to stderr kills the mapper
+    * [HIVE-1205] - RowContainer should flush out  dummy rows when the table desc is null
+    * [HIVE-1207] - ScriptOperator AutoProgressor does not set the interval
+    * [HIVE-1242] - CombineHiveInputFormat does not work for compressed text files
+    * [HIVE-1247] - hints cannot be passed to transform statements
+    * [HIVE-1252] - Task breaking bug when breaking after a filter operator
+    * [HIVE-1253] - date_sub() function returns wrong date because of daylight saving time difference
+    * [HIVE-1257] - joins between HBase tables and other tables (whether HBase or not) are broken
+    * [HIVE-1258] - set merge files to files when bucketing/sorting is being enforced
+    * [HIVE-1261] - ql.metadata.Hive#close() should check for null metaStoreClient
+    * [HIVE-1268] - Cannot start metastore thrift server on a specific port
+    * [HIVE-1271] - Case sensitiveness of type information specified when using custom reducer causes type mismatch
+    * [HIVE-1273] - UDF_Percentile NullPointerException
+    * [HIVE-1274] - bug in sort merge join if the big table does not have any row
+    * [HIVE-1275] - TestHBaseCliDriver hangs
+    * [HIVE-1277] - Select query with specific projection(s) fails if the local file system directory for ${hive.user.scratchdir} does not exist.
+    * [HIVE-1280] - problem in combinehiveinputformat with nested directories
+    * [HIVE-1281] - Bucketing column names in create table should be case-insensitive
+    * [HIVE-1286] - error/info message being emitted on standard output
+    * [HIVE-1290] - sort merge join does not work with bucketizedhiveinputformat
+    * [HIVE-1291] - Fix UDAFPercentile ndexOutOfBoundsException
+    * [HIVE-1294] - HIVE_AUX_JARS_PATH interferes with startup of Hive Web Interface
+    * [HIVE-1298] - unit test symlink_text_input_format.q needs ORDER BY for determinism
+    * [HIVE-1308] - <boolean> = <boolean> throws NPE
+    * [HIVE-1311] - bug is use of hadoop supports splittable
+    * [HIVE-1312] - hive trunk does not compile with hadoop 0.17 any more
+    * [HIVE-1315] - bucketed sort merge join breaks after dynamic partition insert
+    * [HIVE-1317] - CombineHiveInputFormat throws exception when partition name contains special characters to URI
+    * [HIVE-1320] - NPE with lineage in a query of union alls on joins.
+    * [HIVE-1321] - bugs with temp directories, trailing blank fields in HBase bulk load
+    * [HIVE-1322] - Cached FileSystem can lead to persistant IOExceptions
+    * [HIVE-1323] - leading dash in partition name is not handled properly
+    * [HIVE-1325] - dynamic partition insert should throw an exception if the number of target table columns + dynamic partition columns does not equal to the number of select columns
+    * [HIVE-1326] - RowContainer uses hard-coded '/tmp/' path for temporary files
+    * [HIVE-1327] - Group by partition column returns wrong results
+    * [HIVE-1330] - fatal error check omitted for reducer-side operators
+    * [HIVE-1331] - select * does not work if different partitions contain different formats
+    * [HIVE-1338] - Fix bin/ext/jar.sh to work with hadoop 0.20 and above
+    * [HIVE-1341] - Filter Operator Column Pruning should preserve the column order
+    * [HIVE-1345] - TypedBytesSerDe fails to create table with multiple columns.
+    * [HIVE-1350] - hive.query.id is not unique 
+    * [HIVE-1352] - rcfilecat should use '\t' to separate columns and print '\r\n' at the end of each row.
+    * [HIVE-1353] - load_dyn_part*.q tests need ORDER BY for determinism
+    * [HIVE-1354] - partition level properties honored if it exists
+    * [HIVE-1364] - Increase the maximum length of various metastore fields, and remove TYPE_NAME from COLUMNS primary key
+    * [HIVE-1365] - Bug in SMBJoinOperator which may causes a final part  of the results in some cases.
+    * [HIVE-1366] - inputFileFormat error if the merge job takes a different input file format than the default output file format
+    * [HIVE-1371] - remove blank in rcfilecat
+    * [HIVE-1373] - Missing connection pool plugin in Eclipse classpath
+    * [HIVE-1377] - getPartitionDescFromPath() in CombineHiveInputFormat should handle matching by path
+    * [HIVE-1388] - combinehiveinputformat does not work if files are of different types
+    * [HIVE-1403] - Reporting progress to JT during closing files in FileSinkOperator
+    * [HIVE-1407] - Add hadoop-*-tools.jar to Eclipse classpath
+    * [HIVE-1409] - File format information is retrieved from first partition
+    * [HIVE-1411] - DataNucleus throws NucleusException if core-3.1.1 JAR appears more than once on CLASSPATH
+    * [HIVE-1412] - CombineHiveInputFormat bug on tablesample
+    * [HIVE-1417] - Archived partitions throw error with queries calling getContentSummary
+    * [HIVE-1418] - column pruning not working with lateral view
+    * [HIVE-1420] - problem with sequence and rcfiles are mixed for null partitions
+    * [HIVE-1421] - problem with sequence and rcfiles are mixed for null partitions
+    * [HIVE-1425] - hive.task.progress should be added to conf/hive-default.xml
+    * [HIVE-1428] - ALTER TABLE ADD PARTITION fails with a remote Thrift metastore
+    * [HIVE-1435] - Upgraded naming scheme causes JDO exceptions
+    * [HIVE-1448] - bug in 'set fileformat'
+    * [HIVE-1454] - insert overwrite and CTAS fail in hive local mode
+    * [HIVE-1455] - lateral view does not work with column pruning 
+    * [HIVE-1492] - FileSinkOperator should remove duplicated files from the same task based on file sizes
+    * [HIVE-1524] - parallel execution failed if mapred.job.name is set
+    * [HIVE-1594] - Typo of hive.merge.size.smallfiles.avgsize prevents change of value
+    * [HIVE-1613] - hive --service jar looks for hadoop version but was not defined
+    * [HIVE-1615] - Web Interface JSP needs Refactoring for removed meta store methods
+    * [HIVE-1681] - ObjectStore.commitTransaction() does not properly handle transactions that have already been rolled back
+    * [HIVE-1697] - Migration scripts should increase size of PARAM_VALUE in PARTITION_PARAMS
+
+** Improvement
+    * [HIVE-543] - provide option to run hive in local mode
+    * [HIVE-964] - handle skewed keys for a join in a separate job
+    * [HIVE-990] - Incorporate CheckStyle into Hive's build.xml
+    * [HIVE-1047] - Merge tasks in GenMRUnion1
+    * [HIVE-1068] - CREATE VIEW followup:  add a "table type" enum attribute in metastore's MTable, and also null out irrelevant attributes for MTable instances which describe views
+    * [HIVE-1069] - CREATE VIEW followup:  find and document current expected version of thrift, and regenerate code to match
+    * [HIVE-1093] - Add a "skew join map join size" variable to control the input size of skew join's following map join job.
+    * [HIVE-1102] - make number of concurrent tasks configurable
+    * [HIVE-1108] - QueryPlan to be independent from BaseSemanticAnalyzer
+    * [HIVE-1109] - Structured temporary directories
+    * [HIVE-1110] - add counters to show that skew join triggered
+    * [HIVE-1117] - Make QueryPlan serializable
+    * [HIVE-1118] - Add hive.merge.size.per.task to HiveConf
+    * [HIVE-1119] - Make all Tasks and Works serializable
+    * [HIVE-1120] - In ivy offline mode, don't delete downloaded jars
+    * [HIVE-1122] - Make ql/metadata/Table and Partition serializable
+    * [HIVE-1128] - Let max/min handle complex types like struct
+    * [HIVE-1136] - add type-checking setters for HiveConf class to match existing getters
+    * [HIVE-1144] - CREATE VIEW followup:  support ALTER TABLE SET TBLPROPERTIES on views
+    * [HIVE-1150] - Add comment to explain why we check for dir first in add_partitions().
+    * [HIVE-1152] - Add metastore API method to drop partition / append partition by name
+    * [HIVE-1164] - drop_partition_by_name() should use drop_partition_common()
+    * [HIVE-1190] - Configure build to download Hadoop tarballs from Facebook mirror instead of Apache
+    * [HIVE-1198] - When checkstyle is activated for Hive in Eclipse environment, it shows all checkstyle problems as errors.
+    * [HIVE-1212] - Explicitly say "Hive Internal Error" to ease debugging
+    * [HIVE-1216] - Show the row with error in mapper/reducer
+    * [HIVE-1220] - accept TBLPROPERTIES on CREATE TABLE/VIEW
+    * [HIVE-1228] - allow HBase key column to be anywhere in Hive table
+    * [HIVE-1241] - add pre-drops in bucketmapjoin*.q
+    * [HIVE-1244] - add backward-compatibility constructor to HiveMetaStoreClient
+    * [HIVE-1246] - mapjoin followed by another mapjoin should be performed in a single query
+    * [HIVE-1260] - from_unixtime should implment a overloading function to accept only bigint type
+    * [HIVE-1276] - optimize bucketing 
+    * [HIVE-1295] - facilitate HBase bulk loads from Hive
+    * [HIVE-1296] - CLI set and set -v commands should dump properties in alphabetical order
+    * [HIVE-1297] - error message in Hive.checkPaths dumps Java array address instead of path string
+    * [HIVE-1300] - support: alter table touch partition
+    * [HIVE-1306] - cleanup the jobscratchdir
+    * [HIVE-1316] - Increase the memory limit for CLI client
+    * [HIVE-1328] - make mapred.input.dir.recursive work for select *
+    * [HIVE-1329] - for ALTER TABLE t SET TBLPROPERTIES ('EXTERNAL'='TRUE'), change TBL_TYPE attribute from MANAGED_TABLE to EXTERNAL_TABLE
+    * [HIVE-1335] - DataNucleus should use connection pooling
+    * [HIVE-1348] - Moving inputFileChanged() from ExecMapper to where it is needed
+    * [HIVE-1349] - Do not pull counters of non initialized jobs
+    * [HIVE-1355] - Hive should use NullOutputFormat for hadoop jobs
+    * [HIVE-1357] - CombineHiveInputSplit should initialize the inputFileFormat once for a single split
+    * [HIVE-1372] - New algorithm for variance() UDAF
+    * [HIVE-1383] - allow HBase WAL to be disabled
+    * [HIVE-1387] - Add PERCENTILE_APPROX which works with double data type
+    * [HIVE-1531] - Make Hive build work with Ivy versions < 2.1.0
+    * [HIVE-1543] - set abort in ExecMapper when Hive's record reader got an IOException
+    * [HIVE-1693] - Make the compile target depend on thrift.home
+
+** Task
+    * [HIVE-1081] - Automated source code cleanup
+    * [HIVE-1084] - Cleanup Class names
+    * [HIVE-1103] - Add .gitignore file
+    * [HIVE-1104] - Suppress Checkstyle warnings for generated files
+    * [HIVE-1112] - Replace instances of StringBuffer/Vector with StringBuilder/ArrayList
+    * [HIVE-1123] - Checkstyle fixes
+    * [HIVE-1135] - Use Anakia for version controlled documentation
+    * [HIVE-1137] - build references IVY_HOME incorrectly
+    * [HIVE-1147] - Update Eclipse project configuration to match Checkstyle
+    * [HIVE-1163] - Eclipse launchtemplate changes to enable debugging
+    * [HIVE-1256] - fix Hive logo img tag to avoid stretching
+    * [HIVE-1427] - Provide metastore schema migration scripts (0.5 -> 0.6)
+    * [HIVE-1709] - Provide Postgres metastore schema migration scripts (0.5 -> 0.6)
+    * [HIVE-1725] - Include metastore upgrade scripts in release tarball
+    * [HIVE-1726] - Update README file for 0.6.0 release
+    * [HIVE-1729] - Satisfy ASF release management requirements
+
+
+** Sub-task
+    * [HIVE-1340] - checking VOID type for NULL in LazyBinarySerde
+
+
+** Test
+    * [HIVE-1188] - NPE when running TestJdbcDriver/TestHiveServer
+    * [HIVE-1236] - test HBase input format plus CombinedHiveInputFormat
+    * [HIVE-1279] - temporarily disable HBase test execution
+    * [HIVE-1359] - Unit test should be shim-aware
+
+
+
