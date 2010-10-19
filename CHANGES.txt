@@ -194,7 +194,7 @@ Trunk -  Unreleased
     (jvs via Ning Zhang)
 
     HIVE-1638. convert commonly used udfs to generic udfs
-    (Siyong Dong via namit)
+    (Siying Dong via namit)
 
   OPTIMIZATIONS
 
