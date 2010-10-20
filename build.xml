@@ -44,11 +44,12 @@
   <property name="javadoc.link.java"
             value="http://java.sun.com/javase/6/docs/api/"/>
   <property name="final.name" value="${name}-${version}"/>
-  <property name="dev.final.name" value="${final.name}-dev"/>
+  <property name="tar.final.name" value="${final.name}"/>
   <property name="bin.final.name" value="${final.name}-bin"/>
   <property name="vcs.excludes" value="**/.svn,**/.svn/**,**/.git,**/.git/**"/>
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
+  <property name="md5sum.format" value="{0}  {1}"/>
 
   <!-- hbase-handler is enabled by default only for Hadoop 0.20.x -->
   <condition property="hbase.enabled" value="true" else="false">
@@ -71,10 +72,10 @@
     <attribute name="param.destfile"/>
     <element name="param.listofitems"/>
     <sequential>
-      <tar compression="gzip" longfile="gnu"
-      destfile="@{param.destfile}">
+      <tar compression="gzip" longfile="gnu" destfile="@{param.destfile}">
       <param.listofitems/>
       </tar>
+      <checksum file="@{param.destfile}" algorithm="md5" pattern="${md5sum.format}"/>
     </sequential>
   </macrodef>
 
@@ -477,17 +478,17 @@
   <!-- ================================================================== -->
 
   <target name="tar" depends="package, docs, javadoc" description="Make release tarball">
-    <macro_tar param.destfile="${build.dir.hive}/${dev.final.name}.tar.gz">
+    <macro_tar param.destfile="${build.dir.hive}/${tar.final.name}.tar.gz">
       <param.listofitems>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}"
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${tar.final.name}"
                     excludes="${vcs.excludes}">
           <include name="bin/**"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}"
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${tar.final.name}"
                     excludes="${vcs.excludes}">
           <include name="lib/py/**/*-remote"/>
         </tarfileset>
-        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${dev.final.name}"
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${tar.final.name}"
                     excludes="${vcs.excludes}">
           <include name="**"/>
           <exclude name="bin/**"/>
@@ -497,7 +498,7 @@
           <exclude name="docs/site.css"/>
           <exclude name="docs/language_manual/**"/>
         </tarfileset>
-        <tarfileset dir="${hive.root}" mode="664" prefix="${dev.final.name}/src"
+        <tarfileset dir="${hive.root}" mode="664" prefix="${tar.final.name}/src"
                     excludes="${vcs.excludes}">
           <exclude name="build/**" />
           <exclude name="bin/**" />
@@ -506,7 +507,7 @@
           <exclude name="metastore/scripts/**" />
           <exclude name="ql/src/test/scripts/**" />
         </tarfileset>
-        <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src"
+        <tarfileset dir="${hive.root}" mode="755" prefix="${tar.final.name}/src"
                     excludes="${vcs.excludes}">
           <exclude name="build/**" />
           <include name="bin/**" />

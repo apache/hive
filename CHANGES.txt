@@ -272,6 +272,9 @@ Release 0.6.0 - 2010-10-19
     HIVE-1729. Satisfy ASF release management requirements
     (Carl Steinbach via jvs)
 
+    HIVE-1736. Remove "-dev" suffix from release package name and
+    generate MD5 checksum using Ant (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
     HIVE-1348. Move inputFileChanged() from ExecMapper to where it is needed
