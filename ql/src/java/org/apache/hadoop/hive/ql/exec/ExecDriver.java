@@ -1138,6 +1138,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     Path newPath = new Path(newDir);
     FileSystem fs = newPath.getFileSystem(job);
     fs.mkdirs(newPath);
+    //Qualify the path against the filesystem. The user configured path might contain default port which is skipped
+    //in the file status. This makes sure that all paths which goes into PathToPartitionInfo are always listed status
+    //filepath.
+    newPath = fs.makeQualified(newPath);
     String newFile = newDir + File.separator + "emptyFile";
     Path newFilePath = new Path(newFile);
 

@@ -391,6 +391,9 @@ Trunk -  Unreleased
     HIVE-1711. CREATE TABLE LIKE should not set stats in the new table
     (Ning Zhang via namit)
 
+    HIVE-1633. CombineHiveInputFormat fails with "cannot find dir for emptyFile"
+    (Sreekanth Ramakrishnan via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
