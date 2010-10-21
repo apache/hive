@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
+import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -753,7 +755,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         Object key = newKeys.get(pos.intValue());
         // Ignore nulls
         if (key != null) {
-          if (key instanceof String) {
+          if (key instanceof LazyPrimitive) {
+              totalVariableSize +=
+                  ((LazyPrimitive<LazyStringObjectInspector, Text>) key).
+                      getWritableObject().getLength();
+          } else if (key instanceof String) {
             totalVariableSize += ((String) key).length();
           } else if (key instanceof Text) {
             totalVariableSize += ((Text) key).getLength();
@@ -763,7 +769,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
       AggregationBuffer[] aggs = null;
       if (aggrPositions.size() > 0) {
-        aggs = hashAggregations.get(newKeys);
+	KeyWrapper newKeyProber = new KeyWrapper(
+	    newKeys.hashCode(), newKeys);
+        aggs = hashAggregations.get(newKeyProber);
       }
 
       for (varLenFields v : aggrPositions) {

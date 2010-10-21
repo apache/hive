@@ -394,6 +394,9 @@ Trunk -  Unreleased
     HIVE-1633. CombineHiveInputFormat fails with "cannot find dir for emptyFile"
     (Sreekanth Ramakrishnan via He Yongqiang)
 
+    HIVE-1737. Bug in computing row size for map side hash table in group by
+    (Siying Dong via Namit Jain)
+
   TESTS
 
     HIVE-1464. improve  test query performance
