@@ -199,6 +199,9 @@ Trunk -  Unreleased
     HIVE-1660. Change get_partitions_ps to pass partition filter to
     database (Paul Yang via namit)
 
+    HIVE-1738. Optimize key comparison in groupby
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
