@@ -381,6 +381,7 @@
         <exclude name="${vcs.excludes}"/>
       </fileset>
       <filterset>
+        <filtersfile file="${hive.root}/ivy/libraries.properties"/>
         <filter token="PROJECT" value="${eclipse.project}"/>
         <filter token="HADOOPVER" value="${hadoop.version.ant-internal}"/>
         <filter token="HADOOPVERPREF" value="${hadoop.version.ant-internal.prefix}"/>

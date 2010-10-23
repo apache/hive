@@ -400,6 +400,10 @@ Trunk -  Unreleased
     HIVE-1737. Bug in computing row size for map side hash table in group by
     (Siying Dong via Namit Jain)
 
+    HIVE-1742. Fix Eclipse templates (and use Ivy metadata to generate
+    Eclipse library dependencies)
+    (Carl Steinbach via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
