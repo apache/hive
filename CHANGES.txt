@@ -202,6 +202,9 @@ Trunk -  Unreleased
     HIVE-1738. Optimize key comparison in groupby
     (Siying Dong via namit)
 
+    HIVE-1749. ExecMapper and ExecReducer reduce function calls to l4j.isInfoEnabled()
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

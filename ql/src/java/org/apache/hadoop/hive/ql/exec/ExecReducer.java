@@ -66,6 +66,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   private static String[] fieldNames;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
+  private boolean isLogInfoEnabled = false;
 
   // used to log memory usage periodically
   private MemoryMXBean memoryMXBean;
@@ -87,7 +88,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   TableDesc[] valueTableDesc;
 
   ObjectInspector[] rowObjectInspector;
-  
+
   @Override
   public void configure(JobConf job) {
     rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
@@ -97,6 +98,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+
+    isLogInfoEnabled = l4j.isInfoEnabled();
 
     try {
       l4j.info("conf classpath = "
@@ -231,7 +234,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(valueObject[tag.get()]);
         // The tag is not used any more, we should remove it.
         row.add(tag);
-        if (l4j.isInfoEnabled()) {
+        if (isLogInfoEnabled) {
           cntr++;
           if (cntr == nextCntr) {
             long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
@@ -247,7 +250,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           try {
             rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag.get()]);
           } catch (Exception e2) {
-            rowString = "[Error getting row data with exception " + 
+            rowString = "[Error getting row data with exception " +
                   StringUtils.stringifyException(e2) + " ]";
           }
           throw new HiveException("Hive Runtime Error while processing row (tag="
@@ -292,7 +295,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         l4j.trace("End Group");
         reducer.endGroup();
       }
-      if (l4j.isInfoEnabled()) {
+      if (isLogInfoEnabled) {
         l4j.info("ExecReducer: processed " + cntr + " rows: used memory = "
             + memoryMXBean.getHeapMemoryUsage().getUsed());
       }
@@ -300,7 +303,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       reducer.close(abort);
       reportStats rps = new reportStats(rp);
       reducer.preorderMap(rps);
-      
+
     } catch (Exception e) {
       if (!abort) {
         // signal new failure to map-reduce

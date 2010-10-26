@@ -63,6 +63,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   private long numRows = 0;
   private long nextCntr = 1;
   private MapredLocalWork localWork = null;
+  private boolean isLogInfoEnabled = false;
 
   private final ExecMapperContext execContext = new ExecMapperContext();
 
@@ -71,6 +72,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+
+    isLogInfoEnabled = l4j.isInfoEnabled();
 
     try {
       l4j.info("conf classpath = "
@@ -157,7 +160,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         throw new RuntimeException("Map operator initialization failed", e);
       }
     }
-
   }
 
   public void map(Object key, Object value, OutputCollector output,
@@ -178,7 +180,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         // Since there is no concept of a group, we don't invoke
         // startGroup/endGroup for a mapper
         mo.process((Writable)value);
-        if (l4j.isInfoEnabled()) {
+        if (isLogInfoEnabled) {
           numRows++;
           if (numRows == nextCntr) {
             long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
@@ -237,7 +239,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         }
       }
 
-      if (l4j.isInfoEnabled()) {
+      if (isLogInfoEnabled) {
         long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
         l4j.info("ExecMapper: processed " + numRows + " rows: used memory = "
             + used_memory);
