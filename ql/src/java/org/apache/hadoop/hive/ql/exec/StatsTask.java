@@ -334,7 +334,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
                     Long.parseLong(parameters.get(StatsSetupConst.ROW_COUNT)) :
                     0L;
           long sz = parameters.containsKey(StatsSetupConst.TOTAL_SIZE) ?
-                    Integer.parseInt(parameters.get(StatsSetupConst.TOTAL_SIZE)) :
+                    Long.parseLong(parameters.get(StatsSetupConst.TOTAL_SIZE)) :
                     0L;
           if (hasStats) {
             PartitionStatistics oldPartStats = new PartitionStatistics(nf, nr, sz);
