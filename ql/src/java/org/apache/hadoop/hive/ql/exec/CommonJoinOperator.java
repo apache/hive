@@ -25,33 +25,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Join operator implementation.
@@ -127,10 +118,10 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected transient
     Map<Byte, List<ObjectInspector>> rowContainerStandardObjectInspectors;
 
-  protected static transient Byte[] order; // order in which the results should
+  protected transient Byte[] order; // order in which the results should
   // be output
   protected transient JoinCondDesc[] condn;
-  protected transient boolean noOuterJoin;
+  public transient boolean noOuterJoin;
   protected transient Object[] dummyObj; // for outer joins, contains the
   // potential nulls for the concerned
   // aliases
@@ -163,6 +154,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   protected transient int countAfterReport;
   protected transient int heartbeatInterval;
+  private static final int NOTSKIPBIGTABLE = -1;
 
   public CommonJoinOperator() {
   }
@@ -179,9 +171,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.operatorId = clone.operatorId;
     this.storage = clone.storage;
     this.condn = clone.condn;
-
+    this.conf = clone.getConf();
     this.setSchema(clone.getSchema());
-
     this.alias = clone.alias;
     this.beginTime = clone.beginTime;
     this.inputRows = clone.inputRows;
@@ -208,68 +199,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.joinFilterObjectInspectors = clone.joinFilterObjectInspectors;
   }
 
-  protected int populateJoinKeyValue(Map<Byte, List<ExprNodeEvaluator>> outMap,
-      Map<Byte, List<ExprNodeDesc>> inputMap) {
-
-    int total = 0;
-
-    Iterator<Map.Entry<Byte, List<ExprNodeDesc>>> entryIter = inputMap
-        .entrySet().iterator();
-    while (entryIter.hasNext()) {
-      Map.Entry<Byte, List<ExprNodeDesc>> e = entryIter.next();
-      Byte key = order[e.getKey()];
-
-      List<ExprNodeDesc> expr = e.getValue();
-      int sz = expr.size();
-      total += sz;
-
-      List<ExprNodeEvaluator> valueFields = new ArrayList<ExprNodeEvaluator>();
-
-      for (int j = 0; j < sz; j++) {
-        valueFields.add(ExprNodeEvaluatorFactory.get(expr.get(j)));
-      }
-
-      outMap.put(key, valueFields);
-    }
-
-    return total;
-  }
-
-  protected static HashMap<Byte, List<ObjectInspector>> getObjectInspectorsFromEvaluators(
-      Map<Byte, List<ExprNodeEvaluator>> exprEntries,
-      ObjectInspector[] inputObjInspector) throws HiveException {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ExprNodeEvaluator>> exprEntry : exprEntries
-        .entrySet()) {
-      Byte alias = exprEntry.getKey();
-      List<ExprNodeEvaluator> exprList = exprEntry.getValue();
-      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>();
-      for (int i = 0; i < exprList.size(); i++) {
-        fieldOIList.add(exprList.get(i).initialize(inputObjInspector[alias]));
-      }
-      result.put(alias, fieldOIList);
-    }
-    return result;
-  }
-
-  protected static HashMap<Byte, List<ObjectInspector>> getStandardObjectInspectors(
-      Map<Byte, List<ObjectInspector>> aliasToObjectInspectors) {
-    HashMap<Byte, List<ObjectInspector>> result = new HashMap<Byte, List<ObjectInspector>>();
-    for (Entry<Byte, List<ObjectInspector>> oiEntry : aliasToObjectInspectors
-        .entrySet()) {
-      Byte alias = oiEntry.getKey();
-      List<ObjectInspector> oiList = oiEntry.getValue();
-      ArrayList<ObjectInspector> fieldOIList = new ArrayList<ObjectInspector>(
-          oiList.size());
-      for (int i = 0; i < oiList.size(); i++) {
-        fieldOIList.add(ObjectInspectorUtils.getStandardObjectInspector(oiList
-            .get(i), ObjectInspectorCopyOption.WRITABLE));
-      }
-      result.put(alias, fieldOIList);
-    }
-    return result;
-
-  }
 
   protected static <T extends JoinDesc> ObjectInspector getJoinOutputObjectInspector(
       Byte[] order, Map<Byte, List<ObjectInspector>> aliasToObjectInspectors,
@@ -307,20 +236,26 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
 
-    if (order == null) {
-      order = conf.getTagOrder();
-    }
+    order = conf.getTagOrder();
     condn = conf.getConds();
     noOuterJoin = conf.isNoOuterJoin();
 
-    totalSz = populateJoinKeyValue(joinValues, conf.getExprs());
-    populateJoinKeyValue(joinFilters, conf.getFilters());
 
-    joinValuesObjectInspectors = getObjectInspectorsFromEvaluators(joinValues,
-        inputObjInspectors);
-    joinFilterObjectInspectors = getObjectInspectorsFromEvaluators(joinFilters,
-        inputObjInspectors);
-    joinValuesStandardObjectInspectors = getStandardObjectInspectors(joinValuesObjectInspectors);
+
+    totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),
+        order,NOTSKIPBIGTABLE);
+
+    //process join filters
+    joinFilters = new HashMap<Byte, List<ExprNodeEvaluator>>();
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE);
+
+
+    joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
+        inputObjInspectors,NOTSKIPBIGTABLE);
+    joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
+        inputObjInspectors,NOTSKIPBIGTABLE);
+    joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
+        joinValuesObjectInspectors,NOTSKIPBIGTABLE);
 
     if (noOuterJoin) {
       rowContainerStandardObjectInspectors = joinValuesStandardObjectInspectors;
@@ -336,8 +271,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         rowContainerObjectInspectors.put(alias, rcOIs);
       }
       rowContainerStandardObjectInspectors =
-        getStandardObjectInspectors(rowContainerObjectInspectors);
+        JoinUtil.getStandardObjectInspectors(rowContainerObjectInspectors,NOTSKIPBIGTABLE);
     }
+
+
+
 
     dummyObj = new Object[numAliases];
     dummyObjVectors = new RowContainer[numAliases];
@@ -367,14 +305,18 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
-      RowContainer<ArrayList<Object>> values = getRowContainer(hconf, pos,
-          alias, 1);
+      RowContainer<ArrayList<Object>> values = JoinUtil.getRowContainer(hconf,
+          rowContainerStandardObjectInspectors.get((byte)pos),
+          alias, 1, spillTableDesc, conf, noOuterJoin);
+
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
       // if serde is null, the input doesn't need to be spilled out
       // e.g., the output columns does not contains the input table
-      RowContainer rc = getRowContainer(hconf, pos, alias, joinCacheSize);
+      RowContainer rc = JoinUtil.getRowContainer(hconf,
+          rowContainerStandardObjectInspectors.get((byte)pos),
+          alias, joinCacheSize,spillTableDesc, conf,noOuterJoin);
       storage.put(pos, rc);
 
       pos++;
@@ -390,103 +332,10 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   }
 
-  RowContainer getRowContainer(Configuration hconf, byte pos, Byte alias,
-      int containerSize) throws HiveException {
-    TableDesc tblDesc = getSpillTableDesc(alias);
-    SerDe serde = getSpillSerDe(alias);
 
-    if (serde == null) {
-      containerSize = 1;
-    }
 
-    RowContainer rc = new RowContainer(containerSize, hconf);
-    StructObjectInspector rcOI = null;
-    if (tblDesc != null) {
-      // arbitrary column names used internally for serializing to spill table
-      List<String> colNames = Utilities.getColumnNames(tblDesc.getProperties());
-      // object inspector for serializing input tuples
-      rcOI = ObjectInspectorFactory.getStandardStructObjectInspector(colNames,
-          rowContainerStandardObjectInspectors.get(pos));
-    }
 
-    rc.setSerDe(serde, rcOI);
-    rc.setTableDesc(tblDesc);
-    return rc;
-  }
-
-  private SerDe getSpillSerDe(byte alias) {
-    TableDesc desc = getSpillTableDesc(alias);
-    if (desc == null) {
-      return null;
-    }
-    SerDe sd = (SerDe) ReflectionUtils.newInstance(desc.getDeserializerClass(),
-        null);
-    try {
-      sd.initialize(null, desc.getProperties());
-    } catch (SerDeException e) {
-      e.printStackTrace();
-      return null;
-    }
-    return sd;
-  }
-
-  transient boolean newGroupStarted = false;
-
-  public TableDesc getSpillTableDesc(Byte alias) {
-    if (spillTableDesc == null || spillTableDesc.size() == 0) {
-      initSpillTables();
-    }
-    return spillTableDesc.get(alias);
-  }
-
-  public Map<Byte, TableDesc> getSpillTableDesc() {
-    if (spillTableDesc == null) {
-      initSpillTables();
-    }
-    return spillTableDesc;
-  }
-
-  private void initSpillTables() {
-    Map<Byte, List<ExprNodeDesc>> exprs = conf.getExprs();
-    spillTableDesc = new HashMap<Byte, TableDesc>(exprs.size());
-    for (int tag = 0; tag < exprs.size(); tag++) {
-      List<ExprNodeDesc> valueCols = exprs.get((byte) tag);
-      int columnSize = valueCols.size();
-      StringBuilder colNames = new StringBuilder();
-      StringBuilder colTypes = new StringBuilder();
-      if (columnSize <= 0) {
-        continue;
-      }
-      for (int k = 0; k < columnSize; k++) {
-        String newColName = tag + "_VALUE_" + k; // any name, it does not
-        // matter.
-        colNames.append(newColName);
-        colNames.append(',');
-        colTypes.append(valueCols.get(k).getTypeString());
-        colTypes.append(',');
-      }
-      if (!noOuterJoin) {
-        colNames.append("filtered");
-        colNames.append(',');
-        colTypes.append(TypeInfoFactory.booleanTypeInfo.getTypeName());
-        colTypes.append(',');
-      }
-      // remove the last ','
-      colNames.setLength(colNames.length() - 1);
-      colTypes.setLength(colTypes.length() - 1);
-      TableDesc tblDesc = new TableDesc(LazyBinarySerDe.class,
-          SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
-          Utilities.makeProperties(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, ""
-          + Utilities.ctrlaCode,
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames
-          .toString(),
-          org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES,
-          colTypes.toString()));
-      spillTableDesc.put((byte) tag, tblDesc);
-    }
-  }
-
+transient boolean newGroupStarted = false;
   @Override
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
@@ -506,50 +355,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   protected transient Byte alias;
-
-  /**
-   * Return the key as a standard object. StandardObject can be inspected by a
-   * standard ObjectInspector.
-   */
-  protected static ArrayList<Object> computeKeys(Object row,
-      List<ExprNodeEvaluator> keyFields, List<ObjectInspector> keyFieldsOI)
-      throws HiveException {
-
-    // Compute the keys
-    ArrayList<Object> nr = new ArrayList<Object>(keyFields.size());
-    for (int i = 0; i < keyFields.size(); i++) {
-
-      nr.add(ObjectInspectorUtils.copyToStandardObject(keyFields.get(i)
-          .evaluate(row), keyFieldsOI.get(i),
-          ObjectInspectorCopyOption.WRITABLE));
-    }
-
-    return nr;
-  }
-
-  /**
-   * Return the value as a standard object. StandardObject can be inspected by a
-   * standard ObjectInspector.
-   */
-  protected static ArrayList<Object> computeValues(Object row,
-      List<ExprNodeEvaluator> valueFields, List<ObjectInspector> valueFieldsOI,
-      List<ExprNodeEvaluator> filters, List<ObjectInspector> filtersOI,
-      boolean noOuterJoin) throws HiveException {
-
-    // Compute the values
-    ArrayList<Object> nr = new ArrayList<Object>(valueFields.size());
-    for (int i = 0; i < valueFields.size(); i++) {
-      nr.add(ObjectInspectorUtils.copyToStandardObject(valueFields.get(i)
-          .evaluate(row), valueFieldsOI.get(i),
-          ObjectInspectorCopyOption.WRITABLE));
-    }
-    if (!noOuterJoin) {
-      // add whether the row is filtered or not.
-      nr.add(new BooleanWritable(isFiltered(row, filters, filtersOI)));
-    }
-
-    return nr;
-  }
 
   transient Object[] forwardCache;
 

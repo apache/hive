@@ -57,7 +57,8 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF tmp1 x) (TOK_TABREF tmp2 y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) cnt)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-7 is a root stage
+  Stage-1 depends on stages: Stage-7
   Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3
@@ -65,6 +66,29 @@ STAGE DEPENDENCIES:
   Stage-3
 
 STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        x 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {cnt}
+                1 {cnt}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0, _col1, _col5
+              Position of Big Table: 1
+
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -111,52 +135,6 @@ STAGE PLANS:
                         name: dest_j1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            x 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            x 
-              TableScan
-                alias: x
-                Common Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {key} {cnt}
-                    1 {cnt}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                  outputColumnNames: _col0, _col1, _col5
-                  Position of Big Table: 1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: int
-                          expr: _col5
-                          type: int
-                    outputColumnNames: _col0, _col1, _col5
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: int
-                            expr: _col1
-                            type: int
-                            expr: _col5
-                            type: int
-                      outputColumnNames: _col0, _col1, _col2
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 1
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: dest_j1
 
   Stage: Stage-5
     Conditional Operator
@@ -165,7 +143,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-41-43_154_2888049314872131139/-ext-10000
+          destination: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-34-33_684_5611117980279032391/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -183,7 +161,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-41-43_154_2888049314872131139/-ext-10002 
+        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-34-33_684_5611117980279032391/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -218,11 +196,11 @@ POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-41-50_562_502275187594181738/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-34-41_401_2982529179982198007/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-41-50_562_502275187594181738/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-34-41_401_2982529179982198007/-mr-10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]

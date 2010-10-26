@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.JDBMDummyDesc;
+import org.apache.hadoop.hive.ql.plan.JDBMSinkDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewJoinDesc;
@@ -85,6 +87,10 @@ public final class OperatorFactory {
         LateralViewJoinOperator.class));
     opvec.add(new OpTuple<LateralViewForwardDesc>(LateralViewForwardDesc.class,
         LateralViewForwardOperator.class));
+    opvec.add(new OpTuple<JDBMDummyDesc>(JDBMDummyDesc.class,
+        JDBMDummyOperator.class));
+    opvec.add(new OpTuple<JDBMSinkDesc>(JDBMSinkDesc.class,
+        JDBMSinkOperator.class));
   }
 
   public static <T extends Serializable> Operator<T> get(Class<T> opClass) {

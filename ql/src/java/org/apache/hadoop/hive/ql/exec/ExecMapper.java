@@ -23,18 +23,14 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
@@ -42,7 +38,6 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
-
 /**
  * ExecMapper.
  *
@@ -94,62 +89,28 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));
+   // initialize map local work
+      localWork = mrwork.getMapLocalWork();
+      execContext.setLocalWork(localWork);
+
       mo.setExecContext(execContext);
       mo.initializeLocalWork(jc);
       mo.initialize(jc, null);
 
-      // initialize map local work
-      localWork = mrwork.getMapLocalWork();
       if (localWork == null) {
         return;
       }
 
-      fetchOperators = new HashMap<String, FetchOperator>();
-
-      Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>();
-      // create map local operators
-      for (Map.Entry<String, FetchWork> entry : localWork.getAliasToFetchWork()
-          .entrySet()) {
-        JobConf jobClone = new JobConf(job);
-        Operator<? extends Serializable> tableScan = localWork.getAliasToWork()
-        .get(entry.getKey());
-        boolean setColumnsNeeded = false;
-        if(tableScan instanceof TableScanOperator) {
-          ArrayList<Integer> list = ((TableScanOperator)tableScan).getNeededColumnIDs();
-          if (list != null) {
-            ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
-            setColumnsNeeded = true;
-          }
-        }
-
-        if (!setColumnsNeeded) {
-          ColumnProjectionUtils.setFullyReadColumns(jobClone);
-        }
-        FetchOperator fetchOp = new FetchOperator(entry.getValue(),jobClone);
-        fetchOpJobConfMap.put(fetchOp, jobClone);
-        fetchOperators.put(entry.getKey(), fetchOp);
-        l4j.info("fetchoperator for " + entry.getKey() + " created");
+      //The following code is for mapjoin
+      //initialize all the dummy ops
+      l4j.info("Initializing dummy operator");
+      List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
+      for(Operator<? extends Serializable> dummyOp : dummyOps){
+        dummyOp.setExecContext(execContext);
+        dummyOp.initialize(jc,null);
       }
 
-      // initialize map local operators
-      for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-        Operator<? extends Serializable> forwardOp = localWork.getAliasToWork()
-            .get(entry.getKey());
-        forwardOp.setExecContext(execContext);
-        // All the operators need to be initialized before process
-        FetchOperator fetchOp = entry.getValue();
-        JobConf jobConf = fetchOpJobConfMap.get(fetchOp);
-        if (jobConf == null) {
-          jobConf = job;
-        }
-        forwardOp.initialize(jobConf, new ObjectInspector[] {fetchOp
-            .getOutputObjectInspector()});
-        l4j.info("fetchoperator for " + entry.getKey() + " initialized");
-      }
-      this.execContext.setLocalWork(localWork);
-      this.execContext.setFetchOperators(fetchOperators);
-      // defer processing of map local operators to first row if in case there
-      // is no input (??)
+
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -230,6 +191,16 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     // ideally hadoop should let us know whether map execution failed or not
     try {
       mo.close(abort);
+
+      //for close the local work
+      if(localWork != null){
+        List<Operator<? extends Serializable>> dummyOps = localWork.getDummyParentOp();
+
+        for(Operator<? extends Serializable> dummyOp : dummyOps){
+          dummyOp.close(abort);
+        }
+      }
+
       if (fetchOperators != null) {
         MapredLocalWork localWork = mo.getConf().getMapLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {

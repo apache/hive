@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -77,7 +77,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class RowContainer<Row extends List<Object>> {
 
-  protected Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected static Log LOG = LogFactory.getLog(RowContainer.class);
 
   // max # of rows can be put into one block
   private static final int BLOCKSIZE = 25000;
@@ -116,6 +116,7 @@ public class RowContainer<Row extends List<Object>> {
 
   Writable val = null; // cached to use serialize data
 
+  Configuration jc;
   JobConf jobCloneUsingLocalFs = null;
   private LocalFileSystem localFs;
 
@@ -136,15 +137,18 @@ public class RowContainer<Row extends List<Object>> {
     this.firstReadBlockPointer = currentReadBlock;
     this.serde = null;
     this.standardOI = null;
-    try {
-      this.localFs = FileSystem.getLocal(jc);
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
-    this.jobCloneUsingLocalFs = new JobConf(jc);
-    HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS,
-        Utilities.HADOOP_LOCAL_FS);
+    this.jc=jc;
   }
+
+  private JobConf getLocalFSJobConfClone(Configuration jc) {
+    if(this.jobCloneUsingLocalFs == null) {
+      this.jobCloneUsingLocalFs = new JobConf(jc);
+      HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS,
+          Utilities.HADOOP_LOCAL_FS);
+    }
+    return this.jobCloneUsingLocalFs;
+  }
+
 
   public RowContainer(int blockSize, SerDe sd, ObjectInspector oi,
       Configuration jc) throws HiveException {
@@ -202,23 +206,24 @@ public class RowContainer<Row extends List<Object>> {
         this.readBlockSize = this.addCursor;
         this.currentReadBlock = this.currentWriteBlock;
       } else {
+        JobConf localJc = getLocalFSJobConfClone(jc);
         if (inputSplits == null) {
           if (this.inputFormat == null) {
             inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils
                 .newInstance(tblDesc.getInputFileFormatClass(),
-                jobCloneUsingLocalFs);
+                    localJc);
           }
 
-          HiveConf.setVar(jobCloneUsingLocalFs,
+          HiveConf.setVar(localJc,
               HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
               org.apache.hadoop.util.StringUtils.escapeString(parentFile
               .getAbsolutePath()));
-          inputSplits = inputFormat.getSplits(jobCloneUsingLocalFs, 1);
+          inputSplits = inputFormat.getSplits(localJc, 1);
           acutalSplitNum = inputSplits.length;
         }
         currentSplitPointer = 0;
         rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
-            jobCloneUsingLocalFs, Reporter.NULL);
+            localJc, Reporter.NULL);
         currentSplitPointer++;
 
         nextBlock();
@@ -315,6 +320,7 @@ public class RowContainer<Row extends List<Object>> {
         HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc
             .getOutputFileFormatClass().newInstance();
         tempOutPath = new Path(tmpFile.toString());
+        JobConf localJc = getLocalFSJobConfClone(jc);
         rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
             hiveOutputFormat, serde.getSerializedClass(), false, tblDesc
             .getProperties(), tempOutPath);
@@ -389,6 +395,7 @@ public class RowContainer<Row extends List<Object>> {
       }
 
       if (nextSplit && this.currentSplitPointer < this.acutalSplitNum) {
+        JobConf localJc = getLocalFSJobConfClone(jc);
         // open record reader to read next split
         rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
             jobCloneUsingLocalFs, Reporter.NULL);

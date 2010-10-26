@@ -34,9 +34,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -106,10 +107,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
     byte storePos = (byte) 0;
     for (Byte alias : order) {
-      RowContainer rc = getRowContainer(hconf, storePos, alias, bucketSize);
+      RowContainer rc = JoinUtil.getRowContainer(hconf,
+          rowContainerStandardObjectInspectors.get(storePos),
+          alias, bucketSize,spillTableDesc, conf,noOuterJoin);
       nextGroupStorage[storePos] = rc;
-      RowContainer candidateRC = getRowContainer(hconf, storePos, alias,
-          bucketSize);
+      RowContainer candidateRC = JoinUtil.getRowContainer(hconf,
+          rowContainerStandardObjectInspectors.get((byte)storePos),
+          alias,bucketSize,spillTableDesc, conf,noOuterJoin);
       candidateStorage[alias] = candidateRC;
       storePos++;
     }
@@ -208,11 +212,14 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     byte alias = (byte) tag;
     // compute keys and values as StandardObjects
-    ArrayList<Object> key = computeKeys(row, joinKeys.get(alias),
+
+    // compute keys and values as StandardObjects
+    ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys.get(alias),
         joinKeysObjectInspectors.get(alias));
-    ArrayList<Object> value = computeValues(row, joinValues.get(alias),
+    ArrayList<Object> value = JoinUtil.computeValues(row, joinValues.get(alias),
         joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
         joinFilterObjectInspectors.get(alias), noOuterJoin);
+
 
     //have we reached a new key group?
     boolean nextKeyGroup = processKey(alias, key);

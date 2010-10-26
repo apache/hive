@@ -20,7 +20,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
+  Stage-9 depends on stages: Stage-1, Stage-7
+  Stage-2 depends on stages: Stage-9
   Stage-6 depends on stages: Stage-2 , consists of Stage-5, Stage-4
   Stage-5
   Stage-0 depends on stages: Stage-5, Stage-4
@@ -85,10 +86,31 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        file:/tmp/liyintang/hive_2010-10-15_14-32-07_814_3143780899472392520/-mr-10004 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        file:/tmp/liyintang/hive_2010-10-15_14-32-07_814_3143780899472392520/-mr-10004 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0} {_col1}
+                1 {_col1}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              outputColumnNames: _col0, _col1, _col3
+              Position of Big Table: 1
+
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_16-39-23_363_5550537730462856534/-mr-10002 
+        file:/tmp/liyintang/hive_2010-10-15_14-32-07_814_3143780899472392520/-mr-10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -138,59 +160,6 @@ STAGE PLANS:
                           name: dest_j1
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            file:/tmp/nzhang/hive_2010-09-14_16-39-23_363_5550537730462856534/-mr-10004 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            file:/tmp/nzhang/hive_2010-09-14_16-39-23_363_5550537730462856534/-mr-10004 
-                Common Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {_col0} {_col1}
-                    1 {_col1}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[_col0]]
-                    1 [Column[_col0]]
-                  outputColumnNames: _col0, _col1, _col3
-                  Position of Big Table: 1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: bigint
-                          expr: _col3
-                          type: bigint
-                    outputColumnNames: _col0, _col1, _col3
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: bigint
-                            expr: _col3
-                            type: bigint
-                      outputColumnNames: _col0, _col1, _col2
-                      Select Operator
-                        expressions:
-                              expr: _col0
-                              type: string
-                              expr: UDFToInteger(_col1)
-                              type: int
-                              expr: UDFToInteger(_col2)
-                              type: int
-                        outputColumnNames: _col0, _col1, _col2
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 1
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: dest_j1
 
   Stage: Stage-6
     Conditional Operator
@@ -199,7 +168,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-39-23_363_5550537730462856534/-ext-10000
+          destination: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-32-07_814_3143780899472392520/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -217,7 +186,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-39-23_363_5550537730462856534/-ext-10003 
+        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-32-07_814_3143780899472392520/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -306,11 +275,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-39-36_282_980898119383375655/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-22_334_4402386459290348391/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-39-36_282_980898119383375655/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-22_334_4402386459290348391/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

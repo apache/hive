@@ -281,6 +281,10 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       return true;
     }
     for (Operator<? extends Serializable> parent : parentOperators) {
+      if (parent == null) {
+        //return true;
+        continue;
+      }
       if (parent.state != State.INIT) {
         return false;
       }
@@ -427,6 +431,14 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     initialize(hconf, null);
   }
 
+  public ObjectInspector[] getInputObjInspectors() {
+    return inputObjInspectors;
+  }
+
+  public void setInputObjInspectors(ObjectInspector[] inputObjInspectors) {
+    this.inputObjInspectors = inputObjInspectors;
+  }
+
   /**
    * Process the row.
    *
@@ -501,6 +513,9 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   protected boolean allInitializedParentsAreClosed() {
     if (parentOperators != null) {
       for (Operator<? extends Serializable> parent : parentOperators) {
+        if(parent==null){
+          continue;
+        }
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -708,6 +723,16 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     for (Enum<?> e : statsMap.keySet()) {
       statsMap.get(e).set(0L);
     }
+  }
+
+  public void reset(){
+    this.state=State.INIT;
+    if (childOperators != null) {
+      for (Operator<? extends Serializable> o : childOperators) {
+        o.reset();
+      }
+    }
+
   }
 
   /**

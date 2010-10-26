@@ -205,6 +205,9 @@ Trunk -  Unreleased
     HIVE-1749. ExecMapper and ExecReducer reduce function calls to l4j.isInfoEnabled()
     (Siying Dong via namit)
 
+    HIVE-1641. add map joined table to distributed cache
+    (Liyin Tang via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

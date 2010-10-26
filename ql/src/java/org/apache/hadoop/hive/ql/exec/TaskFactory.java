@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
@@ -68,8 +69,12 @@ public final class TaskFactory {
         ConditionalTask.class));
     taskvec.add(new taskTuple<MapredWork>(MapredWork.class,
                                           MapRedTask.class));
+
+    taskvec.add(new taskTuple<MapredLocalWork>(MapredLocalWork.class,
+        MapredLocalTask.class));
     taskvec.add(new taskTuple<StatsWork>(StatsWork.class,
-        StatsTask.class));
+        StatsTask.class));        
+
   }
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {

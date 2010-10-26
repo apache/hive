@@ -52,7 +52,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.rootTasks);
     ogw.startWalking(topNodes, null);
-    return null;
+    return pctx;
   }
 
   /**

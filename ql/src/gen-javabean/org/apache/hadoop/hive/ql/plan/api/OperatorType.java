@@ -30,24 +30,28 @@ public class OperatorType {
   public static final int UDTF = 13;
   public static final int LATERALVIEWJOIN = 14;
   public static final int LATERALVIEWFORWARD = 15;
+  public static final int JDBMDUMMY = 16;
+  public static final int JDBMSINK = 17;
 
   public static final IntRangeSet VALID_VALUES = new IntRangeSet(
-    JOIN, 
-    MAPJOIN, 
-    EXTRACT, 
-    FILTER, 
-    FORWARD, 
-    GROUPBY, 
-    LIMIT, 
-    SCRIPT, 
-    SELECT, 
-    TABLESCAN, 
-    FILESINK, 
-    REDUCESINK, 
-    UNION, 
-    UDTF, 
-    LATERALVIEWJOIN, 
-    LATERALVIEWFORWARD );
+    JOIN,
+    MAPJOIN,
+    EXTRACT,
+    FILTER,
+    FORWARD,
+    GROUPBY,
+    LIMIT,
+    SCRIPT,
+    SELECT,
+    TABLESCAN,
+    FILESINK,
+    REDUCESINK,
+    UNION,
+    UDTF,
+    LATERALVIEWJOIN,
+    LATERALVIEWFORWARD,
+    JDBMDUMMY,
+    JDBMSINK);
 
   public static final Map<Integer, String> VALUES_TO_NAMES = new HashMap<Integer, String>() {{
     put(JOIN, "JOIN");
@@ -66,5 +70,7 @@ public class OperatorType {
     put(UDTF, "UDTF");
     put(LATERALVIEWJOIN, "LATERALVIEWJOIN");
     put(LATERALVIEWFORWARD, "LATERALVIEWFORWARD");
+    put(JDBMDUMMY, "JDBMDUMMY");
+    put(JDBMSINK, "JDBMSINK");
   }};
 }

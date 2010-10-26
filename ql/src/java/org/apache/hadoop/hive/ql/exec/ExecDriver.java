@@ -43,6 +43,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -81,12 +83,12 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.varia.NullAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Appender;
 
 /**
  * ExecDriver.
@@ -589,8 +591,45 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, "JOB"
           + Utilities.randGen.nextInt());
     }
-
     try {
+      //propagate the file to distributed cache
+      MapredLocalWork localwork =work.getMapLocalWork();
+      if(localwork != null){
+        boolean localMode = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local");
+        if(!localMode){
+          LOG.info("=========Adding files to HDFS ================");
+          Path localPath = new Path(localwork.getTmpFileURI());
+          Path hdfsPath = new Path(work.getTmpHDFSFileURI());
+
+          FileSystem hdfs = hdfsPath.getFileSystem(job);
+          FileSystem localFS = localPath.getFileSystem(job);
+          FileStatus[] jdbmFiles = localFS.listStatus(localPath);
+          for(int i =0; i<jdbmFiles.length;i++){
+            FileStatus file = jdbmFiles[i];
+            Path path = file.getPath();
+            String fileName=path.getName();
+            String hdfsFile = hdfsPath+Path.SEPARATOR+fileName;
+
+            LOG.info("Upload 1 JDBM from" +path+" to: "+hdfsFile);
+            Path hdfsFilePath = new Path(hdfsFile);
+            hdfs.copyFromLocalFile(path,hdfsFilePath );
+            short replication = (short)job.getInt("mapred.submit.replication", 10);
+            hdfs.setReplication(hdfsFilePath, replication);
+          }
+          LOG.info("=========Adding files to distributed cache================");
+
+          FileStatus[] jdbmRemoteFiles = hdfs.listStatus(hdfsPath);
+          for(int i =0; i<jdbmRemoteFiles.length;i++){
+            FileStatus file = jdbmRemoteFiles[i];
+            Path path = file.getPath();
+            DistributedCache.addCacheFile(path.toUri(), job);
+            LOG.info("add 1 jdbm file to distributed cache: "+path.toUri());
+          }
+          LOG.info("===========Finishing adding files to distributed cache==========");
+        }
+      }
+
+
 
       addInputPaths(job, work, emptyScratchDirStr);
 
@@ -644,6 +683,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       } else {
         console.printInfo(statusMesg);
       }
+
+
     } catch (Exception e) {
       e.printStackTrace();
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
@@ -652,6 +693,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       } else {
         mesg = "Job Submission failed" + mesg;
       }
+
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils
       console.printError(mesg, "\n"
@@ -1148,8 +1190,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     LOG.info("Changed input file to " + newPath.toString());
 
     // toggle the work
-    LinkedHashMap<String, ArrayList<String>> pathToAliases = work
-    .getPathToAliases();
+
+    LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+
     if (isEmptyPath) {
       assert path != null;
       pathToAliases.put(newPath.toUri().toString(), pathToAliases.get(path));

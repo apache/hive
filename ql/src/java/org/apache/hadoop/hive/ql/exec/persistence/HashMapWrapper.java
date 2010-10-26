@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -72,7 +73,7 @@ public class HashMapWrapper<K, V> {
 
   /**
    * Constructor.
-   * 
+   *
    * @param threshold
    *          User specified threshold to store new values into persistent
    *          storage.
@@ -91,16 +92,73 @@ public class HashMapWrapper<K, V> {
   }
 
   /**
-   * Get the value based on the key. We try to get it from the main memory hash
-   * table first. If it is not there we will look up the persistent hash table.
-   * This function also guarantees if any item is found given a key, it is
-   * available in main memory HashMap. So mutating the returned value will be
-   * reflected (saved) in HashMapWrapper.
-   * 
+   * Get the value based on the key. this GET method will directly
+   * return the value from jdbm storage.
    * @param key
    * @return Value corresponding to the key. If the key is not found, return
    *         null.
    */
+/*
+  public V getMapJoinValueObject(K key) throws HiveException{
+    if(pHash == null) {
+      LOG.warn("the jdbm object is not ready!");
+      throw new HiveException();
+    }
+    try{
+      V value = (V)pHash.get(key);
+      return value;
+    }catch(Exception e){
+      throw new HiveException(e);
+    }
+  }*/
+
+  /*
+   * In this get operation, the jdbm should read only
+   */
+  public V getMapJoinValueObject(K key) throws HiveException {
+    V value = null;
+
+    // if not the MRU, searching the main memory hash table.
+    MRUItem item = mHash.get(key);
+    if (item != null) {
+      value = item.value;
+      MRUList.moveToHead(item);
+    } else if (pHash != null) {
+      try {
+        value = (V) pHash.get(key);
+        if (value != null) {
+          if (mHash.size() < threshold) {
+            MRUItem itm= new MRUItem(key, value);
+            mHash.put(key, itm);
+            //pHash.remove(key);
+            MRUList.put(itm);
+            //recman.commit();
+
+          } else if (threshold > 0) { // flush the LRU to disk
+            MRUItem tail = MRUList.tail(); // least recently used item
+            //pHash.put(tail.key, tail.value);
+            //pHash.remove(key);
+            //recman.commit();
+
+            // update mHash -- reuse MRUItem
+            item = mHash.remove(tail.key);
+            item.key = key;
+            item.value = value;
+            mHash.put(key, item);
+
+            // update MRU -- reusing MRUItem
+            tail.key = key;
+            tail.value = value;
+            MRUList.moveToHead(tail);
+          }
+        }
+      } catch (Exception e) {
+        LOG.warn(e.toString());
+        throw new HiveException(e);
+      }
+    }
+    return value;
+  }
   public V get(K key) throws HiveException {
     V value = null;
 
@@ -146,7 +204,7 @@ public class HashMapWrapper<K, V> {
    * Put the key value pair in the hash table. It will first try to put it into
    * the main memory hash table. If the size exceeds the threshold, it will put
    * it into the persistent hash table.
-   * 
+   *
    * @param key
    * @param value
    * @throws HiveException
@@ -208,9 +266,82 @@ public class HashMapWrapper<K, V> {
     }
   }
 
+  public void putToJDBM(K key, V value) throws HiveException{
+    if (pHash == null) {
+      pHash = getPersistentHash();
+    }
+    try {
+      pHash.put(key, value);
+      recman.commit();
+    } catch (Exception e) {
+      LOG.warn(e.toString());
+      throw new HiveException(e);
+    }
+
+  }
+
+  /**
+   * Flush the main memory hash table into the persistent cache file
+   *
+   * @return persistent cache file
+   */
+  public String flushMemoryCacheToPersistent() throws HiveException{
+    try{
+      //if no persistent cache file; create a new one
+      if(pHash == null){
+        pHash = getPersistentHash();
+      }
+      int mm_size = mHash.size();
+      //no data in the memory cache
+      if(mm_size == 0){
+        return tmpFile.getAbsolutePath();
+      }
+      //iterate the memory hash table and put them into persistent file
+      for (Map.Entry<K, MRUItem> entry : mHash.entrySet()) {
+        K key = entry.getKey();
+        MRUItem item = entry.getValue();
+        pHash.put(key, item.value);
+      }
+      //commit to the persistent file
+      recman.commit();
+
+      //release the memory
+      mHash.clear();
+
+    }catch (Exception e) {
+      LOG.warn(e.toString());
+      throw new HiveException(e);
+    }
+    return tmpFile.getAbsolutePath();
+  }
+
+  public void initilizePersistentHash(File jdbmfile) throws HiveException{
+    try{
+      Properties props = new Properties();
+      props.setProperty(RecordManagerOptions.CACHE_TYPE,
+          RecordManagerOptions.NORMAL_CACHE);
+      props.setProperty(RecordManagerOptions.DISABLE_TRANSACTIONS, "true");
+
+      recman = RecordManagerFactory.createRecordManager(jdbmfile, props);
+      long recid = recman.getNamedObject( "hashtable" );
+      if ( recid != 0 ) {
+          System.out.println( "Reloading existing hashtable..." );
+          pHash = HTree.load( recman, recid );
+      }else{
+        LOG.warn("initiliaze the hash table by jdbm file Error!");
+        throw new HiveException();
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      LOG.warn(e.toString());
+      throw new HiveException(e);
+    }
+  }
+
   /**
    * Get the persistent hash table.
-   * 
+   *
    * @return persistent hash table
    * @throws HiveException
    */
@@ -234,6 +365,9 @@ public class HashMapWrapper<K, V> {
 
       recman = RecordManagerFactory.createRecordManager(tmpFile, props);
       pHash = HTree.createInstance(recman);
+      recman.setNamedObject( "hashtable", pHash.getRecid() );
+      //commit to the persistent file
+      recman.commit();
     } catch (Exception e) {
       LOG.warn(e.toString());
       throw new HiveException(e);
@@ -259,7 +393,7 @@ public class HashMapWrapper<K, V> {
    * the pairs are removed from the main memory hash table, pairs in the
    * persistent hash table will not be moved to the main memory hash table.
    * Future inserted elements will go into the main memory hash table though.
-   * 
+   *
    * @param key
    * @throws HiveException
    */
@@ -279,7 +413,7 @@ public class HashMapWrapper<K, V> {
 
   /**
    * Get a list of all keys in the hash map.
-   * 
+   *
    * @return
    */
   public Set<K> keySet() {
@@ -306,7 +440,7 @@ public class HashMapWrapper<K, V> {
 
   /**
    * Get the main memory cache capacity.
-   * 
+   *
    * @return the maximum number of items can be put into main memory HashMap
    *         cache.
    */
@@ -316,7 +450,7 @@ public class HashMapWrapper<K, V> {
 
   /**
    * Close the persistent hash table and clean it up.
-   * 
+   *
    * @throws HiveException
    */
   public void close() throws HiveException {
@@ -330,8 +464,10 @@ public class HashMapWrapper<K, V> {
         throw new HiveException(e);
       }
       // delete the temporary file
-      tmpFile.delete();
-      tmpFile = null;
+      if(tmpFile != null){
+        tmpFile.delete();
+        tmpFile = null;
+      }
       pHash = null;
       recman = null;
     }

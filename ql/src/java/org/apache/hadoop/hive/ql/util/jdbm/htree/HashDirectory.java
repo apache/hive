@@ -77,7 +77,7 @@ import org.apache.hadoop.hive.ql.util.jdbm.helper.IterationException;
 
 /**
  * Hashtable directory page.
- * 
+ *
  * @author <a href="mailto:boisvert@exoffice.com">Alex Boisvert</a>
  * @version $Id: HashDirectory.java,v 1.5 2005/06/25 23:12:32 doomdark Exp $
  */
@@ -87,24 +87,24 @@ final class HashDirectory extends HashNode implements Externalizable {
 
   /**
    * Maximum number of children in a directory.
-   * 
+   *
    * (Must be a power of 2 -- if you update this value, you must also update
    * BIT_SIZE and MAX_DEPTH.)
    */
-  static final int MAX_CHILDREN = 256;
+  static final int MAX_CHILDREN = 65536;
 
   /**
    * Number of significant bits per directory level.
    */
-  static final int BIT_SIZE = 8; // log2(256) = 8
+  static final int BIT_SIZE = 16; // log2(256) = 8
 
   /**
    * Maximum number of levels (zero-based)
-   * 
+   *
    * (4 * 8 bits = 32 bits, which is the size of an "int", and as you know,
    * hashcodes in Java are "ints")
    */
-  static final int MAX_DEPTH = 3; // 4 levels
+  static final int MAX_DEPTH = 64; // 4 levels
 
   /**
    * Record ids of children pages.
@@ -135,7 +135,7 @@ final class HashDirectory extends HashNode implements Externalizable {
 
   /**
    * Construct a HashDirectory
-   * 
+   *
    * @param depth
    *          Depth of this directory page.
    */
@@ -147,7 +147,7 @@ final class HashDirectory extends HashNode implements Externalizable {
   /**
    * Sets persistence context. This method must be called before any
    * persistence-related operation.
-   * 
+   *
    * @param recman
    *          RecordManager which stores this directory
    * @param recid
@@ -181,7 +181,7 @@ final class HashDirectory extends HashNode implements Externalizable {
   /**
    * Returns the value which is associated with the given key. Returns
    * <code>null</code> if there is not association for this key.
-   * 
+   *
    * @param key
    *          key whose associated value is to be returned
    */
@@ -210,7 +210,7 @@ final class HashDirectory extends HashNode implements Externalizable {
 
   /**
    * Associates the specified value with the specified key.
-   * 
+   *
    * @param key
    *          key with which the specified value is to be assocated.
    * @param value
@@ -288,7 +288,7 @@ final class HashDirectory extends HashNode implements Externalizable {
   /**
    * Remove the value which is associated with the given key. If the key does
    * not exist, this method simply ignores the operation.
-   * 
+   *
    * @param key
    *          key whose associated value is to be removed
    * @return object which was associated with the given key, or
@@ -437,7 +437,7 @@ final class HashDirectory extends HashNode implements Externalizable {
 
     /**
      * Construct an iterator on this directory.
-     * 
+     *
      * @param iterateKeys
      *          True if iteration supplies keys, False if iterateKeys supplies
      *          values.
@@ -475,7 +475,7 @@ final class HashDirectory extends HashNode implements Externalizable {
 
     /**
      * Prepare internal state so we can answer <code>hasMoreElements</code>
-     * 
+     *
      * Actually, this code prepares an Enumeration on the next Bucket to
      * enumerate. If no following bucket is found, the next Enumeration is set
      * to <code>null</code>.

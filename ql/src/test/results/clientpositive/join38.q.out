@@ -26,11 +26,11 @@ POSTHOOK: Lineage: tmp.col9 EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_066_9191331330135572186/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-35-03_529_8041528917330220501/-mr-10000
 POSTHOOK: query: select * from tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_066_9191331330135572186/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-35-03_529_8041528917330220501/-mr-10000
 POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -73,11 +73,35 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF tmp b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) col11)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) col5)) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL b) col11) 111)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) col5))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {value}
+                1 {col5} {col11}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[col11]]
+              outputColumnNames: _col1, _col9, _col15
+              Position of Big Table: 1
+
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -108,37 +132,11 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            a 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            a 
-              TableScan
-                alias: a
-                Common Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {value}
-                    1 {col5} {col11}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[col11]]
-                  outputColumnNames: _col1, _col9, _col15
-                  Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/jsichi/hive_2010-08-26_16-00-50_333_7198447322152213728/-mr-10002 
+        file:/tmp/liyintang/hive_2010-10-15_14-35-03_891_2596651658573027267/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -226,7 +224,7 @@ group by a.value, b.col5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@tmp
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_441_1604865558910370709/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-35-04_026_4932987435433548006/-mr-10000
 POSTHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
 SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111
@@ -234,7 +232,7 @@ group by a.value, b.col5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tmp
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-00-50_441_1604865558910370709/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-35-04_026_4932987435433548006/-mr-10000
 POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

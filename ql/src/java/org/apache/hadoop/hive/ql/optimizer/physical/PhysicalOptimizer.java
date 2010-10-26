@@ -41,7 +41,7 @@ public class PhysicalOptimizer {
 
   /**
    * create the list of physical plan resolvers.
-   * 
+   *
    * @param hiveConf
    */
   private void initialize(HiveConf hiveConf) {
@@ -49,11 +49,12 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
       resolvers.add(new SkewJoinResolver());
     }
+    resolvers.add(new MapJoinResolver());
   }
 
   /**
    * invoke all the resolvers one-by-one, and alter the physical plan.
-   * 
+   *
    * @return PhysicalContext
    * @throws HiveException
    */

@@ -56,7 +56,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
      */
     public ConditionalResolverSkewJoinCtx() {
     }
-    
+
     public ConditionalResolverSkewJoinCtx(
         HashMap<String, Task<? extends Serializable>> dirToTaskMap) {
       super();
@@ -95,7 +95,16 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
         FileSystem inpFs = dirPath.getFileSystem(conf);
         FileStatus[] fstatus = inpFs.listStatus(dirPath);
         if (fstatus.length > 0) {
-          resTsks.add(entry.getValue());
+          Task <? extends Serializable> task = entry.getValue();
+          List<Task <? extends Serializable>> parentOps = task.getParentTasks();
+          if(parentOps!=null){
+            for(Task <? extends Serializable> parentOp: parentOps){
+              //right now only one parent
+              resTsks.add(parentOp);
+            }
+          }else{
+            resTsks.add(task);
+          }
         }
       }
     } catch (IOException e) {

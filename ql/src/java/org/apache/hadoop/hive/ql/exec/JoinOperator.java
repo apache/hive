@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -78,9 +79,11 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
         nextSz = joinEmitInterval;
       }
 
-      ArrayList<Object> nr = computeValues(row, joinValues.get(alias),
+
+      ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues.get(alias),
           joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
           joinFilterObjectInspectors.get(alias), noOuterJoin);
+
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);

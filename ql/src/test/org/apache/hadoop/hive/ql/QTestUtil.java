@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -40,11 +39,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import junit.framework.Test;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -72,9 +74,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.hadoop.hbase.MiniZooKeeperCluster;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 
 /**
  * QTestUtil.
@@ -83,8 +83,9 @@ import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 public class QTestUtil {
 
   private String testWarehouse;
-  private final String tmpdir = System.getProperty("test.tmp.dir");
+  private final String tmpdir= System.getProperty("test.tmp.dir") ;
   private final Path tmppath = new Path(tmpdir);
+
 
   private final String testFiles;
   private final String outDir;
@@ -203,7 +204,7 @@ public class QTestUtil {
       // set fs.default.name to the uri of mini-dfs
       conf.setVar(HiveConf.ConfVars.HADOOPFS, dfs.getFileSystem().getUri().toString());
       // hive.metastore.warehouse.dir needs to be set relative to the mini-dfs
-      conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, 
+      conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfs.getFileSystem().getUri().toString(),
                             "/build/ql/test/data/warehouse/")).toString());
       conf.setVar(HiveConf.ConfVars.HADOOPJT, "localhost:" + mr.getJobTrackerPort());

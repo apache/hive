@@ -15,12 +15,36 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-5 is a root stage
+  Stage-1 depends on stages: Stage-5
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        x 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 1
+
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
@@ -47,37 +71,11 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
-          Alias -> Map Local Tables:
-            x 
-              Fetch Operator
-                limit: -1
-          Alias -> Map Local Operator Tree:
-            x 
-              TableScan
-                alias: x
-                Common Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 {key}
-                    1 
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                  outputColumnNames: _col0
-                  Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_16-39-49_545_7124720180109288751/-mr-10002 
+        file:/tmp/liyintang/hive_2010-10-15_14-32-34_888_4407278154932585093/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -173,11 +171,11 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:st
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-39-59_225_1677785212354840326/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-46_431_2542622721154091589/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-39-59_225_1677785212354840326/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-46_431_2542622721154091589/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 66	1

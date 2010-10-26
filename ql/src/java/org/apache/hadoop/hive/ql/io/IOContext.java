@@ -29,12 +29,11 @@ package org.apache.hadoop.hive.ql.io;
  */
 public class IOContext {
 
-  private static ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>();
-  static {
-    if (threadLocal.get() == null) {
-      threadLocal.set(new IOContext());
-    }
-  }
+
+  private static ThreadLocal<IOContext> threadLocal = new ThreadLocal<IOContext>(){
+    @Override
+    protected synchronized IOContext initialValue() { return new IOContext(); }
+ };
 
   public static IOContext get() {
     return IOContext.threadLocal.get();

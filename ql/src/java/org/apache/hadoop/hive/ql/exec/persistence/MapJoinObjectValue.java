@@ -28,8 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
+import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
+import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator.JDBMSinkObjectCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -85,10 +85,11 @@ public class MapJoinObjectValue implements Externalizable {
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException {
     try {
+
       metadataTag = in.readInt();
 
       // get the tableDesc from the map stored in the mapjoin operator
-      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(
+      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
           Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
@@ -110,6 +111,11 @@ public class MapJoinObjectValue implements Externalizable {
             res.add(memObj);
           }
         }
+        else{
+          for(int i = 0 ; i <sz; i++){
+            res.add(new ArrayList<Object>(0));
+          }
+        }
       }
       obj = res;
     } catch (Exception e) {
@@ -124,7 +130,7 @@ public class MapJoinObjectValue implements Externalizable {
       out.writeInt(metadataTag);
 
       // get the tableDesc from the map stored in the mapjoin operator
-      MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(
+      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
           Integer.valueOf(metadataTag));
 
       // Different processing for key and value

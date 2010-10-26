@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -173,15 +173,17 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
         workDir = (new Path(ctx.getLocalTmpFileURI())).toUri().getPath();
 
-        if (! (new File(workDir)).mkdir())
+        if (! (new File(workDir)).mkdir()) {
           throw new IOException ("Cannot create tmp working dir: " + workDir);
+        }
 
         for (String f: StringUtils.split(files, ',')) {
           Path p = new Path(f);
           String target = p.toUri().getPath();
           String link = workDir + Path.SEPARATOR + p.getName();
-          if (FileUtil.symLink(target, link) != 0)
+          if (FileUtil.symLink(target, link) != 0) {
             throw new IOException ("Cannot link to added file: " + target + " from: " + link);
+          }
         }
       }
 

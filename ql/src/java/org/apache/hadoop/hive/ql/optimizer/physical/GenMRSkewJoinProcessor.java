@@ -247,6 +247,7 @@ public final class GenMRSkewJoinProcessor {
       for (int k = 0; k < tags.length; k++) {
         Operator<? extends Serializable> ts = OperatorFactory.get(
             TableScanDesc.class, (RowSchema) null);
+        ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
       Operator<? extends Serializable> tblScan_op = parentOps[i];
@@ -256,8 +257,14 @@ public final class GenMRSkewJoinProcessor {
       aliases.add(alias);
       String bigKeyDirPath = bigKeysDirMap.get(src);
       newPlan.getPathToAliases().put(bigKeyDirPath, aliases);
+
+
+
+
       newPlan.getAliasToWork().put(alias, tblScan_op);
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
+
+
       newPlan.getPathToPartitionInfo().put(bigKeyDirPath, part);
       newPlan.getAliasToPartnInfo().put(alias, part);
 

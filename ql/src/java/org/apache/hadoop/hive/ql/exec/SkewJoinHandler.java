@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -60,15 +61,15 @@ import org.apache.hadoop.util.ReflectionUtils;
  * dir-T1-keys(containing keys which is big in T3), dir-T2-keys(containing big
  * keys in T3),dir-T3-bigkeys(containing keys which is big in T3), ... .....
  * </ul>
- * 
+ *
  * <p>
  * For each skew key, we first write all values to a local tmp file. At the time
  * of ending the current group, the local tmp file will be uploaded to hdfs.
  * Right now, we use one file per skew key.
- * 
+ *
  * <p>
  * For more info, please see https://issues.apache.org/jira/browse/HIVE-964.
- * 
+ *
  */
 public class SkewJoinHandler {
 
@@ -89,6 +90,7 @@ public class SkewJoinHandler {
 
   private LongWritable skewjoinFollowupJobs;
 
+  private final boolean noOuterJoin;
   Configuration hconf = null;
   List<Object> dummyKey = null;
   String taskId;
@@ -101,6 +103,7 @@ public class SkewJoinHandler {
     this.joinOp = joinOp;
     numAliases = joinOp.numAliases;
     conf = joinOp.getConf();
+    noOuterJoin = joinOp.noOuterJoin;
   }
 
   public void initiliaze(Configuration hconf) {
@@ -143,7 +146,7 @@ public class SkewJoinHandler {
         break;
       }
 
-      TableDesc valTblDesc = joinOp.getSpillTableDesc(alias);
+      TableDesc valTblDesc = JoinUtil.getSpillTableDesc(alias,joinOp.spillTableDesc,conf,noOuterJoin);
       List<String> valColNames = new ArrayList<String>();
       if (valTblDesc != null) {
         valColNames = Utilities.getColumnNames(valTblDesc.getProperties());

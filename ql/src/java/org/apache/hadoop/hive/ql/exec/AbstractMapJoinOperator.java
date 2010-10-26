@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -68,6 +69,8 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient boolean firstRow;
 
+  private static final int NOTSKIPBIGTABLE = -1;
+
   public AbstractMapJoinOperator() {
   }
 
@@ -84,17 +87,19 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
     joinKeys = new HashMap<Byte, List<ExprNodeEvaluator>>();
 
-    populateJoinKeyValue(joinKeys, conf.getKeys());
-    joinKeysObjectInspectors = getObjectInspectorsFromEvaluators(joinKeys,
-        inputObjInspectors);
-    joinKeysStandardObjectInspectors = getStandardObjectInspectors(joinKeysObjectInspectors);
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(),order,NOTSKIPBIGTABLE);
+    joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
+        inputObjInspectors,NOTSKIPBIGTABLE);
+    joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
+        joinKeysObjectInspectors,NOTSKIPBIGTABLE);
 
     // all other tables are small, and are cached in the hash table
     posBigTable = conf.getPosBigTable();
 
     emptyList = new RowContainer<ArrayList<Object>>(1, hconf);
-    RowContainer bigPosRC = getRowContainer(hconf, (byte) posBigTable,
-        order[posBigTable], joinCacheSize);
+    RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
+        rowContainerStandardObjectInspectors.get((byte) posBigTable),
+        order[posBigTable], joinCacheSize,spillTableDesc, conf,noOuterJoin);
     storage.put((byte) posBigTable, bigPosRC);
 
     mapJoinRowsKey = HiveConf.getIntVar(hconf,
@@ -119,6 +124,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     }
     initializeChildren(hconf);
   }
+
 
   @Override
   protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {

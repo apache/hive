@@ -72,4 +72,11 @@ public class PhysicalContext {
     this.context = context;
   }
 
+  public void addToRootTask(Task<? extends Serializable> tsk){
+    rootTasks.add(tsk);
+  }
+  public void removeFromRootTask(Task<? extends Serializable> tsk){
+    rootTasks.remove(tsk);
+  }
+
 }

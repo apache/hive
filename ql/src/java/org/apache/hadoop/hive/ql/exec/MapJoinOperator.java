@@ -17,8 +17,9 @@
  */
 
 package org.apache.hadoop.hive.ql.exec;
-
+import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,18 +27,20 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator.JDBMSinkObjectCtx;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
-import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -51,6 +54,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class
       .getName());
 
+
   protected transient Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
 
   private static final transient String[] FATAL_ERR_MSG = {
@@ -59,63 +63,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           + "Please increase that or remove the mapjoin hint."
       };
 
-  /**
-   * MapJoinObjectCtx.
-   *
-   */
-  public static class MapJoinObjectCtx {
-    ObjectInspector standardOI;
-    SerDe serde;
-    TableDesc tblDesc;
-    Configuration conf;
 
-    /**
-     * @param standardOI
-     * @param serde
-     */
-    public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde,
-        TableDesc tblDesc, Configuration conf) {
-      this.standardOI = standardOI;
-      this.serde = serde;
-      this.tblDesc = tblDesc;
-      this.conf = conf;
-    }
 
-    /**
-     * @return the standardOI
-     */
-    public ObjectInspector getStandardOI() {
-      return standardOI;
-    }
-
-    /**
-     * @return the serde
-     */
-    public SerDe getSerDe() {
-      return serde;
-    }
-
-    public TableDesc getTblDesc() {
-      return tblDesc;
-    }
-
-    public Configuration getConf() {
-      return conf;
-    }
-
-  }
-
-  static transient Map<Integer, MapJoinObjectCtx> mapMetadata = new HashMap<Integer, MapJoinObjectCtx>();
-  static transient int nextVal = 0;
-
-  public static Map<Integer, MapJoinObjectCtx> getMapMetadata() {
-    return mapMetadata;
-  }
 
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
   transient int maxMapJoinSize;
-
+  private int bigTableAlias;
   public MapJoinOperator() {
   }
 
@@ -125,6 +79,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
+
     super.initializeOp(hconf);
 
     maxMapJoinSize = HiveConf.getIntVar(hconf,
@@ -134,6 +89,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     for (int pos = 0; pos < numAliases; pos++) {
       metadataValueTag[pos] = -1;
     }
+
+    metadataKeyTag = -1;
+    bigTableAlias = order[posBigTable];
 
     mapJoinTables = new HashMap<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>>();
 
@@ -150,7 +108,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
       mapJoinTables.put(Byte.valueOf((byte) pos), hashTable);
     }
+
   }
+
 
   @Override
   protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
@@ -158,130 +118,162 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         + FATAL_ERR_MSG[(int) counterCode]);
   }
 
+
+  public void generateMapMetaData() throws HiveException,SerDeException{
+    //generate the meta data for key
+    //index for key is -1
+    TableDesc keyTableDesc = conf.getKeyTblDesc();
+    SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(
+        keyTableDesc.getDeserializerClass(), null);
+    keySerializer.initialize(null, keyTableDesc.getProperties());
+    MapJoinMetaData.put(Integer.valueOf(metadataKeyTag),
+        new JDBMSinkObjectCtx(
+        ObjectInspectorUtils
+        .getStandardObjectInspector(keySerializer
+        .getObjectInspector(),
+        ObjectInspectorCopyOption.WRITABLE), keySerializer,
+        keyTableDesc, hconf));
+
+    //index for values is just alias
+    for (int tag = 0; tag < order.length; tag++) {
+      int alias = (int) order[tag];
+
+      if(alias == this.bigTableAlias){
+        continue;
+      }
+
+
+      TableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
+      SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc
+          .getDeserializerClass(), null);
+      valueSerDe.initialize(null, valueTableDesc.getProperties());
+
+      MapJoinMetaData.put(Integer.valueOf(alias),
+          new JDBMSinkObjectCtx(ObjectInspectorUtils
+          .getStandardObjectInspector(valueSerDe.getObjectInspector(),
+          ObjectInspectorCopyOption.WRITABLE), valueSerDe,
+          valueTableDesc, hconf));
+    }
+  }
+
+  private void loadJDBM() throws HiveException{
+    boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
+    String tmpURI =null;
+    HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue> hashtable;
+    Byte pos;
+    int alias;
+
+    String currentInputFile = HiveConf.getVar(hconf,
+        HiveConf.ConfVars.HADOOPMAPFILENAME);
+    LOG.info("******* Load from JDBM File: input : "+ currentInputFile);
+
+    String currentFileName;
+
+    if(this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
+      currentFileName= this.getFileName(currentInputFile);
+    } else {
+      currentFileName="-";
+    }
+    LOG.info("******* Filename : "+ currentFileName);
+    try{
+      if(localMode){
+        //load the jdbm file from tmp dir
+        LOG.info("******* Load from tmp file uri ***");
+        tmpURI= this.getExecContext().getLocalWork().getTmpFileURI();
+        for(Map.Entry<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> entry: mapJoinTables.entrySet()){
+          pos = entry.getKey();
+          hashtable=entry.getValue();
+          URI uri = new URI(tmpURI+Path.SEPARATOR+"-"+pos+"-"+currentFileName+".jdbm");
+          LOG.info("\tLoad back 1 JDBM file from tmp file uri:"+uri.toString());
+          Path path = new Path(tmpURI+Path.SEPARATOR+"-"+pos+"-"+currentFileName+".jdbm");
+          LOG.info("\tLoad back 1 JDBM file from tmp file uri:"+path.toString());
+
+          File jdbmFile = new File(path.toUri());
+          hashtable.initilizePersistentHash(jdbmFile);
+        }
+      }else{
+        //load the jdbm file from distributed cache
+        LOG.info("******* Load from distributed Cache ***:");
+         Path[] localFiles= DistributedCache.getLocalCacheFiles(this.hconf);
+         for(int i = 0;i<localFiles.length; i++){
+           Path path = localFiles[i];
+         }
+
+
+         for(Map.Entry<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> entry: mapJoinTables.entrySet()){
+           pos = entry.getKey();
+           hashtable=entry.getValue();
+           String suffix="-"+pos+"-"+currentFileName+".jdbm";
+           LOG.info("Looking for jdbm file with suffix: "+suffix);
+
+           boolean found=false;
+           for(int i = 0;i<localFiles.length; i++){
+             Path path = localFiles[i];
+
+             if(path.toString().endsWith(suffix)){
+               LOG.info("Matching suffix with cached file:"+path.toString());
+               File jdbmFile = new File(path.toString());
+               LOG.info("\tInitializing the JDBM by cached file:"+path.toString());
+               hashtable.initilizePersistentHash(jdbmFile);
+               found = true;
+               LOG.info("\tLoad back 1 JDBM file from distributed cache:"+path.toString());
+               break;
+             }
+           }
+           if(!found){
+             LOG.error("Load nothing from Distributed Cache");
+             throw new HiveException();
+           }
+         }
+         LOG.info("******* End of loading *******:");
+
+      }
+    }catch (Exception e){
+      e.printStackTrace();
+      LOG.error("Load Hash Table error");
+
+      throw new HiveException();
+    }
+
+
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
 
-    if (tag == posBigTable) {
-      this.getExecContext().processInputFileChangeForLocalWork();
-    }
-
     try {
+      if(firstRow){
+        //generate the map metadata
+        generateMapMetaData();
+        firstRow = false;
+      }
+      if(this.getExecContext().inputFileChanged()){
+        loadJDBM();
+      }
+
       // get alias
-      alias = (byte) tag;
+      alias = order[tag];
+      //alias = (byte)tag;
 
       if ((lastAlias == null) || (!lastAlias.equals(alias))) {
         nextSz = joinEmitInterval;
       }
 
       // compute keys and values as StandardObjects
-      ArrayList<Object> key = computeKeys(row, joinKeys.get(alias),
+      ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys.get(alias),
           joinKeysObjectInspectors.get(alias));
-      ArrayList<Object> value = computeValues(row, joinValues.get(alias),
+      ArrayList<Object> value = JoinUtil.computeValues(row, joinValues.get(alias),
           joinValuesObjectInspectors.get(alias), joinFilters.get(alias),
           joinFilterObjectInspectors.get(alias), noOuterJoin);
 
-      // does this source need to be stored in the hash map
-      if (tag != posBigTable) {
-        if (firstRow) {
-          metadataKeyTag = nextVal++;
-
-          TableDesc keyTableDesc = conf.getKeyTblDesc();
-          SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(
-              keyTableDesc.getDeserializerClass(), null);
-          keySerializer.initialize(null, keyTableDesc.getProperties());
-
-          mapMetadata.put(Integer.valueOf(metadataKeyTag),
-              new MapJoinObjectCtx(
-              ObjectInspectorUtils
-              .getStandardObjectInspector(keySerializer
-              .getObjectInspector(),
-              ObjectInspectorCopyOption.WRITABLE), keySerializer,
-              keyTableDesc, hconf));
-
-          firstRow = false;
-        }
-
-        reportProgress();
-        numMapRowsRead++;
-
-        if ((numMapRowsRead > maxMapJoinSize) && (reporter != null)
-            && (counterNameToEnum != null)) {
-          // update counter
-          LOG
-              .warn("Too many rows in map join tables. Fatal error counter will be incremented!!");
-          incrCounter(fatalErrorCntr, 1);
-          fatalError = true;
-          return;
-        }
-
-        HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue> hashTable = mapJoinTables
-            .get(alias);
-        MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
-        MapJoinObjectValue o = hashTable.get(keyMap);
-        RowContainer res = null;
-
-        boolean needNewKey = true;
-        if (o == null) {
-          int bucketSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
-          res = getRowContainer(hconf, (byte) tag, order[tag], bucketSize);
-          res.add(value);
-        } else {
-          res = o.getObj();
-          res.add(value);
-          // If key already exists, HashMapWrapper.get() guarantees it is
-          // already in main memory HashMap
-          // cache. So just replacing the object value should update the
-          // HashMapWrapper. This will save
-          // the cost of constructing the new key/object and deleting old one
-          // and inserting the new one.
-          if (hashTable.cacheSize() > 0) {
-            o.setObj(res);
-            needNewKey = false;
-          }
-        }
-
-        if (metadataValueTag[tag] == -1) {
-          metadataValueTag[tag] = nextVal++;
-
-          TableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
-          SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc
-              .getDeserializerClass(), null);
-          valueSerDe.initialize(null, valueTableDesc.getProperties());
-
-          mapMetadata.put(Integer.valueOf(metadataValueTag[tag]),
-              new MapJoinObjectCtx(ObjectInspectorUtils
-              .getStandardObjectInspector(valueSerDe.getObjectInspector(),
-              ObjectInspectorCopyOption.WRITABLE), valueSerDe,
-              valueTableDesc, hconf));
-        }
-
-        // Construct externalizable objects for key and value
-        if (needNewKey) {
-          MapJoinObjectKey keyObj = new MapJoinObjectKey(metadataKeyTag, key);
-          MapJoinObjectValue valueObj = new MapJoinObjectValue(
-              metadataValueTag[tag], res);
-          valueObj.setConf(hconf);
-          valueObj.setConf(hconf);
-          // This may potentially increase the size of the hashmap on the mapper
-          if (res.size() > mapJoinRowsKey) {
-            if (res.size() % 100 == 0) {
-              LOG.warn("Number of values for a given key " + keyObj + " are "
-                  + res.size());
-              LOG.warn("used memory " + Runtime.getRuntime().totalMemory());
-            }
-          }
-          hashTable.put(keyObj, valueObj);
-        }
-        return;
-      }
 
       // Add the value to the ArrayList
-      storage.get(alias).add(value);
+      storage.get((byte)tag).add(value);
 
       for (Byte pos : order) {
         if (pos.intValue() != tag) {
           MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
-          MapJoinObjectValue o = mapJoinTables.get(pos).get(keyMap);
+          MapJoinObjectValue o = mapJoinTables.get(pos).getMapJoinValueObject(keyMap);
 
           // there is no join-value or join-key has all null elements
           if (o == null || (hasAnyNulls(key))) {
@@ -300,7 +292,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       checkAndGenObject();
 
       // done with the row
-      storage.get(alias).clear();
+      storage.get((byte)tag).clear();
 
       for (Byte pos : order) {
         if (pos.intValue() != tag) {
@@ -313,9 +305,19 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       throw new HiveException(e);
     }
   }
+  private String getFileName(String path){
+    if(path== null || path.length()==0) {
+      return null;
+    }
 
+    int last_separator = path.lastIndexOf(Path.SEPARATOR)+1;
+    String fileName = path.substring(last_separator);
+    return fileName;
+
+  }
   @Override
   public void closeOp(boolean abort) throws HiveException {
+
     if(mapJoinTables != null) {
       for (HashMapWrapper hashTable : mapJoinTables.values()) {
         hashTable.close();
