@@ -100,7 +100,7 @@ STAGE PLANS:
           aggregations:
                 expr: sum(VALUE._col0)
                 expr: avg(VALUE._col1)
-                expr: avg(DISTINCT KEY._col0)
+                expr: avg(DISTINCT KEY._col0:0._col0)
                 expr: max(VALUE._col3)
                 expr: min(VALUE._col4)
                 expr: std(VALUE._col5)

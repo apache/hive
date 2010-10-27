@@ -60,7 +60,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
-                expr: count(DISTINCT KEY._col0)
+                expr: count(DISTINCT KEY._col0:0._col0)
           bucketGroup: false
           mode: partials
           outputColumnNames: _col0, _col1
@@ -177,7 +177,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
-                expr: count(DISTINCT KEY._col0)
+                expr: count(DISTINCT KEY._col0:0._col0)
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0, _col1
@@ -259,7 +259,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
-                expr: count(DISTINCT KEY._col0)
+                expr: count(DISTINCT KEY._col0:0._col0)
           bucketGroup: false
           mode: partial1
           outputColumnNames: _col0, _col1
@@ -364,7 +364,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
-                expr: count(DISTINCT KEY._col0)
+                expr: count(DISTINCT KEY._col0:0._col0)
           bucketGroup: false
           mode: complete
           outputColumnNames: _col0, _col1

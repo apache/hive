@@ -50,8 +50,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY._col1)
-                expr: sum(KEY._col1)
+                expr: count(DISTINCT KEY._col1:0._col0)
+                expr: sum(KEY._col1:0._col0)
           bucketGroup: false
           keys:
                 expr: KEY._col0

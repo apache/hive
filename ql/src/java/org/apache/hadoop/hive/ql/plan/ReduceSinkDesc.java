@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * ReduceSinkDesc.
@@ -32,6 +33,7 @@ public class ReduceSinkDesc implements Serializable {
    */
   private java.util.ArrayList<ExprNodeDesc> keyCols;
   private java.util.ArrayList<java.lang.String> outputKeyColumnNames;
+  private List<List<Integer>> distinctColumnIndices;
   /**
    * Value columns are passed to reducer in the "value".
    */
@@ -52,6 +54,11 @@ public class ReduceSinkDesc implements Serializable {
   private int tag;
 
   /**
+   * Number of distribution keys.
+   */
+  private int numDistributionKeys;
+
+  /**
    * The partition columns (CLUSTER BY or DISTRIBUTE BY in Hive language).
    * Partition columns decide the reducer that the current row goes to.
    * Partition columns are not passed to reducer.
@@ -64,20 +71,24 @@ public class ReduceSinkDesc implements Serializable {
   }
 
   public ReduceSinkDesc(java.util.ArrayList<ExprNodeDesc> keyCols,
+      int numDistributionKeys,
       java.util.ArrayList<ExprNodeDesc> valueCols,
       java.util.ArrayList<java.lang.String> outputKeyColumnNames,
-      java.util.ArrayList<java.lang.String> outputValueolumnNames, int tag,
+      List<List<Integer>> distinctColumnIndices,
+      java.util.ArrayList<java.lang.String> outputValueColumnNames, int tag,
       java.util.ArrayList<ExprNodeDesc> partitionCols, int numReducers,
       final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
     this.keyCols = keyCols;
+    this.numDistributionKeys = numDistributionKeys;
     this.valueCols = valueCols;
     this.outputKeyColumnNames = outputKeyColumnNames;
-    outputValueColumnNames = outputValueolumnNames;
+    this.outputValueColumnNames = outputValueColumnNames;
     this.tag = tag;
     this.numReducers = numReducers;
     this.partitionCols = partitionCols;
     this.keySerializeInfo = keySerializeInfo;
     this.valueSerializeInfo = valueSerializeInfo;
+    this.distinctColumnIndices = distinctColumnIndices;
   }
 
   public java.util.ArrayList<java.lang.String> getOutputKeyColumnNames() {
@@ -105,6 +116,14 @@ public class ReduceSinkDesc implements Serializable {
 
   public void setKeyCols(final java.util.ArrayList<ExprNodeDesc> keyCols) {
     this.keyCols = keyCols;
+  }
+
+  public int getNumDistributionKeys() {
+    return this.numDistributionKeys;
+  }
+
+  public void setNumDistributionKeys(int numKeys) {
+    this.numDistributionKeys = numKeys;
   }
 
   @Explain(displayName = "value expressions")
@@ -184,4 +203,12 @@ public class ReduceSinkDesc implements Serializable {
         orderStr);
   }
 
+  public List<List<Integer>> getDistinctColumnIndices() {
+    return distinctColumnIndices;
+  }
+
+  public void setDistinctColumnIndices(
+      List<List<Integer>> distinctColumnIndices) {
+    this.distinctColumnIndices = distinctColumnIndices;
+  }
 }

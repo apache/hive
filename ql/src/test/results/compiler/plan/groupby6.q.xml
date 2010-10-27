@@ -136,6 +136,9 @@
                     </void> 
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
+                      <void property="distinctColumnIndices"> 
+                       <object class="java.util.ArrayList"/> 
+                      </void> 
                       <void property="keyCols"> 
                        <object id="ArrayList0" class="java.util.ArrayList"> 
                         <void method="add"> 
@@ -171,6 +174,9 @@
                          </object> 
                         </void> 
                        </object> 
+                      </void> 
+                      <void property="numDistributionKeys"> 
+                       <int>1</int> 
                       </void> 
                       <void property="numReducers"> 
                        <int>-1</int> 

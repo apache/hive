@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,22 +36,27 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -77,6 +83,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   // the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number.
   protected transient boolean[] aggregationIsDistinct;
+  // Map from integer tag to distinct aggrs
+  transient protected Map<Integer, Set<Integer>> distinctKeyAggrs =
+    new HashMap<Integer, Set<Integer>>();
+  // Map from integer tag to non-distinct aggrs with key parameters.
+  transient protected Map<Integer, Set<Integer>> nonDistinctKeyAggrs =
+    new HashMap<Integer, Set<Integer>>();
+  // List of non-distinct aggrs.
+  transient protected List<Integer> nonDistinctAggrs = new ArrayList<Integer>();
+  // Union expr for distinct keys
+  transient ExprNodeEvaluator unionExprEval = null;
 
   transient GenericUDAFEvaluator[] aggregationEvaluators;
 
@@ -187,17 +203,45 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
     newKeys = new ArrayList<Object>(keyFields.length);
 
+    // initialize unionExpr for reduce-side
+    // reduce KEY has union field as the last field if there are distinct
+    // aggregates in group-by.
+    List<? extends StructField> sfs =
+      ((StandardStructObjectInspector) rowInspector).getAllStructFieldRefs();
+    if (sfs.size() > 0) {
+      StructField keyField = sfs.get(0);
+      if (keyField.getFieldName().toUpperCase().equals(
+          Utilities.ReduceField.KEY.name())) {
+        ObjectInspector keyObjInspector = keyField.getFieldObjectInspector();
+        if (keyObjInspector instanceof StandardStructObjectInspector) {
+          List<? extends StructField> keysfs =
+            ((StandardStructObjectInspector) keyObjInspector).getAllStructFieldRefs();
+          if (keysfs.size() > 0) {
+            // the last field is the union field, if any
+            StructField sf = keysfs.get(keysfs.size() - 1);
+            if (sf.getFieldObjectInspector().getCategory().equals(
+                ObjectInspector.Category.UNION)) {
+              unionExprEval = ExprNodeEvaluatorFactory.get(
+                new ExprNodeColumnDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(
+                sf.getFieldObjectInspector()),
+                keyField.getFieldName() + "." + sf.getFieldName(), null,
+                false));
+              unionExprEval.initialize(rowInspector);
+            }
+          }
+        }
+      }
+    }
     // init aggregationParameterFields
-    aggregationParameterFields = new ExprNodeEvaluator[conf.getAggregators()
-        .size()][];
-    aggregationParameterObjectInspectors = new ObjectInspector[conf
-        .getAggregators().size()][];
-    aggregationParameterStandardObjectInspectors = new ObjectInspector[conf
-        .getAggregators().size()][];
-    aggregationParameterObjects = new Object[conf.getAggregators().size()][];
-    for (int i = 0; i < aggregationParameterFields.length; i++) {
-      ArrayList<ExprNodeDesc> parameters = conf.getAggregators().get(i)
-          .getParameters();
+    ArrayList<AggregationDesc> aggrs = conf.getAggregators();
+    aggregationParameterFields = new ExprNodeEvaluator[aggrs.size()][];
+    aggregationParameterObjectInspectors = new ObjectInspector[aggrs.size()][];
+    aggregationParameterStandardObjectInspectors = new ObjectInspector[aggrs.size()][];
+    aggregationParameterObjects = new Object[aggrs.size()][];
+    aggregationIsDistinct = new boolean[aggrs.size()];
+    for (int i = 0; i < aggrs.size(); i++) {
+      AggregationDesc aggr = aggrs.get(i);
+      ArrayList<ExprNodeDesc> parameters = aggr.getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
       aggregationParameterObjectInspectors[i] = new ObjectInspector[parameters
           .size()];
@@ -209,17 +253,55 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
             .get(parameters.get(j));
         aggregationParameterObjectInspectors[i][j] = aggregationParameterFields[i][j]
             .initialize(rowInspector);
+        if (unionExprEval != null) {
+          String[] names = parameters.get(j).getExprString().split("\\.");
+          // parameters of the form : KEY.colx:t.coly
+          if (Utilities.ReduceField.KEY.name().equals(names[0])) {
+            String name = names[names.length - 2];
+            int tag = Integer.parseInt(name.split("\\:")[1]);
+            if (aggr.getDistinct()) {
+              // is distinct
+              Set<Integer> set = distinctKeyAggrs.get(tag);
+              if (null == set) {
+                set = new HashSet<Integer>();
+                distinctKeyAggrs.put(tag, set);
+              }
+              if (!set.contains(i)) {
+                set.add(i);
+              }
+            } else {
+              Set<Integer> set = nonDistinctKeyAggrs.get(tag);
+              if (null == set) {
+                set = new HashSet<Integer>();
+                nonDistinctKeyAggrs.put(tag, set);
+              }
+              if (!set.contains(i)) {
+                set.add(i);
+              }
+            }
+          } else {
+            // will be VALUE._COLx
+            if (!nonDistinctAggrs.contains(i)) {
+              nonDistinctAggrs.add(i);
+            }
+          }
+        } else {
+          if (aggr.getDistinct()) {
+            aggregationIsDistinct[i] = true;
+          }
+        }
         aggregationParameterStandardObjectInspectors[i][j] = ObjectInspectorUtils
             .getStandardObjectInspector(
             aggregationParameterObjectInspectors[i][j],
             ObjectInspectorCopyOption.WRITABLE);
         aggregationParameterObjects[i][j] = null;
       }
-    }
-    // init aggregationIsDistinct
-    aggregationIsDistinct = new boolean[conf.getAggregators().size()];
-    for (int i = 0; i < aggregationIsDistinct.length; i++) {
-      aggregationIsDistinct[i] = conf.getAggregators().get(i).getDistinct();
+      if (parameters.size() == 0) {
+        // for ex: count(*)
+        if (!nonDistinctAggrs.contains(i)) {
+          nonDistinctAggrs.add(i);
+        }
+      }
     }
 
     // init aggregationClasses
@@ -482,37 +564,108 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   protected void updateAggregations(AggregationBuffer[] aggs, Object row,
       ObjectInspector rowInspector, boolean hashAggr,
       boolean newEntryForHashAggr, Object[][] lastInvoke) throws HiveException {
+    if (unionExprEval == null) {
+      for (int ai = 0; ai < aggs.length; ai++) {
+        // Calculate the parameters
+        Object[] o = new Object[aggregationParameterFields[ai].length];
+        for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
+          o[pi] = aggregationParameterFields[ai][pi].evaluate(row);
+        }
 
-    for (int ai = 0; ai < aggs.length; ai++) {
-
-      // Calculate the parameters
-      Object[] o = new Object[aggregationParameterFields[ai].length];
-      for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
-        o[pi] = aggregationParameterFields[ai][pi].evaluate(row);
-      }
-
-      // Update the aggregations.
-      if (aggregationIsDistinct[ai]) {
-        if (hashAggr) {
-          if (newEntryForHashAggr) {
-            aggregationEvaluators[ai].aggregate(aggs[ai], o);
+        // Update the aggregations.
+        if (aggregationIsDistinct[ai]) {
+          if (hashAggr) {
+            if (newEntryForHashAggr) {
+              aggregationEvaluators[ai].aggregate(aggs[ai], o);
+            }
+          } else {
+            if (lastInvoke[ai] == null) {
+              lastInvoke[ai] = new Object[o.length];
+            }
+            if (ObjectInspectorUtils.compare(o,
+                aggregationParameterObjectInspectors[ai], lastInvoke[ai],
+                aggregationParameterStandardObjectInspectors[ai]) != 0) {
+              aggregationEvaluators[ai].aggregate(aggs[ai], o);
+              for (int pi = 0; pi < o.length; pi++) {
+                lastInvoke[ai][pi] = ObjectInspectorUtils.copyToStandardObject(
+                    o[pi], aggregationParameterObjectInspectors[ai][pi],
+                    ObjectInspectorCopyOption.WRITABLE);
+              }
+            }
           }
         } else {
-          if (lastInvoke[ai] == null) {
-            lastInvoke[ai] = new Object[o.length];
+          aggregationEvaluators[ai].aggregate(aggs[ai], o);
+        }
+      }
+      return;
+    }
+
+    if (distinctKeyAggrs.size() > 0) {
+      // evaluate union object
+      UnionObject uo = (UnionObject) (unionExprEval.evaluate(row));
+      int unionTag = uo.getTag();
+
+      // update non-distinct key aggregations : "KEY._colx:t._coly"
+      if (nonDistinctKeyAggrs.get(unionTag) != null) {
+        for (int pos : nonDistinctKeyAggrs.get(unionTag)) {
+          Object[] o = new Object[aggregationParameterFields[pos].length];
+          for (int pi = 0; pi < aggregationParameterFields[pos].length; pi++) {
+            o[pi] = aggregationParameterFields[pos][pi].evaluate(row);
           }
-          if (ObjectInspectorUtils.compare(o,
-              aggregationParameterObjectInspectors[ai], lastInvoke[ai],
-              aggregationParameterStandardObjectInspectors[ai]) != 0) {
-            aggregationEvaluators[ai].aggregate(aggs[ai], o);
-            for (int pi = 0; pi < o.length; pi++) {
-              lastInvoke[ai][pi] = ObjectInspectorUtils.copyToStandardObject(
-                  o[pi], aggregationParameterObjectInspectors[ai][pi],
-                  ObjectInspectorCopyOption.WRITABLE);
+          aggregationEvaluators[pos].aggregate(aggs[pos], o);
+        }
+      }
+      // there may be multi distinct clauses for one column
+      // update them all.
+      if (distinctKeyAggrs.get(unionTag) != null) {
+        for (int i : distinctKeyAggrs.get(unionTag)) {
+          Object[] o = new Object[aggregationParameterFields[i].length];
+          for (int pi = 0; pi < aggregationParameterFields[i].length; pi++) {
+            o[pi] = aggregationParameterFields[i][pi].evaluate(row);
+          }
+
+          if (hashAggr) {
+            if (newEntryForHashAggr) {
+              aggregationEvaluators[i].aggregate(aggs[i], o);
+            }
+          } else {
+            if (lastInvoke[i] == null) {
+              lastInvoke[i] = new Object[o.length];
+            }
+            if (ObjectInspectorUtils.compare(o,
+                aggregationParameterObjectInspectors[i],
+                lastInvoke[i],
+                aggregationParameterStandardObjectInspectors[i]) != 0) {
+              aggregationEvaluators[i].aggregate(aggs[i], o);
+              for (int pi = 0; pi < o.length; pi++) {
+                lastInvoke[i][pi] = ObjectInspectorUtils.copyToStandardObject(
+                    o[pi], aggregationParameterObjectInspectors[i][pi],
+                    ObjectInspectorCopyOption.WRITABLE);
+              }
             }
           }
         }
-      } else {
+      }
+
+      // update non-distinct value aggregations: 'VALUE._colx'
+      // these aggregations should be updated only once.
+      if (unionTag == 0) {
+        for (int pos : nonDistinctAggrs) {
+          Object[] o = new Object[aggregationParameterFields[pos].length];
+          for (int pi = 0; pi < aggregationParameterFields[pos].length; pi++) {
+            o[pi] = aggregationParameterFields[pos][pi].evaluate(row);
+          }
+          aggregationEvaluators[pos].aggregate(aggs[pos], o);
+        }
+      }
+    } else {
+      for (int ai = 0; ai < aggs.length; ai++) {
+        // there is no distinct aggregation,
+        // update all aggregations
+        Object[] o = new Object[aggregationParameterFields[ai].length];
+        for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
+          o[pi] = aggregationParameterFields[ai][pi].evaluate(row);
+        }
         aggregationEvaluators[ai].aggregate(aggs[ai], o);
       }
     }

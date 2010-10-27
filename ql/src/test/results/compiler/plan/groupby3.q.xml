@@ -113,33 +113,39 @@
                   <void method="add"> 
                    <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
                     <void property="columnExprMap"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>KEY._col0</string> 
-                       <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>_col0</string> 
-                        </void> 
-                        <void property="tabAlias"> 
-                         <string></string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                          <void property="typeName"> 
-                           <string>string</string> 
+                     <object class="java.util.HashMap"/> 
+                    </void> 
+                    <void property="conf"> 
+                     <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
+                      <void property="distinctColumnIndices"> 
+                       <object class="java.util.ArrayList"> 
+                        <void method="add"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <int>0</int> 
                           </void> 
                          </object> 
                         </void> 
                        </object> 
                       </void> 
-                     </object> 
-                    </void> 
-                    <void property="conf"> 
-                     <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
                       <void property="keyCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object idref="ExprNodeColumnDesc0"/> 
+                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                          <void property="column"> 
+                           <string>_col0</string> 
+                          </void> 
+                          <void property="tabAlias"> 
+                           <string></string> 
+                          </void> 
+                          <void property="typeInfo"> 
+                           <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                            <void property="typeName"> 
+                             <string>string</string> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
                         </void> 
                        </object> 
                       </void> 
@@ -166,7 +172,7 @@
                           </void> 
                           <void method="put"> 
                            <string>columns.types</string> 
-                           <string>string</string> 
+                           <string>uniontype&lt;struct&lt;_col0:string&gt;&gt;</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -369,7 +375,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
-                           <string>KEY._col0</string> 
+                           <string>KEY._col0:0._col0</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -1356,7 +1362,7 @@
            <object class="java.util.HashMap"> 
             <void method="put"> 
              <string>_col4</string> 
-             <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+             <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col4</string> 
               </void> 
@@ -1370,7 +1376,7 @@
             </void> 
             <void method="put"> 
              <string>_col3</string> 
-             <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+             <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col3</string> 
               </void> 
@@ -1384,7 +1390,7 @@
             </void> 
             <void method="put"> 
              <string>_col2</string> 
-             <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+             <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col2</string> 
               </void> 
@@ -1398,7 +1404,7 @@
             </void> 
             <void method="put"> 
              <string>_col1</string> 
-             <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+             <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col1</string> 
               </void> 
@@ -1412,7 +1418,7 @@
             </void> 
             <void method="put"> 
              <string>_col0</string> 
-             <object id="ExprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+             <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col0</string> 
               </void> 
@@ -1431,9 +1437,6 @@
             <void property="colList"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object idref="ExprNodeColumnDesc5"/> 
-              </void> 
-              <void method="add"> 
                <object idref="ExprNodeColumnDesc4"/> 
               </void> 
               <void method="add"> 
@@ -1444,6 +1447,9 @@
               </void> 
               <void method="add"> 
                <object idref="ExprNodeColumnDesc1"/> 
+              </void> 
+              <void method="add"> 
+               <object idref="ExprNodeColumnDesc0"/> 
               </void> 
              </object> 
             </void> 
@@ -1655,7 +1661,7 @@
               <void method="add"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
-                 <string>KEY._col0</string> 
+                 <string>KEY._col0:0._col0</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 

@@ -42,10 +42,7 @@ STAGE PLANS:
           TableScan
             alias: x
             GatherStats: false
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 {value}
@@ -55,16 +52,12 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
                 2 [Column[key]]
-              outputColumnNames: _col0, _col5, _col9
               Position of Big Table: 2
         y 
           TableScan
             alias: y
             GatherStats: false
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Inner Join 0 to 2
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 {value}
@@ -74,7 +67,6 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
                 2 [Column[key]]
-              outputColumnNames: _col0, _col5, _col9
               Position of Big Table: 2
 
   Stage: Stage-1
@@ -99,7 +91,7 @@ STAGE PLANS:
                   predicate:
                       expr: (hr = 11)
                       type: boolean
-                  Common Join Operator
+                  Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                          Inner Join 0 to 2
@@ -135,9 +127,9 @@ STAGE PLANS:
                         File Output Operator
                           compressed: false
                           GlobalTableId: 1
-                          directory: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002
+                          directory: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002
                           NumFilesPerFileSink: 1
-                          Stats Publishing Key Prefix: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10000/
+                          Stats Publishing Key Prefix: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10000/
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -147,12 +139,12 @@ STAGE PLANS:
                                 columns.types string:string:string
                                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/dest_j1
+                                location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/dest_j1
                                 name dest_j1
                                 serialization.ddl struct dest_j1 { string key, string value, string val2}
                                 serialization.format 1
                                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                transient_lastDdlTime 1287178290
+                                transient_lastDdlTime 1288205647
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: dest_j1
                           TotalFiles: 1
@@ -162,9 +154,9 @@ STAGE PLANS:
         Map Reduce Local Work
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [z]
+        pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [z]
       Path -> Partition:
-        pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -178,13 +170,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/srcpart
+              location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1287175206
+              transient_lastDdlTime 1288205423
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -195,13 +187,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1287175206
+                transient_lastDdlTime 1288205423
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -213,14 +205,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002
-          destination: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10000
+          source: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002
+          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10000
+          source: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -230,28 +222,28 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/dest_j1
+                location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/dest_j1
                 name dest_j1
                 serialization.ddl struct dest_j1 { string key, string value, string val2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1287178290
+                transient_lastDdlTime 1288205647
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
-          tmp directory: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10001
+          tmp directory: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10000/
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002 
+        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10000
+              directory: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10000
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -262,12 +254,12 @@ STAGE PLANS:
                     columns.types string:string:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/dest_j1
+                    location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/dest_j1
                     name dest_j1
                     serialization.ddl struct dest_j1 { string key, string value, string val2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1287178290
+                    transient_lastDdlTime 1288205647
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest_j1
               TotalFiles: 1
@@ -275,9 +267,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002 [pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002]
+        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002 [pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002]
       Path -> Partition:
-        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-30_153_3830217572995616164/-ext-10002 
+        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-07_868_2505058392721838239/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -288,12 +280,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/dest_j1
+              location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/dest_j1
               name dest_j1
               serialization.ddl struct dest_j1 { string key, string value, string val2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1287178290
+              transient_lastDdlTime 1288205647
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -304,12 +296,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/liyintang/trunk_os/build/ql/test/data/warehouse/dest_j1
+                location pfile:/data/users/njain/hive-commit1/build/ql/test/data/warehouse/dest_j1
                 name dest_j1
                 serialization.ddl struct dest_j1 { string key, string value, string val2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1287178290
+                transient_lastDdlTime 1288205647
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
             name: dest_j1
@@ -339,11 +331,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-31-39_028_7287646671067109906/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-13_992_6168800501053867920/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-31-39_028_7287646671067109906/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-13_992_6168800501053867920/-mr-10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]

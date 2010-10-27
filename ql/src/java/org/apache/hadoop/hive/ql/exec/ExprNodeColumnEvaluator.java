@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 
 /**
  * This evaluator gets the column from the row object.
@@ -33,6 +35,7 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
 
   transient StructObjectInspector[] inspectors;
   transient StructField[] fields;
+  transient boolean[] unionField;
 
   public ExprNodeColumnEvaluator(ExprNodeColumnDesc expr) {
     this.expr = expr;
@@ -46,15 +49,32 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
     String[] names = expr.getColumn().split("\\.");
     inspectors = new StructObjectInspector[names.length];
     fields = new StructField[names.length];
+    unionField = new boolean[names.length];
+    int unionIndex = -1;
 
     for (int i = 0; i < names.length; i++) {
       if (i == 0) {
         inspectors[0] = (StructObjectInspector) rowInspector;
       } else {
-        inspectors[i] = (StructObjectInspector) fields[i - 1]
+        if (unionIndex != -1) {
+          inspectors[i] = (StructObjectInspector) (
+            (UnionObjectInspector)fields[i-1].getFieldObjectInspector()).
+            getObjectInspectors().get(unionIndex);
+        } else {
+          inspectors[i] = (StructObjectInspector) fields[i - 1]
             .getFieldObjectInspector();
+        }
       }
-      fields[i] = inspectors[i].getStructFieldRef(names[i]);
+      // to support names like _colx:1._coly
+      String[] unionfields = names[i].split("\\:");
+      fields[i] = inspectors[i].getStructFieldRef(unionfields[0]);
+      if (unionfields.length > 1) {
+        unionIndex = Integer.parseInt(unionfields[1]);
+        unionField[i] = true;
+      } else {
+        unionIndex = -1;
+        unionField[i] = false;
+      }
     }
     return fields[names.length - 1].getFieldObjectInspector();
   }
@@ -64,6 +84,9 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
     Object o = row;
     for (int i = 0; i < fields.length; i++) {
       o = inspectors[i].getStructFieldData(o, fields[i]);
+      if (unionField[i]) {
+        o = ((StandardUnion)o).getObject();
+      }
     }
     return o;
   }

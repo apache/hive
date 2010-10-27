@@ -59,7 +59,7 @@ public enum ErrorMsg {
   INVALID_JOIN_CONDITION_3("OR not supported in Join currently"),
   INVALID_TRANSFORM("TRANSFORM with Other Select Columns not Supported"),
   DUPLICATE_GROUPBY_KEY("Repeated Key in Group By"),
-  UNSUPPORTED_MULTIPLE_DISTINCTS("DISTINCT on Different Columns not Supported"),
+  UNSUPPORTED_MULTIPLE_DISTINCTS("DISTINCT on Different Columns not Supported with skew in data"),
   NO_SUBQUERY_ALIAS("No Alias For Subquery"),
   NO_INSERT_INSUBQUERY("Cannot insert in a Subquery. Inserting to table "),
   NON_KEY_EXPR_IN_GROUPBY("Expression Not In Group By Key"),

@@ -20,9 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -33,8 +37,11 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -71,6 +78,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient Serializer valueSerializer;
   transient int tag;
   transient byte[] tagByte = new byte[1];
+  transient protected int numDistributionKeys;
+  transient protected int numDistinctExprs;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
@@ -81,6 +90,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       for (ExprNodeDesc e : conf.getKeyCols()) {
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
+
+      numDistributionKeys = conf.getNumDistributionKeys();
+      distinctColIndices = conf.getDistinctColumnIndices();
+      numDistinctExprs = distinctColIndices.size();
 
       valueEval = new ExprNodeEvaluator[conf.getValueCols().size()];
       i = 0;
@@ -125,12 +138,55 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient StructObjectInspector valueObjectInspector;
   transient ObjectInspector[] partitionObjectInspectors;
 
-  transient Object[] cachedKeys;
+  transient Object[][] cachedKeys;
   transient Object[] cachedValues;
+  transient List<List<Integer>> distinctColIndices;
 
   boolean firstRow;
 
   transient Random random;
+
+  /**
+   * Initializes array of ExprNodeEvaluator. Adds Union field for distinct
+   * column indices for group by.
+   * Puts the return values into a StructObjectInspector with output column
+   * names.
+   *
+   * If distinctColIndices is empty, the object inspector is same as
+   * {@link Operator#initEvaluatorsAndReturnStruct(ExprNodeEvaluator[], List, ObjectInspector)}
+   */
+  protected static StructObjectInspector initEvaluatorsAndReturnStruct(
+      ExprNodeEvaluator[] evals, List<List<Integer>> distinctColIndices,
+      List<String> outputColNames,
+      int length, ObjectInspector rowInspector)
+      throws HiveException {
+    int inspectorLen = evals.length > length ? length + 1 : evals.length;
+    List<ObjectInspector> sois = new ArrayList<ObjectInspector>(inspectorLen);
+
+    // keys
+    ObjectInspector[] fieldObjectInspectors = initEvaluators(evals, 0, length, rowInspector);
+    sois.addAll(Arrays.asList(fieldObjectInspectors));
+
+    if (evals.length > length) {
+      // union keys
+      List<ObjectInspector> uois = new ArrayList<ObjectInspector>();
+      for (List<Integer> distinctCols : distinctColIndices) {
+        List<String> names = new ArrayList<String>();
+        List<ObjectInspector> eois = new ArrayList<ObjectInspector>();
+        int numExprs = 0;
+        for (int i : distinctCols) {
+          names.add(HiveConf.getColumnInternalName(numExprs));
+          eois.add(evals[i].initialize(rowInspector));
+          numExprs++;
+        }
+        uois.add(ObjectInspectorFactory.getStandardStructObjectInspector(names, eois));
+      }
+      UnionObjectInspector uoi =
+        ObjectInspectorFactory.getStandardUnionObjectInspector(uois);
+      sois.add(uoi);
+    }
+    return ObjectInspectorFactory.getStandardStructObjectInspector(outputColNames, sois );
+  }
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
@@ -138,48 +194,20 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       ObjectInspector rowInspector = inputObjInspectors[tag];
       if (firstRow) {
         firstRow = false;
-        keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, conf
-            .getOutputKeyColumnNames(), rowInspector);
+        keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
+            distinctColIndices,
+            conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);
         valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, conf
             .getOutputValueColumnNames(), rowInspector);
         partitionObjectInspectors = initEvaluators(partitionEval, rowInspector);
-
-        cachedKeys = new Object[keyEval.length];
+        int numKeys = numDistinctExprs > 0 ? numDistinctExprs : 1;
+        int keyLen = numDistinctExprs > 0 ? numDistributionKeys + 1 :
+          numDistributionKeys;
+        cachedKeys = new Object[numKeys][keyLen];
         cachedValues = new Object[valueEval.length];
       }
 
-      // Evaluate the keys
-      for (int i = 0; i < keyEval.length; i++) {
-        cachedKeys[i] = keyEval[i].evaluate(row);
-      }
-
-      // Serialize the keys and append the tag
-      if (keyIsText) {
-        Text key = (Text) keySerializer.serialize(cachedKeys,
-            keyObjectInspector);
-        if (tag == -1) {
-          keyWritable.set(key.getBytes(), 0, key.getLength());
-        } else {
-          int keyLength = key.getLength();
-          keyWritable.setSize(keyLength + 1);
-          System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
-          keyWritable.get()[keyLength] = tagByte[0];
-        }
-      } else {
-        // Must be BytesWritable
-        BytesWritable key = (BytesWritable) keySerializer.serialize(cachedKeys,
-            keyObjectInspector);
-        if (tag == -1) {
-          keyWritable.set(key.get(), 0, key.getSize());
-        } else {
-          int keyLength = key.getSize();
-          keyWritable.setSize(keyLength + 1);
-          System.arraycopy(key.get(), 0, keyWritable.get(), 0, keyLength);
-          keyWritable.get()[keyLength] = tagByte[0];
-        }
-      }
-
-      // Set the HashCode
+      // Evaluate the HashCode
       int keyHashCode = 0;
       if (partitionEval.length == 0) {
         // If no partition cols, just distribute the data uniformly to provide
@@ -199,7 +227,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
               + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
         }
       }
-      keyWritable.setHashCode(keyHashCode);
 
       // Evaluate the value
       for (int i = 0; i < valueEval.length; i++) {
@@ -208,23 +235,71 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // Serialize the value
       value = valueSerializer.serialize(cachedValues, valueObjectInspector);
 
-    } catch (SerDeException e) {
-      throw new HiveException(e);
-    }
+      // Evaluate the keys
+      Object[] distributionKeys = new Object[numDistributionKeys];
+      for (int i = 0; i < numDistributionKeys; i++) {
+        distributionKeys[i] = keyEval[i].evaluate(row);
+      }
 
-    try {
-      if (out != null) {
-        out.collect(keyWritable, value);
-        // Since this is a terminal operator, update counters explicitly -
-        // forward is not called
-        if (counterNameToEnum != null) {
-          ++outputRows;
-          if (outputRows % 1000 == 0) {
-            incrCounter(numOutputRowsCntr, outputRows);
-            outputRows = 0;
+      if (numDistinctExprs > 0) {
+        // with distinct key(s)
+        for (int i = 0; i < numDistinctExprs; i++) {
+          System.arraycopy(distributionKeys, 0, cachedKeys[i], 0, numDistributionKeys);
+          Object[] distinctParameters =
+            new Object[distinctColIndices.get(i).size()];
+          for (int j = 0; j < distinctParameters.length; j++) {
+            distinctParameters[j] =
+              keyEval[distinctColIndices.get(i).get(j)].evaluate(row);
+          }
+          cachedKeys[i][numDistributionKeys] =
+              new StandardUnion((byte)i, distinctParameters);
+        }
+      } else {
+        // no distinct key
+        System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
+      }
+      // Serialize the keys and append the tag
+      for (int i = 0; i < cachedKeys.length; i++) {
+        if (keyIsText) {
+          Text key = (Text) keySerializer.serialize(cachedKeys[i],
+              keyObjectInspector);
+          if (tag == -1) {
+            keyWritable.set(key.getBytes(), 0, key.getLength());
+          } else {
+            int keyLength = key.getLength();
+            keyWritable.setSize(keyLength + 1);
+            System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
+            keyWritable.get()[keyLength] = tagByte[0];
+          }
+        } else {
+          // Must be BytesWritable
+          BytesWritable key = (BytesWritable) keySerializer.serialize(
+              cachedKeys[i], keyObjectInspector);
+          if (tag == -1) {
+            keyWritable.set(key.getBytes(), 0, key.getLength());
+          } else {
+            int keyLength = key.getLength();
+            keyWritable.setSize(keyLength + 1);
+            System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
+            keyWritable.get()[keyLength] = tagByte[0];
+          }
+        }
+        keyWritable.setHashCode(keyHashCode);
+        if (out != null) {
+          out.collect(keyWritable, value);
+          // Since this is a terminal operator, update counters explicitly -
+          // forward is not called
+          if (counterNameToEnum != null) {
+            ++outputRows;
+            if (outputRows % 1000 == 0) {
+              incrCounter(numOutputRowsCntr, outputRows);
+              outputRows = 0;
+            }
           }
         }
       }
+    } catch (SerDeException e) {
+      throw new HiveException(e);
     } catch (IOException e) {
       throw new HiveException(e);
     }

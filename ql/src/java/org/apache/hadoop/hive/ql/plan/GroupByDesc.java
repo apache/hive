@@ -29,8 +29,9 @@ public class GroupByDesc implements java.io.Serializable {
    * PARTIAL1: partial aggregation - first phase: iterate, terminatePartial
    * PARTIAL2: partial aggregation - second phase: merge, terminatePartial
    * PARTIALS: For non-distinct the same as PARTIAL2, for distinct the same as
-   * PARTIAL1 FINAL: partial aggregation - final phase: merge, terminate HASH:
-   * For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
+   *           PARTIAL1
+   * FINAL: partial aggregation - final phase: merge, terminate
+   * HASH: For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
    * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
    * aggregations.
    */

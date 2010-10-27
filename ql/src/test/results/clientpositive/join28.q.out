@@ -45,9 +45,7 @@ STAGE PLANS:
         subq:x 
           TableScan
             alias: x
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -55,7 +53,6 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0
               Position of Big Table: 1
         z 
           TableScan
@@ -72,9 +69,7 @@ STAGE PLANS:
                   predicate:
                       expr: (hr = 11)
                       type: boolean
-                  Common Join Operator
-                    condition map:
-                         Inner Join 0 to 1
+                  JDBM Sink Operator
                     condition expressions:
                       0 {_col0}
                       1 {value}
@@ -82,7 +77,6 @@ STAGE PLANS:
                     keys:
                       0 [Column[_col0]]
                       1 [Column[key]]
-                    outputColumnNames: _col0, _col5
                     Position of Big Table: 0
 
   Stage: Stage-1
@@ -91,7 +85,7 @@ STAGE PLANS:
         subq:y 
           TableScan
             alias: y
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -113,7 +107,7 @@ STAGE PLANS:
                         expr: _col0
                         type: string
                   outputColumnNames: _col0
-                  Common Join Operator
+                  Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     condition expressions:
@@ -157,7 +151,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-55_041_5240007570355394643/-ext-10000
+          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-25_731_6161190954879287426/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -175,7 +169,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/liyintang/trunk_os/build/ql/scratchdir/hive_2010-10-15_14-31-55_041_5240007570355394643/-ext-10002 
+        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-25_731_6161190954879287426/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -213,11 +207,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-03_549_3185919038816513700/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-31_701_2363624034797918899/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-03_549_3185919038816513700/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-31_701_2363624034797918899/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 128	val_128

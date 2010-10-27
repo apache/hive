@@ -101,6 +101,9 @@ Trunk -  Unreleased
     HIVE-1709. Add Postgres metastore schema migration scripts (0.5 -> 0.6)
     (Yuanjun Li via namit)
 
+    HIVE-474 Support for distinct selection on two or more columns
+    (Amareshwari Sriramadasu via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

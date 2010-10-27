@@ -849,6 +849,20 @@ public abstract class Operator<T extends Serializable> implements Serializable,
   }
 
   /**
+   * Initialize an array of ExprNodeEvaluator from start, for specified length
+   * and return the result ObjectInspectors.
+   */
+  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator[] evals,
+      int start, int length,
+      ObjectInspector rowInspector) throws HiveException {
+    ObjectInspector[] result = new ObjectInspector[length];
+    for (int i = 0; i < length; i++) {
+      result[i] = evals[start + i].initialize(rowInspector);
+    }
+    return result;
+  }
+
+  /**
    * Initialize an array of ExprNodeEvaluator and put the return values into a
    * StructObjectInspector with integer field names.
    */

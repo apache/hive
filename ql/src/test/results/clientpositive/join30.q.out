@@ -32,9 +32,7 @@ STAGE PLANS:
         x 
           TableScan
             alias: x
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -42,7 +40,6 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0
               Position of Big Table: 1
 
   Stage: Stage-1
@@ -51,7 +48,7 @@ STAGE PLANS:
         y 
           TableScan
             alias: y
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -75,7 +72,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-15_14-32-34_888_4407278154932585093/-mr-10002 
+        file:/tmp/njain/hive_2010-10-27_11-54-49_452_8944509394940573381/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -171,11 +168,11 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:st
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-46_431_2542622721154091589/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-56_890_5863714555389240048/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-32-46_431_2542622721154091589/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-56_890_5863714555389240048/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 66	1

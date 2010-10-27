@@ -87,14 +87,12 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        file:/tmp/liyintang/hive_2010-10-15_14-32-50_666_6877978110782114347/-mr-10004 
+        file:/tmp/njain/hive_2010-10-27_11-55-00_152_4091108333306141197/-mr-10004 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-15_14-32-50_666_6877978110782114347/-mr-10004 
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+        file:/tmp/njain/hive_2010-10-27_11-55-00_152_4091108333306141197/-mr-10004 
+            JDBM Sink Operator
               condition expressions:
                 0 {_col0}
                 1 
@@ -102,14 +100,13 @@ STAGE PLANS:
               keys:
                 0 [Column[_col0]]
                 1 [Column[_col0]]
-              outputColumnNames: _col0
               Position of Big Table: 1
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-15_14-32-50_666_6877978110782114347/-mr-10002 
-            Common Join Operator
+        file:/tmp/njain/hive_2010-10-27_11-55-00_152_4091108333306141197/-mr-10002 
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -133,7 +130,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-15_14-32-50_666_6877978110782114347/-mr-10003 
+        file:/tmp/njain/hive_2010-10-27_11-55-00_152_4091108333306141197/-mr-10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -289,11 +286,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-33-08_831_2955053647120281072/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-55-14_996_8245169574800468911/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_14-33-08_831_2955053647120281072/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-55-14_996_8245169574800468911/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 128	1

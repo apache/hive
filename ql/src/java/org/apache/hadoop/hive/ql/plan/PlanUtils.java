@@ -54,6 +54,8 @@ import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -357,6 +359,43 @@ public final class PlanUtils {
 
   /**
    * Convert the ColumnList to FieldSchema list.
+   *
+   * Adds uniontype for distinctColIndices.
+   */
+  public static List<FieldSchema> getFieldSchemasFromColumnListWithLength(
+      List<ExprNodeDesc> cols, List<List<Integer>> distinctColIndices,
+      List<String> outputColumnNames, int length,
+      String fieldPrefix) {
+    // last one for union column.
+    List<FieldSchema> schemas = new ArrayList<FieldSchema>(length + 1);
+    for (int i = 0; i < length; i++) {
+      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(
+          fieldPrefix + outputColumnNames.get(i), cols.get(i).getTypeInfo()));
+    }
+
+    List<TypeInfo> unionTypes = new ArrayList<TypeInfo>();
+    for (List<Integer> distinctCols : distinctColIndices) {
+      List<String> names = new ArrayList<String>();
+      List<TypeInfo> types = new ArrayList<TypeInfo>();
+      int numExprs = 0;
+      for (int i : distinctCols) {
+        names.add(HiveConf.getColumnInternalName(numExprs));
+        types.add(cols.get(i).getTypeInfo());
+        numExprs++;
+      }
+      unionTypes.add(TypeInfoFactory.getStructTypeInfo(names, types));
+    }
+    if (cols.size() - length > 0) {
+      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(
+          fieldPrefix + outputColumnNames.get(length),
+          TypeInfoFactory.getUnionTypeInfo(unionTypes)));
+    }
+
+    return schemas;
+  }
+
+  /**
+   * Convert the ColumnList to FieldSchema list.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnList(
       List<ExprNodeDesc> cols, List<String> outputColumnNames, int start,
@@ -446,33 +485,70 @@ public final class PlanUtils {
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
       ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers) {
+    return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
+        new ArrayList<List<Integer>>(),
+        includeKeyCols ? outputColumnNames.subList(0, keyCols.size()) :
+          new ArrayList<String>(),
+        includeKeyCols ? outputColumnNames.subList(keyCols.size(),
+            outputColumnNames.size()) : outputColumnNames,
+        includeKeyCols, tag, partitionCols, order, numReducers);
+  }
+
+  /**
+   * Create the reduce sink descriptor.
+   *
+   * @param keyCols
+   *          The columns to be stored in the key
+   * @param numKeys
+   *          number of distribution key numbers. Equals to group-by-key
+   *          numbers usually.
+   * @param valueCols
+   *          The columns to be stored in the value
+   * @param distinctColIndices
+   *          column indices for distinct aggregate parameters
+   * @param outputKeyColumnNames
+   *          The output key columns names
+   * @param outputValueColumnNames
+   *          The output value columns names
+   * @param tag
+   *          The tag for this reducesink
+   * @param partitionCols
+   *          The columns for partitioning.
+   * @param numReducers
+   *          The number of reducers, set to -1 for automatic inference based on
+   *          input data size.
+   * @return The reduceSinkDesc object.
+   */
+  public static ReduceSinkDesc getReduceSinkDesc(
+      final ArrayList<ExprNodeDesc> keyCols, int numKeys,
+      ArrayList<ExprNodeDesc> valueCols,
+      List<List<Integer>> distinctColIndices,
+      List<String> outputKeyColumnNames,
+      List<String> outputValueColumnNames,
+      boolean includeKeyCols, int tag,
+      ArrayList<ExprNodeDesc> partitionCols, String order, int numReducers) {
     TableDesc keyTable = null;
     TableDesc valueTable = null;
     ArrayList<String> outputKeyCols = new ArrayList<String>();
     ArrayList<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
-      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(keyCols,
-          outputColumnNames, 0, ""), order);
-      outputKeyCols.addAll(outputColumnNames.subList(0, keyCols.size()));
-      valueTable = getReduceValueTableDesc(getFieldSchemasFromColumnList(
-          valueCols, outputColumnNames, keyCols.size(), ""));
-      outputValCols.addAll(outputColumnNames.subList(keyCols.size(),
-          outputColumnNames.size()));
+      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnListWithLength(
+          keyCols, distinctColIndices, outputKeyColumnNames, numKeys, ""),
+          order);
+      outputKeyCols.addAll(outputKeyColumnNames);
     } else {
-      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(keyCols,
-          "reducesinkkey"), order);
-      for (int i = 0; i < keyCols.size(); i++) {
+      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(
+          keyCols, "reducesinkkey"),order);
+     for (int i = 0; i < keyCols.size(); i++) {
         outputKeyCols.add("reducesinkkey" + i);
       }
-      valueTable = getReduceValueTableDesc(getFieldSchemasFromColumnList(
-          valueCols, outputColumnNames, 0, ""));
-      outputValCols.addAll(outputColumnNames);
     }
-    return new ReduceSinkDesc(keyCols, valueCols, outputKeyCols, outputValCols,
+    valueTable = getReduceValueTableDesc(getFieldSchemasFromColumnList(
+        valueCols, outputValueColumnNames, 0, ""));
+    outputValCols.addAll(outputValueColumnNames);
+    return new ReduceSinkDesc(keyCols, numKeys, valueCols, outputKeyCols,
+        distinctColIndices, outputValCols,
         tag, partitionCols, numReducers, keyTable,
-            // Revert to DynamicSerDe:
-        // getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols,
-        // "reducesinkvalue")));
         valueTable);
   }
 
@@ -499,6 +575,48 @@ public final class PlanUtils {
       ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
       int numPartitionFields, int numReducers) throws SemanticException {
+    return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
+        new ArrayList<List<Integer>>(),
+        includeKey ? outputColumnNames.subList(0, keyCols.size()) :
+          new ArrayList<String>(),
+        includeKey ?
+            outputColumnNames.subList(keyCols.size(), outputColumnNames.size())
+            : outputColumnNames,
+        includeKey, tag, numPartitionFields, numReducers);
+  }
+
+  /**
+   * Create the reduce sink descriptor.
+   *
+   * @param keyCols
+   *          The columns to be stored in the key
+   * @param numKeys  number of distribution keys. Equals to group-by-key
+   *        numbers usually.
+   * @param valueCols
+   *          The columns to be stored in the value
+   * @param distinctColIndices
+   *          column indices for distinct aggregates
+   * @param outputKeyColumnNames
+   *          The output key columns names
+   * @param outputValueColumnNames
+   *          The output value columns names
+   * @param tag
+   *          The tag for this reducesink
+   * @param numPartitionFields
+   *          The first numPartitionFields of keyCols will be partition columns.
+   *          If numPartitionFields=-1, then partition randomly.
+   * @param numReducers
+   *          The number of reducers, set to -1 for automatic inference based on
+   *          input data size.
+   * @return The reduceSinkDesc object.
+   */
+  public static ReduceSinkDesc getReduceSinkDesc(
+      ArrayList<ExprNodeDesc> keyCols, int numKeys,
+      ArrayList<ExprNodeDesc> valueCols,
+      List<List<Integer>> distinctColIndices,
+      List<String> outputKeyColumnNames, List<String> outputValueColumnNames,
+      boolean includeKey, int tag,
+      int numPartitionFields, int numReducers) throws SemanticException {
     ArrayList<ExprNodeDesc> partitionCols = null;
 
     if (numPartitionFields >= keyCols.size()) {
@@ -519,8 +637,9 @@ public final class PlanUtils {
     for (int i = 0; i < keyCols.size(); i++) {
       order.append("+");
     }
-    return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey,
-        tag, partitionCols, order.toString(), numReducers);
+    return getReduceSinkDesc(keyCols, numKeys, valueCols, distinctColIndices,
+        outputKeyColumnNames, outputValueColumnNames, includeKey, tag,
+        partitionCols, order.toString(), numReducers);
   }
 
   /**
