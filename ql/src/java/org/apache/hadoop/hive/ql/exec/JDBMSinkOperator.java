@@ -429,7 +429,6 @@ implements Serializable {
           FileSystem fs = tmpURIPath.getFileSystem(this.getExecContext().getJc());
           fs.copyFromLocalFile(localPath, tmpURIPath);
           LOG.info("Upload 1 JDBM File to: "+tmpURIPath);
-          System.out.println("Upload 1 JDBM File to: "+tmpURIPath);
           //remove the original jdbm tmp file
           hashTable.close();
         }

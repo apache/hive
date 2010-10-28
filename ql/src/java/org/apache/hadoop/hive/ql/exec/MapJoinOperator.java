@@ -165,7 +165,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     String currentInputFile = HiveConf.getVar(hconf,
         HiveConf.ConfVars.HADOOPMAPFILENAME);
-    LOG.info("******* Load from JDBM File: input : "+ currentInputFile);
 
     String currentFileName;
 
@@ -178,7 +177,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try{
       if(localMode){
         //load the jdbm file from tmp dir
-        LOG.info("******* Load from tmp file uri ***");
         tmpURI= this.getExecContext().getLocalWork().getTmpFileURI();
         for(Map.Entry<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> entry: mapJoinTables.entrySet()){
           pos = entry.getKey();
@@ -193,7 +191,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }else{
         //load the jdbm file from distributed cache
-        LOG.info("******* Load from distributed Cache ***:");
          Path[] localFiles= DistributedCache.getLocalCacheFiles(this.hconf);
          for(int i = 0;i<localFiles.length; i++){
            Path path = localFiles[i];
@@ -225,7 +222,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
              throw new HiveException();
            }
          }
-         LOG.info("******* End of loading *******:");
 
       }
     }catch (Exception e){

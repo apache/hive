@@ -325,7 +325,6 @@ public class HashMapWrapper<K, V> {
       recman = RecordManagerFactory.createRecordManager(jdbmfile, props);
       long recid = recman.getNamedObject( "hashtable" );
       if ( recid != 0 ) {
-          System.out.println( "Reloading existing hashtable..." );
           pHash = HTree.load( recman, recid );
       }else{
         LOG.warn("initiliaze the hash table by jdbm file Error!");
