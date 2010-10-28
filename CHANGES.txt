@@ -422,6 +422,9 @@ Trunk -  Unreleased
     HIVE-1757 Test cleanup for 1641
     (Liyin Tang via namit)
 
+    HIVE-1756 Negative Test cleanup for 1641
+    (Liyin Tang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
