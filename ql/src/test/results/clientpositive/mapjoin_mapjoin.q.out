@@ -23,9 +23,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -33,7 +31,6 @@ STAGE PLANS:
               keys:
                 0 [Column[value]]
                 1 [Column[value]]
-              outputColumnNames: _col0
               Position of Big Table: 0
 
   Stage: Stage-1
@@ -42,7 +39,7 @@ STAGE PLANS:
         srcpart 
           TableScan
             alias: srcpart
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -73,9 +70,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {_col0}
                 1 
@@ -83,19 +78,18 @@ STAGE PLANS:
               keys:
                 0 [Column[_col0]]
                 1 [Column[key]]
-              outputColumnNames: _col0
               Position of Big Table: 0
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-17_18-28-58_205_3059857123809567795/-mr-10002 
+        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_639_5385690485575219943/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -157,9 +151,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key} {ds}
                 1 
@@ -167,7 +159,6 @@ STAGE PLANS:
               keys:
                 0 [Column[value]]
                 1 [Column[value]]
-              outputColumnNames: _col0, _col2
               Position of Big Table: 0
 
   Stage: Stage-1
@@ -176,7 +167,7 @@ STAGE PLANS:
         srcpart 
           TableScan
             alias: srcpart
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -207,9 +198,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {_col2}
                 1 
@@ -217,13 +206,12 @@ STAGE PLANS:
               keys:
                 0 [Column[_col0]]
                 1 [Column[key]]
-              outputColumnNames: _col2
               Position of Big Table: 0
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-17_18-28-58_559_4154233080683989694/-mr-10002 
+        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_758_5972659942965972745/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -231,7 +219,7 @@ STAGE PLANS:
                   expr: _col2
                   type: string
             outputColumnNames: _col0, _col2
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -255,7 +243,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-17_18-28-58_559_4154233080683989694/-mr-10003 
+        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_758_5972659942965972745/-mr-10003 
           Select Operator
             expressions:
                   expr: _col2
@@ -321,7 +309,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-17_18-28-58_899_5613342207704467139/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_877_634052141369406072/-mr-10000
 POSTHOOK: query: select /*+MAPJOIN(src, src1) */ count(*) from srcpart join src src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -329,6 +317,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-17_18-28-58_899_5613342207704467139/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_877_634052141369406072/-mr-10000
 5308
 5308

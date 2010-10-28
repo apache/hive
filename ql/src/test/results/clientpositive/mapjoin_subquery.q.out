@@ -34,9 +34,7 @@ STAGE PLANS:
         subq:x 
           TableScan
             alias: x
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -44,7 +42,6 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0
               Position of Big Table: 1
         z 
           TableScan
@@ -61,9 +58,7 @@ STAGE PLANS:
                   predicate:
                       expr: (hr = 11)
                       type: boolean
-                  Common Join Operator
-                    condition map:
-                         Inner Join 0 to 1
+                  JDBM Sink Operator
                     condition expressions:
                       0 {_col0}
                       1 {value}
@@ -71,7 +66,6 @@ STAGE PLANS:
                     keys:
                       0 [Column[_col0]]
                       1 [Column[key]]
-                    outputColumnNames: _col0, _col5
                     Position of Big Table: 0
 
   Stage: Stage-1
@@ -80,7 +74,7 @@ STAGE PLANS:
         subq:y 
           TableScan
             alias: y
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -102,7 +96,7 @@ STAGE PLANS:
                         expr: _col0
                         type: string
                   outputColumnNames: _col0
-                  Common Join Operator
+                  Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     condition expressions:
@@ -151,7 +145,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_15-04-47_409_128786361280541785/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-44_452_445213667214370288/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
 (SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -161,7 +155,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_15-04-47_409_128786361280541785/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-44_452_445213667214370288/-mr-10000
 238	val_238
 238	val_238
 311	val_311
@@ -308,9 +302,7 @@ STAGE PLANS:
         subq:x 
           TableScan
             alias: x
-            Common Join Operator
-              condition map:
-                   Inner Join 0 to 1
+            JDBM Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -318,7 +310,6 @@ STAGE PLANS:
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
-              outputColumnNames: _col0
               Position of Big Table: 1
         z 
           TableScan
@@ -335,9 +326,7 @@ STAGE PLANS:
                   predicate:
                       expr: (hr = 11)
                       type: boolean
-                  Common Join Operator
-                    condition map:
-                         Inner Join 0 to 1
+                  JDBM Sink Operator
                     condition expressions:
                       0 {_col0}
                       1 {value}
@@ -345,7 +334,6 @@ STAGE PLANS:
                     keys:
                       0 [Column[_col0]]
                       1 [Column[key]]
-                    outputColumnNames: _col0, _col5
                     Position of Big Table: 0
 
   Stage: Stage-1
@@ -354,7 +342,7 @@ STAGE PLANS:
         subq:y 
           TableScan
             alias: y
-            Common Join Operator
+            Map Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
@@ -376,7 +364,7 @@ STAGE PLANS:
                         expr: _col0
                         type: string
                   outputColumnNames: _col0
-                  Common Join Operator
+                  Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     condition expressions:
@@ -400,7 +388,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-10-15_15-04-53_319_3769577272445368796/-mr-10002 
+        file:/tmp/heyongqiang/hive_2010-10-27_14-46-48_345_6547752928820986559/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -450,7 +438,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_15-04-53_504_7399621961470089400/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-48_451_5103197118611190766/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
 (SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2  
@@ -461,7 +449,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-15_15-04-53_504_7399621961470089400/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-48_451_5103197118611190766/-mr-10000
 128	val_128
 128	val_128
 128	val_128

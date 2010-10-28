@@ -416,6 +416,9 @@ Trunk -  Unreleased
     HIVE-1748 Statistics broken for tables with size in excess of Integer.MAX_VALUE
     (Paul Butler via namit)
 
+    HIVE-1755 Update broken test outputs due to 1641
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
