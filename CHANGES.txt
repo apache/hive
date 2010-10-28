@@ -211,6 +211,9 @@ Trunk -  Unreleased
     HIVE-1641. add map joined table to distributed cache
     (Liyin Tang via He Yongqiang)
 
+    HIVE-1498. support IDXPROPERTIES on CREATE INDEX
+    (Marquis Wang via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -316,8 +316,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         crtIndex.getTableName(), crtIndex.getIndexName(), crtIndex.getIndexTypeHandlerClass(),
         crtIndex.getIndexedCols(), crtIndex.getIndexTableName(), crtIndex.getDeferredRebuild(),
         crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(),
-        crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getSerdeProps(),
-        crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
+        crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getTblProps(),
+        crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
         crtIndex.getLineDelim(), crtIndex.getMapKeyDelim()
         );
     return 0;

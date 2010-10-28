@@ -446,7 +446,7 @@ public class Hive {
       List<String> indexedCols, String indexTblName, boolean deferredRebuild,
       String inputFormat, String outputFormat, String serde,
       String storageHandler, String location,
-      Map<String, String> idxProps, Map<String, String> serdeProps,
+      Map<String, String> idxProps, Map<String, String> tblProps, Map<String, String> serdeProps,
       String collItemDelim, String fieldDelim, String fieldEscape,
       String lineDelim, String mapKeyDelim)
       throws HiveException {
@@ -558,6 +558,11 @@ public class Hive {
         List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
         tt.setPartitionKeys(partKeys);
         tt.setTableType(TableType.INDEX_TABLE.toString());
+        if (tblProps != null) {
+          for (Entry<String, String> prop : tblProps.entrySet()) {
+            tt.putToParameters(prop.getKey(), prop.getValue());
+          }
+        }
       }
 
       if(!deferredRebuild) {
@@ -567,6 +572,11 @@ public class Hive {
       Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
           storageDescriptor, params, deferredRebuild);
       indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
+
+      if (idxProps != null)
+      {
+        indexDesc.getParameters().putAll(idxProps);
+      }
 
       this.getMSC().createIndex(indexDesc, tt);
 

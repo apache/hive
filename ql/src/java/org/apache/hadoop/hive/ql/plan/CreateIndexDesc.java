@@ -40,13 +40,14 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   String indexTypeHandlerClass;
   String location;
   Map<String, String> idxProps;
+  Map<String, String> tblProps;
   Map<String, String> serdeProps;
   String collItemDelim;
   String fieldDelim;
   String fieldEscape;
   String lineDelim;
   String mapKeyDelim;
-  
+
 
   public CreateIndexDesc() {
     super();
@@ -55,7 +56,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   public CreateIndexDesc(String tableName, String indexName,
       List<String> indexedCols, String indexTableName, boolean deferredRebuild,
       String inputFormat, String outputFormat, String storageHandler,
-      String typeName, String location, Map<String, String> idxProps,
+      String typeName, String location, Map<String, String> idxProps, Map<String, String> tblProps,
       String serde, Map<String, String> serdeProps, String collItemDelim,
       String fieldDelim, String fieldEscape, String lineDelim,
       String mapKeyDelim) {
@@ -72,6 +73,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
     this.indexTypeHandlerClass = typeName;
     this.location = location;
     this.idxProps = idxProps;
+    this.tblProps = tblProps;
     this.serde = serde;
     this.serdeProps = serdeProps;
     this.collItemDelim = collItemDelim;
@@ -104,7 +106,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   public void setIndexedCols(List<String> indexedCols) {
     this.indexedCols = indexedCols;
   }
-  
+
   public String getIndexTableName() {
     return indexTableName;
   }
@@ -112,11 +114,11 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   public void setIndexTableName(String indexTableName) {
     this.indexTableName = indexTableName;
   }
-  
+
   public boolean isDeferredRebuild() {
     return deferredRebuild;
   }
-  
+
   public boolean getDeferredRebuild() {
     return deferredRebuild;
   }
@@ -173,6 +175,14 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
     this.idxProps = idxProps;
   }
 
+  public Map<String, String> getTblProps() {
+    return tblProps;
+  }
+
+  public void setTblProps(Map<String, String> tblProps) {
+    this.tblProps = tblProps;
+  }
+
   public Map<String, String> getSerdeProps() {
     return serdeProps;
   }
@@ -220,7 +230,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   public void setMapKeyDelim(String mapKeyDelim) {
     this.mapKeyDelim = mapKeyDelim;
   }
-  
+
   public String getIndexTypeHandlerClass() {
     return indexTypeHandlerClass;
   }
