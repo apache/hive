@@ -422,6 +422,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Insert this map into the stats
     String table_name = unescapeIdentifier(tabref.getChild(0).getText());
     qb.setTabAlias(alias, table_name);
+    qb.addAlias(alias);
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
@@ -455,6 +456,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
+    qb.addAlias(alias);
 
     unparseTranslator.addIdentifierTranslation((ASTNode) subq.getChild(1));
 
@@ -544,6 +546,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getMsg(lateralView));
     }
     qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
+    qb.addAlias(alias);
     return alias;
   }
 
@@ -694,6 +697,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Case of analyze command
         String table_name = unescapeIdentifier(ast.getChild(0).getChild(0).getText());
         qb.setTabAlias(table_name, table_name);
+        qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
         // Allow analyze the whole table and dynamic partitions
         HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
@@ -1304,8 +1308,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private Integer genColListRegex(String colRegex, String tabAlias,
-      String alias, ASTNode sel, ArrayList<ExprNodeDesc> col_list,
-      RowResolver input, Integer pos, RowResolver output)
+      ASTNode sel, ArrayList<ExprNodeDesc> col_list,
+      RowResolver input, Integer pos, RowResolver output, List<String> aliases)
       throws SemanticException {
 
     // The table alias should exist
@@ -1324,43 +1328,57 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     StringBuilder replacementText = new StringBuilder();
     int matched = 0;
-    // This is the tab.* case
-    // In this case add all the columns to the fieldList
-    // from the input schema
-    for (ColumnInfo colInfo : input.getColumnInfos()) {
-      String name = colInfo.getInternalName();
-      String[] tmp = input.reverseLookup(name);
-
-      // Skip the colinfos which are not for this particular alias
-      if (tabAlias != null && !tmp[0].equalsIgnoreCase(tabAlias)) {
+    // add empty string to the list of aliases. Some operators (ex. GroupBy) add
+    // ColumnInfos for table alias "".
+    if (!aliases.contains("")) {
+      aliases.add("");
+    }
+    // For expr "*", aliases should be iterated in the order they are specified
+    // in the query.
+    for (String alias : aliases) {
+      HashMap<String, ColumnInfo> fMap = input.getFieldMap(alias);
+      if (fMap == null) {
         continue;
       }
+      // For the tab.* case, add all the columns to the fieldList
+      // from the input schema
+      for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
+        ColumnInfo colInfo = entry.getValue();
+        String name = colInfo.getInternalName();
+        String[] tmp = input.reverseLookup(name);
 
-      if(colInfo.getIsVirtualCol() && colInfo.isHiddenVirtualCol()) {
-        continue;
-      }
-
-      // Not matching the regex?
-      if (!regex.matcher(tmp[1]).matches()) {
-        continue;
-      }
-
-      ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(), name,
-          colInfo.getTabAlias(), colInfo.getIsVirtualCol());
-      col_list.add(expr);
-      output.put(tmp[0], tmp[1],
-          new ColumnInfo(getColumnInternalName(pos), colInfo.getType(), colInfo
-          .getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol()));
-      pos = Integer.valueOf(pos.intValue() + 1);
-      matched++;
-
-      if (unparseTranslator.isEnabled()) {
-        if (replacementText.length() > 0) {
-          replacementText.append(", ");
+        // Skip the colinfos which are not for this particular alias
+        if (tabAlias != null && !tmp[0].equalsIgnoreCase(tabAlias)) {
+          continue;
         }
-        replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
-        replacementText.append(".");
-        replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+
+        if (colInfo.getIsVirtualCol() && colInfo.isHiddenVirtualCol()) {
+          continue;
+        }
+
+        // Not matching the regex?
+        if (!regex.matcher(tmp[1]).matches()) {
+          continue;
+        }
+
+        ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+            name, colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+        col_list.add(expr);
+        output.put(tmp[0], tmp[1],
+            new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
+            colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
+            colInfo.isHiddenVirtualCol()));
+        pos = Integer.valueOf(pos.intValue() + 1);
+        matched++;
+
+        if (unparseTranslator.isEnabled()) {
+          if (replacementText.length() > 0) {
+            replacementText.append(", ");
+          }
+          replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
+          replacementText.append(".");
+          replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+        }
       }
     }
     if (matched == 0) {
@@ -1881,6 +1899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           assert (selExprChild.getChildCount() == 1);
           udtfTableAlias = unescapeIdentifier(selExprChild.getChild(0)
               .getText());
+          qb.addAlias(udtfTableAlias);
           unparseTranslator.addIdentifierTranslation((ASTNode) selExprChild
               .getChild(0));
           break;
@@ -1952,7 +1971,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
             : unescapeIdentifier(expr.getChild(0).getText().toLowerCase()),
-            alias, expr, col_list, inputRR, pos, out_rwsch);
+            expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
           && !inputRR.getIsExprResolver()
@@ -1961,7 +1980,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()),
-            null, alias, expr, col_list, inputRR, pos, out_rwsch);
+            null, expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
       } else if (expr.getType() == HiveParser.DOT
           && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
@@ -1973,7 +1992,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We don't allow this for ExprResolver - the Group By case
         pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()),
             unescapeIdentifier(expr.getChild(0).getChild(0).getText()
-            .toLowerCase()), alias, expr, col_list, inputRR, pos, out_rwsch);
+            .toLowerCase()), expr, col_list, inputRR, pos, out_rwsch,
+            qb.getAliases());
       } else {
         // Case when this is an expression
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR);
@@ -5971,6 +5991,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           QB blankQb = new QB(null, null, false);
           Operator udtfPath = genSelectPlan((ASTNode) lateralViewTree
               .getChild(0), blankQb, lvForward);
+          // add udtf aliases to QB
+          for (String udtfAlias : blankQb.getAliases()) {
+            qb.addAlias(udtfAlias);
+          }
           RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRR();
 
           // Merge the two into the lateral view join

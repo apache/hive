@@ -428,6 +428,9 @@ Trunk -  Unreleased
     HIVE-1756 Negative Test cleanup for 1641
     (Liyin Tang via namit)
 
+    HIVE-1657 Join results are displayed wrongly for some complex joins
+    using select * (Amareshwari Sriramadasu via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -324,10 +324,10 @@ PREHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-42_197_5979333762407595
 POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-09-21_00-47-42_197_5979333762407595753/-mr-10000
-NULL	40	NULL	NULL	NULL	NULL
-12	35	NULL	NULL	NULL	NULL
-48	NULL	NULL	NULL	NULL	NULL
+POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-27_03-21-12_815_3004255014715798791/-mr-10000
+NULL	NULL	NULL	40	NULL	NULL
+NULL	NULL	12	35	NULL	NULL
+NULL	NULL	48	NULL	NULL	NULL
 100	100	100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
