@@ -613,7 +613,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       try {
         ms.openTransaction();
-        if (is_type_exists(type.getName())) {
+        if (is_type_exists(ms, type.getName())) {
           throw new AlreadyExistsException("Type " + type.getName() + " already exists");
         }
         ms.createType(type);
@@ -679,14 +679,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-    public boolean is_type_exists(String typeName) throws MetaException {
-      incrementCounter("is_type_exists");
-      logStartFunction("is_type_exists: " + typeName);
-      try {
-        return (get_type(typeName) != null);
-      } catch (NoSuchObjectException e) {
-        return false;
-      }
+    private boolean is_type_exists(RawStore ms, String typeName)
+        throws MetaException {
+      return (ms.getType(typeName) != null);
     }
 
     private void drop_type_core(final RawStore ms, String typeName)
@@ -695,7 +690,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         // drop any partitions
-        if (!is_type_exists(typeName)) {
+        if (!is_type_exists(ms, typeName)) {
           throw new NoSuchObjectException(typeName + " doesn't exist");
         }
         if (!ms.dropType(typeName)) {
@@ -756,7 +751,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
 
         // get_table checks whether database exists, it should be moved here
-        if (is_table_exists(tbl.getDbName(), tbl.getTableName())) {
+        if (is_table_exists(ms, tbl.getDbName(), tbl.getTableName())) {
           throw new AlreadyExistsException("Table " + tbl.getTableName()
               + " already exists");
         }
@@ -829,15 +824,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    public boolean is_table_exists(String dbname, String name)
+    private boolean is_table_exists(RawStore ms, String dbname, String name)
         throws MetaException {
-      incrementCounter("is_table_exists");
-      logStartTableFunction("is_table_exists", dbname, name);
-      try {
-        return (get_table(dbname, name) != null);
-      } catch (NoSuchObjectException e) {
-        return false;
-      }
+      return (ms.getTable(dbname, name) != null);
     }
 
     private void drop_table_core(final RawStore ms, final String dbname,

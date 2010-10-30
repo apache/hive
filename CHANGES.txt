@@ -431,6 +431,9 @@ Trunk -  Unreleased
     HIVE-1657 Join results are displayed wrongly for some complex joins
     using select * (Amareshwari Sriramadasu via namit)
 
+    HIVE-1760 Mismatched open/commit transaction calls in case of connection retry
+    (Paul Yang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
