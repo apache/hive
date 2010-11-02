@@ -919,7 +919,23 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *           Parsing failed
    */
   private void analyzeShowLocks(ASTNode ast) throws SemanticException {
-    ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile());
+    String tableName = null;
+    HashMap<String, String> partSpec = null;
+
+    if (ast.getChildCount() == 1) {
+      // table for which show locks is being executed
+      ASTNode tableTypeExpr = (ASTNode) ast.getChild(0);
+      tableName = getFullyQualifiedName((ASTNode)tableTypeExpr.getChild(0));
+
+      // get partition metadata if partition specified
+      if (tableTypeExpr.getChildCount() == 2) {
+        ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
+        partSpec = getPartSpec(partspec);
+      }
+    }
+
+    ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), tableName,
+                                                    partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showLocksDesc), conf));
     setFetchTask(createFetchTask(showLocksDesc.getSchema()));

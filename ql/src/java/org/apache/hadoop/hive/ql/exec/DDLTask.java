@@ -1242,7 +1242,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path resFile = new Path(showLocks.getResFile());
       FileSystem fs = resFile.getFileSystem(conf);
       DataOutput outStream = fs.create(resFile);
-      List<HiveLock> locks = lockMgr.getLocks();
+      List<HiveLock> locks = null;
+
+      if (showLocks.getTableName() == null) {
+        locks = lockMgr.getLocks();
+      }
+      else {
+        locks = lockMgr.getLocks(getHiveObject(showLocks.getTableName(),
+                                               showLocks.getPartSpec()));
+      }
 
       Collections.sort(locks, new Comparator<HiveLock>() {
 
@@ -1329,6 +1337,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  private HiveLockObject getHiveObject(String tabName,
+                                       Map<String, String> partSpec) throws HiveException {
+    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
+    if (tbl == null) {
+      throw new HiveException("Table " + tabName + " does not exist ");
+    }
+
+    HiveLockObject obj = null;
+
+    if  (partSpec == null) {
+      obj = new HiveLockObject(tbl);
+    }
+    else {
+      Partition par = db.getPartition(tbl, partSpec, false);
+      if (par == null) {
+        throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
+      }
+      obj = new HiveLockObject(par);
+    }
+    return obj;
+  }
+
   /**
    * Unlock the table/partition specified
    *
@@ -1346,24 +1376,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     String tabName = unlockTbl.getTableName();
-    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
-    if (tbl == null) {
-      throw new HiveException("Table " + tabName + " does not exist ");
-    }
-
-    Map<String, String> partSpec = unlockTbl.getPartSpec();
-    HiveLockObject obj = null;
-
-    if  (partSpec == null) {
-      obj = new HiveLockObject(tbl);
-    }
-    else {
-      Partition par = db.getPartition(tbl, partSpec, false);
-      if (par == null) {
-        throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
-      }
-      obj = new HiveLockObject(par);
-    }
+    HiveLockObject obj = getHiveObject(tabName, unlockTbl.getPartSpec());
 
     List<HiveLock> locks = lockMgr.getLocks(obj);
     if ((locks == null) || (locks.isEmpty())) {

@@ -214,6 +214,9 @@ Trunk -  Unreleased
     HIVE-1498. support IDXPROPERTIES on CREATE INDEX
     (Marquis Wang via jvs)
 
+    HIVE-1761. Support show locks for a particular table
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -339,8 +339,8 @@ createTableStatement
 createIndexStatement
 @init { msgs.push("create index statement");}
 @after {msgs.pop();}
-    : KW_CREATE KW_INDEX indexName=Identifier 
-      KW_ON KW_TABLE tab=Identifier LPAREN indexedCols=columnNameList RPAREN 
+    : KW_CREATE KW_INDEX indexName=Identifier
+      KW_ON KW_TABLE tab=Identifier LPAREN indexedCols=columnNameList RPAREN
       KW_AS typeName=StringLiteral
       autoRebuild?
       indexPropertiesPrefixed?
@@ -349,7 +349,7 @@ createIndexStatement
       tableFileFormat?
       tableLocation?
       tablePropertiesPrefixed?
-    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols 
+    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols
         autoRebuild?
         indexPropertiesPrefixed?
         indexTblName?
@@ -475,7 +475,7 @@ alterStatementSuffixAddPartitions
     : Identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
     -> ^(TOK_ALTERTABLE_ADDPARTS Identifier ifNotExists? (partitionSpec partitionLocation?)+)
     ;
-    
+
 alterStatementSuffixTouch
 @init { msgs.push("touch statement"); }
 @after { msgs.pop(); }
@@ -537,7 +537,7 @@ alterStatementSuffixSerdeProperties
 tablePartitionPrefix
 @init {msgs.push("table partition prefix");}
 @after {msgs.pop();}
-  :name=Identifier partitionSpec? 
+  :name=Identifier partitionSpec?
   ->^(TOK_TABLE_PARTITION $name partitionSpec?)
   ;
 
@@ -598,7 +598,7 @@ alterStatementSuffixClusterbySortby
 @after{msgs.pop();}
 	:name=Identifier tableBuckets
 	->^(TOK_ALTERTABLE_CLUSTER_SORT $name tableBuckets)
-	| 
+	|
 	name=Identifier KW_NOT KW_CLUSTERED
 	->^(TOK_ALTERTABLE_CLUSTER_SORT $name)
 	;
@@ -606,8 +606,8 @@ alterStatementSuffixClusterbySortby
 alterIndexRebuild
 @init { msgs.push("update index statement");}
 @after {msgs.pop();}
-    : KW_ALTER KW_INDEX indexName=Identifier 
-      KW_ON base_table_name=Identifier 
+    : KW_ALTER KW_INDEX indexName=Identifier
+      KW_ON base_table_name=Identifier
       partitionSpec?
       KW_REBUILD
     ->^(TOK_ALTERINDEX_REBUILD $base_table_name $indexName partitionSpec?)
@@ -621,7 +621,7 @@ fileFormat
     | KW_RCFILE  -> ^(TOK_TBLRCFILE)
     | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
-    | genericSpec=Identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec) 
+    | genericSpec=Identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
 tabTypeExpr
@@ -643,7 +643,7 @@ descStatement
     : (KW_DESCRIBE|KW_DESC) (descOptions=KW_FORMATTED|descOptions=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions?)
     | (KW_DESCRIBE|KW_DESC) KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     ;
-    
+
 analyzeStatement
 @init { msgs.push("analyze statement"); }
 @after { msgs.pop(); }
@@ -660,6 +660,7 @@ showStatement
     | KW_SHOW KW_TABLE KW_EXTENDED ((KW_FROM|KW_IN) db_name=Identifier)? KW_LIKE showStmtIdentifier partitionSpec?
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_LOCKS -> ^(TOK_SHOWLOCKS)
+    | KW_SHOW KW_LOCKS (parttype=partTypeExpr) -> ^(TOK_SHOWLOCKS $parttype)
     ;
 
 lockStatement
@@ -869,12 +870,12 @@ tableFileFormat
       KW_STORED KW_AS KW_SEQUENCEFILE  -> TOK_TBLSEQUENCEFILE
       | KW_STORED KW_AS KW_TEXTFILE  -> TOK_TBLTEXTFILE
       | KW_STORED KW_AS KW_RCFILE  -> TOK_TBLRCFILE
-      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?      
+      | KW_STORED KW_AS KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
       -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
-      | KW_STORED KW_AS genericSpec=Identifier      
+      | KW_STORED KW_AS genericSpec=Identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
 
@@ -977,7 +978,7 @@ type
     : primitiveType
     | listType
     | structType
-    | mapType 
+    | mapType
     | unionType;
 
 primitiveType
@@ -1852,7 +1853,7 @@ KW_TEMPORARY: 'TEMPORARY';
 KW_FUNCTION: 'FUNCTION';
 KW_EXPLAIN: 'EXPLAIN';
 KW_EXTENDED: 'EXTENDED';
-KW_FORMATTED: 'FORMATTED';	 
+KW_FORMATTED: 'FORMATTED';
 KW_SERDE: 'SERDE';
 KW_WITH: 'WITH';
 KW_DEFERRED: 'DEFERRED';
