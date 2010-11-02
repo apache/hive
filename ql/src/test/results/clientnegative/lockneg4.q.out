@@ -1,0 +1,31 @@
+PREHOOK: query: drop table tstsrcpart
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstsrcpart
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tstsrcpart like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrcpart like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstsrcpart
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: LOCK TABLE tstsrcpart PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE tstsrcpart PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE
+POSTHOOK: type: LOCKTABLE
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW LOCKS tstsrcpart PARTITION(ds='2008-04-08', hr='12')
+PREHOOK: type: SHOWLOCKS
+FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: Partition {ds=2008-04-08, hr=12} for table tstsrcpart does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
