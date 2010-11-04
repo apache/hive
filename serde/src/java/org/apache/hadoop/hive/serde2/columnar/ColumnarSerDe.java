@@ -94,7 +94,7 @@ public class ColumnarSerDe implements SerDe {
 
     java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
 
-    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs);
+    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs, serdeParams.getNullSequence());
 
     int size = serdeParams.getColumnTypes().size();
     field = new BytesRefWritable[size];

@@ -217,6 +217,9 @@ Trunk -  Unreleased
     HIVE-1761. Support show locks for a particular table
     (namit via He Yongqiang)
 
+    HIVE-1751. Optimize ColumnarStructObjectInspector.getStructFieldData()
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

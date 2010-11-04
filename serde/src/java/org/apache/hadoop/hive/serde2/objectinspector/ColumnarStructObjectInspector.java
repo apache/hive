@@ -29,10 +29,10 @@ import org.apache.hadoop.io.Text;
 /**
  * ColumnarStructObjectInspector works on struct data that is stored in
  * ColumnarStruct.
- * 
+ *
  * The names of the struct fields and the internal structure of the struct
  * fields are specified in the ctor of the ColumnarStructObjectInspector.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
@@ -144,7 +144,7 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     int fieldID = f.getFieldID();
     assert (fieldID >= 0 && fieldID < fields.size());
 
-    return struct.getField(fieldID, nullSequence);
+    return struct.getField(fieldID);
   }
 
   @Override
@@ -153,6 +153,6 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
       return null;
     }
     ColumnarStruct struct = (ColumnarStruct) data;
-    return struct.getFieldsAsList(nullSequence);
+    return struct.getFieldsAsList();
   }
 }
