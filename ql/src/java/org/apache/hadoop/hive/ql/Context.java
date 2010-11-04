@@ -143,6 +143,7 @@ public class Context {
       if (mkdir) {
         try {
           FileSystem fs = dirPath.getFileSystem(conf);
+          dirPath = new Path(fs.makeQualified(dirPath).toString());
           if (!fs.mkdirs(dirPath))
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
