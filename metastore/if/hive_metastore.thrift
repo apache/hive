@@ -178,6 +178,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // sd.inputFormat  (SequenceFileInputFormat (binary like falcon tables or u_full) or TextInputFormat)
   // sd.outputFormat (SequenceFileInputFormat (binary) or TextInputFormat)
   // sd.serdeInfo.serializationLib (SerDe class name eg org.apache.hadoop.hive.serde.simple_meta.MetadataTypedColumnsetSerDe
+  // * See notes on DDL_TIME
   void create_table(1:Table tbl) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3, 4:NoSuchObjectException o4)
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
@@ -189,10 +190,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
   // alter table applies to only future partitions not for existing partitions
+  // * See notes on DDL_TIME
   void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   // the following applies to only tables that have partitions
+  // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
@@ -235,6 +238,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // changes the partition to the new partition object. partition is identified from the part values
   // in the new_part
+  // * See notes on DDL_TIME
   void alter_partition(1:string db_name, 2:string tbl_name, 3:Partition new_part)
                        throws(1:InvalidOperationException o1, 2:MetaException o2)
 
@@ -266,6 +270,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
                        throws(1:MetaException o2)
 }
+
+// * Note about the DDL_TIME: When creating or altering a table or a partition,
+// if the DDL_TIME is not set, the current time will be used.
 
 // For storing info about archived partitions in parameters
 

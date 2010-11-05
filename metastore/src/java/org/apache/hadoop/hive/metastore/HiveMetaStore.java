@@ -784,8 +784,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // set create time
         long time = System.currentTimeMillis() / 1000;
         tbl.setCreateTime((int) time);
-        tbl.putToParameters(Constants.DDL_TIME, Long.toString(time));
-
+        if (tbl.getParameters() == null ||
+            tbl.getParameters().get(Constants.DDL_TIME) == null) {
+          tbl.putToParameters(Constants.DDL_TIME, Long.toString(time));
+        }
         ms.createTable(tbl);
         success = ms.commitTransaction();
 
@@ -1160,8 +1162,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // set create time
         long time = System.currentTimeMillis() / 1000;
         part.setCreateTime((int) time);
-        part.putToParameters(Constants.DDL_TIME, Long.toString(time));
-
+        if (part.getParameters() == null ||
+            part.getParameters().get(Constants.DDL_TIME) == null) {
+          part.putToParameters(Constants.DDL_TIME, Long.toString(time));
+        }
         success = ms.addPartition(part) && ms.commitTransaction();
 
       } finally {
@@ -1360,8 +1364,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String tbl_name, final Partition new_part)
         throws InvalidOperationException, MetaException, TException {
       try {
-        new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
-            .currentTimeMillis() / 1000));
+        // Set DDL time to now if not specified
+        if (new_part.getParameters() == null ||
+            new_part.getParameters().get(Constants.DDL_TIME) == null ||
+            Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
+          new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
+              .currentTimeMillis() / 1000));
+        }
         ms.alterPartition(db_name, tbl_name, new_part);
       } catch (InvalidObjectException e) {
         throw new InvalidOperationException("alter is not possible");
@@ -1414,8 +1423,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       incrementCounter("alter_table");
       logStartFunction("alter_table: db=" + dbname + " tbl=" + name
           + " newtbl=" + newTable.getTableName());
-      newTable.putToParameters(Constants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
+
+      // Update the time if it hasn't been specified.
+      if (newTable.getParameters() == null ||
+          newTable.getParameters().get(Constants.DDL_TIME) == null) {
+        newTable.putToParameters(Constants.DDL_TIME, Long.toString(System
+            .currentTimeMillis() / 1000));
+      }
 
       try {
         executeWithRetry(new Command<Boolean>() {

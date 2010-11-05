@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -336,6 +337,10 @@ public class Hive {
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
     try {
+      // Remove the DDL_TIME so it gets refreshed
+      if (newTbl.getParameters() != null) {
+        newTbl.getParameters().remove(Constants.DDL_TIME);
+      }
       getMSC().alter_table(getCurrentDatabase(), tblName, newTbl.getTTable());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table.", e);
@@ -358,6 +363,10 @@ public class Hive {
   public void alterPartition(String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
     try {
+      // Remove the DDL time so that it gets refreshed
+      if (newPart.getParameters() != null) {
+        newPart.getParameters().remove(Constants.DDL_TIME);
+      }
       getMSC().alter_partition(getCurrentDatabase(), tblName,
           newPart.getTPartition());
 
@@ -398,6 +407,9 @@ public class Hive {
             tbl.getDeserializer()));
       }
       tbl.checkValidity();
+      if (tbl.getParameters() != null) {
+        tbl.getParameters().remove(Constants.DDL_TIME);
+      }
       getMSC().createTable(tbl.getTTable());
     } catch (AlreadyExistsException e) {
       if (!ifNotExists) {
@@ -1087,6 +1099,8 @@ public class Hive {
 
     try {
       Partition tmpPart = new Partition(tbl, partSpec, location);
+      // No need to clear DDL_TIME in parameters since we know it's
+      // not populated on construction.
       partition = getMSC().add_partition(tmpPart.getTPartition());
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));

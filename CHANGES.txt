@@ -223,6 +223,9 @@ Trunk -  Unreleased
     HIVE-1750 Remove partition filtering conditions when possible
     (Siying Dong via namit)
 
+    HIVE-1768 Update transident_lastDdlTime only if not specified
+    (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
