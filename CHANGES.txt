@@ -441,7 +441,10 @@ Trunk -  Unreleased
     (Paul Yang via namit)
 
     HIVE-1753 CombineHiveInputFormat bug
-    (Thiruvel Thirumoolan via He Yongqiang))
+    (Thiruvel Thirumoolan via He Yongqiang)
+
+    HIVE-1767 Bug in merging files for dynamic partitions
+    (He Yongqiang via namit)
 
   TESTS
 

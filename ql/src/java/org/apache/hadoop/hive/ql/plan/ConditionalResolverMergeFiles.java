@@ -122,16 +122,27 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       // If the input file does not exist, replace it by a empty file
       Path dirPath = new Path(dirName);
       FileSystem inpFs = dirPath.getFileSystem(conf);
-
+      
       if (inpFs.exists(dirPath)) {
-        FileStatus[] fStats = inpFs.listStatus(dirPath);
+        DynamicPartitionCtx dpCtx = ctx.getDPCtx();
+        boolean doMerge = false;
+        FileStatus[] fStats = null;
+        if (dpCtx != null && dpCtx.getNumDPCols() > 0) {
+          fStats = Utilities.getFileStatusRecurse(dirPath,
+              dpCtx.getNumDPCols() + 1, inpFs);
+
+        } else {
+          fStats = inpFs.listStatus(dirPath);
+        }
+
         long totalSz = 0;
         for (FileStatus fStat : fStats) {
           totalSz += fStat.getLen();
         }
-
         long currAvgSz = totalSz / fStats.length;
-        if ((currAvgSz < avgConditionSize) && (fStats.length > 1)) {
+        doMerge = (currAvgSz < avgConditionSize) && (fStats.length > 1);
+
+        if (doMerge) {
           //
           // for each dynamic partition, generate a merge task
           // populate aliasToWork, pathToPartitionInfo, pathToAlias
@@ -143,7 +154,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
           // Dynamic partition: replace input path (root to dp paths) with dynamic partition
           // input paths.
-          DynamicPartitionCtx dpCtx = ctx.getDPCtx();
           if (dpCtx != null &&  dpCtx.getNumDPCols() > 0) {
             FileStatus[] status = Utilities.getFileStatusRecurse(dirPath,
                 dpCtx.getNumDPCols(), inpFs);
