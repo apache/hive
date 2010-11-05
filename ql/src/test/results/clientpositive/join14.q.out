@@ -53,22 +53,18 @@ STAGE PLANS:
               predicate:
                   expr: (ds = '2008-04-08')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (ds = '2008-04-08')
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -134,11 +130,11 @@ POSTHOOK: Lineage: dest1.c2 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, typ
 PREHOOK: query: select dest1.* from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-37-09_368_5727898878579800601/-mr-10000
+PREHOOK: Output: file:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-36-06_194_5473515601910832002/-mr-10000
 POSTHOOK: query: select dest1.* from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-37-09_368_5727898878579800601/-mr-10000
+POSTHOOK: Output: file:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-36-06_194_5473515601910832002/-mr-10000
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 103	val_103

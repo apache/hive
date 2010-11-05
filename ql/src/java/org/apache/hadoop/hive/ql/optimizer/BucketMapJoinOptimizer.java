@@ -146,12 +146,14 @@ public class BucketMapJoinOptimizer implements Transform {
       MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
       BucketMapjoinOptProcCtx context = (BucketMapjoinOptProcCtx) procCtx;
 
-      if(context.getListOfRejectedMapjoins().contains(mapJoinOp))
+      if(context.getListOfRejectedMapjoins().contains(mapJoinOp)) {
         return null;
+      }
 
       QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext().get(mapJoinOp);
-      if(joinCxt == null)
+      if(joinCxt == null) {
         return null;
+      }
 
       List<String> joinAliases = new ArrayList<String>();
       String[] srcs = joinCxt.getBaseSrc();
@@ -192,14 +194,19 @@ public class BucketMapJoinOptimizer implements Transform {
       for (int index = 0; index < joinAliases.size(); index++) {
         String alias = joinAliases.get(index);
         TableScanOperator tso = (TableScanOperator) topOps.get(alias);
-        if (tso == null)
+        if (tso == null) {
           return null;
+        }
         Table tbl = topToTable.get(tso);
         if(tbl.isPartitioned()) {
           PrunedPartitionList prunedParts = null;
           try {
-            prunedParts = PartitionPruner.prune(tbl, pGraphContext.getOpToPartPruner().get(tso), pGraphContext.getConf(), alias,
+            prunedParts = pGraphContext.getOpToPartList().get(tso);
+            if (prunedParts == null) {
+              prunedParts = PartitionPruner.prune(tbl, pGraphContext.getOpToPartPruner().get(tso), pGraphContext.getConf(), alias,
                 pGraphContext.getPrunedPartitions());
+              pGraphContext.getOpToPartList().put(tso, prunedParts);
+            }
           } catch (HiveException e) {
             // Has to use full name to make sure it does not conflict with
             // org.apache.commons.lang.StringUtils
@@ -267,8 +274,9 @@ public class BucketMapJoinOptimizer implements Transform {
             }
           }
         } else {
-          if (!checkBucketColumns(tbl.getBucketCols(), mjDecs, index))
+          if (!checkBucketColumns(tbl.getBucketCols(), mjDecs, index)) {
             return null;
+          }
           Integer num = new Integer(tbl.getNumBuckets());
           aliasToBucketNumberMapping.put(alias, num);
           List<String> fileNames = new ArrayList<String>();
@@ -327,8 +335,9 @@ public class BucketMapJoinOptimizer implements Transform {
       // in the big table to bucket file names in small tables.
       for (int j = 0; j < joinAliases.size(); j++) {
         String alias = joinAliases.get(j);
-        if(alias.equals(baseBigAlias))
+        if(alias.equals(baseBigAlias)) {
           continue;
+        }
         Collections.sort(aliasToBucketFileNamesMapping.get(alias));
         LinkedHashMap<String, ArrayList<String>> mapping = new LinkedHashMap<String, ArrayList<String>>();
         aliasBucketFileNameMapping.put(alias, mapping);
@@ -402,8 +411,9 @@ public class BucketMapJoinOptimizer implements Transform {
         int nxt = iter.next().intValue();
         boolean ok = (nxt >= bucketNumberInPart) ? nxt % bucketNumberInPart == 0
             : bucketNumberInPart % nxt == 0;
-        if(!ok)
+        if(!ok) {
           return false;
+        }
       }
       return true;
     }
@@ -428,8 +438,9 @@ public class BucketMapJoinOptimizer implements Transform {
 
     private boolean checkBucketColumns(List<String> bucketColumns, MapJoinDesc mjDesc, int index) {
       List<ExprNodeDesc> keys = mjDesc.getKeys().get((byte)index);
-      if (keys == null || bucketColumns == null || bucketColumns.size() == 0)
+      if (keys == null || bucketColumns == null || bucketColumns.size() == 0) {
         return false;
+      }
 
       //get all join columns from join keys stored in MapJoinDesc
       List<String> joinCols = new ArrayList<String>();
@@ -458,8 +469,9 @@ public class BucketMapJoinOptimizer implements Transform {
       }
 
       for (String col : joinCols) {
-        if (!bucketColumns.contains(col))
+        if (!bucketColumns.contains(col)) {
           return false;
+        }
       }
 
       return true;

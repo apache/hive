@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
@@ -129,8 +128,9 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       boolean tableSorted = true;
       QBJoinTree joinCxt = this.pGraphContext.getMapJoinContext()
           .get(mapJoinOp);
-      if (joinCxt == null)
+      if (joinCxt == null) {
         return null;
+      }
       String[] srcs = joinCxt.getBaseSrc();
       int pos = 0;
       for (String src : srcs) {
@@ -140,7 +140,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       }
       if (!tableSorted) {
         //this is a mapjoin but not suit for a sort merge bucket map join. check outer joins
-        MapJoinProcessor.checkMapJoin(((MapJoinOperator) nd).getConf().getPosBigTable(), 
+        MapJoinProcessor.checkMapJoin(((MapJoinOperator) nd).getConf().getPosBigTable(),
             ((MapJoinOperator) nd).getConf().getConds());
         return null;
       }
@@ -160,7 +160,7 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
         tagToAlias.put((byte) i, srcs[i]);
       }
       smbJoinDesc.setTagToAlias(tagToAlias);
-      
+
       int indexInListMapJoinNoReducer = this.pGraphContext.getListMapJoinOpsNoReducer().indexOf(mapJoinOp);
       if(indexInListMapJoinNoReducer >= 0 ) {
         this.pGraphContext.getListMapJoinOpsNoReducer().remove(indexInListMapJoinNoReducer);
@@ -191,8 +191,9 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       Map<TableScanOperator, Table> topToTable = this.pGraphContext
           .getTopToTable();
       TableScanOperator tso = (TableScanOperator) topOps.get(alias);
-      if (tso == null)
+      if (tso == null) {
         return false;
+      }
 
       List<ExprNodeDesc> keys = op.getConf().getKeys().get((byte) pos);
       // get all join columns from join keys stored in MapJoinDesc
@@ -217,9 +218,13 @@ public class SortedMergeBucketMapJoinOptimizer implements Transform {
       if (tbl.isPartitioned()) {
         PrunedPartitionList prunedParts = null;
         try {
-          prunedParts = PartitionPruner.prune(tbl, pGraphContext
-              .getOpToPartPruner().get(tso), pGraphContext.getConf(), alias,
-              pGraphContext.getPrunedPartitions());
+          prunedParts = pGraphContext.getOpToPartList().get(tso);
+          if (prunedParts == null) {
+            prunedParts = PartitionPruner.prune(tbl, pGraphContext
+                .getOpToPartPruner().get(tso), pGraphContext.getConf(), alias,
+                pGraphContext.getPrunedPartitions());
+            pGraphContext.getOpToPartList().put(tso, prunedParts);
+          }
         } catch (HiveException e) {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);

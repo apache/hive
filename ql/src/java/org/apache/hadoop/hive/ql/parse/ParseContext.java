@@ -56,6 +56,7 @@ public class ParseContext {
   private QB qb;
   private ASTNode ast;
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
+  private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
@@ -131,6 +132,7 @@ public class ParseContext {
       QB qb,
       ASTNode ast,
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner,
+      HashMap<TableScanOperator, PrunedPartitionList> opToPartList,
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
@@ -146,6 +148,7 @@ public class ParseContext {
     this.qb = qb;
     this.ast = ast;
     this.opToPartPruner = opToPartPruner;
+    this.opToPartList = opToPartList;
     this.joinContext = joinContext;
     this.topToTable = topToTable;
     this.loadFileWork = loadFileWork;
@@ -239,6 +242,14 @@ public class ParseContext {
   public void setOpToPartPruner(
       HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
+  }
+
+  public HashMap<TableScanOperator, PrunedPartitionList> getOpToPartList() {
+    return opToPartList;
+  }
+
+  public void setOpToPartList(HashMap<TableScanOperator, PrunedPartitionList> opToPartList) {
+    this.opToPartList = opToPartList;
   }
 
   /**

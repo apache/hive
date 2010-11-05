@@ -1037,6 +1037,20 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the exprNodeDesc is a node of "or".
+   */
+  public static boolean isOpOr(ExprNodeDesc desc) {
+    return GenericUDFOPOr.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
+   * Returns whether the exprNodeDesc is a node of "not".
+   */
+  public static boolean isOpNot(ExprNodeDesc desc) {
+    return GenericUDFOPNot.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is a node of "positive".
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {

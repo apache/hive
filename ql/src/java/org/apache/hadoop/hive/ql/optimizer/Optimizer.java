@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
+import org.apache.hadoop.hive.ql.optimizer.pcr.PartitionConditionRemover;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
-import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 
 /**
  * Implementation of the optimizer.
@@ -38,7 +39,7 @@ public class Optimizer {
 
   /**
    * Create the list of transformations.
-   * 
+   *
    * @param hiveConf
    */
   public void initialize(HiveConf hiveConf) {
@@ -51,6 +52,7 @@ public class Optimizer {
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicatePushDown());
       transformations.add(new PartitionPruner());
+      transformations.add(new PartitionConditionRemover());
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY)) {
@@ -74,7 +76,7 @@ public class Optimizer {
 
   /**
    * Invoke all the transformations one-by-one, and alter the query plan.
-   * 
+   *
    * @return ParseContext
    * @throws SemanticException
    */

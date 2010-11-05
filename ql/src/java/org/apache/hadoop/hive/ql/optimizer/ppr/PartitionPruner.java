@@ -28,8 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -51,15 +49,11 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
  * The transformation step that does partition pruning.
- * 
+ *
  */
 public class PartitionPruner implements Transform {
 
@@ -69,7 +63,7 @@ public class PartitionPruner implements Transform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.hadoop.hive.ql.optimizer.Transform#transform(org.apache.hadoop
    * .hive.ql.parse.ParseContext)
@@ -103,7 +97,7 @@ public class PartitionPruner implements Transform {
    * Find out whether the condition only contains partitioned columns. Note that
    * if the table is not partitioned, the function always returns true.
    * condition.
-   * 
+   *
    * @param tab
    *          the table object
    * @param expr
@@ -142,7 +136,7 @@ public class PartitionPruner implements Transform {
   /**
    * Get the partition list for the table that satisfies the partition pruner
    * condition.
-   * 
+   *
    * @param tab
    *          the table object for the alias
    * @param prunerExpr
@@ -183,30 +177,6 @@ public class PartitionPruner implements Transform {
       if (tab.isPartitioned()) {
         for (String partName : Hive.get().getPartitionNames(tab.getDbName(),
             tab.getTableName(), (short) -1)) {
-          // Set all the variables here
-          LinkedHashMap<String, String> partSpec = Warehouse
-              .makeSpecFromName(partName);
-          // Create the row object
-          ArrayList<String> partNames = new ArrayList<String>();
-          ArrayList<String> partValues = new ArrayList<String>();
-          ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-          for (Map.Entry<String, String> entry : partSpec.entrySet()) {
-            partNames.add(entry.getKey());
-            partValues.add(entry.getValue());
-            partObjectInspectors
-                .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-          }
-          StructObjectInspector partObjectInspector = ObjectInspectorFactory
-              .getStandardStructObjectInspector(partNames, partObjectInspectors);
-
-          rowWithPart[1] = partValues;
-          ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(
-              2);
-          ois.add(rowObjectInspector);
-          ois.add(partObjectInspector);
-          StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory
-              .getUnionStructObjectInspector(ois);
-
           // If the "strict" mode is on, we have to provide partition pruner for
           // each table.
           if ("strict".equalsIgnoreCase(HiveConf.getVar(conf,
@@ -218,15 +188,15 @@ public class PartitionPruner implements Transform {
             }
           }
 
+          // Set all the variables here
+          LinkedHashMap<String, String> partSpec = Warehouse
+              .makeSpecFromName(partName);
+
           // evaluate the expression tree
           if (prunerExpr != null) {
-            ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory
-                .get(prunerExpr);
-            ObjectInspector evaluateResultOI = evaluator
-                .initialize(rowWithPartObjectInspector);
-            Object evaluateResultO = evaluator.evaluate(rowWithPart);
-            Boolean r = (Boolean) ((PrimitiveObjectInspector) evaluateResultOI)
-                .getPrimitiveJavaObject(evaluateResultO);
+            Boolean r = (Boolean) PartExprEvalUtils.evalExprWithPart(prunerExpr, partSpec,
+                rowObjectInspector);
+
             LOG.trace("prune result for partition " + partSpec + ": " + r);
             if (Boolean.FALSE.equals(r)) {
               if (denied_parts.isEmpty()) {
@@ -245,8 +215,9 @@ public class PartitionPruner implements Transform {
                 unkn_parts.add(part);
                 state = "unknown";
               }
-              if (LOG.isDebugEnabled())
+              if (LOG.isDebugEnabled()) {
                 LOG.debug(state + " partition: " + partSpec);
+              }
             }
           } else {
             // is there is no parition pruning, all of them are needed

@@ -220,6 +220,9 @@ Trunk -  Unreleased
     HIVE-1751. Optimize ColumnarStructObjectInspector.getStructFieldData()
     (Siying Dong via namit)
 
+    HIVE-1750 Remove partition filtering conditions when possible
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

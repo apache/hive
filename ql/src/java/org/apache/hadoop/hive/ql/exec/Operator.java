@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -640,6 +641,36 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       child.setParentOperators(null);
     } else {
       child.getParentOperators().remove(parentIndex);
+    }
+  }
+
+  /**
+   * Remove a child and add all of the child's children to the location of the child
+   *
+   * @param child   If this operator is not the only parent of the child. There can be unpredictable result.
+   * @throws SemanticException
+   */
+  public void removeChildAndAdoptItsChildren(Operator<? extends Serializable> child) throws SemanticException {
+    int childIndex = childOperators.indexOf(child);
+    if (childIndex == -1) {
+      throw new SemanticException(
+          "Exception when trying to remove partition predicates: fail to find child from parent");
+    }
+
+    childOperators.remove(childIndex);
+    if (child.getChildOperators() != null &&
+        child.getChildOperators().size() > 0) {
+      childOperators.addAll(childIndex, child.getChildOperators());
+    }
+
+    for (Operator<? extends Serializable> gc : child.getChildOperators()) {
+      List<Operator<? extends Serializable>> parents = gc.getParentOperators();
+      int index = parents.indexOf(child);
+      if (index == -1) {
+        throw new SemanticException(
+            "Exception when trying to remove partition predicates: fail to find parent from child");
+      }
+      parents.set(index, this);
     }
   }
 

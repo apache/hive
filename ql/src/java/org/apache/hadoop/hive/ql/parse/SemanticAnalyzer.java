@@ -171,6 +171,7 @@ import org.apache.hadoop.mapred.InputFormat;
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
+  private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
@@ -199,8 +200,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public SemanticAnalyzer(HiveConf conf) throws SemanticException {
 
     super(conf);
-
     opToPartPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
+    opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
     opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
     topOps = new HashMap<String, Operator<? extends Serializable>>();
     topSelOps = new HashMap<String, Operator<? extends Serializable>>();
@@ -237,6 +238,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public void init(ParseContext pctx) {
     opToPartPruner = pctx.getOpToPartPruner();
+    opToPartList = pctx.getOpToPartList();
     opToSamplePruner = pctx.getOpToSamplePruner();
     topOps = pctx.getTopOps();
     topSelOps = pctx.getTopSelOps();
@@ -256,8 +258,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ParseContext getParseContext() {
-    return new ParseContext(conf, qb, ast, opToPartPruner, topOps, topSelOps,
-        opParseCtx, joinContext, topToTable, loadTableWork,
+    return new ParseContext(conf, qb, ast, opToPartPruner, opToPartList, topOps,
+        topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner);
@@ -6100,9 +6102,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             PrunedPartitionList partsList = null;
             try {
-              partsList = PartitionPruner.prune(topToTable.get(ts),
-                  opToPartPruner.get(ts), conf, (String) topOps.keySet()
-                  .toArray()[0], prunedPartitions);
+              partsList = opToPartList.get(ts);
+              if (partsList == null) {
+                partsList = PartitionPruner.prune(topToTable.get(ts),
+                    opToPartPruner.get(ts), conf, (String) topOps.keySet()
+                    .toArray()[0], prunedPartitions);
+                opToPartList.put(ts, partsList);
+              }
             } catch (HiveException e) {
               // Has to use full name to make sure it does not conflict with
               // org.apache.commons.lang.StringUtils
@@ -6507,7 +6513,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner,
-        topOps, topSelOps, opParseCtx, joinContext, topToTable,
+        opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
         opToSamplePruner);
@@ -7242,7 +7248,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ExecDriver mrtask: mrtasks) {
       try {
         ContentSummary inputSummary = Utilities.getInputSummary
-          (ctx, mrtask.getWork(), p);
+          (ctx, (MapredWork)mrtask.getWork(), p);
         int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
 
         if (LOG.isDebugEnabled()) {

@@ -19,23 +19,18 @@ STAGE PLANS:
           TableScan
             alias: a
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: ((ds = '2008-04-08') and (hr = '11'))
-                  type: boolean
-              Reduce Output Operator
-                sort order: 
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
+                    expr: hr
+                    type: string
         b 
           TableScan
             alias: b
@@ -59,9 +54,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
+        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -75,13 +70,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart
+              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
               name srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284504421
+              transient_lastDdlTime 1288389287
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -92,13 +87,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
                 name srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504421
+                transient_lastDdlTime 1288389287
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -139,9 +134,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/nzhang/hive_2010-09-14_16-28-22_487_1236018290365812724/-ext-10001
+                  directory: file:/tmp/sdong/hive_2010-10-29_15-29-06_211_4226521001698904551/-ext-10001
                   NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-14_16-28-22_487_1236018290365812724/-ext-10001/
+                  Stats Publishing Key Prefix: file:/tmp/sdong/hive_2010-10-29_15-29-06_211_4226521001698904551/-ext-10001/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -161,8 +156,8 @@ STAGE PLANS:
 PREHOOK: query: select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-28-22_685_3035031630294775174/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-06_367_5727139295221138616/-mr-10000
 POSTHOOK: query: select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-28-22_685_3035031630294775174/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-06_367_5727139295221138616/-mr-10000

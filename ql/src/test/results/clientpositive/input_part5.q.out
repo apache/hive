@@ -31,7 +31,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: ((ds = '2008-04-08') and (key < 100))
+                  expr: (key < 100)
                   type: boolean
               Filter Operator
                 predicate:
@@ -64,7 +64,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-34-30_692_7574653588774934184/-ext-10000
+          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-33-52_690_4501272582403071835/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-34-30_692_7574653588774934184/-ext-10002 
+        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-33-52_690_4501272582403071835/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -112,11 +112,11 @@ POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, typ
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-34-41_336_5067322787693699900/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-01_055_4260628118574102608/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-34-41_336_5067322787693699900/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-01_055_4260628118574102608/-mr-10000
 POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]

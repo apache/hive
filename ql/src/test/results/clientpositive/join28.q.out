@@ -59,25 +59,21 @@ STAGE PLANS:
             alias: z
             Filter Operator
               predicate:
-                  expr: ((ds = '2008-04-08') and (hr = 11))
+                  expr: (ds = '2008-04-08')
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (ds = '2008-04-08')
+                    expr: (hr = 11)
                     type: boolean
-                Filter Operator
-                  predicate:
-                      expr: (hr = 11)
-                      type: boolean
-                  JDBM Sink Operator
-                    condition expressions:
-                      0 {_col0}
-                      1 {value}
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[key]]
-                    Position of Big Table: 0
+                JDBM Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {value}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[key]]
+                  Position of Big Table: 0
 
   Stage: Stage-1
     Map Reduce
@@ -151,7 +147,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-25_731_6161190954879287426/-ext-10000
+          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-37-58_634_5247474048070349832/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -169,7 +165,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-25_731_6161190954879287426/-ext-10002 
+        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-37-58_634_5247474048070349832/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -207,11 +203,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-31_701_2363624034797918899/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-38-05_164_4212085229910053721/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-31_701_2363624034797918899/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-38-05_164_4212085229910053721/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 128	val_128

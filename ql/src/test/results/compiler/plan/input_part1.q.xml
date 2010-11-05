@@ -79,7 +79,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1287464943</string> 
+          <string>1288976861</string> 
          </void> 
         </object> 
        </void> 
@@ -132,13 +132,13 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/tmp/njain/hive_2010-10-18_22-09-15_550_1268207762148347420/-ext-10001</string> 
+                           <string>file:/tmp/njain/hive_2010-11-05_10-07-56_176_5921530682191831092/-ext-10001</string> 
                           </void> 
                           <void property="numFiles"> 
                            <int>1</int> 
                           </void> 
                           <void property="statsAggPrefix"> 
-                           <string>file:/tmp/njain/hive_2010-10-18_22-09-15_550_1268207762148347420/-ext-10001/</string> 
+                           <string>file:/tmp/njain/hive_2010-11-05_10-07-56_176_5921530682191831092/-ext-10001/</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -690,140 +690,32 @@
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                        <void property="childExprs"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                            <void property="column"> 
-                             <string>key</string> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string>srcpart</string> 
-                            </void> 
-                            <void property="typeInfo"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
-                            <void property="typeInfo"> 
-                             <object idref="PrimitiveTypeInfo1"/> 
-                            </void> 
-                            <void property="value"> 
-                             <int>100</int> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="genericUDF"> 
-                         <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan"/> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo2"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                        <void property="childExprs"> 
-                         <object class="java.util.ArrayList"> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                            <void property="column"> 
-                             <string>ds</string> 
-                            </void> 
-                            <void property="isPartitionColOrVirtualCol"> 
-                             <boolean>true</boolean> 
-                            </void> 
-                            <void property="tabAlias"> 
-                             <string>srcpart</string> 
-                            </void> 
-                            <void property="typeInfo"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
-                            <void property="typeInfo"> 
-                             <object idref="PrimitiveTypeInfo0"/> 
-                            </void> 
-                            <void property="value"> 
-                             <string>2008-04-08</string> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
-                        </void> 
-                        <void property="genericUDF"> 
-                         <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"/> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo2"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                    <void property="column"> 
+                     <string>key</string> 
                     </void> 
-                    <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd"/> 
+                    <void property="tabAlias"> 
+                     <string>srcpart</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>hr</string> 
-                        </void> 
-                        <void property="isPartitionColOrVirtualCol"> 
-                         <boolean>true</boolean> 
-                        </void> 
-                        <void property="tabAlias"> 
-                         <string>srcpart</string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
-                        </void> 
-                        <void property="value"> 
-                         <string>12</string> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"/> 
-                    </void> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
+                    </void> 
+                    <void property="value"> 
+                     <int>100</int> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="genericUDF"> 
-                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd"/> 
+                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan"/> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
@@ -1045,7 +937,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1287464943</string> 
+           <string>1288976861</string> 
           </void> 
          </object> 
         </void> 
