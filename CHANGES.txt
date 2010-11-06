@@ -226,6 +226,9 @@ Trunk -  Unreleased
     HIVE-1768 Update transident_lastDdlTime only if not specified
     (Paul Yang via namit)
 
+    HIVE-1765 Add queryid while locking
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

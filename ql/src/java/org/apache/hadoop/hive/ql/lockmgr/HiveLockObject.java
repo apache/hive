@@ -32,19 +32,25 @@ public class HiveLockObject {
    */
   private Partition p;
 
+  /* user supplied data for that object */
+  private String    data;
+
   public HiveLockObject() {
     this.t = null;
     this.p = null;
+    this.data = null;
   }
 
-  public HiveLockObject(Table t) {
+  public HiveLockObject(Table t, String data) {
     this.t = t;
     this.p = null;
+    this.data = data;
   }
 
-  public HiveLockObject(Partition p) {
+  public HiveLockObject(Partition p, String data) {
     this.t = null;
     this.p = p;
+    this.data = data;
   }
 
   public Table getTable() {
@@ -71,4 +77,13 @@ public class HiveLockObject {
       return p.getCompleteName();
     }
   }
+
+  public String getData() {
+    return data;
+  }
+
+  public void setData(String data) {
+    this.data = data;
+  }
+
 }

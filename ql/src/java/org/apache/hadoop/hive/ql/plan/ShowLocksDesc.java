@@ -33,6 +33,7 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
   String resFile;
   String tableName;
   HashMap<String, String> partSpec;
+  boolean isExt;
 
   /**
    * table name for the result of show locks.
@@ -58,10 +59,11 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
    * @param resFile
    */
   public ShowLocksDesc(Path resFile, String tableName,
-     HashMap<String, String> partSpec) {
-    this.resFile = resFile.toString();
-    this.partSpec = partSpec;
+                       HashMap<String, String> partSpec, boolean isExt) {
+    this.resFile   = resFile.toString();
+    this.partSpec  = partSpec;
     this.tableName = tableName;
+    this.isExt     = isExt;
   }
 
   /**
@@ -110,5 +112,20 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
    */
   public void setResFile(String resFile) {
     this.resFile = resFile;
+  }
+
+  /**
+   * @return the isExt
+   */
+  public boolean isExt() {
+    return isExt;
+  }
+
+  /**
+   * @param isExt
+   *          the isExt to set
+   */
+  public void setExt(boolean isExt) {
+    this.isExt = isExt;
   }
 }

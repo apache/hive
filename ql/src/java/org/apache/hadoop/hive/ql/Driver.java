@@ -434,12 +434,12 @@ public class Driver implements CommandProcessor {
     List<LockObject> locks = new LinkedList<LockObject>();
 
     if (t != null) {
-      locks.add(new LockObject(new HiveLockObject(t), mode));
+      locks.add(new LockObject(new HiveLockObject(t, plan.getQueryId()), mode));
       return locks;
     }
 
     if (p != null) {
-      locks.add(new LockObject(new HiveLockObject(p), mode));
+      locks.add(new LockObject(new HiveLockObject(p, plan.getQueryId()), mode));
 
       // All the parents are locked in shared mode
       mode = HiveLockMode.SHARED;
@@ -450,11 +450,13 @@ public class Driver implements CommandProcessor {
       for (int idx = 0; idx < partns.length -1; idx++) {
         String partn = partns[idx];
         partialName += partialName + partn;
-        locks.add(new LockObject(new HiveLockObject(new DummyPartition(p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@" + partialName)), mode));
+        locks.add(new LockObject(new HiveLockObject(
+                                   new DummyPartition(p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@" + partialName),
+                                   plan.getQueryId()), mode));
         partialName += "/";
       }
 
-      locks.add(new LockObject(new HiveLockObject(p.getTable()), mode));
+      locks.add(new LockObject(new HiveLockObject(p.getTable(), plan.getQueryId()), mode));
     }
     return locks;
   }

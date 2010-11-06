@@ -14,6 +14,7 @@ LOCK TABLE tstsrcpart PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE;
 SHOW LOCKS;
 SHOW LOCKS tstsrcpart;
 SHOW LOCKS tstsrcpart PARTITION(ds='2008-04-08', hr='11');
+SHOW LOCKS tstsrcpart PARTITION(ds='2008-04-08', hr='11') extended;
 
 UNLOCK TABLE tstsrc;
 SHOW LOCKS;

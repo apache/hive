@@ -49,6 +49,14 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
+PREHOOK: query: SHOW LOCKS tstsrc extended
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrc extended
+POSTHOOK: type: SHOWLOCKS
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+default@tstsrc	SHARED
+QUERYID_LOCK:njain_20101104183131_7ee0480d-77f6-4bc2-8cec-26b808b026df	 
 PREHOOK: query: UNLOCK TABLE tstsrc
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrc

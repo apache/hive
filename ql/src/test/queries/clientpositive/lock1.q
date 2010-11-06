@@ -8,6 +8,8 @@ SHOW LOCKS tstsrc;
 LOCK TABLE tstsrc shared;
 SHOW LOCKS;
 SHOW LOCKS tstsrc;
+SHOW LOCKS tstsrc extended;
+
 UNLOCK TABLE tstsrc;
 SHOW LOCKS;
 SHOW LOCKS tstsrc;

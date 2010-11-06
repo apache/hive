@@ -34,14 +34,16 @@ public class LockTableDesc extends DDLDesc implements Serializable {
   private String tableName;
   private String mode;
   private Map<String, String> partSpec;
+  private String queryId;
 
   public LockTableDesc() {
   }
 
-  public LockTableDesc(String tableName, String mode, Map<String, String> partSpec) {
+  public LockTableDesc(String tableName, String mode, Map<String, String> partSpec, String queryId) {
     this.tableName = tableName;
     this.mode      = mode;
     this.partSpec  = partSpec;
+    this.queryId   = queryId;
   }
 
   public String getTableName() {
@@ -66,5 +68,13 @@ public class LockTableDesc extends DDLDesc implements Serializable {
 
   public void setPartSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;
+  }
+
+  public String getQueryId() {
+    return queryId;
+  }
+
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
   }
 }
