@@ -455,6 +455,9 @@ Trunk -  Unreleased
     HIVE-1767 Bug in merging files for dynamic partitions
     (He Yongqiang via namit)
 
+    HIVE-1769 Bug in test pcr.q
+    (Siying Dong via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
