@@ -458,6 +458,9 @@ Trunk -  Unreleased
     HIVE-1769 Bug in test pcr.q
     (Siying Dong via namit)
 
+    HIVE-1774 Bug in test merge_dynamic_partition.q
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

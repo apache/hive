@@ -18,7 +18,7 @@ explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08';
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08';
 
-select * from merge_dynamic_part;
+select * from merge_dynamic_part order by key, value;
 show table extended like `merge_dynamic_part`;
 
 
@@ -30,7 +30,7 @@ explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp where ds='2008-04-08';
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp where ds='2008-04-08';
 
-select * from merge_dynamic_part;
+select * from merge_dynamic_part order by key, value;
 show table extended like `merge_dynamic_part`;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -41,6 +41,6 @@ explain
 insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds='2008-04-08' and hr=11;
 insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds='2008-04-08' and hr=11;;
 
-select * from merge_dynamic_part;
+select * from merge_dynamic_part order by key, value;
 show table extended like `merge_dynamic_part`;
 
