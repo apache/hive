@@ -461,6 +461,9 @@ Trunk -  Unreleased
     HIVE-1774 Bug in test merge_dynamic_partition.q
     (He Yongqiang via namit)
 
+    HIVE-1777 Outdated comments for GenericUDTF.close()
+    (Paul Yang via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
