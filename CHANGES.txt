@@ -104,6 +104,9 @@ Trunk -  Unreleased
     HIVE-474 Support for distinct selection on two or more columns
     (Amareshwari Sriramadasu via namit)
 
+    HIVE-1779 Add udf str_to_map
+    (Siying Dong via via namit)
+
   IMPROVEMENTS
 
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping

@@ -129,6 +129,7 @@ std
 stddev
 stddev_pop
 stddev_samp
+str_to_map
 string
 struct
 substr

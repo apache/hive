@@ -1,0 +1,246 @@
+PREHOOK: query: desc function str_to_map
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: desc function str_to_map
+POSTHOOK: type: DESCFUNCTION
+str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
+PREHOOK: query: desc function extended str_to_map
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: desc function extended str_to_map
+POSTHOOK: type: DESCFUNCTION
+str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
+PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map 'a=1,b=2,c=3' ',' '=') 'a'))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: str_to_map('a=1,b=2,c=3',',','=')['a']
+                    type: string
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-28_591_6260158416663883074/-mr-10000
+POSTHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-28_591_6260158416663883074/-mr-10000
+1
+1
+1
+PREHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3'))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: str_to_map('a:1,b:2,c:3')
+                    type: map<string,string>
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-32_534_2589249075999917145/-mr-10000
+POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-32_534_2589249075999917145/-mr-10000
+{"b":"2","c":"3","a":"1"}
+{"b":"2","c":"3","a":"1"}
+{"b":"2","c":"3","a":"1"}
+PREHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3' ',' ':'))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: str_to_map('a:1,b:2,c:3',',',':')
+                    type: map<string,string>
+              outputColumnNames: _col0
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-36_278_460631588022401435/-mr-10000
+POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-36_278_460631588022401435/-mr-10000
+{"b":"2","c":"3","a":"1"}
+{"b":"2","c":"3","a":"1"}
+{"b":"2","c":"3","a":"1"}
+PREHOOK: query: explain select str_to_map(t.ss,',',':')['a']
+from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
+limit 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select str_to_map(t.ss,',',':')['a']
+from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
+limit 3
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST 'a:1,b:2,c:3') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ss)))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map (. (TOK_TABLE_OR_COL t) ss) ',' ':') 'a'))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        t:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: 'a:1,b:2,c:3'
+                    type: string
+              outputColumnNames: _col0
+              Transform Operator
+                command: cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: str_to_map(_col0,',',':')['a']
+                        type: string
+                  outputColumnNames: _col0
+                  Limit
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: select str_to_map(t.ss,',',':')['a']
+from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
+limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-40_008_1745894324808734321/-mr-10000
+POSTHOOK: query: select str_to_map(t.ss,',',':')['a']
+from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
+limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-40_008_1745894324808734321/-mr-10000
+1
+1
+1
+PREHOOK: query: drop table tbl_s2m
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tbl_s2m
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl_s2m as select 'ABC=CC_333=444' as t from src limit 3
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: create table tbl_s2m as select 'ABC=CC_333=444' as t from src limit 3
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl_s2m
+PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_s2m
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-48_099_3563726538760875441/-mr-10000
+POSTHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_s2m
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-48_099_3563726538760875441/-mr-10000
+444
+444
+444
+PREHOOK: query: drop table tbl_s2m
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_s2m
+PREHOOK: Output: default@tbl_s2m
+POSTHOOK: query: drop table tbl_s2m
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_s2m
+POSTHOOK: Output: default@tbl_s2m
