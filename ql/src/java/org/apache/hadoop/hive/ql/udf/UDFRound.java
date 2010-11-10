@@ -55,8 +55,13 @@ public class UDFRound extends UDF {
     if ((n == null) || (i == null)) {
       return null;
     }
-    doubleWritable.set(BigDecimal.valueOf(n.get()).setScale(i.get(),
-        RoundingMode.HALF_UP).doubleValue());
+    double d = n.get();
+    if (Double.isNaN(d) || Double.isInfinite(d)) {
+      doubleWritable.set(d);
+    } else {
+      doubleWritable.set(BigDecimal.valueOf(d).setScale(i.get(),
+          RoundingMode.HALF_UP).doubleValue());
+    }
     return doubleWritable;
   }
 

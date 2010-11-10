@@ -464,6 +464,9 @@ Trunk -  Unreleased
     HIVE-1777 Outdated comments for GenericUDTF.close()
     (Paul Yang via jvs)
 
+    HIVE-1771 Fix bug in UDF round
+    (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
