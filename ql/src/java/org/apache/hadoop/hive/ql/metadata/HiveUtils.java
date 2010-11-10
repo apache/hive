@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.util.List;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
  * General collection of helper functions.
@@ -183,4 +186,20 @@ public final class HiveUtils {
     }
 
   }
+
+
+    /**
+     * Convert FieldSchemas to columnNames with backticks around them.
+     */
+    public static String getUnparsedColumnNamesFromFieldSchema(
+        List<FieldSchema> fieldSchemas) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < fieldSchemas.size(); i++) {
+        if (i > 0) {
+          sb.append(",");
+        }
+        sb.append(HiveUtils.unparseIdentifier(fieldSchemas.get(i).getName()));
+      }
+      return sb.toString();
+    }
 }

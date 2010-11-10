@@ -125,13 +125,13 @@ public class CompactIndexHandler extends AbstractIndexHandler {
       PartitionDesc indexTblPartDesc, String indexTableName,
       PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
     
-    String indexCols = MetaStoreUtils.getColumnNamesFromFieldSchema(indexField);
+    String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 
     //form a new insert overwrite query.
     StringBuilder command= new StringBuilder();
     LinkedHashMap<String, String> partSpec = indexTblPartDesc.getPartSpec();
 
-    command.append("INSERT OVERWRITE TABLE " + indexTableName );
+    command.append("INSERT OVERWRITE TABLE " + HiveUtils.unparseIdentifier(indexTableName ));
     if (partitioned && indexTblPartDesc != null) {
       command.append(" PARTITION ( ");
       List<String> ret = getPartKVPairStringArray(partSpec);
@@ -153,7 +153,7 @@ public class CompactIndexHandler extends AbstractIndexHandler {
     command.append(" collect_set (");
     command.append(VirtualColumn.BLOCKOFFSET.getName());
     command.append(") ");
-    command.append(" FROM " + baseTableName );
+    command.append(" FROM " + HiveUtils.unparseIdentifier(baseTableName) );
     LinkedHashMap<String, String> basePartSpec = baseTablePartDesc.getPartSpec();
     if(basePartSpec != null) {
       command.append(" WHERE ");

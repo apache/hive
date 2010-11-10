@@ -470,6 +470,10 @@ Trunk -  Unreleased
     HIVE-1771 Fix bug in UDF round
     (John Sichi via namit)
 
+    HIVE-1501 when generating reentrant INSERT for index rebuild,
+    quote identifiers using backticks
+    (Skye Berghel via jvs)
+
   TESTS
 
     HIVE-1464. improve  test query performance
