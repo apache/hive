@@ -40,7 +40,7 @@ public class GenericUDFOPOr extends GenericUDF {
       throws UDFArgumentException {
     if (arguments.length != 2) {
       throw new UDFArgumentLengthException(
-          "The operator 'AND' only accepts 2 argument.");
+          "The operator 'OR' only accepts 2 argument.");
     }
     boi0 = (BooleanObjectInspector) arguments[0];
     boi1 = (BooleanObjectInspector) arguments[1];

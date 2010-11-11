@@ -170,7 +170,7 @@ public class ListObjectsEqualComparer {
       return true;
     }
 
-    for (int i = 0; i < numFields; i++) {
+    for (int i = numFields - 1; i >= 0; i--) {
       if (!fieldComparers[i].areEqual(ol0.get(i), ol1.get(i))) {
         return false;
       }

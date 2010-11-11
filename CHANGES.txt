@@ -232,6 +232,9 @@ Trunk -  Unreleased
     HIVE-1765 Add queryid while locking
     (namit via He Yongqiang)
 
+    HIVE-1743 Compare from the end for GroupBy
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

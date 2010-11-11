@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 /**
  * GenericUDF Class for operation Not EQUAL.
  */
-@Description(name = "=", value = "a _FUNC_ b - Returns TRUE if a is not equal to b")
+@Description(name = "<>", value = "a _FUNC_ b - Returns TRUE if a is not equal to b")
 public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
   public GenericUDFOPNotEqual(){
     this.opName = "NOT EQUAL";

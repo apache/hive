@@ -43,7 +43,8 @@ import org.apache.hadoop.io.BooleanWritable;
 @Description(name = "op", value = "a op b - Returns the result of operation")
 public abstract class GenericUDFBaseCompare extends GenericUDF {
   public enum CompareType {
-    // Now only string, int and bollean comparisons are treated as special cases.
+    // Now only string, text, int, long, byte and boolean comparisons are
+    // treated as special cases.
     // For other types, we reuse ObjectInspectorUtils.compare()
     COMPARE_STRING, COMPARE_TEXT, COMPARE_INT, COMPARE_LONG, COMPARE_BYTE,
     COMPARE_BOOL, SAME_TYPE, NEED_CONVERT
@@ -86,10 +87,10 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
       }
     }
 
-    if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]) ==
-      TypeInfoFactory.stringTypeInfo &&
-      TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]) ==
-        TypeInfoFactory.stringTypeInfo) {
+    if (TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
+      TypeInfoFactory.stringTypeInfo) &&
+      TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
+      TypeInfoFactory.stringTypeInfo)) {
       soi0 = (StringObjectInspector) arguments[0];
       soi1 = (StringObjectInspector) arguments[1];
       if (soi0.preferWritable() || soi1.preferWritable()) {
