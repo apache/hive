@@ -477,6 +477,9 @@ Trunk -  Unreleased
     quote identifiers using backticks
     (Skye Berghel via jvs)
 
+    HIVE-1780 Typo in hive-default.xml
+    (Youngwoo Kim via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
