@@ -504,7 +504,10 @@ public class MetaStoreUtils {
               .getBucketCols().get(0));
     }
     if (sd.getSerdeInfo() != null) {
-      schema.putAll(sd.getSerdeInfo().getParameters());
+      for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
+        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : "");
+      }
+
       if (sd.getSerdeInfo().getSerializationLib() != null) {
         schema.setProperty(
             org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, sd

@@ -109,6 +109,8 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)
+
     HIVE-1394. Do not update transient_lastDdlTime if the partition is modified by a housekeeping
     operation (Ning Zhang via namit)
 
