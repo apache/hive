@@ -483,6 +483,9 @@ Trunk -  Unreleased
     HIVE-1780 Typo in hive-default.xml
     (Youngwoo Kim via namit)
 
+    HIVE-1776 parallel execution and auto-local mode combine to place
+    plan file in wrong file system (Joydeep Sen Sarma via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -58,6 +58,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   protected transient TaskHandle taskHandle;
   protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
+  protected transient boolean clonedConf = false;
 
   // Descendants tasks who subscribe feeds from this task
   protected transient List<Task<? extends Serializable>> feedSubscribers;
@@ -380,5 +381,12 @@ public abstract class Task<T extends Serializable> implements Serializable,
 
   // a subscriber accept the feed and do something depending on the Task type
   protected void receiveFeed(FeedType feedType, Object feedValue) {
+  }
+
+  protected void cloneConf () {
+    if (!clonedConf) {
+      clonedConf = true;
+      conf = new HiveConf(conf);
+    }
   }
 }

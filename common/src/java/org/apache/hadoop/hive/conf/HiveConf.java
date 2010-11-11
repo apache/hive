@@ -483,6 +483,16 @@ public class HiveConf extends Configuration {
     initialize(cls);
   }
 
+  /**
+   * Copy constructor
+   */
+  public HiveConf(HiveConf other) {
+    super(other);
+    hiveJar = other.hiveJar;
+    auxJars = other.auxJars;
+    origProp = (Properties)other.origProp.clone();
+  }
+
   private Properties getUnderlyingProps() {
     Iterator<Map.Entry<String, String>> iter = this.iterator();
     Properties p = new Properties();

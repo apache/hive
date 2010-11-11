@@ -102,8 +102,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
         String reason = MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers);
         if (reason == null) {
-          // set the JT to local for the duration of this job
-          ctx.setOriginalTracker(conf.getVar(HiveConf.ConfVars.HADOOPJT));
+          // clone configuration before modifying it on per-task basis
+          cloneConf();
           conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
           console.printInfo("Selecting local mode for task: " + getId());
         } else {
@@ -120,6 +120,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
         // so directly invoke ExecDriver
         return super.execute(driverContext);
       }
+
+      // we need to edit the configuration to setup cmdline. clone it first
+      cloneConf();
 
       // enable assertion
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
@@ -263,10 +266,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
       return (1);
     } finally {
       try {
-        // in case we decided to run everything in local mode, restore the
-        // the jobtracker setting to its initial value
-        ctx.restoreOriginalTracker();
-
         // creating the context can create a bunch of files. So make
         // sure to clear it out
         if(ctxCreated) {
