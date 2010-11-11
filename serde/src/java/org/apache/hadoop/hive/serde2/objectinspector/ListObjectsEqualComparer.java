@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import java.util.ArrayList;
-
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -155,15 +153,15 @@ public class ListObjectsEqualComparer {
    * @param ol1
    * @return True if object in ol0 and ol1 are all identical
    */
-  public boolean areEqual(ArrayList<Object> ol0, ArrayList<Object> ol1) {
-    if (ol0.size() != numFields || ol1.size() != numFields) {
-      if (ol0.size() != ol1.size()) {
+  public boolean areEqual(Object[] ol0, Object[] ol1) {
+    if (ol0.length != numFields || ol1.length != numFields) {
+      if (ol0.length != ol1.length) {
         return false;
       }
-      assert (ol0.size() <= numFields);
-      assert (ol1.size() <= numFields);
-      for (int i = 0; i < Math.min(ol0.size(), ol1.size()); i++) {
-        if (!fieldComparers[i].areEqual(ol0.get(i), ol1.get(i))) {
+      assert (ol0.length <= numFields);
+      assert (ol1.length <= numFields);
+      for (int i = 0; i < Math.min(ol0.length, ol1.length); i++) {
+        if (!fieldComparers[i].areEqual(ol0[i], ol1[i])) {
           return false;
         }
       }
@@ -171,7 +169,7 @@ public class ListObjectsEqualComparer {
     }
 
     for (int i = numFields - 1; i >= 0; i--) {
-      if (!fieldComparers[i].areEqual(ol0.get(i), ol1.get(i))) {
+      if (!fieldComparers[i].areEqual(ol0[i], ol1[i])) {
         return false;
       }
     }

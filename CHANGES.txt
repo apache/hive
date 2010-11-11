@@ -235,6 +235,9 @@ Trunk -  Unreleased
     HIVE-1743 Compare from the end for GroupBy
     (Siying Dong via namit)
 
+    HIVE-1758 Reduce memory for groupby map-side hashmap
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

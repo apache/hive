@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -73,7 +72,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   protected transient ExprNodeEvaluator[] keyFields;
   protected transient ObjectInspector[] keyObjectInspectors;
-  protected transient Object[] keyObjects;
 
   protected transient ExprNodeEvaluator[][] aggregationParameterFields;
   protected transient ObjectInspector[][] aggregationParameterObjectInspectors;
@@ -99,10 +97,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   protected transient ArrayList<ObjectInspector> objectInspectors;
   transient ArrayList<String> fieldNames;
 
+  transient KeyWrapperFactory keyWrapperFactory;
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2,
   // MERGEPARTIAL
-  protected transient ArrayList<Object> currentKeys;
-  protected transient ArrayList<Object> newKeys;
+  protected transient KeyWrapper currentKeys;
+  protected transient KeyWrapper newKeys;
   protected transient AggregationBuffer[] aggregations;
   protected transient Object[][] aggregationsParametersLastInvoke;
 
@@ -110,7 +109,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   protected transient HashMap<KeyWrapper, AggregationBuffer[]> hashAggregations;
 
   // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
-  protected transient HashSet<ArrayList<Object>> keysCurrentGroup;
+  protected transient HashSet<KeyWrapper> keysCurrentGroup;
 
   transient boolean bucketGroup;
 
@@ -134,8 +133,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   // new Key ObjectInspectors are objectInspectors from the parent
   transient StructObjectInspector newKeyObjectInspector;
   transient StructObjectInspector currentKeyObjectInspector;
-  transient ListObjectsEqualComparer currentStructEqualComparer;
-  transient ListObjectsEqualComparer newKeyStructEqualComparer;
 
   /**
    * This is used to store the position and field names for variable length
@@ -192,16 +189,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
     keyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
     currentKeyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
-    keyObjects = new Object[conf.getKeys().size()];
     for (int i = 0; i < keyFields.length; i++) {
       keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils
           .getStandardObjectInspector(keyObjectInspectors[i],
           ObjectInspectorCopyOption.WRITABLE);
-      keyObjects[i] = null;
     }
-    newKeys = new ArrayList<Object>(keyFields.length);
 
     // initialize unionExpr for reduce-side
     // reduce KEY has union field as the last field if there are distinct
@@ -344,7 +338,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
       groupKeyIsNotReduceKey = conf.getGroupKeyNotReductionKey();
       if (groupKeyIsNotReduceKey) {
-        keysCurrentGroup = new HashSet<ArrayList<Object>>();
+        keysCurrentGroup = new HashSet<KeyWrapper>();
       }
     }
 
@@ -365,11 +359,13 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     currentKeyObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(keyNames, Arrays
         .asList(currentKeyObjectInspectors));
-    currentStructEqualComparer = new ListObjectsEqualComparer(currentKeyObjectInspectors, currentKeyObjectInspectors);
-    newKeyStructEqualComparer = new ListObjectsEqualComparer(currentKeyObjectInspectors, keyObjectInspectors);
 
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, objectInspectors);
+
+    keyWrapperFactory = new KeyWrapperFactory(keyFields, keyObjectInspectors, currentKeyObjectInspectors);
+
+    newKeys = keyWrapperFactory.getKeyWrapper();
 
     firstRow = true;
     // estimate the number of hash table entries based on the size of each
@@ -713,17 +709,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     try {
       countAfterReport++;
 
-      // Compute the keys
-      newKeys.clear();
-      for (int i = 0; i < keyFields.length; i++) {
-        if (keyObjectInspectors[i] == null) {
-          keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
-        }
-        keyObjects[i] = keyFields[i].evaluate(row);
-        newKeys.add(keyObjects[i]);
-      }
-
+      newKeys.getNewKey(row, rowInspector);
       if (hashAggr) {
+        newKeys.setHashKey();
         processHashAggr(row, rowInspector, newKeys);
       } else {
         processAggr(row, rowInspector, newKeys);
@@ -743,84 +731,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     }
   }
 
-  private static ArrayList<Object> deepCopyElements(Object[] keys,
-      ObjectInspector[] keyObjectInspectors,
-      ObjectInspectorCopyOption copyOption) {
-    ArrayList<Object> result = new ArrayList<Object>(keys.length);
-    deepCopyElements(keys, keyObjectInspectors, result, copyOption);
-    return result;
-  }
-
-  private static void deepCopyElements(Object[] keys,
-      ObjectInspector[] keyObjectInspectors, ArrayList<Object> result,
-      ObjectInspectorCopyOption copyOption) {
-    result.clear();
-    for (int i = 0; i < keys.length; i++) {
-      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i],
-          keyObjectInspectors[i], copyOption));
-    }
-  }
-
-  class KeyWrapper {
-    int hashcode;
-    ArrayList<Object> keys;
-    // decide whether this is already in hashmap (keys in hashmap are deepcopied
-    // version, and we need to use 'currentKeyObjectInspector').
-    boolean copy = false;
-
-    KeyWrapper() {
-    }
-
-    public KeyWrapper(int hashcode, ArrayList<Object> copiedKeys) {
-      this(hashcode, copiedKeys, false);
-    }
-
-    public KeyWrapper(int hashcode, ArrayList<Object> copiedKeys,
-        boolean inHashMap) {
-      super();
-      this.hashcode = hashcode;
-      keys = copiedKeys;
-      copy = inHashMap;
-    }
-
-    @Override
-    public int hashCode() {
-      return hashcode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      ArrayList<Object> copied_in_hashmap = ((KeyWrapper) obj).keys;
-      if (!copy) {
-        return newKeyStructEqualComparer.areEqual(copied_in_hashmap, keys);
-      } else {
-        return currentStructEqualComparer.areEqual(copied_in_hashmap, keys);
-      }
-    }
-  }
-
-
-
-  KeyWrapper keyProber = new KeyWrapper();
-
   private void processHashAggr(Object row, ObjectInspector rowInspector,
-      ArrayList<Object> newKeys) throws HiveException {
+      KeyWrapper newKeys) throws HiveException {
     // Prepare aggs for updating
     AggregationBuffer[] aggs = null;
     boolean newEntryForHashAggr = false;
 
-    keyProber.hashcode = newKeys.hashCode();
-    // use this to probe the hashmap
-    keyProber.keys = newKeys;
-
     // hash-based aggregations
-    aggs = hashAggregations.get(keyProber);
-    ArrayList<Object> newDefaultKeys = null;
+    aggs = hashAggregations.get(newKeys);
     if (aggs == null) {
-      newDefaultKeys = deepCopyElements(keyObjects, keyObjectInspectors,
-          ObjectInspectorCopyOption.WRITABLE);
-      KeyWrapper newKeyProber = new KeyWrapper(keyProber.hashcode,
-          newDefaultKeys, true);
+      KeyWrapper newKeyProber = newKeys.copyKey();
       aggs = newAggregations();
       hashAggregations.put(newKeyProber, aggs);
       newEntryForHashAggr = true;
@@ -833,11 +753,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     // Peek into the set to find out if a new grouping key is seen for the given
     // reduction key
     if (groupKeyIsNotReduceKey) {
-      if (newDefaultKeys == null) {
-        newDefaultKeys = deepCopyElements(keyObjects, keyObjectInspectors,
-            ObjectInspectorCopyOption.WRITABLE);
-      }
-      newEntryForHashAggr = keysCurrentGroup.add(newDefaultKeys);
+      newEntryForHashAggr = keysCurrentGroup.add(newKeys.copyKey());
     }
 
     // Update the aggs
@@ -859,27 +775,30 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
   // Non-hash aggregation
   private void processAggr(Object row, ObjectInspector rowInspector,
-      ArrayList<Object> newKeys) throws HiveException {
+      KeyWrapper newKeys) throws HiveException {
     // Prepare aggs for updating
     AggregationBuffer[] aggs = null;
     Object[][] lastInvoke = null;
+    //boolean keysAreEqual = (currentKeys != null && newKeys != null)?
+    //  newKeyStructEqualComparer.areEqual(currentKeys, newKeys) : false;
+
     boolean keysAreEqual = (currentKeys != null && newKeys != null)?
-      newKeyStructEqualComparer.areEqual(currentKeys, newKeys) : false;
+        newKeys.equals(currentKeys) : false;
 
 
     // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual) {
-      forward(currentKeys, aggregations);
+      forward(currentKeys.getKeyArray(), aggregations);
       countAfterReport = 0;
     }
 
     // Need to update the keys?
     if (currentKeys == null || !keysAreEqual) {
       if (currentKeys == null) {
-        currentKeys = new ArrayList<Object>(keyFields.length);
+        currentKeys = newKeys.copyKey();
+      } else {
+        currentKeys.copyKey(newKeys);
       }
-      deepCopyElements(keyObjects, keyObjectInspectors, currentKeys,
-          ObjectInspectorCopyOption.WRITABLE);
 
       // Reset the aggregations
       resetAggregations(aggregations);
@@ -904,14 +823,14 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    * @param newKeys
    *          keys for the row under consideration
    **/
-  private boolean shouldBeFlushed(ArrayList<Object> newKeys) {
+  private boolean shouldBeFlushed(KeyWrapper newKeys) {
     int numEntries = hashAggregations.size();
 
     // The fixed size for the aggregation class is already known. Get the
     // variable portion of the size every NUMROWSESTIMATESIZE rows.
     if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
       for (Integer pos : keyPositionsSize) {
-        Object key = newKeys.get(pos.intValue());
+        Object key = newKeys.getKeyArray()[pos.intValue()];
         // Ignore nulls
         if (key != null) {
           if (key instanceof LazyPrimitive) {
@@ -928,8 +847,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
 
       AggregationBuffer[] aggs = null;
       if (aggrPositions.size() > 0) {
-	KeyWrapper newKeyProber = new KeyWrapper(
-	    newKeys.hashCode(), newKeys);
+        KeyWrapper newKeyProber = newKeys.copyKey();
         aggs = hashAggregations.get(newKeyProber);
       }
 
@@ -975,7 +893,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           .entrySet().iterator();
       while (iter.hasNext()) {
         Map.Entry<KeyWrapper, AggregationBuffer[]> m = iter.next();
-        forward(m.getKey().keys, m.getValue());
+        forward(m.getKey().getKeyArray(), m.getValue());
       }
       hashAggregations.clear();
       hashAggregations = null;
@@ -990,7 +908,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     int numDel = 0;
     while (iter.hasNext()) {
       Map.Entry<KeyWrapper, AggregationBuffer[]> m = iter.next();
-      forward(m.getKey().keys, m.getValue());
+      forward(m.getKey().getKeyArray(), m.getValue());
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
@@ -1009,19 +927,20 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    *          The keys in the record
    * @throws HiveException
    */
-  protected void forward(ArrayList<Object> keys, AggregationBuffer[] aggs)
+  protected void forward(Object[] keys, AggregationBuffer[] aggs)
       throws HiveException {
-    int totalFields = keys.size() + aggs.length;
+    int totalFields = keys.length+ aggs.length;
     if (forwardCache == null) {
       forwardCache = new Object[totalFields];
     }
-    for (int i = 0; i < keys.size(); i++) {
-      forwardCache[i] = keys.get(i);
+    for (int i = 0; i < keys.length; i++) {
+      forwardCache[i] = keys[i];
     }
     for (int i = 0; i < aggs.length; i++) {
-      forwardCache[keys.size() + i] = aggregationEvaluators[i]
+      forwardCache[keys.length + i] = aggregationEvaluators[i]
           .evaluate(aggs[i]);
     }
+
     forward(forwardCache, outputObjInspector);
   }
 
@@ -1058,7 +977,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           }
 
           // create dummy keys - size 0
-          forward(new ArrayList<Object>(0), aggregations);
+          forward(new Object[0], aggregations);
         } else {
           if (hashAggregations != null) {
             LOG.warn("Begin Hash Table flush at close: size = "
@@ -1067,14 +986,15 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
             while (iter.hasNext()) {
               Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter
                   .next();
-              forward(m.getKey().keys, m.getValue());
+
+              forward(m.getKey().getKeyArray(), m.getValue());
               iter.remove();
             }
             hashAggregations.clear();
           } else if (aggregations != null) {
             // sort-based aggregations
             if (currentKeys != null) {
-              forward(currentKeys, aggregations);
+              forward(currentKeys.getKeyArray(), aggregations);
             }
             currentKeys = null;
           } else {
