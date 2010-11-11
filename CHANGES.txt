@@ -486,6 +486,9 @@ Trunk -  Unreleased
     HIVE-1776 parallel execution and auto-local mode combine to place
     plan file in wrong file system (Joydeep Sen Sarma via namit)
 
+    HIVE-1583 Hive cannot overwrite HADOOP_CLASSPATH
+    (Thiruvel Thirumoolan via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -135,7 +135,7 @@ else
 fi
 
 # pass classpath to hadoop
-export HADOOP_CLASSPATH=${CLASSPATH}
+export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
 
 # check for hadoop in the path
 HADOOP_IN_PATH=`which hadoop 2>/dev/null`
