@@ -38,7 +38,8 @@ public class DummyPartition extends Partition {
   public DummyPartition() {
   }
 
-  public DummyPartition(String name) {
+  public DummyPartition(Table tbl, String name) throws HiveException {
+    setTable(tbl);
     this.name = name;
   }
 

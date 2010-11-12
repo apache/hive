@@ -56,7 +56,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-24_826_9060381908424669122/-ext-10000
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-42-45_598_664322384125179870/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-24_826_9060381908424669122/-ext-10002 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-42-45_598_664322384125179870/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -92,6 +92,7 @@ PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', h
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@nzhang_part@ds=2010-08-15
 POSTHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) select key, value, hr from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -106,12 +107,11 @@ PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-10-35_018_1318380414009166085/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-42-59_458_523212255193350255/-mr-10000
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-10-35_018_1318380414009166085/-mr-10000
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1171,7 +1171,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-35_790_5693124847092356313/-ext-10000
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-00_160_6210397902575365347/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -1192,7 +1192,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-35_790_5693124847092356313/-ext-10002 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-00_160_6210397902575365347/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1223,12 +1223,11 @@ PREHOOK: query: select * from nzhang_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-10-44_292_3708871835977595256/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-43-11_115_1003991296778317216/-mr-10000
 POSTHOOK: query: select * from nzhang_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=11
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-10-44_292_3708871835977595256/-mr-10000
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2798,7 +2797,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2010-10-29_16-10-45_065_691354792932908947/-mr-10002 
+        file:/tmp/njain/hive_2010-11-10_21-43-12_061_4308593628015089245/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -2817,7 +2816,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: nzhang_part
-        file:/tmp/sdong/hive_2010-10-29_16-10-45_065_691354792932908947/-mr-10004 
+        file:/tmp/njain/hive_2010-11-10_21-43-12_061_4308593628015089245/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -2844,7 +2843,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-45_065_691354792932908947/-ext-10000
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-12_061_4308593628015089245/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -2865,7 +2864,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_16-10-45_065_691354792932908947/-ext-10003 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-12_061_4308593628015089245/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2921,6 +2920,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@nzhang_part@ds=2010-08-15
 POSTHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
 select * from (
     select key, value, hr from srcpart where ds='2008-04-08'
@@ -2967,11 +2967,10 @@ ds=2010-08-15/hr=file,
 PREHOOK: query: select * from nzhang_part where hr = 'file,'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-11-03_825_5284968767554728986/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-43-36_851_2285015947672308698/-mr-10000
 POSTHOOK: query: select * from nzhang_part where hr = 'file,'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part@ds=2010-08-15/hr=file,
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-11-03_825_5284968767554728986/-mr-10000
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part PARTITION(ds=2010-08-15,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

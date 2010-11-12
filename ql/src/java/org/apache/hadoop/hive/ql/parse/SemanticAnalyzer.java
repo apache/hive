@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
@@ -3513,6 +3514,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName()));
       }
+      if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
+        // No static partition specified
+        if (dpCtx.getNumSPCols() == 0) {
+          outputs.add(new WriteEntity(dest_tab, false));
+        }
+        // part of the partition specified
+        // Create a DummyPartition in this case. Since, the metastore does not store partial
+        // partitions currently, we need to store dummy partitions
+        else {
+          try {
+            String ppath = dpCtx.getSPPath();
+            ppath = ppath.substring(0, ppath.length()-1);
+            DummyPartition p = new DummyPartition(dest_tab,
+                                                  dest_tab.getDbName() + "@" + dest_tab.getTableName() + "@" + ppath);
+
+            outputs.add(new WriteEntity(p, false));
+          } catch (HiveException e) {
+            throw new SemanticException(e.getMessage());
+          }
+        }
+      }
+
       break;
     }
     case QBMetaData.DEST_PARTITION: {

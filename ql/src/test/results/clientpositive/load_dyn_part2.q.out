@@ -16,7 +16,7 @@ value	string
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part_bucket, dbName:default, owner:sdong, createTime:1288393145, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/nzhang_part_bucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1288393145}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part_bucket, dbName:default, owner:njain, createTime:1289453643, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/nzhang_part_bucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1289453643}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select key, value, hr from srcpart where ds is not null and hr is not null
 PREHOOK: type: QUERY
@@ -98,6 +98,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@nzhang_part_bucket@ds=2010-03-23
 POSTHOOK: query: insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select key, value, hr from srcpart where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -123,11 +124,10 @@ ds=2010-03-23/hr=12
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-59-19_519_8402831698340809056/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-34-22_267_1694715967576226862/-mr-10000
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-59-19_519_8402831698340809056/-mr-10000
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1135,11 +1135,10 @@ POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPL
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-59-25_376_748477169614908313/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-34-29_769_8327141585204390266/-mr-10000
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-59-25_376_748477169614908313/-mr-10000
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

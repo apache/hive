@@ -156,7 +156,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10000
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -174,7 +174,7 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10007 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10007 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -191,7 +191,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10002
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -209,7 +209,7 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10008 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10008 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -226,7 +226,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10004
+          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10004
 
   Stage: Stage-2
     Move Operator
@@ -247,7 +247,7 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10009 
+        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10009 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -264,7 +264,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10006
+          destination: file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10006
 
   Stage: Stage-3
     Move Operator
@@ -275,7 +275,7 @@ STAGE PLANS:
   Stage: Stage-17
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-26-47_955_4620564381440920404/-ext-10010 
+        file:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-11_09-14-34_733_8268759755961112825/-ext-10010 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -314,11 +314,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_288_6309833081797050565/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-45_811_5072715276806685730/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_288_6309833081797050565/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-45_811_5072715276806685730/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -411,11 +411,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest2.* FROM dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_636_3380977971901935333/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-46_148_1275462776207288463/-mr-10000
 POSTHOOK: query: SELECT dest2.* FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_636_3380977971901935333/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-46_148_1275462776207288463/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -529,11 +529,11 @@ POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src
 PREHOOK: query: SELECT dest3.* FROM dest3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_986_850981660460088519/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-46_464_8762219816637993727/-mr-10000
 POSTHOOK: query: SELECT dest3.* FROM dest3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-26-57_986_850981660460088519/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-46_464_8762219816637993727/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

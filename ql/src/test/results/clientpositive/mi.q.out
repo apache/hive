@@ -19,6 +19,8 @@ GROUP BY key, value, ds, hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@nzhang_t1
+PREHOOK: Output: default@nzhang_t2
 POSTHOOK: query: FROM srcpart 
 INSERT OVERWRITE TABLE nzhang_t1 PARTITION (ds, hr) 
 SELECT key, value, ds, hr
@@ -57,11 +59,10 @@ ds=2008-04-08/hr=12
 PREHOOK: query: select * from nzhang_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-14_11-25-55_663_1494101770785059016/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-41_192_2058167652893187841/-mr-10000
 POSTHOOK: query: select * from nzhang_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-14_11-25-55_663_1494101770785059016/-mr-10000
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -569,11 +570,10 @@ POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpa
 PREHOOK: query: select * from nzhang_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-10-14_11-25-56_038_6378066642448367317/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-41_677_3321618811039862289/-mr-10000
 POSTHOOK: query: select * from nzhang_t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-10-14_11-25-56_038_6378066642448367317/-mr-10000
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

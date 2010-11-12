@@ -330,7 +330,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       if (partn == null) {
-        return new HiveLockObject(new DummyPartition(
+        return new HiveLockObject(new DummyPartition(tab,
           objName.split("/")[1].replaceAll(conf.getVar(HiveConf.ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME), "/")),
                                   data);
       }

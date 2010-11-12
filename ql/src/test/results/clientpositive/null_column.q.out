@@ -11,11 +11,11 @@ POSTHOOK: Output: default@temp_null
 PREHOOK: query: select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-29_063_5497458015896967287/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-49_487_7607181113788396396/-mr-10000
 POSTHOOK: query: select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-29_063_5497458015896967287/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-49_487_7607181113788396396/-mr-10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -40,11 +40,11 @@ POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: select * from tt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-34_033_7899160687995145341/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-59_216_44980331280819545/-mr-10000
 POSTHOOK: query: select * from tt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-34_033_7899160687995145341/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-14-59_216_44980331280819545/-mr-10000
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 NULL	NULL
@@ -75,11 +75,11 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from tt_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt_b
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-36_556_8509051297680496039/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-05_616_6282647228666922140/-mr-10000
 POSTHOOK: query: select * from tt_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt_b
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-36_556_8509051297680496039/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-05_616_6282647228666922140/-mr-10000
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
@@ -134,11 +134,11 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from temp_null2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null2@ds=2010-04-01
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-41_617_3166554512331390680/10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-16_850_8493919717464195530/-mr-10000
 POSTHOOK: query: select * from temp_null2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null2@ds=2010-04-01
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-43-41_617_3166554512331390680/10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-16_850_8493919717464195530/-mr-10000
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
 POSTHOOK: Lineage: tt.a EXPRESSION []

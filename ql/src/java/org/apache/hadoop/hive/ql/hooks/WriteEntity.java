@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.net.URI;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 /**
@@ -35,7 +36,7 @@ public class WriteEntity implements Serializable {
    * The type of the write entity.
    */
   public static enum Type {
-    TABLE, PARTITION, DFS_DIR, LOCAL_DIR
+    TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR
   };
 
   /**
@@ -63,6 +64,20 @@ public class WriteEntity implements Serializable {
    * WriteEntity.hashCode() does not need to recursively read into t and p.
    */
   private String name;
+
+  /**
+   * Whether the output is complete or not. For eg, in case of dynamic partitions, the complete output
+   * may not be known
+   */
+  private boolean complete;
+
+  public boolean isComplete() {
+    return complete;
+  }
+
+  public void setComplete(boolean complete) {
+    this.complete = complete;;
+  }
 
   public String getName() {
     return name;
@@ -117,11 +132,16 @@ public class WriteEntity implements Serializable {
    *          Table that is written to.
    */
   public WriteEntity(Table t) {
+    this(t, true);
+  }
+
+  public WriteEntity(Table t, boolean complete) {
     d = null;
     p = null;
     this.t = t;
     typ = Type.TABLE;
     name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -131,11 +151,25 @@ public class WriteEntity implements Serializable {
    *          Partition that is written to.
    */
   public WriteEntity(Partition p) {
+    this(p, true);
+  }
+
+  public WriteEntity(Partition p, boolean complete) {
     d = null;
     this.p = p;
     t = p.getTable();
     typ = Type.PARTITION;
     name = computeName();
+    this.complete = complete;
+  }
+
+  public WriteEntity(DummyPartition p, boolean complete) {
+    d = null;
+    this.p = p;
+    t = p.getTable();
+    typ = Type.DUMMYPARTITION;
+    name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -147,6 +181,10 @@ public class WriteEntity implements Serializable {
    *          Flag to decide whether this directory is local or in dfs.
    */
   public WriteEntity(String d, boolean islocal) {
+    this(d, islocal, true);
+  }
+
+  public WriteEntity(String d, boolean islocal, boolean complete) {
     this.d = d;
     p = null;
     t = null;
@@ -156,6 +194,7 @@ public class WriteEntity implements Serializable {
       typ = Type.DFS_DIR;
     }
     name = computeName();
+    this.complete = complete;
   }
 
   /**
@@ -212,6 +251,8 @@ public class WriteEntity implements Serializable {
       return t.getDbName() + "@" + t.getTableName();
     case PARTITION:
       return t.getDbName() + "@" + t.getTableName() + "@" + p.getName();
+    case DUMMYPARTITION:
+      return p.getName();
     default:
       return d;
     }

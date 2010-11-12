@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -430,7 +432,7 @@ public class Driver implements CommandProcessor {
    * Get the list of objects to be locked. If a partition needs to be locked (in any mode), all its parents
    * should also be locked in SHARED mode.
    **/
-  private List<LockObject> getLockObjects(Table t, Partition p, HiveLockMode mode) {
+  private List<LockObject> getLockObjects(Table t, Partition p, HiveLockMode mode) throws SemanticException {
     List<LockObject> locks = new LinkedList<LockObject>();
 
     if (t != null) {
@@ -444,16 +446,27 @@ public class Driver implements CommandProcessor {
       // All the parents are locked in shared mode
       mode = HiveLockMode.SHARED;
 
-      String partName = p.getName();
+      // For summy partitions, only partition name is needed
+      String name = p.getName();
+      if (p instanceof DummyPartition) {
+        name = p.getName().split("@")[2];
+      }
+
+      String partName = name;
       String partialName = "";
-      String[] partns = p.getName().split("/");
+      String[] partns = name.split("/");
       for (int idx = 0; idx < partns.length -1; idx++) {
         String partn = partns[idx];
         partialName += partialName + partn;
-        locks.add(new LockObject(new HiveLockObject(
-                                   new DummyPartition(p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@" + partialName),
-                                   plan.getQueryId()), mode));
-        partialName += "/";
+        try {
+          locks.add(new LockObject(new HiveLockObject(
+                                     new DummyPartition(p.getTable(),
+                                       p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@" + partialName),
+                                     plan.getQueryId()), mode));
+          partialName += "/";
+        } catch (HiveException e) {
+          throw new SemanticException(e.getMessage());
+        }
       }
 
       locks.add(new LockObject(new HiveLockObject(p.getTable(), plan.getQueryId()), mode));
@@ -493,10 +506,15 @@ public class Driver implements CommandProcessor {
 
       for (WriteEntity output : plan.getOutputs()) {
         if (output.getTyp() == WriteEntity.Type.TABLE) {
-          lockObjects.addAll(getLockObjects(output.getTable(), null, HiveLockMode.EXCLUSIVE));
+          lockObjects.addAll(getLockObjects(output.getTable(), null,
+                                            output.isComplete() ? HiveLockMode.EXCLUSIVE : HiveLockMode.SHARED));
         }
         else if (output.getTyp() == WriteEntity.Type.PARTITION) {
           lockObjects.addAll(getLockObjects(null, output.getPartition(), HiveLockMode.EXCLUSIVE));
+        }
+        // In case of dynamic queries, it is possible to have incomplete dummy partitions
+        else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
+          lockObjects.addAll(getLockObjects(null, output.getPartition(), HiveLockMode.SHARED));
         }
       }
 
@@ -808,6 +826,20 @@ public class Driver implements CommandProcessor {
       // in case we decided to run everything in local mode, restore the
       // the jobtracker setting to its initial value
       ctx.restoreOriginalTracker();
+
+      // remove incomplete outputs.
+      // Some incomplete outputs may be added at the beginning, for eg: for dynamic partitions.
+      // remove them
+      HashSet<WriteEntity> remOutputs = new HashSet<WriteEntity>();
+      for (WriteEntity output : plan.getOutputs()) {
+        if (!output.isComplete()) {
+          remOutputs.add(output);
+        }
+      }
+
+      for (WriteEntity output : remOutputs) {
+        plan.getOutputs().remove(output);
+      }
 
       // Get all the post execution hooks and execute them.
       for (PostExecute peh : getPostExecHooks()) {

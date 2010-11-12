@@ -251,11 +251,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_120_3503771906127933196/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-27_727_3572542851489673202/-mr-10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_120_3503771906127933196/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-27_727_3572542851489673202/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -412,11 +412,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_510_8315931585077418228/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_023_307854968020208171/-mr-10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_510_8315931585077418228/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_023_307854968020208171/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -636,11 +636,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_947_8456541918849361288/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_324_6189844014644056674/-mr-10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-17-46_947_8456541918849361288/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_324_6189844014644056674/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

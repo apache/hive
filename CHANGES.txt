@@ -491,6 +491,9 @@ Trunk -  Unreleased
     HIVE-1583 Hive cannot overwrite HADOOP_CLASSPATH
     (Thiruvel Thirumoolan via namit)
 
+    HIVE-1781 outputs not populated for dynamic partitions at compile time
+    (namit via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

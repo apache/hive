@@ -13,6 +13,7 @@ PREHOOK: query: INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key)
 SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: default@load_dyn_part15_test
 POSTHOOK: query: INSERT OVERWRITE TABLE load_dyn_part15_test PARTITION(part_key)
 SELECT key, part_key FROM src LATERAL VIEW explode(array("1","{2","3]")) myTable AS part_key
 POSTHOOK: type: QUERY

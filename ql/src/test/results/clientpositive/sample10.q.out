@@ -13,6 +13,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpartbucket
 POSTHOOK: query: insert overwrite table srcpartbucket partition(ds, hr) select * from srcpart where ds is not null and key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -103,12 +104,12 @@ STAGE PLANS:
                               type: bigint
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 [srcpartbucket]
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 [srcpartbucket]
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 [srcpartbucket]
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 [srcpartbucket]
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 [srcpartbucket]
       Path -> Partition:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -123,7 +124,7 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+              location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
               name srcpartbucket
               numFiles 16
               numPartitions 4
@@ -133,7 +134,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 2748
-              transient_lastDdlTime 1288394712
+              transient_lastDdlTime 1289454630
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -145,7 +146,7 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+                location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
                 name srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -155,11 +156,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1288394712
+                transient_lastDdlTime 1289454630
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -174,7 +175,7 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+              location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
               name srcpartbucket
               numFiles 16
               numPartitions 4
@@ -184,7 +185,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 2748
-              transient_lastDdlTime 1288394712
+              transient_lastDdlTime 1289454630
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -196,7 +197,7 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+                location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
                 name srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -206,11 +207,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1288394712
+                transient_lastDdlTime 1289454630
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -225,7 +226,7 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+              location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
               name srcpartbucket
               numFiles 16
               numPartitions 4
@@ -235,7 +236,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 2748
-              transient_lastDdlTime 1288394712
+              transient_lastDdlTime 1289454630
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -247,7 +248,7 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+                location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
                 name srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -257,11 +258,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1288394712
+                transient_lastDdlTime 1289454630
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 
+        pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -276,7 +277,7 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+              location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
               name srcpartbucket
               numFiles 16
               numPartitions 4
@@ -286,7 +287,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 2748
-              transient_lastDdlTime 1288394712
+              transient_lastDdlTime 1289454630
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -298,7 +299,7 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpartbucket
+                location pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpartbucket
                 name srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -308,7 +309,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1288394712
+                transient_lastDdlTime 1289454630
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: srcpartbucket
             name: srcpartbucket
@@ -332,9 +333,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/sdong/hive_2010-10-29_16-25-12_794_4931538152370108383/-ext-10001
+              directory: file:/tmp/njain/hive_2010-11-10_21-50-30_237_6456899979504390679/-ext-10001
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/sdong/hive_2010-10-29_16-25-12_794_4931538152370108383/-ext-10001/
+              Stats Publishing Key Prefix: file:/tmp/njain/hive_2010-11-10_21-50-30_237_6456899979504390679/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -357,14 +358,13 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-14_236_6806821458011946674/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-50-31_589_3688459449074450497/-mr-10000
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-14_236_6806821458011946674/-mr-10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -381,14 +381,13 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-20_656_2072312926933274964/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-50-40_846_194213387409754762/-mr-10000
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-20_656_2072312926933274964/-mr-10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -405,14 +404,13 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-30_541_4304569505825344243/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-50-55_151_7435896620054029141/-mr-10000
 POSTHOOK: query: select * from srcpartbucket where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-25-30_541_4304569505825344243/-mr-10000
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
