@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -164,7 +163,7 @@ public class SkewJoinHandler {
     // reset rowcontainer's serde, objectinspector, and tableDesc.
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
-      RowContainer<ArrayList<Object>> rc = joinOp.storage.get(Byte
+      RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage.get(Byte
           .valueOf((byte) i));
       if (rc != null) {
         rc.setSerDe(tblSerializers.get((byte) i), skewKeysTableObjectInspector
@@ -178,7 +177,7 @@ public class SkewJoinHandler {
     if (skewKeyInCurrentGroup) {
 
       String specPath = conf.getBigKeysDirMap().get((byte) currBigKeyTag);
-      RowContainer<ArrayList<Object>> bigKey = joinOp.storage.get(Byte
+      RowContainer<ArrayList<Object>> bigKey = (RowContainer)joinOp.storage.get(Byte
           .valueOf((byte) currBigKeyTag));
       Path outputPath = getOperatorOutputPath(specPath);
       FileSystem destFs = outputPath.getFileSystem(hconf);
@@ -188,7 +187,7 @@ public class SkewJoinHandler {
         if (((byte) i) == currBigKeyTag) {
           continue;
         }
-        RowContainer<ArrayList<Object>> values = joinOp.storage.get(Byte
+        RowContainer<ArrayList<Object>> values = (RowContainer)joinOp.storage.get(Byte
             .valueOf((byte) i));
         if (values != null) {
           specPath = conf.getSmallKeysDirMap().get((byte) currBigKeyTag).get(
@@ -216,7 +215,7 @@ public class SkewJoinHandler {
       skewKeyInCurrentGroup = false;
 
       for (int i = 0; i < numAliases; i++) {
-        RowContainer<ArrayList<Object>> rc = joinOp.storage.get(Byte
+        RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage.get(Byte
             .valueOf((byte) i));
         if (rc != null) {
           rc.setKeyObject(dummyKey);

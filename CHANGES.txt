@@ -240,6 +240,9 @@ Trunk -  Unreleased
     HIVE-1758 Reduce memory for groupby map-side hashmap
     (Siying Dong via namit)
 
+    HIVE-1754 Remove JDBM component from Map Join
+    (Liyin via He Yongqiang)    
+
     HIVE-1782 add more debug information for hive locking
     (namit via He Yongqiang)
 

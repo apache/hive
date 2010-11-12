@@ -182,7 +182,6 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
     countAfterReport = 0;
 
-    assert (inputObjInspectors.length == 1);
     ObjectInspector rowInspector = inputObjInspectors[0];
 
     // init keyFields

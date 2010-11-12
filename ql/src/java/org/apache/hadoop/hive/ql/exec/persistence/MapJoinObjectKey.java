@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
-import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator.JDBMSinkObjectCtx;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -34,10 +33,10 @@ import org.apache.hadoop.io.Writable;
 /**
  * Map Join Object used for both key.
  */
-public class MapJoinObjectKey implements Externalizable {
+public class MapJoinObjectKey  extends AbstractMapJoinKey {
 
-  protected transient int metadataTag;
-  protected transient ArrayList<Object> obj;
+
+  protected transient Object[] obj;
 
   public MapJoinObjectKey() {
   }
@@ -46,8 +45,7 @@ public class MapJoinObjectKey implements Externalizable {
    * @param metadataTag
    * @param obj
    */
-  public MapJoinObjectKey(int metadataTag, ArrayList<Object> obj) {
-    this.metadataTag = metadataTag;
+  public MapJoinObjectKey(Object[] obj) {
     this.obj = obj;
   }
 
@@ -55,43 +53,60 @@ public class MapJoinObjectKey implements Externalizable {
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectKey) {
       MapJoinObjectKey mObj = (MapJoinObjectKey) o;
-      if (mObj.getMetadataTag() == metadataTag) {
-        if ((obj == null) && (mObj.getObj() == null)) {
-          return true;
-        }
-        if ((obj != null) && (mObj.getObj() != null)
-            && (mObj.getObj().equals(obj))) {
+      Object[] mObjArray = mObj.getObj();
+      if ((obj == null) && (mObjArray == null)) {
+        return true;
+      }
+      if ((obj != null) && (mObjArray != null)) {
+        if (obj.length == mObjArray.length) {
+          for (int i = 0; i < obj.length; i++) {
+            if (!obj[i].equals(mObjArray[i])) {
+              return false;
+            }
+          }
           return true;
         }
       }
     }
-
     return false;
   }
 
   @Override
   public int hashCode() {
-    return (obj == null) ? metadataTag : obj.hashCode();
+    int hashCode;
+    if (obj == null) {
+      hashCode = metadataTag;
+    } else {
+      hashCode = 1;
+
+      for (int i = 0; i < obj.length; i++) {
+        Object o = obj[i];
+        hashCode = 31 * hashCode + (o == null ? 0 : o.hashCode());
+      }
+
+    }
+    return hashCode;
   }
 
   @Override
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException {
     try {
-      metadataTag = in.readInt();
-
       // get the tableDesc from the map stored in the mapjoin operator
-      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
+      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(
           Integer.valueOf(metadataTag));
 
       Writable val = ctx.getSerDe().getSerializedClass().newInstance();
       val.readFields(in);
-      obj = (ArrayList<Object>) ObjectInspectorUtils.copyToStandardObject(ctx
+      ArrayList<Object> list = (ArrayList<Object>) ObjectInspectorUtils.copyToStandardObject(ctx
           .getSerDe().deserialize(val), ctx.getSerDe().getObjectInspector(),
           ObjectInspectorCopyOption.WRITABLE);
-      if(obj == null){
-        obj = new ArrayList<Object>(0);
+      if(list == null){
+        obj = new ArrayList(0).toArray();
+      }else{
+        obj = list.toArray();
       }
+
     } catch (Exception e) {
       throw new IOException(e);
     }
@@ -101,9 +116,8 @@ public class MapJoinObjectKey implements Externalizable {
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     try {
-      out.writeInt(metadataTag);
       // get the tableDesc from the map stored in the mapjoin operator
-      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
+      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(
           Integer.valueOf(metadataTag));
 
       // Different processing for key and value
@@ -114,25 +128,11 @@ public class MapJoinObjectKey implements Externalizable {
     }
   }
 
-  /**
-   * @return the metadataTag
-   */
-  public int getMetadataTag() {
-    return metadataTag;
-  }
-
-  /**
-   * @param metadataTag
-   *          the metadataTag to set
-   */
-  public void setMetadataTag(int metadataTag) {
-    this.metadataTag = metadataTag;
-  }
 
   /**
    * @return the obj
    */
-  public ArrayList<Object> getObj() {
+  public Object[] getObj() {
     return obj;
   }
 
@@ -140,8 +140,21 @@ public class MapJoinObjectKey implements Externalizable {
    * @param obj
    *          the obj to set
    */
-  public void setObj(ArrayList<Object> obj) {
+  public void setObj(Object[] obj) {
     this.obj = obj;
+  }
+
+  @Override
+  public boolean hasAnyNulls(){
+    if (obj != null && obj.length> 0) {
+      for (Object k : obj) {
+        if (k == null) {
+          return true;
+        }
+      }
+    }
+    return false;
+
   }
 
 }

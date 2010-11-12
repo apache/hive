@@ -79,7 +79,7 @@ STAGE PLANS:
           TableScan
             alias: b
             GatherStats: false
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
                 1 {value}
@@ -129,9 +129,9 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002
+                    directory: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002
                     NumFilesPerFileSink: 1
-                    Stats Publishing Key Prefix: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10000/
+                    Stats Publishing Key Prefix: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10000/
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -141,12 +141,12 @@ STAGE PLANS:
                           columns.types string:string:string
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                          location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                           name bucketmapjoin_tmp_result
                           serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          transient_lastDdlTime 1288213147
+                          transient_lastDdlTime 1288895258
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: bucketmapjoin_tmp_result
                     TotalFiles: 1
@@ -156,9 +156,9 @@ STAGE PLANS:
         Map Reduce Local Work
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/srcbucket_mapjoin [a]
+        pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/srcbucket_mapjoin [a]
       Path -> Partition:
-        pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/srcbucket_mapjoin 
+        pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/srcbucket_mapjoin 
           Partition
             base file name: srcbucket_mapjoin
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -170,12 +170,12 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/srcbucket_mapjoin
+              location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/srcbucket_mapjoin
               name srcbucket_mapjoin
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1288213145
+              transient_lastDdlTime 1288895253
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -187,12 +187,12 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/srcbucket_mapjoin
+                location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/srcbucket_mapjoin
                 name srcbucket_mapjoin
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1288213145
+                transient_lastDdlTime 1288895253
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket_mapjoin
             name: srcbucket_mapjoin
@@ -204,14 +204,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002
-          destination: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10000
+          source: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002
+          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10000
+          source: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -221,28 +221,28 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1288213147
+                transient_lastDdlTime 1288895258
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
-          tmp directory: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10001
+          tmp directory: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10000/
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10000
+              directory: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10000
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -253,12 +253,12 @@ STAGE PLANS:
                     columns.types string:string:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                    location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                     name bucketmapjoin_tmp_result
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1288213147
+                    transient_lastDdlTime 1288895258
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: bucketmapjoin_tmp_result
               TotalFiles: 1
@@ -266,9 +266,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002 [pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002]
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002 [pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002]
       Path -> Partition:
-        pfile:/data/users/heyongqiang/hive-indexing/build/ql/scratchdir/hive_2010-10-27_13-59-07_847_8947357711223644876/-ext-10002 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_11-27-38_256_1586362839830193186/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -279,12 +279,12 @@ STAGE PLANS:
               columns.types string:string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+              location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
               name bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1288213147
+              transient_lastDdlTime 1288895258
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -295,12 +295,12 @@ STAGE PLANS:
                 columns.types string:string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/heyongqiang/hive-indexing/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+                location pfile:/data/users/liyintang/hive-1754/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
                 name bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1288213147
+                transient_lastDdlTime 1288895258
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: bucketmapjoin_tmp_result
             name: bucketmapjoin_tmp_result

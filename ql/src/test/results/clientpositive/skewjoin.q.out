@@ -139,7 +139,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         1 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {0_VALUE_0}
                 1 {1_VALUE_0}
@@ -219,11 +219,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-19_102_8796456594111978797/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-02_177_6322462823933452249/-mr-10000
 POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-19_102_8796456594111978797/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-02_177_6322462823933452249/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 278697	101852390308
@@ -373,7 +373,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-35_021_282318098948564636/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-48_767_6312998778554021237/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -383,7 +383,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-35_021_282318098948564636/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-48_767_6312998778554021237/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -533,7 +533,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-38_270_4680889030113901410/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-55_262_4307015827448578323/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -543,7 +543,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-38_270_4680889030113901410/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-55_262_4307015827448578323/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -633,7 +633,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_15-06-41_304_411032267288143321/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_13-25-01_489_621733224236629264/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -678,12 +678,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-41_378_6980884094838374214/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-01_614_8452579245689090471/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-41_378_6980884094838374214/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-01_614_8452579245689090471/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 198	6274	194
@@ -800,7 +800,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         1 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 
                 1 {1_VALUE_0} {1_VALUE_1}
@@ -852,7 +852,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_15-06-47_083_7583033798461542975/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_13-25-11_476_8171195744821612387/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -896,7 +896,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-47_255_6693309924800490257/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-11_753_1076291109958736199/-mr-10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -905,7 +905,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-06-47_255_6693309924800490257/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-11_753_1076291109958736199/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 44481300	101852390308
@@ -1032,7 +1032,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         1 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 
                 1 {1_VALUE_0} {1_VALUE_1}
@@ -1084,7 +1084,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_15-07-15_195_639976818225884535/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_13-26-43_698_1130450755234603131/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1128,7 +1128,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-07-15_370_1979544668421346379/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-26-43_990_6372868616213782508/-mr-10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -1137,7 +1137,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-07-15_370_1979544668421346379/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-26-43_990_6372868616213782508/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
@@ -1303,7 +1303,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         1 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {0_VALUE_0}
                 1 {1_VALUE_0}
@@ -1315,7 +1315,7 @@ STAGE PLANS:
                 2 [Column[joinkey0]]
               Position of Big Table: 0
         2 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {0_VALUE_0}
                 1 {1_VALUE_0}
@@ -1372,7 +1372,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_15-07-40_939_791224492830751906/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_13-28-07_199_3806389747749479816/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1414,7 +1414,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         0 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {0_VALUE_0}
                 1 {1_VALUE_0}
@@ -1426,7 +1426,7 @@ STAGE PLANS:
                 2 [Column[joinkey0]]
               Position of Big Table: 1
         2 
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {0_VALUE_0}
                 1 {1_VALUE_0}
@@ -1496,7 +1496,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-07-41_289_4528597985146531444/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-28-07_762_745139769279053433/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -1508,7 +1508,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-07-41_289_4528597985146531444/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-28-07_762_745139769279053433/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 293143	-136853010385
@@ -1540,7 +1540,7 @@ STAGE PLANS:
         v 
           TableScan
             alias: v
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key}
                 1 {val}
@@ -1580,7 +1580,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_15-08-11_023_4952961378451488185/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_13-30-14_923_356309771096230331/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1640,55 +1640,55 @@ STAGE PLANS:
 PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-11_093_7547555083303240518/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-15_048_6024162501211427411/-mr-10000
 POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-11_093_7547555083303240518/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-15_048_6024162501211427411/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-16_379_6728265708807350086/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-26_961_8307603098035847510/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-16_379_6728265708807350086/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-26_961_8307603098035847510/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-21_607_6541620241735835708/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-36_802_3005209775052152224/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-21_607_6541620241735835708/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-36_802_3005209775052152224/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-27_482_5011839329231174267/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-48_466_8583634665917897680/-mr-10000
 POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-27_482_5011839329231174267/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-48_466_8583634665917897680/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-35_146_3336063612709764146/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-03_237_192983720880547949/-mr-10000
 POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-35_146_3336063612709764146/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-03_237_192983720880547949/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 8
@@ -1696,12 +1696,12 @@ PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-42_859_1470660249312294617/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-16_676_2618061858875139981/-mr-10000
 POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-42_859_1470660249312294617/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-16_676_2618061858875139981/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	50
@@ -1709,12 +1709,12 @@ PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STRE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-48_569_1389223424240589811/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-25_804_1434715960848718635/-mr-10000
 POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-48_569_1389223424240589811/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-25_804_1434715960848718635/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 51	1570	318
@@ -1722,12 +1722,12 @@ PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREA
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-53_884_193002294179789118/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-35_151_4513393491876936064/-mr-10000
 POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-53_884_193002294179789118/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-35_151_4513393491876936064/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	318
@@ -1735,12 +1735,12 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-59_493_4647924292571801277/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-44_380_3162963056826185972/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-08-59_493_4647924292571801277/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-44_380_3162963056826185972/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
@@ -1748,23 +1748,23 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-09-04_974_5598263675862728012/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-53_546_8829290719525806208/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-09-04_974_5598263675862728012/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-53_546_8829290719525806208/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
 PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-09-15_753_4549651274151249293/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-32-19_241_1942705791648142414/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_15-09-15_753_4549651274151249293/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-32-19_241_1942705791648142414/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320

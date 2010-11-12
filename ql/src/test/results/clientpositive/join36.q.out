@@ -76,7 +76,7 @@ STAGE PLANS:
         x 
           TableScan
             alias: x
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key} {cnt}
                 1 {cnt}
@@ -140,7 +140,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-56-20_127_6380703738706956749/-ext-10000
+          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-13-17_369_4823166777089074004/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -158,7 +158,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-56-20_127_6380703738706956749/-ext-10002 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-13-17_369_4823166777089074004/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -193,11 +193,11 @@ POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-56-26_754_2259038051216019843/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-13-27_195_6659028372004858698/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-56-26_754_2259038051216019843/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-13-27_195_6659028372004858698/-mr-10000
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]

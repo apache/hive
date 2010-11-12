@@ -36,7 +36,7 @@ STAGE PLANS:
         x 
           TableScan
             alias: x
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
                 1 {value}
@@ -109,7 +109,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-53-58_967_6806228839153646653/-ext-10000
+          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-09-26_418_6554875518928365288/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -127,7 +127,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-53-58_967_6806228839153646653/-ext-10002 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-09-26_418_6554875518928365288/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -158,11 +158,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:st
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-04_814_7186456825570807641/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-09-36_127_7873084918847057156/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-04_814_7186456825570807641/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-09-36_127_7873084918847057156/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]

@@ -18,26 +18,39 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,16 +60,26 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializable {
 
   private Map<String, FetchOperator> fetchOperators;
-  private File jdbmFile;
   private JobConf job;
   public static final Log l4j = LogFactory.getLog("MapredLocalTask");
-  private MapOperator mo;
-  // not sure we need this exec context; but all the operators in the work
+  static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
+  static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
+  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
+  public static MemoryMXBean memoryMXBean;
+
+    // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
   private final ExecMapperContext execContext = new ExecMapperContext();
 
   public MapredLocalTask(){
     super();
+  }
+
+  public MapredLocalTask(MapredLocalWork plan, JobConf job, boolean isSilent) throws HiveException {
+    setWork(plan);
+    this.job = job;
+    LOG = LogFactory.getLog(this.getClass().getName());
+    console = new LogHelper(LOG, isSilent);
   }
 
   @Override
@@ -66,12 +89,159 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
     job = new JobConf(conf, ExecDriver.class);
   }
 
+  public static String now(){
+    Calendar cal = Calendar.getInstance();
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+    return  sdf.format(cal.getTime());
+  }
+
+
+
   @Override
-public int execute(DriverContext driverContext){
+  public int execute(DriverContext driverContext){
+    try{
+      //generate the cmd line to run in the child jvm
+      //String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
+      Context ctx = driverContext.getCtx();
+      String hiveJar = conf.getJar();
+
+      String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
+      String libJarsOption;
+
+      // write out the plan to a local file
+      Path planPath = new Path(ctx.getLocalTmpFileURI(), "plan.xml");
+      OutputStream out = FileSystem.getLocal(conf).create(planPath);
+      MapredLocalWork plan = getWork();
+      LOG.info("Generating plan file " + planPath.toString());
+      Utilities.serializeMapRedLocalWork(plan, out);
+
+      String isSilent = "true".equalsIgnoreCase(System
+          .getProperty("test.silent")) ? "-nolog" : "";
+
+      String jarCmd;
+
+      jarCmd = hiveJar + " " + ExecDriver.class.getName() ;
+
+      String hiveConfArgs = ExecDriver.generateCmdLine(conf);
+      String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan "
+          + planPath.toString() + " " + isSilent + " " + hiveConfArgs;
+
+      String workDir = (new File(".")).getCanonicalPath();
+      String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
+
+      if (!files.isEmpty()) {
+        cmdLine = cmdLine + " -files " + files;
+
+        workDir = (new Path(ctx.getLocalTmpFileURI())).toUri().getPath();
+
+        if (! (new File(workDir)).mkdir()) {
+          throw new IOException ("Cannot create tmp working dir: " + workDir);
+        }
+
+        for (String f: StringUtils.split(files, ',')) {
+          Path p = new Path(f);
+          String target = p.toUri().getPath();
+          String link = workDir + Path.SEPARATOR + p.getName();
+          if (FileUtil.symLink(target, link) != 0) {
+            throw new IOException ("Cannot link to added file: " + target + " from: " + link);
+          }
+        }
+      }
+
+      LOG.info("Executing: " + cmdLine);
+      Process executor = null;
+
+      // Inherit Java system variables
+      String hadoopOpts;
+      StringBuilder sb = new StringBuilder();
+      Properties p = System.getProperties();
+      for (String element : HIVE_SYS_PROP) {
+        if (p.containsKey(element)) {
+          sb.append(" -D" + element + "=" + p.getProperty(element));
+        }
+      }
+      hadoopOpts = sb.toString();
+      // Inherit the environment variables
+      String[] env;
+      Map<String, String> variables = new HashMap(System.getenv());
+      // The user can specify the hadoop memory
+
+      //if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
+        // if we are running in local mode - then the amount of memory used
+        // by the child jvm can no longer default to the memory used by the
+        // parent jvm
+        //int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+      int hadoopMem= conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);;
+      if (hadoopMem == 0) {
+        // remove env var that would default child jvm to use parent's memory
+        // as default. child jvm would use default memory for a hadoop client
+        variables.remove(HADOOP_MEM_KEY);
+      } else {
+        // user specified the memory for local mode hadoop run
+        console.printInfo(" set heap size\t"+hadoopMem+"MB");
+        variables.put(HADOOP_MEM_KEY, String.valueOf(hadoopMem));
+      }
+      //} else {
+        // nothing to do - we are not running in local mode - only submitting
+        // the job via a child process. in this case it's appropriate that the
+        // child jvm use the same memory as the parent jvm
+
+      //}
+
+      if (variables.containsKey(HADOOP_OPTS_KEY)) {
+        variables.put(HADOOP_OPTS_KEY, variables.get(HADOOP_OPTS_KEY)
+            + hadoopOpts);
+      } else {
+        variables.put(HADOOP_OPTS_KEY, hadoopOpts);
+      }
+      env = new String[variables.size()];
+      int pos = 0;
+      for (Map.Entry<String, String> entry : variables.entrySet()) {
+        String name = entry.getKey();
+        String value = entry.getValue();
+        env[pos++] = name + "=" + value;
+      }
+
+      // Run ExecDriver in another JVM
+      executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
+
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
+          null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
+          null, System.err);
+
+      outPrinter.start();
+      errPrinter.start();
+
+      int exitVal = executor.waitFor();
+
+      if (exitVal != 0) {
+        LOG.error("Execution failed with exit status: " + exitVal);
+        console.printError("Mapred Local Task Failed. Give up the map join stragery");
+      } else {
+        LOG.info("Execution completed successfully");
+        console.printInfo("Mapred Local Task Running Successfully . Keep using map join stragery");
+      }
+
+      return exitVal;
+    } catch (Exception e) {
+      e.printStackTrace();
+      LOG.error("Exception: " + e.getMessage());
+      return (1);
+    }
+  }
+
+
+
+  public int executeFromChildJVM(DriverContext driverContext){
+
     // check the local work
     if(work == null){
       return -1;
     }
+    memoryMXBean = ManagementFactory.getMemoryMXBean();
+    console.printInfo(Utilities.now()+"\tStarting to luaunch local task to process map join ");
+    console.printInfo("\tmaximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
     fetchOperators = new HashMap<String, FetchOperator>();
     Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>();
     execContext.setJc(job);
@@ -92,14 +262,19 @@ public int execute(DriverContext driverContext){
       }else{
         startForward(inputFileChangeSenstive,null);
       }
+      console.printInfo(now()+"\tEnd of local task ");
     } catch (Throwable e) {
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
-        l4j.error("Out of Merror Error");
+        l4j.error("Out of Memory Error");
+        console.printError("[Warning] Small table is too large to put into memory");
+        return 2;
       } else {
         l4j.error("Hive Runtime Error: Map local work failed");
         e.printStackTrace();
       }
+    }finally{
+      console.printInfo(Utilities.now()+"\tFinish running local task");
     }
     return 0;
   }

@@ -89,12 +89,12 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        file:/tmp/njain/hive_2010-10-27_11-54-34_757_9120981059274795938/-mr-10004 
+        file:/tmp/liyintang/hive_2010-11-04_12-10-25_127_7262353630093457446/-mr-10004 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        file:/tmp/njain/hive_2010-10-27_11-54-34_757_9120981059274795938/-mr-10004 
-            JDBM Sink Operator
+        file:/tmp/liyintang/hive_2010-11-04_12-10-25_127_7262353630093457446/-mr-10004 
+            HashTable Sink Operator
               condition expressions:
                 0 {_col0} {_col1}
                 1 {_col1}
@@ -107,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2010-10-27_11-54-34_757_9120981059274795938/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-10-25_127_7262353630093457446/-mr-10002 
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -165,7 +165,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-34_757_9120981059274795938/-ext-10000
+          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-10-25_127_7262353630093457446/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -183,7 +183,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive-commit1/build/ql/scratchdir/hive_2010-10-27_11-54-34_757_9120981059274795938/-ext-10003 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-10-25_127_7262353630093457446/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -272,11 +272,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-46_357_4458958652114796552/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-10-42_703_1867902746100829562/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-54-46_357_4458958652114796552/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-10-42_703_1867902746100829562/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
 POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]

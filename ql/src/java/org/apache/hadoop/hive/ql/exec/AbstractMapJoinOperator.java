@@ -26,11 +26,11 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -69,7 +69,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient boolean firstRow;
 
-  private static final int NOTSKIPBIGTABLE = -1;
 
   public AbstractMapJoinOperator() {
   }
@@ -147,6 +146,23 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
       }
     }
     return false;
+  }
+
+  // returns true if there are elements in key list and any of them is null
+  protected boolean hasAnyNulls(Object[] key) {
+    if (key != null && key.length> 0) {
+      for (Object k : key) {
+        if (k == null) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // returns true if there are elements in key list and any of them is null
+  protected boolean hasAnyNulls(AbstractMapJoinKey key) {
+    return key.hasAnyNulls();
   }
 
 }

@@ -51,31 +51,27 @@ import org.apache.hadoop.util.ReflectionUtils;
 /**
  * Simple persistent container for rows.
  *
- * This container interface only accepts adding or appending new rows and
- * iterating through the rows in the order of their insertions.
+ * This container interface only accepts adding or appending new rows and iterating through the rows
+ * in the order of their insertions.
  *
- * The iterator interface is a lightweight first()/next() API rather than the
- * Java Iterator interface. This way we do not need to create an Iterator object
- * every time we want to start a new iteration. Below is simple example of how
- * to convert a typical Java's Iterator code to the LW iterator interface.
+ * The iterator interface is a lightweight first()/next() API rather than the Java Iterator
+ * interface. This way we do not need to create an Iterator object every time we want to start a new
+ * iteration. Below is simple example of how to convert a typical Java's Iterator code to the LW
+ * iterator interface.
  *
- * Iterator itr = rowContainer.iterator();
- * while (itr.hasNext()) {
- *   v = itr.next(); // do anything with v
- * }
+ * Iterator itr = rowContainer.iterator(); while (itr.hasNext()) { v = itr.next(); // do anything
+ * with v }
  *
  * can be rewritten to:
  *
- * for ( v = rowContainer.first(); v != null; v = rowContainer.next()) {
- *   // do anything with v
- * }
+ * for ( v = rowContainer.first(); v != null; v = rowContainer.next()) { // do anything with v }
  *
- * Once the first is called, it will not be able to write again. So there can
- * not be any writes after read. It can be read multiple times, but it does not
- * support multiple reader interleaving reading.
+ * Once the first is called, it will not be able to write again. So there can not be any writes
+ * after read. It can be read multiple times, but it does not support multiple reader interleaving
+ * reading.
  *
  */
-public class RowContainer<Row extends List<Object>> {
+public class RowContainer<Row extends List<Object>> extends AbstractRowContainer<Row> {
 
   protected static Log LOG = LogFactory.getLog(RowContainer.class);
 
@@ -120,6 +116,10 @@ public class RowContainer<Row extends List<Object>> {
   JobConf jobCloneUsingLocalFs = null;
   private LocalFileSystem localFs;
 
+  public RowContainer() {
+
+  }
+
   public RowContainer(Configuration jc) throws HiveException {
     this(BLOCKSIZE, jc);
   }
@@ -137,21 +137,20 @@ public class RowContainer<Row extends List<Object>> {
     this.firstReadBlockPointer = currentReadBlock;
     this.serde = null;
     this.standardOI = null;
-    this.jc=jc;
+    this.jc = jc;
   }
 
   private JobConf getLocalFSJobConfClone(Configuration jc) {
-    if(this.jobCloneUsingLocalFs == null) {
+    if (this.jobCloneUsingLocalFs == null) {
       this.jobCloneUsingLocalFs = new JobConf(jc);
-      HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS,
-          Utilities.HADOOP_LOCAL_FS);
+      HiveConf.setVar(jobCloneUsingLocalFs, HiveConf.ConfVars.HADOOPFS, Utilities.HADOOP_LOCAL_FS);
     }
     return this.jobCloneUsingLocalFs;
   }
 
 
-  public RowContainer(int blockSize, SerDe sd, ObjectInspector oi,
-      Configuration jc) throws HiveException {
+  public RowContainer(int blockSize, SerDe sd, ObjectInspector oi, Configuration jc)
+      throws HiveException {
     this(blockSize, jc);
     setSerDe(sd, oi);
   }
@@ -161,6 +160,7 @@ public class RowContainer<Row extends List<Object>> {
     this.standardOI = oi;
   }
 
+  @Override
   public void add(Row t) throws HiveException {
     if (this.tblDesc != null) {
       if (addCursor >= blockSize) { // spill the current block to tmp file
@@ -180,6 +180,7 @@ public class RowContainer<Row extends List<Object>> {
     ++size;
   }
 
+  @Override
   public Row first() throws HiveException {
     if (size == 0) {
       return null;
@@ -209,21 +210,17 @@ public class RowContainer<Row extends List<Object>> {
         JobConf localJc = getLocalFSJobConfClone(jc);
         if (inputSplits == null) {
           if (this.inputFormat == null) {
-            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils
-                .newInstance(tblDesc.getInputFileFormatClass(),
-                    localJc);
+            inputFormat = (InputFormat<WritableComparable, Writable>) ReflectionUtils.newInstance(
+                tblDesc.getInputFileFormatClass(), localJc);
           }
 
-          HiveConf.setVar(localJc,
-              HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
-              org.apache.hadoop.util.StringUtils.escapeString(parentFile
-              .getAbsolutePath()));
+          HiveConf.setVar(localJc, HiveConf.ConfVars.HADOOPMAPREDINPUTDIR,
+              org.apache.hadoop.util.StringUtils.escapeString(parentFile.getAbsolutePath()));
           inputSplits = inputFormat.getSplits(localJc, 1);
           acutalSplitNum = inputSplits.length;
         }
         currentSplitPointer = 0;
-        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
-            localJc, Reporter.NULL);
+        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], localJc, Reporter.NULL);
         currentSplitPointer++;
 
         nextBlock();
@@ -238,6 +235,7 @@ public class RowContainer<Row extends List<Object>> {
 
   }
 
+  @Override
   public Row next() throws HiveException {
 
     if (!firstCalled) {
@@ -278,8 +276,7 @@ public class RowContainer<Row extends List<Object>> {
   }
 
   private void removeKeys(Row ret) {
-    if (this.keyObject != null
-        && this.currentReadBlock != this.currentWriteBlock) {
+    if (this.keyObject != null && this.currentReadBlock != this.currentWriteBlock) {
       int len = this.keyObject.size();
       int rowSize = ((ArrayList) ret).size();
       for (int i = 0; i < len; i++) {
@@ -317,16 +314,13 @@ public class RowContainer<Row extends List<Object>> {
         tmpFile.deleteOnExit();
 
         // rFile = new RandomAccessFile(tmpFile, "rw");
-        HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc
-            .getOutputFileFormatClass().newInstance();
+        HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
         tempOutPath = new Path(tmpFile.toString());
         JobConf localJc = getLocalFSJobConfClone(jc);
-        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
-            hiveOutputFormat, serde.getSerializedClass(), false, tblDesc
-            .getProperties(), tempOutPath);
+        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs, hiveOutputFormat, serde
+            .getSerializedClass(), false, tblDesc.getProperties(), tempOutPath);
       } else if (rw == null) {
-        throw new HiveException(
-            "RowContainer has already been closed for writing.");
+        throw new HiveException("RowContainer has already been closed for writing.");
       }
 
       row.clear();
@@ -366,6 +360,7 @@ public class RowContainer<Row extends List<Object>> {
    *
    * @return number of elements in the RowContainer
    */
+  @Override
   public int size() {
     return size;
   }
@@ -388,17 +383,16 @@ public class RowContainer<Row extends List<Object>> {
         Object key = rr.createKey();
         while (i < this.currentReadBlock.length && rr.next(key, val)) {
           nextSplit = false;
-          this.currentReadBlock[i++] = (Row) ObjectInspectorUtils
-              .copyToStandardObject(serde.deserialize(val), serde
-              .getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+          this.currentReadBlock[i++] = (Row) ObjectInspectorUtils.copyToStandardObject(serde
+              .deserialize(val), serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         }
       }
 
       if (nextSplit && this.currentSplitPointer < this.acutalSplitNum) {
         JobConf localJc = getLocalFSJobConfClone(jc);
         // open record reader to read next split
-        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer],
-            jobCloneUsingLocalFs, Reporter.NULL);
+        rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], jobCloneUsingLocalFs,
+            Reporter.NULL);
         currentSplitPointer++;
         return nextBlock();
       }
@@ -416,8 +410,7 @@ public class RowContainer<Row extends List<Object>> {
     }
   }
 
-  public void copyToDFSDirecory(FileSystem destFs, Path destPath)
-      throws IOException, HiveException {
+  public void copyToDFSDirecory(FileSystem destFs, Path destPath) throws IOException, HiveException {
     if (addCursor > 0) {
       this.spillBlock(this.currentWriteBlock, addCursor);
     }
@@ -425,16 +418,17 @@ public class RowContainer<Row extends List<Object>> {
       return;
     }
     this.closeWriter();
-    LOG.info("RowContainer copied temp file " + tmpFile.getAbsolutePath()
-        + " to dfs directory " + destPath.toString());
-    destFs.copyFromLocalFile(true, tempOutPath, new Path(destPath, new Path(
-        tempOutPath.getName())));
+    LOG.info("RowContainer copied temp file " + tmpFile.getAbsolutePath() + " to dfs directory "
+        + destPath.toString());
+    destFs
+        .copyFromLocalFile(true, tempOutPath, new Path(destPath, new Path(tempOutPath.getName())));
     clear();
   }
 
   /**
    * Remove all elements in the RowContainer.
    */
+  @Override
   public void clear() throws HiveException {
     itrCursor = 0;
     addCursor = 0;

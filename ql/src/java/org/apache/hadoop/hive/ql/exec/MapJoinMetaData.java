@@ -17,26 +17,33 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator.JDBMSinkObjectCtx;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 
 public class MapJoinMetaData {
-  static transient Map<Integer, JDBMSinkObjectCtx> mapMetadata = new HashMap<Integer, JDBMSinkObjectCtx>();
+  static transient Map<Integer, HashTableSinkObjectCtx> mapMetadata = new HashMap<Integer, HashTableSinkObjectCtx>();
+  static ArrayList<Object> list = new ArrayList<Object>();
 
   public MapJoinMetaData(){
 
   }
-  public static void put(Integer key, JDBMSinkObjectCtx value){
+  public static void put(Integer key, HashTableSinkObjectCtx value){
     mapMetadata.put(key, value);
   }
-  public static JDBMSinkObjectCtx get(Integer key){
+  public static HashTableSinkObjectCtx get(Integer key){
     return mapMetadata.get(key);
   }
 
   public static void clear(){
     mapMetadata.clear();
+  }
+
+  public static ArrayList<Object> getList(){
+    list.clear();
+    return list;
   }
 
 }

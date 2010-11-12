@@ -23,7 +23,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -70,7 +70,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {_col0}
                 1 
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_639_5385690485575219943/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-50-21_401_1192194208773335423/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -151,7 +151,7 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key} {ds}
                 1 
@@ -198,7 +198,7 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {_col2}
                 1 
@@ -211,7 +211,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_758_5972659942965972745/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-50-21_619_1359331938520049914/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -243,7 +243,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_758_5972659942965972745/-mr-10003 
+        file:/tmp/liyintang/hive_2010-11-04_12-50-21_619_1359331938520049914/-mr-10003 
           Select Operator
             expressions:
                   expr: _col2
@@ -309,7 +309,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_877_634052141369406072/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-50-21_821_3740258359127333333/-mr-10000
 POSTHOOK: query: select /*+MAPJOIN(src, src1) */ count(*) from srcpart join src src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -317,6 +317,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2010-10-27_14-46-32_877_634052141369406072/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-50-21_821_3740258359127333333/-mr-10000
 5308
 5308

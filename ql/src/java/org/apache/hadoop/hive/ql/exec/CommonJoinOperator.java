@@ -30,12 +30,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.persistence.AbstractRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.util.JoinUtil;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -143,7 +143,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   // input is too large
   // to fit in memory
 
-  HashMap<Byte, RowContainer<ArrayList<Object>>> storage; // map b/w table alias
+  HashMap<Byte, AbstractRowContainer<ArrayList<Object>>> storage; // map b/w table alias
   // to RowContainer
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
@@ -154,7 +154,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   protected transient int countAfterReport;
   protected transient int heartbeatInterval;
-  private static final int NOTSKIPBIGTABLE = -1;
+  protected static final int NOTSKIPBIGTABLE = -1;
 
   public CommonJoinOperator() {
   }
@@ -228,7 +228,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     totalSz = 0;
     // Map that contains the rows for each alias
-    storage = new HashMap<Byte, RowContainer<ArrayList<Object>>>();
+    storage = new HashMap<Byte, AbstractRowContainer<ArrayList<Object>>>();
 
     numAliases = conf.getExprs().size();
 
@@ -340,7 +340,7 @@ transient boolean newGroupStarted = false;
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
     newGroupStarted = true;
-    for (RowContainer<ArrayList<Object>> alw : storage.values()) {
+    for (AbstractRowContainer<ArrayList<Object>> alw : storage.values()) {
       alw.clear();
     }
   }
@@ -664,7 +664,7 @@ transient boolean newGroupStarted = false;
     if (aliasNum < numAliases) {
 
       // search for match in the rhs table
-      RowContainer<ArrayList<Object>> aliasRes = storage.get(order[aliasNum]);
+      AbstractRowContainer<ArrayList<Object>> aliasRes = storage.get(order[aliasNum]);
 
       for (ArrayList<Object> newObj = aliasRes.first(); newObj != null; newObj = aliasRes
           .next()) {
@@ -735,7 +735,7 @@ transient boolean newGroupStarted = false;
       return;
     }
 
-    RowContainer<ArrayList<Object>> alias = storage.get(order[aliasNum]);
+    AbstractRowContainer<ArrayList<Object>> alias = storage.get(order[aliasNum]);
     for (ArrayList<Object> row = alias.first(); row != null; row = alias.next()) {
       intObj.pushObj(row);
       genUniqueJoinObject(aliasNum + 1, intObj);
@@ -755,7 +755,7 @@ transient boolean newGroupStarted = false;
       boolean hasNulls = false; // Will be true if there are null entries
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        RowContainer<ArrayList<Object>> alw = storage.get(alias);
+        AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
         if (alw.size() == 0) {
           alw.add((ArrayList<Object>) dummyObj[i]);
           hasNulls = true;
@@ -776,7 +776,7 @@ transient boolean newGroupStarted = false;
       // does any result need to be emitted
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        RowContainer<ArrayList<Object>> alw = storage.get(alias);
+        AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
         if (alw.size() == 0) {
           if (noOuterJoin) {
             LOG.trace("No data for alias=" + i);
@@ -831,7 +831,7 @@ transient boolean newGroupStarted = false;
   @Override
   public void closeOp(boolean abort) throws HiveException {
     LOG.trace("Join Op close");
-    for (RowContainer<ArrayList<Object>> alw : storage.values()) {
+    for (AbstractRowContainer<ArrayList<Object>> alw : storage.values()) {
       if (alw != null) {
         alw.clear(); // clean up the temp files
       }

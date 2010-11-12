@@ -24,37 +24,33 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinMetaData;
-import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator.JDBMSinkObjectCtx;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Writable;
+
 /**
  * Map Join Object used for both key and value.
  */
 public class MapJoinObjectValue implements Externalizable {
 
   protected transient int metadataTag;
-  protected transient RowContainer obj;
-  protected transient Configuration conf;
-  protected int bucketSize; // bucket size for RowContainer
-  protected Log LOG = LogFactory.getLog(this.getClass().getName());
+  protected transient MapJoinRowContainer<Object[]> obj;
+
+
 
   public MapJoinObjectValue() {
-    bucketSize = 100; // default bucket size
+
   }
 
   /**
    * @param metadataTag
    * @param obj
    */
-  public MapJoinObjectValue(int metadataTag, RowContainer obj) {
+  public MapJoinObjectValue(int metadataTag, MapJoinRowContainer<Object[]> obj) {
     this.metadataTag = metadataTag;
     this.obj = obj;
   }
@@ -63,12 +59,12 @@ public class MapJoinObjectValue implements Externalizable {
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectValue) {
       MapJoinObjectValue mObj = (MapJoinObjectValue) o;
+
       if (mObj.getMetadataTag() == metadataTag) {
         if ((obj == null) && (mObj.getObj() == null)) {
           return true;
         }
-        if ((obj != null) && (mObj.getObj() != null)
-            && (mObj.getObj().equals(obj))) {
+        if ((obj != null) && (mObj.getObj() != null) && (mObj.getObj().equals(obj))) {
           return true;
         }
       }
@@ -82,20 +78,16 @@ public class MapJoinObjectValue implements Externalizable {
   }
 
   @Override
-  public void readExternal(ObjectInput in) throws IOException,
-      ClassNotFoundException {
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     try {
 
       metadataTag = in.readInt();
 
       // get the tableDesc from the map stored in the mapjoin operator
-      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
-          Integer.valueOf(metadataTag));
+      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
-      RowContainer res = new RowContainer(bucketSize, ctx.getConf());
-      res.setSerDe(ctx.getSerDe(), ctx.getStandardOI());
-      res.setTableDesc(ctx.getTblDesc());
+      MapJoinRowContainer<Object[]> res = new MapJoinRowContainer<Object[]>();
       if (sz > 0) {
         int numCols = in.readInt();
         if (numCols > 0) {
@@ -104,16 +96,18 @@ public class MapJoinObjectValue implements Externalizable {
             val.readFields(in);
 
             ArrayList<Object> memObj = (ArrayList<Object>) ObjectInspectorUtils
-              .copyToStandardObject(ctx.getSerDe().deserialize(val), ctx
-              .getSerDe().getObjectInspector(),
-               ObjectInspectorCopyOption.WRITABLE);
+                .copyToStandardObject(ctx.getSerDe().deserialize(val), ctx.getSerDe()
+                    .getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
 
-            res.add(memObj);
+            if (memObj == null) {
+              res.add(new ArrayList<Object>(0).toArray());
+            } else {
+              res.add(memObj.toArray());
+            }
           }
-        }
-        else{
-          for(int i = 0 ; i <sz; i++){
-            res.add(new ArrayList<Object>(0));
+        } else {
+          for (int i = 0; i < sz; i++) {
+            res.add(new ArrayList<Object>(0).toArray());
           }
         }
       }
@@ -130,17 +124,16 @@ public class MapJoinObjectValue implements Externalizable {
       out.writeInt(metadataTag);
 
       // get the tableDesc from the map stored in the mapjoin operator
-      JDBMSinkObjectCtx ctx = MapJoinMetaData.get(
-          Integer.valueOf(metadataTag));
+      HashTableSinkObjectCtx ctx = MapJoinMetaData.get(Integer.valueOf(metadataTag));
 
       // Different processing for key and value
-      RowContainer<ArrayList<Object>> v = obj;
+      MapJoinRowContainer<Object[]> v = obj;
       out.writeInt(v.size());
       if (v.size() > 0) {
-        ArrayList<Object> row = v.first();
-        out.writeInt(row.size());
+        Object[] row = v.first();
+        out.writeInt(row.length);
 
-        if (row.size() > 0) {
+        if (row.length > 0) {
           for (; row != null; row = v.next()) {
             Writable outVal = ctx.getSerDe().serialize(row, ctx.getStandardOI());
             outVal.write(out);
@@ -172,7 +165,7 @@ public class MapJoinObjectValue implements Externalizable {
   /**
    * @return the obj
    */
-  public RowContainer getObj() {
+  public MapJoinRowContainer<Object[]>  getObj() {
     return obj;
   }
 
@@ -180,13 +173,8 @@ public class MapJoinObjectValue implements Externalizable {
    * @param obj
    *          the obj to set
    */
-  public void setObj(RowContainer obj) {
+  public void setObj(MapJoinRowContainer<Object[]>  obj) {
     this.obj = obj;
-  }
-
-  public void setConf(Configuration conf) {
-    this.conf = conf;
-    bucketSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
   }
 
 }

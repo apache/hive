@@ -100,12 +100,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-27_869_8594307870019576114/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-28_326_3972885048921144262/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-27_869_8594307870019576114/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-28_326_3972885048921144262/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -751,12 +751,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-32_224_2628641681553791073/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-36_619_6415824732118440282/-mr-10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-32_224_2628641681553791073/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-36_619_6415824732118440282/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1904,7 +1904,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2010-10-27_11-58-37_240_1047427345351102102/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-14-46_832_624292527665996520/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1952,12 +1952,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-37_348_2776356054970751573/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-46_969_1334858435022180797/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-37_348_2776356054970751573/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-46_969_1334858435022180797/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -2633,7 +2633,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2010-10-27_11-58-44_576_3870847117030797031/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-15-01_848_4481484445896033624/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2681,12 +2681,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-44_694_461427396890734084/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-02_041_1716373562559394449/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-44_694_461427396890734084/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-02_041_1716373562559394449/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -3277,7 +3277,7 @@ STAGE PLANS:
                         expr: value
                         type: string
                   outputColumnNames: _col0, _col1
-                  JDBM Sink Operator
+                  HashTable Sink Operator
                     condition expressions:
                       0 {key} {value}
                       1 {_col0} {_col1}
@@ -3345,12 +3345,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-51_016_2800726535361834663/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-12_928_5277225703166373723/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-51_016_2800726535361834663/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-12_928_5277225703166373723/-mr-10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3984,7 +3984,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2010-10-27_11-58-54_107_7492093354536600513/-mr-10002 
+        file:/tmp/liyintang/hive_2010-11-04_12-15-20_303_498904788302590605/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -4018,9 +4018,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-54_187_249714887699251169/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-20_419_6110829774550991242/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-27_11-58-54_187_249714887699251169/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-20_419_6110829774550991242/-mr-10000
 1028

@@ -45,7 +45,7 @@ STAGE PLANS:
         subq:x 
           TableScan
             alias: x
-            JDBM Sink Operator
+            HashTable Sink Operator
               condition expressions:
                 0 {key}
                 1 
@@ -65,7 +65,7 @@ STAGE PLANS:
                 predicate:
                     expr: (hr = 11)
                     type: boolean
-                JDBM Sink Operator
+                HashTable Sink Operator
                   condition expressions:
                     0 {_col0}
                     1 {value}
@@ -147,7 +147,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-37-58_634_5247474048070349832/-ext-10000
+          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-08_18-59-55_834_2268567445499795563/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -165,7 +165,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-37-58_634_5247474048070349832/-ext-10002 
+        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-08_18-59-55_834_2268567445499795563/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -203,11 +203,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-38-05_164_4212085229910053721/-mr-10000
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-08_19-00-06_183_3300125804401305378/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-38-05_164_4212085229910053721/-mr-10000
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-08_19-00-06_183_3300125804401305378/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 128	val_128

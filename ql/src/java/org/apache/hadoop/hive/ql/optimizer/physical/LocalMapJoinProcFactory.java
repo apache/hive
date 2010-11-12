@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.exec.JDBMDummyOperator;
-import org.apache.hadoop.hive.ql.exec.JDBMSinkOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -35,8 +35,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.MapJoinResolver.LocalMapJoinProcCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.JDBMDummyDesc;
-import org.apache.hadoop.hive.ql.plan.JDBMSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
+import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
@@ -78,10 +78,8 @@ public final class LocalMapJoinProcFactory {
       }
       MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
 
-      //create an new operator: JDBMSinkOperator
-      JDBMSinkDesc jdbmSinkDesc = new JDBMSinkDesc(mapJoinOp.getConf());
-      JDBMSinkOperator jdbmSinkOp =(JDBMSinkOperator)OperatorFactory.get(jdbmSinkDesc);
-
+      HashTableSinkDesc hashTableSinkDesc = new HashTableSinkDesc(mapJoinOp.getConf());
+      HashTableSinkOperator hashTableSinkOp =(HashTableSinkOperator)OperatorFactory.get(hashTableSinkDesc);
 
       //get the last operator for processing big tables
       int bigTable = mapJoinOp.getConf().getPosBigTable();
@@ -90,7 +88,7 @@ public final class LocalMapJoinProcFactory {
 
       Operator<? extends Serializable> bigOp = mapJoinOp.getParentOperators().get(bigTable);
 
-      //the parent ops for jdbmSinkOp
+      //the parent ops for hashTableSinkOp
       List<Operator<?extends Serializable>> smallTablesParentOp= new ArrayList<Operator<?extends Serializable>>();
 
       List<Operator<?extends Serializable>> dummyOperators= new ArrayList<Operator<?extends Serializable>>();
@@ -103,14 +101,14 @@ public final class LocalMapJoinProcFactory {
         }
 
         Operator<? extends Serializable> parent = parentsOp.get(i);
-        //let jdbmOp be the child of this parent
-        parent.replaceChild(mapJoinOp, jdbmSinkOp);
+        //let hashtable Op be the child of this parent
+        parent.replaceChild(mapJoinOp, hashTableSinkOp);
         //keep the parent id correct
         smallTablesParentOp.add(parent);
 
-        //create an new operator: JDBMDummyOpeator, which share the table desc
-        JDBMDummyDesc desc = new JDBMDummyDesc();
-        JDBMDummyOperator dummyOp =(JDBMDummyOperator)OperatorFactory.get(desc);
+        //create an new operator: HashTable DummyOpeator, which share the table desc
+        HashTableDummyDesc desc = new HashTableDummyDesc();
+        HashTableDummyOperator dummyOp =(HashTableDummyOperator)OperatorFactory.get(desc);
         TableDesc tbl;
 
         if(parent.getSchema()==null){
@@ -140,7 +138,7 @@ public final class LocalMapJoinProcFactory {
 
       }
 
-      jdbmSinkOp.setParentOperators(smallTablesParentOp);
+      hashTableSinkOp.setParentOperators(smallTablesParentOp);
       for(Operator<? extends Serializable> op: dummyOperators){
         context.addDummyParentOp(op);
       }

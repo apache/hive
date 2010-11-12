@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -97,9 +97,10 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       if(localwork != null){
         //get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
-        String tmpFileURI = ctx.getLocalTmpFileURI()+Path.SEPARATOR+"JDBM-"+currTask.getId();
+        String tmpFileURI = Utilities.generateTmpURI(ctx.getLocalTmpFileURI(), currTask.getId());
         localwork.setTmpFileURI(tmpFileURI);
-        mapredWork.setTmpHDFSFileURI(ctx.getMRTmpFileURI()+Path.SEPARATOR+"JDBM-"+currTask.getId());
+        String hdfsTmpURI = Utilities.generateTmpURI(ctx.getMRTmpFileURI(), currTask.getId());
+        mapredWork.setTmpHDFSFileURI(hdfsTmpURI);
         //create a task for this local work; right now, this local work is shared
         //by the original MapredTask and this new generated MapredLocalTask.
         MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork,

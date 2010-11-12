@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -101,7 +103,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   protected transient JobConf job;
   protected transient int mapProgress = 0;
   protected transient int reduceProgress = 0;
-
+  public static MemoryMXBean memoryMXBean;
   /**
    * Constructor when invoked from QL.
    */
@@ -597,35 +599,38 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       if(localwork != null){
         boolean localMode = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local");
         if(!localMode){
-          LOG.info("=========Adding files to HDFS ================");
+          //LOG.info("=========Adding files to HDFS ================");
           Path localPath = new Path(localwork.getTmpFileURI());
           Path hdfsPath = new Path(work.getTmpHDFSFileURI());
 
           FileSystem hdfs = hdfsPath.getFileSystem(job);
           FileSystem localFS = localPath.getFileSystem(job);
-          FileStatus[] jdbmFiles = localFS.listStatus(localPath);
-          for(int i =0; i<jdbmFiles.length;i++){
-            FileStatus file = jdbmFiles[i];
+          FileStatus[] hashtableFiles = localFS.listStatus(localPath);
+          for (int i = 0; i < hashtableFiles.length; i++) {
+            FileStatus file = hashtableFiles[i];
             Path path = file.getPath();
             String fileName=path.getName();
             String hdfsFile = hdfsPath+Path.SEPARATOR+fileName;
 
-            LOG.info("Upload 1 JDBM from" +path+" to: "+hdfsFile);
+            LOG.info("Upload 1 HashTable from" + path + " to: " + hdfsFile);
             Path hdfsFilePath = new Path(hdfsFile);
+
+            //hdfs.setVerifyChecksum(false);
             hdfs.copyFromLocalFile(path,hdfsFilePath );
             short replication = (short)job.getInt("mapred.submit.replication", 10);
             hdfs.setReplication(hdfsFilePath, replication);
           }
-          LOG.info("=========Adding files to distributed cache================");
+          //LOG.info("=========Adding files to distributed cache================");
 
-          FileStatus[] jdbmRemoteFiles = hdfs.listStatus(hdfsPath);
-          for(int i =0; i<jdbmRemoteFiles.length;i++){
-            FileStatus file = jdbmRemoteFiles[i];
+          FileStatus[] hashtableRemoteFiles = hdfs.listStatus(hdfsPath);
+          for (int i = 0; i < hashtableRemoteFiles.length; i++) {
+            FileStatus file = hashtableRemoteFiles[i];
             Path path = file.getPath();
             DistributedCache.addCacheFile(path.toUri(), job);
-            LOG.info("add 1 jdbm file to distributed cache: "+path.toUri());
+            LOG.info("add 1 hashtable file to distributed cache: "
+                + path.toUri());
           }
-          LOG.info("===========Finishing adding files to distributed cache==========");
+          //LOG.info("===========Finishing adding files to distributed cache==========");
         }
       }
 
@@ -970,6 +975,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     ArrayList<String> jobConfArgs = new ArrayList<String>();
     boolean noLog = false;
     String files = null;
+    boolean localtask=false;
 
     try {
       for (int i = 0; i < args.length; i++) {
@@ -981,6 +987,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
           noLog = true;
         } else if (args[i].equals("-files")) {
           files = args[++i];
+        }else if(args[i].equals("-localtask")) {
+          localtask = true;
         }
       }
     } catch (IndexOutOfBoundsException e) {
@@ -988,7 +996,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       printUsage();
     }
 
-    JobConf conf = new JobConf(ExecDriver.class);
+    JobConf conf ;
+    if(localtask) {
+      conf= new JobConf(MapredLocalTask.class);
+    } else {
+      conf= new JobConf(ExecDriver.class);
+    }
     StringBuilder sb = new StringBuilder("JobConf:\n");
 
     for (String one : jobConfArgs) {
@@ -1071,12 +1084,19 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
     }
+    int ret;
+    if(localtask) {
+      memoryMXBean = ManagementFactory.getMemoryMXBean();
+      MapredLocalWork plan = Utilities.deserializeMapRedLocalWork(pathData, conf);
+      MapredLocalTask ed = new MapredLocalTask(plan, conf, isSilent);
+      ret= ed.executeFromChildJVM(new DriverContext());
 
+    } else {
+      MapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
+      ExecDriver ed = new ExecDriver(plan, conf, isSilent);
+      ret = ed.execute(new DriverContext());
+    }
 
-    MapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
-    ExecDriver ed = new ExecDriver(plan, conf, isSilent);
-
-    int ret = ed.execute(new DriverContext());
     if (ret != 0) {
       System.exit(2);
     }
