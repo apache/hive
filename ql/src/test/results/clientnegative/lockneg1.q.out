@@ -31,5 +31,5 @@ POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOCK TABLE tstsrc EXCLUSIVE
 PREHOOK: type: LOCKTABLE
-conflicting lock present 
+conflicting lock present for default@tstsrc mode EXCLUSIVE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

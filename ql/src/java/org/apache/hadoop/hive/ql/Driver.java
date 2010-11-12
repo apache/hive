@@ -425,6 +425,27 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  public static class LockObjectContainer {
+    LockObject lck;
+
+    public LockObjectContainer() {
+      this.lck = null;
+    }
+
+    public LockObjectContainer(LockObject lck) {
+      this.lck = lck;
+    }
+
+    public LockObject getLck() {
+      return lck;
+    }
+
+    public void setLck(LockObject lck) {
+      this.lck = lck;
+    }
+
+  }
+
   /**
    * @param t     The table to be locked
    * @param p     The partition to be locked
@@ -551,11 +572,15 @@ public class Driver implements CommandProcessor {
         });
 
       // walk the list and acquire the locks - if any lock cant be acquired, release all locks, sleep and retry
+      LockObjectContainer notFound = new LockObjectContainer();
       while (true) {
-        List<HiveLock> hiveLocks = acquireLocks(lockObjects);
+        notFound.setLck(null);
+        List<HiveLock> hiveLocks = acquireLocks(lockObjects, notFound);
 
         if (hiveLocks == null) {
           if (tryNum == numRetries) {
+            console.printError("Lock for " + notFound.getLck().getObj().getName() +
+                               " cannot be acquired in " + notFound.getLck().getMode());
             throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
           }
           tryNum++;
@@ -585,7 +610,7 @@ public class Driver implements CommandProcessor {
    * Lock the objects specified in the list. The same object is not locked twice, and the list passed is sorted
    * such that EXCLUSIVE locks occur before SHARED locks.
    **/
-  private List<HiveLock> acquireLocks(List<LockObject> lockObjects) throws SemanticException {
+  private List<HiveLock> acquireLocks(List<LockObject> lockObjects, LockObjectContainer notFound) throws SemanticException {
     // walk the list and acquire the locks - if any lock cant be acquired, release all locks, sleep and retry
     LockObject prevLockObj = null;
     List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
@@ -606,6 +631,7 @@ public class Driver implements CommandProcessor {
       }
 
       if (lock == null) {
+        notFound.setLck(lockObject);
         releaseLocks(hiveLocks);
         return null;
       }

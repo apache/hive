@@ -161,7 +161,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
         if ((childSeq >= 0) && (childSeq < seqNo)) {
           zooKeeper.delete(res, -1);
-          console.printError("conflicting lock present ");
+          console.printError("conflicting lock present for " + key.getName() +
+                             " mode " + mode);
           return null;
         }
       }
