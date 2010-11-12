@@ -105,7 +105,7 @@ Trunk -  Unreleased
     (Amareshwari Sriramadasu via namit)
 
     HIVE-1779 Add udf str_to_map
-    (Siying Dong via via namit)
+    (Siying Dong via namit)
 
   IMPROVEMENTS
 
@@ -241,10 +241,13 @@ Trunk -  Unreleased
     (Siying Dong via namit)
 
     HIVE-1754 Remove JDBM component from Map Join
-    (Liyin via He Yongqiang)    
+    (Liyin via He Yongqiang)
 
     HIVE-1782 add more debug information for hive locking
     (namit via He Yongqiang)
+
+    HIVE-1786 Better documentation for udf str_to_map
+    (Siying Dong via namit)
 
   OPTIMIZATIONS
 

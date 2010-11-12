@@ -35,7 +35,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  *
  */
 @Description(name = "str_to_map", value = "_FUNC_(text, delimiter1, delimiter2) - "
-    + "Creates a map by parsing text ")
+    + "Creates a map by parsing text ", extended = "Split text into key-value pairs"
+    + " using two delimiters. The first delimiter seperates pairs, and the"
+    + " second delimiter sperates key and value. If only one parameter is given, default"
+    + " delimiters are used: ',' as delimiter1 and '=' as delimiter2.")
 public class GenericUDFStringToMap extends GenericUDF {
   HashMap<Object, Object> ret = new HashMap<Object, Object>();
   StringObjectInspector soi_text, soi_de1 = null, soi_de2 = null;
@@ -73,7 +76,7 @@ public class GenericUDFStringToMap extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     ret.clear();
     String text = soi_text.getPrimitiveJavaObject(arguments[0].get());
-    String delimiter1 = (soi_de1 == null) ? 
+    String delimiter1 = (soi_de1 == null) ?
       default_de1 : soi_de1.getPrimitiveJavaObject(arguments[1].get());
     String delimiter2 = (soi_de2 == null) ?
       default_de2 : soi_de2.getPrimitiveJavaObject(arguments[2].get());

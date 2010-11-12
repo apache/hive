@@ -8,6 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: desc function extended str_to_map
 POSTHOOK: type: DESCFUNCTION
 str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
+Split text into key-value pairs using two delimiters. The first delimiter seperates pairs, and the second delimiter sperates key and value. If only one parameter is given, default delimiters are used: ',' as delimiter1 and '=' as delimiter2.
 PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -47,11 +48,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-28_591_6260158416663883074/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-48_939_5414753236298860779/-mr-10000
 POSTHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-28_591_6260158416663883074/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-48_939_5414753236298860779/-mr-10000
 1
 1
 1
@@ -94,11 +95,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-32_534_2589249075999917145/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-51_828_6905327639418151142/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-32_534_2589249075999917145/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-51_828_6905327639418151142/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -141,11 +142,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-36_278_460631588022401435/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-54_404_1637219732245487353/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-36_278_460631588022401435/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-54_404_1637219732245487353/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -204,13 +205,13 @@ from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-40_008_1745894324808734321/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-56_995_8619552318902310354/-mr-10000
 POSTHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-40_008_1745894324808734321/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-56_995_8619552318902310354/-mr-10000
 1
 1
 1
@@ -228,11 +229,11 @@ POSTHOOK: Output: default@tbl_s2m
 PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_s2m
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-48_099_3563726538760875441/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-49-02_576_7096389194927995175/-mr-10000
 POSTHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_s2m
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-10_09-32-48_099_3563726538760875441/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-49-02_576_7096389194927995175/-mr-10000
 444
 444
 444
