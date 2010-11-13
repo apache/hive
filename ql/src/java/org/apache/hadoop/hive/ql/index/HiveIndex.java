@@ -26,9 +26,9 @@ import org.apache.commons.logging.LogFactory;
 public class HiveIndex {
 
   public static final Log l4j = LogFactory.getLog("HiveIndex");
-  
+
   public static String INDEX_TABLE_CREATETIME = "hive.index.basetbl.dfs.lastModifiedTime";
-  
+
   public static enum IndexType {
     COMPACT_SUMMARY_TABLE("compact", "org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler");
 
@@ -37,23 +37,34 @@ public class HiveIndex {
       this.handlerClsName = className;
     }
 
-    private String indexTypeName;
-    private String handlerClsName;
+    private final String indexTypeName;
+    private final String handlerClsName;
 
     public String getName() {
       return indexTypeName;
     }
-    
+
     public String getHandlerClsName() {
       return handlerClsName;
     }
   }
-  
+
   public static IndexType getIndexType(String name) {
     IndexType[] types = IndexType.values();
     for (IndexType type : types) {
-      if(type.getName().equals(name.toLowerCase()))
+      if(type.getName().equals(name.toLowerCase())) {
         return type;
+      }
+    }
+    return null;
+  }
+
+  public static IndexType getIndexTypeByClassName(String className) {
+    IndexType[] types = IndexType.values();
+    for (IndexType type : types) {
+      if(type.getHandlerClsName().equals(className)) {
+        return type;
+      }
     }
     return null;
   }

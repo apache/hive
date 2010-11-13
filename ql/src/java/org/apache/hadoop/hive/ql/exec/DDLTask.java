@@ -37,10 +37,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -82,7 +83,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -99,12 +99,14 @@ import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -281,6 +283,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return showPartitions(db, showParts);
       }
 
+      ShowIndexesDesc showIndexes = work.getShowIndexesDesc();
+      if (showIndexes != null) {
+        return showIndexes(db, showIndexes);
+      }
+
     } catch (InvalidTableException e) {
       console.printError("Table " + e.getTableName() + " does not exist");
       LOG.debug(stringifyException(e));
@@ -318,7 +325,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         crtIndex.getInputFormat(), crtIndex.getOutputFormat(), crtIndex.getSerde(),
         crtIndex.getStorageHandler(), crtIndex.getLocation(), crtIndex.getIdxProps(), crtIndex.getTblProps(),
         crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
-        crtIndex.getLineDelim(), crtIndex.getMapKeyDelim()
+        crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
         );
     return 0;
   }
@@ -1075,6 +1082,60 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(e.toString());
     } catch (IOException e) {
       LOG.info("show partitions: " + stringifyException(e));
+      throw new HiveException(e.toString());
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
+    }
+
+    return 0;
+  }
+
+  /**
+   * Write a list of indexes to a file.
+   *
+   * @param db
+   *          The database in question.
+   * @param showIndexes
+   *          These are the indexes we're interested in.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int showIndexes(Hive db, ShowIndexesDesc showIndexes) throws HiveException {
+    // get the indexes for the table and populate the output
+    String tableName = showIndexes.getTableName();
+    Table tbl = null;
+    List<Index> indexes = null;
+
+    tbl = db.getTable(tableName);
+
+    indexes = db.getIndexes(db.getCurrentDatabase(), tbl.getTableName(), (short) -1);
+
+    // write the results in the file
+    try {
+      Path resFile = new Path(showIndexes.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      DataOutput outStream = fs.create(resFile);
+
+      if (showIndexes.isFormatted()) {
+        // column headers
+        outStream.writeBytes(MetaDataFormatUtils.getIndexColumnsHeader());
+        outStream.write(terminator);
+        outStream.write(terminator);
+      }
+
+      for (Index index : indexes)
+      {
+        outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(index));
+      }
+
+      ((FSDataOutputStream) outStream).close();
+
+    } catch (FileNotFoundException e) {
+      LOG.info("show indexes: " + stringifyException(e));
+      throw new HiveException(e.toString());
+    } catch (IOException e) {
+      LOG.info("show indexes: " + stringifyException(e));
       throw new HiveException(e.toString());
     } catch (Exception e) {
       throw new HiveException(e.toString());

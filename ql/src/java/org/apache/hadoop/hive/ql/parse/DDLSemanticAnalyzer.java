@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
@@ -232,6 +233,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWINDEXES) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowIndexes(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_LOCKTABLE) {
       analyzeLockTable(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_UNLOCKTABLE) {
@@ -338,6 +342,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String location = null;
     Map<String, String> tblProps = null;
     Map<String, String> idxProps = null;
+    String indexComment = null;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat();
@@ -376,6 +381,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               shared.serdeProps);
         }
         break;
+      case HiveParser.TOK_INDEXCOMMENT:
+        child = (ASTNode) child.getChild(0);
+        indexComment = unescapeSQLString(child.getText());
       }
     }
 
@@ -386,7 +394,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         storageFormat.storageHandler, typeName, location, idxProps, tblProps,
         shared.serde, shared.serdeProps, rowFormatParams.collItemDelim,
         rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
-        rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim);
+        rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim, indexComment);
     Task<?> createIndex = TaskFactory.get(new DDLWork(crtIndexDesc), conf);
     rootTasks.add(createIndex);
   }
@@ -885,6 +893,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblStatusDesc), conf));
     setFetchTask(createFetchTask(showTblStatusDesc.getSchema()));
+  }
+
+  private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
+    ShowIndexesDesc showIndexesDesc;
+    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    showIndexesDesc = new ShowIndexesDesc(tableName, ctx.getResFile());
+
+    if (ast.getChildCount() == 2) {
+      int descOptions = ast.getChild(1).getType();
+      showIndexesDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
+    }
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showIndexesDesc), conf));
+    setFetchTask(createFetchTask(showIndexesDesc.getSchema()));
   }
 
   /**

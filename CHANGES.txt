@@ -249,6 +249,10 @@ Trunk -  Unreleased
     HIVE-1786 Better documentation for udf str_to_map
     (Siying Dong via namit)
 
+    HIVE-1497 support COMMENT clause on CREATE INDEX, and add new
+    command for SHOW INDEXES
+    (Russell Melick via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

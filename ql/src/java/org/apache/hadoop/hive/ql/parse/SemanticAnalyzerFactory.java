@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public final class SemanticAnalyzerFactory {
 
   static HashMap<Integer, String> commandType = new HashMap<Integer, String>();
-  static HashMap<Integer, String[]> tablePartitionCommandType = new HashMap<Integer, String[]>(); 
+  static HashMap<Integer, String[]> tablePartitionCommandType = new HashMap<Integer, String[]>();
 
   static {
     commandType.put(HiveParser.TOK_EXPLAIN, "EXPLAIN");
@@ -60,6 +60,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, "SHOWFUNCTIONS");
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, "SHOWPARTITIONS");
+    commandType.put(HiveParser.TOK_SHOWINDEXES, "SHOWINDEXES");
     commandType.put(HiveParser.TOK_SHOWLOCKS, "SHOWLOCKS");
     commandType.put(HiveParser.TOK_CREATEFUNCTION, "CREATEFUNCTION");
     commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
@@ -73,16 +74,16 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_LOCKTABLE, "LOCKTABLE");
     commandType.put(HiveParser.TOK_UNLOCKTABLE, "UNLOCKTABLE");
   }
-  
+
   static {
-    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE, 
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE,
         new String[] { "ALTERTABLE_PROTECTMODE", "ALTERPARTITION_PROTECTMODE" });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_FILEFORMAT,
         new String[] { "ALTERTABLE_FILEFORMAT", "ALTERPARTITION_FILEFORMAT" });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_LOCATION,
         new String[] { "ALTERTABLE_LOCATION", "ALTERPARTITION_LOCATION" });
   }
-  
+
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
       throws SemanticException {
@@ -120,6 +121,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
+      case HiveParser.TOK_SHOWINDEXES:
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_CREATEINDEX:
       case HiveParser.TOK_DROPINDEX:

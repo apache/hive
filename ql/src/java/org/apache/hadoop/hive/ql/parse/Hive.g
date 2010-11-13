@@ -188,6 +188,8 @@ TOK_LEFTSEMIJOIN;
 TOK_LATERAL_VIEW;
 TOK_TABALIAS;
 TOK_ANALYZE;
+TOK_SHOWINDEXES;
+TOK_INDEXCOMMENT;
 }
 
 
@@ -349,15 +351,24 @@ createIndexStatement
       tableFileFormat?
       tableLocation?
       tablePropertiesPrefixed?
-    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols
+      indexComment?
+    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols 
         autoRebuild?
         indexPropertiesPrefixed?
         indexTblName?
         tableRowFormat?
         tableFileFormat?
         tableLocation?
-        tablePropertiesPrefixed?)
+        tablePropertiesPrefixed?
+        indexComment?)
     ;
+
+indexComment
+@init { msgs.push("comment on an index");}
+@after {msgs.pop();}
+        :
+                KW_COMMENT comment=StringLiteral  -> ^(TOK_INDEXCOMMENT $comment)
+        ;
 
 autoRebuild
 @init { msgs.push("auto rebuild index");}
@@ -661,6 +672,8 @@ showStatement
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_LOCKS -> ^(TOK_SHOWLOCKS)
     | KW_SHOW KW_LOCKS (parttype=partTypeExpr) (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype $isExtended?)
+    | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=Identifier)?
+    -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)  
     ;
 
 lockStatement
@@ -1762,6 +1775,7 @@ KW_PARTITIONS : 'PARTITIONS';
 KW_TABLE: 'TABLE';
 KW_TABLES: 'TABLES';
 KW_INDEX: 'INDEX';
+KW_INDEXES: 'INDEXES';
 KW_REBUILD: 'REBUILD';
 KW_FUNCTIONS: 'FUNCTIONS';
 KW_SHOW: 'SHOW';

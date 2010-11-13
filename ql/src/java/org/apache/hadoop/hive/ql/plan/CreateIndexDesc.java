@@ -48,6 +48,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
   String lineDelim;
   String mapKeyDelim;
 
+  String indexComment;
 
   public CreateIndexDesc() {
     super();
@@ -59,7 +60,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
       String typeName, String location, Map<String, String> idxProps, Map<String, String> tblProps,
       String serde, Map<String, String> serdeProps, String collItemDelim,
       String fieldDelim, String fieldEscape, String lineDelim,
-      String mapKeyDelim) {
+      String mapKeyDelim, String indexComment) {
     super();
     this.tableName = tableName;
     this.indexName = indexName;
@@ -81,6 +82,7 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
     this.fieldEscape = fieldEscape;
     this.lineDelim = lineDelim;
     this.mapKeyDelim = mapKeyDelim;
+    this.indexComment = indexComment;
   }
 
   public String getTableName() {
@@ -237,6 +239,14 @@ public class CreateIndexDesc extends DDLDesc implements Serializable {
 
   public void setIndexTypeHandlerClass(String indexTypeHandlerClass) {
     this.indexTypeHandlerClass = indexTypeHandlerClass;
+  }
+
+  public String getIndexComment() {
+    return indexComment;
+  }
+
+  public void setIndexComment(String indexComment) {
+    this.indexComment = indexComment;
   }
 
 }
