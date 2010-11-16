@@ -507,6 +507,9 @@ Trunk -  Unreleased
     HIVE-1781 outputs not populated for dynamic partitions at compile time
     (namit via He Yongqiang)
 
+    HIVE-1794 Bug in AND and OR if they return boolean/string
+    (Siying Dong via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

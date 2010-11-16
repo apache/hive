@@ -50,7 +50,7 @@ public class GenericUDFOPOr extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     boolean bool_a0 = false, bool_a1 = false;
-    BooleanWritable a0 = (BooleanWritable) arguments[0].get();
+    Object a0 = arguments[0].get();
     if (a0 != null) {
       bool_a0 = boi0.get(a0);
       if (bool_a0 == true) {
@@ -59,7 +59,7 @@ public class GenericUDFOPOr extends GenericUDF {
       }
     }
 
-    BooleanWritable a1 = (BooleanWritable) arguments[1].get();
+    Object a1 = arguments[1].get();
     if (a1 != null) {
       bool_a1 = boi1.get(a1);
       if (bool_a1 == true) {
