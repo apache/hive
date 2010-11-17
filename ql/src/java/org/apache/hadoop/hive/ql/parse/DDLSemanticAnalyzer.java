@@ -614,18 +614,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, inputFormat,
         outputFormat, serde, storageHandler, partSpec);
 
+    addInputsOutputsAlterTable(tableName, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        alterTblDesc), conf));
+  }
+
+  private void addInputsOutputsAlterTable(String tableName, HashMap<String, String> partSpec)
+    throws SemanticException {
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
       if (tab != null) {
         inputs.add(new ReadEntity(tab));
-        outputs.add(new WriteEntity(tab));
+
+        if ((partSpec == null) || (partSpec.isEmpty())) {
+          outputs.add(new WriteEntity(tab));
+        }
+        else {
+          Partition part = db.getPartition(tab, partSpec, false);
+          if (part != null) {
+            outputs.add(new WriteEntity(part));
+          }
+        }
       }
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
     }
-
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
   }
 
   private void analyzeAlterTableLocation(ASTNode ast, String tableName,
@@ -635,16 +648,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     AlterTableDesc alterTblDesc = new AlterTableDesc (tableName, newLocation, partSpec);
 
-    try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
-      if (tab != null) {
-        inputs.add(new ReadEntity(tab));
-        outputs.add(new WriteEntity(tab));
-      }
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-
+    addInputsOutputsAlterTable(tableName, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
@@ -689,16 +693,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           "Only protect mode NO_DROP or OFFLINE supported");
     }
 
-    try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
-      if (tab != null) {
-        inputs.add(new ReadEntity(tab));
-        outputs.add(new WriteEntity(tab));
-      }
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-
+    addInputsOutputsAlterTable(tableName, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }

@@ -510,6 +510,9 @@ Trunk -  Unreleased
     HIVE-1794 Bug in AND and OR if they return boolean/string
     (Siying Dong via namit)
 
+    HIVE-1795 outputs not correctly populated for alter table
+    (namit via He Yongqiang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
