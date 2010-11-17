@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,15 +32,15 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 
 /**
  * Implementation of the Row Resolver.
- * 
+ *
  */
-public class RowResolver {
+public class RowResolver implements Serializable{
+  private static final long serialVersionUID = 1L;
+  private  RowSchema rowSchema;
+  private  HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
 
-  private final RowSchema rowSchema;
-  private final HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
-
-  private final HashMap<String, String[]> invRslvMap;
-  private final Map<String, ASTNode> expressionMap;
+  private  HashMap<String, String[]> invRslvMap;
+  private  Map<String, ASTNode> expressionMap;
 
   // TODO: Refactor this and do in a more object oriented manner
   private boolean isExprResolver;
@@ -119,11 +120,11 @@ public class RowResolver {
    * row resolver and returns the match. It also throws an exception if the
    * column is found in multiple table aliases. If no match is found a null
    * values is returned.
-   * 
+   *
    * This allows us to interpret both select t.c1 type of references and select
    * c1 kind of refereneces. The later kind are what we call non aliased column
    * references in the query.
-   * 
+   *
    * @param tab_alias
    *          The table alias to match (this is null if the column reference is
    *          non aliased)
@@ -222,4 +223,42 @@ public class RowResolver {
     }
     return sb.toString();
   }
+
+  public RowSchema getRowSchema() {
+    return rowSchema;
+  }
+
+  public HashMap<String, LinkedHashMap<String, ColumnInfo>> getRslvMap() {
+    return rslvMap;
+  }
+
+  public HashMap<String, String[]> getInvRslvMap() {
+    return invRslvMap;
+  }
+
+  public Map<String, ASTNode> getExpressionMap() {
+    return expressionMap;
+  }
+
+  public void setExprResolver(boolean isExprResolver) {
+    this.isExprResolver = isExprResolver;
+  }
+
+
+  public void setRowSchema(RowSchema rowSchema) {
+    this.rowSchema = rowSchema;
+  }
+
+  public void setRslvMap(HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap) {
+    this.rslvMap = rslvMap;
+  }
+
+  public void setInvRslvMap(HashMap<String, String[]> invRslvMap) {
+    this.invRslvMap = invRslvMap;
+  }
+
+  public void setExpressionMap(Map<String, ASTNode> expressionMap) {
+    this.expressionMap = expressionMap;
+  }
+
 }

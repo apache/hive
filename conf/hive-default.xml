@@ -473,6 +473,44 @@
   <description>When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files.  This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.</description>
 </property>
 
+
+<property>
+  <name>hive.mapjoin.hashtable.initialCapacity</name>
+  <value>100000</value>
+  <description>In the process of Mapjoin, the key/value will be hold in the hashtable. This value means the initialCapacity of the in-memory hashtable</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.hashtable.loadfactor</name>
+  <value>0.75</value>
+  <description>In the process of Mapjoin, the key/value will be hold in the hashtable. This value means the load factor for the in-memory hashtable</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.smalltable.filesize</name>
+  <value>25000000</value>
+  <description>The threshold for the input file size of the small tables; if the file size is smaller than this threshold, it will try to convert the common join into map join</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.localtask.max.memory.usage</name>
+  <value>0.90</value>
+  <description>This number means how much memory the local task can take to hold the key/value into in-memory hash table; If the local task's memory usage is more than this number, the local task will be abort by themself. It means the data of small table is too large to be hold in the memory.</description>
+</property>
+
+<property>
+  <name>hive.mapjoin.check.memory.rows</name>
+  <value>100000</value>
+  <description>The number means after how many rows processed it needs to check the memory usage</description>
+</property>
+
+<property>
+  <name>hive.auto.convert.join</name>
+  <value>false</value>
+  <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
+</property>
+
+
 <property>
   <name>hive.script.auto.progress</name>
   <value>false</value>

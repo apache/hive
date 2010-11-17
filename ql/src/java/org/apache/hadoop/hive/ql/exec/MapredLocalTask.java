@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
-public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializable {
+public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
   private Map<String, FetchOperator> fetchOperators;
   private JobConf job;
@@ -67,11 +67,11 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
   public static MemoryMXBean memoryMXBean;
 
-    // not sure we need this exec context; but all the operators in the work
+  // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
   private final ExecMapperContext execContext = new ExecMapperContext();
 
-  public MapredLocalTask(){
+  public MapredLocalTask() {
     super();
   }
 
@@ -83,25 +83,23 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan,
-      DriverContext driverContext) {
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
   }
 
-  public static String now(){
+  public static String now() {
     Calendar cal = Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-    return  sdf.format(cal.getTime());
+    return sdf.format(cal.getTime());
   }
 
 
 
   @Override
-  public int execute(DriverContext driverContext){
-    try{
-      //generate the cmd line to run in the child jvm
-      //String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
+  public int execute(DriverContext driverContext) {
+    try {
+      // generate the cmd line to run in the child jvm
       Context ctx = driverContext.getCtx();
       String hiveJar = conf.getJar();
 
@@ -115,16 +113,15 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
       LOG.info("Generating plan file " + planPath.toString());
       Utilities.serializeMapRedLocalWork(plan, out);
 
-      String isSilent = "true".equalsIgnoreCase(System
-          .getProperty("test.silent")) ? "-nolog" : "";
+      String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent")) ? "-nolog" : "";
 
       String jarCmd;
 
-      jarCmd = hiveJar + " " + ExecDriver.class.getName() ;
+      jarCmd = hiveJar + " " + ExecDriver.class.getName();
 
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
-      String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan "
-          + planPath.toString() + " " + isSilent + " " + hiveConfArgs;
+      String cmdLine = hadoopExec + " jar " + jarCmd + " -localtask -plan " + planPath.toString()
+          + " " + isSilent + " " + hiveConfArgs;
 
       String workDir = (new File(".")).getCanonicalPath();
       String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
@@ -134,16 +131,16 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
 
         workDir = (new Path(ctx.getLocalTmpFileURI())).toUri().getPath();
 
-        if (! (new File(workDir)).mkdir()) {
-          throw new IOException ("Cannot create tmp working dir: " + workDir);
+        if (!(new File(workDir)).mkdir()) {
+          throw new IOException("Cannot create tmp working dir: " + workDir);
         }
 
-        for (String f: StringUtils.split(files, ',')) {
+        for (String f : StringUtils.split(files, ',')) {
           Path p = new Path(f);
           String target = p.toUri().getPath();
           String link = workDir + Path.SEPARATOR + p.getName();
           if (FileUtil.symLink(target, link) != 0) {
-            throw new IOException ("Cannot link to added file: " + target + " from: " + link);
+            throw new IOException("Cannot link to added file: " + target + " from: " + link);
           }
         }
       }
@@ -166,31 +163,30 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
       Map<String, String> variables = new HashMap(System.getenv());
       // The user can specify the hadoop memory
 
-      //if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
-        // if we are running in local mode - then the amount of memory used
-        // by the child jvm can no longer default to the memory used by the
-        // parent jvm
-        //int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
-      int hadoopMem= conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);;
+      // if ("local".equals(conf.getVar(HiveConf.ConfVars.HADOOPJT))) {
+      // if we are running in local mode - then the amount of memory used
+      // by the child jvm can no longer default to the memory used by the
+      // parent jvm
+      // int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+      int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
       if (hadoopMem == 0) {
         // remove env var that would default child jvm to use parent's memory
         // as default. child jvm would use default memory for a hadoop client
         variables.remove(HADOOP_MEM_KEY);
       } else {
         // user specified the memory for local mode hadoop run
-        console.printInfo(" set heap size\t"+hadoopMem+"MB");
+        console.printInfo(" set heap size\t" + hadoopMem + "MB");
         variables.put(HADOOP_MEM_KEY, String.valueOf(hadoopMem));
       }
-      //} else {
-        // nothing to do - we are not running in local mode - only submitting
-        // the job via a child process. in this case it's appropriate that the
-        // child jvm use the same memory as the parent jvm
+      // } else {
+      // nothing to do - we are not running in local mode - only submitting
+      // the job via a child process. in this case it's appropriate that the
+      // child jvm use the same memory as the parent jvm
 
-      //}
+      // }
 
       if (variables.containsKey(HADOOP_OPTS_KEY)) {
-        variables.put(HADOOP_OPTS_KEY, variables.get(HADOOP_OPTS_KEY)
-            + hadoopOpts);
+        variables.put(HADOOP_OPTS_KEY, variables.get(HADOOP_OPTS_KEY) + hadoopOpts);
       } else {
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
@@ -205,10 +201,8 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-          null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-          null, System.err);
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
 
       outPrinter.start();
       errPrinter.start();
@@ -217,10 +211,9 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
 
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
-        console.printError("Mapred Local Task Failed. Give up the map join stragery");
       } else {
         LOG.info("Execution completed successfully");
-        console.printInfo("Mapred Local Task Running Successfully . Keep using map join stragery");
+        console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
       }
 
       return exitVal;
@@ -233,54 +226,56 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
 
 
 
-  public int executeFromChildJVM(DriverContext driverContext){
-
+  public int executeFromChildJVM(DriverContext driverContext) {
     // check the local work
-    if(work == null){
+    if (work == null) {
       return -1;
     }
     memoryMXBean = ManagementFactory.getMemoryMXBean();
-    console.printInfo(Utilities.now()+"\tStarting to luaunch local task to process map join ");
-    console.printInfo("\tmaximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+    long startTime = System.currentTimeMillis();
+    console.printInfo(Utilities.now()
+        + "\tStarting to luaunch local task to process map join;\tmaximum memory = "
+        + memoryMXBean.getHeapMemoryUsage().getMax());
     fetchOperators = new HashMap<String, FetchOperator>();
     Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>();
     execContext.setJc(job);
-    //set the local work, so all the operator can get this context
+    // set the local work, so all the operator can get this context
     execContext.setLocalWork(work);
     boolean inputFileChangeSenstive = work.getInputFileChangeSensitive();
-    try{
+    try {
 
       initializeOperators(fetchOpJobConfMap);
-      //for each big table's bucket, call the start forward
-      if(inputFileChangeSenstive){
-        for( LinkedHashMap<String, ArrayList<String>> bigTableBucketFiles:
-          work.getBucketMapjoinContext().getAliasBucketFileNameMapping().values()){
-          for(String bigTableBucket: bigTableBucketFiles.keySet()){
-            startForward(inputFileChangeSenstive,bigTableBucket);
+      // for each big table's bucket, call the start forward
+      if (inputFileChangeSenstive) {
+        for (LinkedHashMap<String, ArrayList<String>> bigTableBucketFiles : work
+            .getBucketMapjoinContext().getAliasBucketFileNameMapping().values()) {
+          for (String bigTableBucket : bigTableBucketFiles.keySet()) {
+            startForward(inputFileChangeSenstive, bigTableBucket);
           }
         }
-      }else{
-        startForward(inputFileChangeSenstive,null);
+      } else {
+        startForward(inputFileChangeSenstive, null);
       }
-      console.printInfo(now()+"\tEnd of local task ");
+      long currentTime = System.currentTimeMillis();
+      long elapsed = currentTime - startTime;
+      console.printInfo(Utilities.now() + "\tEnd of local task; Time Taken: "
+          + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable e) {
-      if (e instanceof OutOfMemoryError) {
+      if (e instanceof OutOfMemoryError
+          || (e instanceof HiveException && e.getMessage().equals("RunOutOfMeomoryUsage"))) {
         // Don't create a new object if we are already out of memory
-        l4j.error("Out of Memory Error");
-        console.printError("[Warning] Small table is too large to put into memory");
-        return 2;
+        return 3;
       } else {
         l4j.error("Hive Runtime Error: Map local work failed");
         e.printStackTrace();
+        return 2;
       }
-    }finally{
-      console.printInfo(Utilities.now()+"\tFinish running local task");
     }
     return 0;
   }
 
   private void startForward(boolean inputFileChangeSenstive, String bigTableBucket)
-    throws Exception{
+      throws Exception {
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
       int fetchOpRows = 0;
       String alias = entry.getKey();
@@ -288,17 +283,17 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
 
       if (inputFileChangeSenstive) {
         fetchOp.clearFetchContext();
-        setUpFetchOpContext(fetchOp, alias,bigTableBucket);
+        setUpFetchOpContext(fetchOp, alias, bigTableBucket);
       }
 
-      //get the root operator
+      // get the root operator
       Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(alias);
-      //walk through the operator tree
+      // walk through the operator tree
       while (true) {
         InspectableObject row = fetchOp.getNextRow();
         if (row == null) {
           if (inputFileChangeSenstive) {
-            String fileName=this.getFileName(bigTableBucket);
+            String fileName = this.getFileName(bigTableBucket);
             execContext.setCurrentBigBucketFile(fileName);
             forwardOp.reset();
           }
@@ -310,22 +305,23 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
         // check if any operator had a fatal error or early exit during
         // execution
         if (forwardOp.getDone()) {
-          //ExecMapper.setDone(true);
+          // ExecMapper.setDone(true);
           break;
         }
       }
     }
   }
+
   private void initializeOperators(Map<FetchOperator, JobConf> fetchOpJobConfMap)
-    throws HiveException{
+      throws HiveException {
     // this mapper operator is used to initialize all the operators
     for (Map.Entry<String, FetchWork> entry : work.getAliasToFetchWork().entrySet()) {
       JobConf jobClone = new JobConf(job);
 
       Operator<? extends Serializable> tableScan = work.getAliasToWork().get(entry.getKey());
       boolean setColumnsNeeded = false;
-      if(tableScan instanceof TableScanOperator) {
-        ArrayList<Integer> list = ((TableScanOperator)tableScan).getNeededColumnIDs();
+      if (tableScan instanceof TableScanOperator) {
+        ArrayList<Integer> list = ((TableScanOperator) tableScan).getNeededColumnIDs();
         if (list != null) {
           ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
           setColumnsNeeded = true;
@@ -336,18 +332,18 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
         ColumnProjectionUtils.setFullyReadColumns(jobClone);
       }
 
-      //create a fetch operator
-      FetchOperator fetchOp = new FetchOperator(entry.getValue(),jobClone);
+      // create a fetch operator
+      FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);
       fetchOpJobConfMap.put(fetchOp, jobClone);
       fetchOperators.put(entry.getKey(), fetchOp);
       l4j.info("fetchoperator for " + entry.getKey() + " created");
     }
-    //initilize all forward operator
+    // initilize all forward operator
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
-      //get the forward op
+      // get the forward op
       Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(entry.getKey());
 
-      //put the exe context into all the operators
+      // put the exe context into all the operators
       forwardOp.setExecContext(execContext);
       // All the operators need to be initialized before process
       FetchOperator fetchOp = entry.getValue();
@@ -356,54 +352,58 @@ public class MapredLocalTask  extends Task<MapredLocalWork> implements Serializa
       if (jobConf == null) {
         jobConf = job;
       }
-      //initialize the forward operator
+      // initialize the forward operator
       forwardOp.initialize(jobConf, new ObjectInspector[] {fetchOp.getOutputObjectInspector()});
       l4j.info("fetchoperator for " + entry.getKey() + " initialized");
     }
   }
 
 
-  private void setUpFetchOpContext(FetchOperator fetchOp, String alias,String currentInputFile)
-  throws Exception {
+  private void setUpFetchOpContext(FetchOperator fetchOp, String alias, String currentInputFile)
+      throws Exception {
 
-    BucketMapJoinContext bucketMatcherCxt = this.work
-        .getBucketMapjoinContext();
+    BucketMapJoinContext bucketMatcherCxt = this.work.getBucketMapjoinContext();
 
-    Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt
-        .getBucketMatcherClass();
-    BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(
-        bucketMatcherCls, null);
-    bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
-        .getAliasBucketFileNameMapping());
+    Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
+    BucketMatcher bucketMatcher = (BucketMatcher) ReflectionUtils.newInstance(bucketMatcherCls,
+        null);
+    bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt.getAliasBucketFileNameMapping());
 
-    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
-        bucketMatcherCxt.getMapJoinBigTableAlias(), alias);
+    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile, bucketMatcherCxt
+        .getMapJoinBigTableAlias(), alias);
     Iterator<Path> iter = aliasFiles.iterator();
     fetchOp.setupContext(iter, null);
   }
 
-  private String getFileName(String path){
-    if(path== null || path.length()==0) {
+  private String getFileName(String path) {
+    if (path == null || path.length() == 0) {
       return null;
     }
 
-    int last_separator = path.lastIndexOf(Path.SEPARATOR)+1;
+    int last_separator = path.lastIndexOf(Path.SEPARATOR) + 1;
     String fileName = path.substring(last_separator);
     return fileName;
 
   }
-  @Override
-  public void localizeMRTmpFilesImpl(Context ctx){
 
+  @Override
+  public void localizeMRTmpFilesImpl(Context ctx) {
+
+  }
+
+  @Override
+  public boolean isMapRedLocalTask() {
+    return true;
   }
 
   @Override
   public String getName() {
     return "MAPREDLOCAL";
   }
+
   @Override
   public int getType() {
-    //assert false;
+    // assert false;
     return StageType.MAPREDLOCAL;
   }
 

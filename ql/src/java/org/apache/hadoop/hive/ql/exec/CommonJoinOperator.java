@@ -437,9 +437,10 @@ transient boolean newGroupStarted = false;
       boolean newObjNull) {
     // newObj is null if is already null or
     // if the row corresponding to the left alias does not pass through filter
-    newObjNull = newObjNull ||
-        ((BooleanWritable) (intObj.getObjs()[left].get(
-            joinValues.get(order[left]).size()))).get();
+    int filterIndex = joinValues.get(order[left]).size();
+    if(filterIndex < intObj.getObjs()[left].size()) {
+      newObjNull = newObjNull || ((BooleanWritable) (intObj.getObjs()[left].get(filterIndex))).get();
+    }
 
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
     while (nullsIter.hasNext()) {

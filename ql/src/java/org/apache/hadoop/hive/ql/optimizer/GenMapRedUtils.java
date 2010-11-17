@@ -858,8 +858,9 @@ public final class GenMapRedUtils {
 
     // create a dummy tableScan operator on top of op
     // TableScanOperator is implicitly created here for each MapOperator
+    RowResolver rowResolver = opProcCtx.getParseCtx().getOpParseCtx().get(parent).getRowResolver();
     Operator<? extends Serializable> ts_op = putOpInsertMap(OperatorFactory
-        .get(TableScanDesc.class, parent.getSchema()), null, parseCtx);
+        .get(TableScanDesc.class, parent.getSchema()), rowResolver, parseCtx);
 
     childOpList = new ArrayList<Operator<? extends Serializable>>();
     childOpList.add(op);

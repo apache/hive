@@ -49,6 +49,9 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
       resolvers.add(new SkewJoinResolver());
     }
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
+      resolvers.add(new CommonJoinResolver());
+    }
     resolvers.add(new MapJoinResolver());
   }
 

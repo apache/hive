@@ -1297,7 +1297,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     OpParseContext inputCtx = opParseCtx.get(input);
-    RowResolver inputRR = inputCtx.getRR();
+    RowResolver inputRR = inputCtx.getRowResolver();
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new FilterDesc(genExprNodeDesc(condn, inputRR), false), new RowSchema(
         inputRR.getColumnInfos()), input), inputRR);
@@ -1599,7 +1599,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     StringBuilder inpColumns = new StringBuilder();
     StringBuilder inpColumnTypes = new StringBuilder();
-    ArrayList<ColumnInfo> inputSchema = opParseCtx.get(input).getRR()
+    ArrayList<ColumnInfo> inputSchema = opParseCtx.get(input).getRowResolver()
         .getColumnInfos();
     for (int i = 0; i < inputSchema.size(); ++i) {
       if (i != 0) {
@@ -1838,7 +1838,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode trfm = null;
     String alias = qb.getParseInfo().getAlias();
     Integer pos = Integer.valueOf(0);
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     // SELECT * or SELECT TRANSFORM(*)
     boolean selectStar = false;
     int posn = 0;
@@ -2178,7 +2178,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
       throws SemanticException {
     RowResolver groupByInputRowResolver = opParseCtx
-        .get(reduceSinkOperatorInfo).getRR();
+        .get(reduceSinkOperatorInfo).getRowResolver();
     RowResolver groupByOutputRowResolver = new RowResolver();
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
@@ -2303,7 +2303,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean distPartAgg) throws SemanticException {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     RowResolver groupByInputRowResolver = opParseCtx
-        .get(reduceSinkOperatorInfo).getRR();
+        .get(reduceSinkOperatorInfo).getRowResolver();
     RowResolver groupByOutputRowResolver = new RowResolver();
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
@@ -2452,7 +2452,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
-        .getRR();
+        .getRowResolver();
     QBParseInfo parseInfo = qb.getParseInfo();
     RowResolver groupByOutputRowResolver = new RowResolver();
     groupByOutputRowResolver.setIsExprResolver(true);
@@ -2569,7 +2569,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean mapAggrDone) throws SemanticException {
 
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo)
-        .getRR();
+        .getRowResolver();
     QBParseInfo parseInfo = qb.getParseInfo();
     RowResolver reduceSinkOutputRowResolver = new RowResolver();
     reduceSinkOutputRowResolver.setIsExprResolver(true);
@@ -2713,7 +2713,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String dest, Operator groupByOperatorInfo, int numPartitionFields,
       int numReducers) throws SemanticException {
     RowResolver reduceSinkInputRowResolver2 = opParseCtx.get(
-        groupByOperatorInfo).getRR();
+        groupByOperatorInfo).getRowResolver();
     RowResolver reduceSinkOutputRowResolver2 = new RowResolver();
     reduceSinkOutputRowResolver2.setIsExprResolver(true);
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
@@ -2784,7 +2784,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
       throws SemanticException {
     RowResolver groupByInputRowResolver2 = opParseCtx.get(
-        reduceSinkOperatorInfo2).getRR();
+        reduceSinkOperatorInfo2).getRowResolver();
     RowResolver groupByOutputRowResolver2 = new RowResolver();
     groupByOutputRowResolver2.setIsExprResolver(true);
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
@@ -3098,7 +3098,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDAFEvaluators);
 
     groupOpToInputTables.put(groupByOperatorInfo, opParseCtx.get(
-        inputOperatorInfo).getRR().getTableNames());
+        inputOperatorInfo).getRowResolver().getTableNames());
     int numReducers = -1;
 
     // Optimize the scenario when there are no grouping keys - only 1 reducer is
@@ -3169,7 +3169,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDAFEvaluators);
 
     groupOpToInputTables.put(groupByOperatorInfo, opParseCtx.get(
-        inputOperatorInfo).getRR().getTableNames());
+        inputOperatorInfo).getRowResolver().getTableNames());
     // Optimize the scenario when there are no grouping keys and no distinct - 2
     // map-reduce jobs are not needed
     // For eg: select count(1) from T where t.ds = ....
@@ -3405,7 +3405,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
 
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBMetaData qbm = qb.getMetaData();
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
@@ -3705,7 +3705,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
-    inputRR = opParseCtx.get(input).getRR();
+    inputRR = opParseCtx.get(input).getRowResolver();
 
     ArrayList<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
 
@@ -3789,7 +3789,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Check column number
     List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
     boolean dynPart = HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING);
-    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
+    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRowResolver()
         .getColumnInfos();
     int inColumnCnt = rowFields.size();
     int outColumnCnt = tableFields.size();
@@ -3899,7 +3899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // write into a local file and then have a map-only job.
     // Add the limit operator to get the value fields
 
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     Operator limitMap = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new LimitDesc(limit), new RowSchema(inputRR.getColumnInfos()), input),
         inputRR);
@@ -3944,7 +3944,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // resulting output object inspector can be used to make the RowResolver
     // for the UDTF operator
-    RowResolver selectRR = opParseCtx.get(input).getRR();
+    RowResolver selectRR = opParseCtx.get(input).getRowResolver();
     ArrayList<ColumnInfo> inputCols = selectRR.getColumnInfos();
 
     // Create the object inspector for the input columns and initialize the UDTF
@@ -4023,7 +4023,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(String dest, QB qb, Table tab,
                                                                 TableDesc table_desc, Operator input, boolean convert)
     throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     List<String> tabBucketCols = tab.getBucketCols();
     List<FieldSchema> tabCols  = tab.getCols();
 
@@ -4057,7 +4057,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     List<? extends StructField> tableFields = oi.getAllStructFieldRefs();
-    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRR()
+    ArrayList<ColumnInfo> rowFields = opParseCtx.get(input).getRowResolver()
         .getColumnInfos();
 
     // Check column type
@@ -4095,7 +4095,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private ArrayList<ExprNodeDesc> getSortCols(String dest, QB qb, Table tab, TableDesc table_desc, Operator input, boolean convert)
     throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     List<Order> tabSortCols = tab.getSortCols();
     List<FieldSchema> tabCols  = tab.getCols();
 
@@ -4122,7 +4122,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                         ArrayList<ExprNodeDesc> partitionCols,
                                                         int numReducers)
     throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
@@ -4181,7 +4181,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genReduceSinkPlan(String dest, QB qb, Operator input,
       int numReducers) throws SemanticException {
 
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
     // First generate the expression for the partition and sort keys
     // The cluster by clause / distribute by clause has the aliases for
@@ -4320,7 +4320,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // check whether this input operator produces output
       if (omitOpts == null || !omitOpts.contains(pos)) {
         // prepare output descriptors for the input opt
-        RowResolver inputRS = opParseCtx.get(input).getRR();
+        RowResolver inputRS = opParseCtx.get(input).getRowResolver();
         Iterator<String> keysIter = inputRS.getTableNames().iterator();
         Set<String> aliases = posToAliasMap.get(pos);
         if (aliases == null) {
@@ -4379,7 +4379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private Operator genJoinReduceSinkChild(QB qb, QBJoinTree joinTree,
       Operator child, String srcName, int pos) throws SemanticException {
-    RowResolver inputRS = opParseCtx.get(child).getRR();
+    RowResolver inputRS = opParseCtx.get(child).getRowResolver();
     RowResolver outputRS = new RowResolver();
     ArrayList<String> outputColumns = new ArrayList<String>();
     ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
@@ -4515,7 +4515,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator insertSelectForSemijoin(ArrayList<ASTNode> fields,
       Operator input) throws SemanticException {
 
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     ArrayList<String> columnNames = new ArrayList<String>();
 
@@ -4547,7 +4547,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
-        .getRR();
+        .getRowResolver();
     RowResolver groupByOutputRowResolver = new RowResolver();
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
@@ -5121,7 +5121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator insertSelectAllPlanForGroupBy(String dest, Operator input)
       throws SemanticException {
     OpParseContext inputCtx = opParseCtx.get(input);
-    RowResolver inputRR = inputCtx.getRR();
+    RowResolver inputRR = inputCtx.getRowResolver();
     ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     ArrayList<String> columnNames = new ArrayList<String>();
@@ -5141,7 +5141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Return the common distinct expression
   // There should be more than 1 destination, with group bys in all of them.
   private List<ASTNode> getCommonDistinctExprs(QB qb, Operator input) {
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>();
@@ -5214,7 +5214,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ks.addAll(qbp.getClauseNames());
 
     // Pass the entire row
-    RowResolver inputRR = opParseCtx.get(input).getRR();
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     RowResolver reduceSinkOutputRowResolver = new RowResolver();
     reduceSinkOutputRowResolver.setIsExprResolver(true);
     ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
@@ -5318,7 +5318,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (optimizeMultiGroupBy) {
       curr = createCommonReduceSink(qb, input);
 
-      RowResolver currRR = opParseCtx.get(curr).getRR();
+      RowResolver currRR = opParseCtx.get(curr).getRowResolver();
       // create a forward operator
       input = putOpInsertMap(OperatorFactory.getAndMakeChild(new ForwardDesc(),
           new RowSchema(currRR.getColumnInfos()), curr), currRR);
@@ -5417,7 +5417,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // change curr ops row resolver's tab aliases to query alias if it
         // exists
         if (qb.getParseInfo().getAlias() != null) {
-          RowResolver rr = opParseCtx.get(curr).getRR();
+          RowResolver rr = opParseCtx.get(curr).getRowResolver();
           RowResolver newRR = new RowResolver();
           String alias = qb.getParseInfo().getAlias();
           for (ColumnInfo colInfo : rr.getColumnInfos()) {
@@ -5425,7 +5425,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             String[] tmp = rr.reverseLookup(name);
             newRR.put(alias, tmp[1], colInfo);
           }
-          opParseCtx.get(curr).setRR(newRR);
+          opParseCtx.get(curr).setRowResolver(newRR);
         }
       }
     }
@@ -5445,8 +5445,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Currently, the unions are not merged - each union has only 2 parents. So,
     // a n-way union will lead to (n-1) union operators.
     // This can be easily merged into 1 union
-    RowResolver leftRR = opParseCtx.get(leftOp).getRR();
-    RowResolver rightRR = opParseCtx.get(rightOp).getRR();
+    RowResolver leftRR = opParseCtx.get(leftOp).getRowResolver();
+    RowResolver rightRR = opParseCtx.get(rightOp).getRowResolver();
     HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
     HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
     // make sure the schemas of both sides are the same
@@ -5698,7 +5698,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Add a mapping from the table scan operator to Table
       topToTable.put((TableScanOperator) top, tab);
     } else {
-      rwsch = opParseCtx.get(top).getRR();
+      rwsch = opParseCtx.get(top).getRowResolver();
       top.setChildOperators(null);
     }
 
@@ -5989,7 +5989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           //
 
           RowResolver lvForwardRR = new RowResolver();
-          RowResolver source = opParseCtx.get(op).getRR();
+          RowResolver source = opParseCtx.get(op).getRowResolver();
           for (ColumnInfo col : source.getColumnInfos()) {
             if(col.getIsVirtualCol() && col.isHiddenVirtualCol()) {
               continue;
@@ -6007,7 +6007,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // give it the row first.
 
           // Get the all path by making a select(*).
-          RowResolver allPathRR = opParseCtx.get(lvForward).getRR();
+          RowResolver allPathRR = opParseCtx.get(lvForward).getRowResolver();
           //Operator allPath = op;
           Operator allPath = putOpInsertMap(OperatorFactory.getAndMakeChild(
                             new SelectDesc(true), new RowSchema(allPathRR.getColumnInfos()),
@@ -6020,7 +6020,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           for (String udtfAlias : blankQb.getAliases()) {
             qb.addAlias(udtfAlias);
           }
-          RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRR();
+          RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRowResolver();
 
           // Merge the two into the lateral view join
           // The cols of the merged result will be the combination of both the
@@ -6522,7 +6522,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // up with later.
     Operator sinkOp = genPlan(qb);
     resultSchema =
-        convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRR());
+        convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
 
     if (createVwDesc != null) {
       saveViewDefinition();
@@ -6850,7 +6850,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Get the row resolver given an operator.
    */
   public RowResolver getRowResolver(Operator opt) {
-    return opParseCtx.get(opt).getRR();
+    return opParseCtx.get(opt).getRowResolver();
   }
 
   /**

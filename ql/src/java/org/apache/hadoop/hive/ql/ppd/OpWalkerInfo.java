@@ -56,7 +56,7 @@ public class OpWalkerInfo implements NodeProcessorCtx {
   }
 
   public RowResolver getRowResolver(Node op) {
-    return opToParseCtxMap.get(op).getRR();
+    return opToParseCtxMap.get(op).getRowResolver();
   }
 
   public OpParseContext put(Operator<? extends Serializable> key,

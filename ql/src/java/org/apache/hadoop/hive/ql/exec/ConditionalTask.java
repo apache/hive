@@ -32,13 +32,13 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 /**
  * Conditional Task implementation.
  */
-public class ConditionalTask extends Task<ConditionalWork> implements
-    Serializable {
+public class ConditionalTask extends Task<ConditionalWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private List<Task<? extends Serializable>> listTasks;
 
   private boolean resolved = false;
+
   private List<Task<? extends Serializable>> resTasks;
 
   private ConditionalResolver resolver;
@@ -47,6 +47,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   public ConditionalTask() {
     super();
   }
+
 
   @Override
   public boolean isMapRedTask() {
@@ -71,8 +72,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   }
 
   @Override
-  public void initialize(HiveConf conf, QueryPlan queryPlan,
-      DriverContext driverContext) {
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
   }
 
@@ -80,29 +80,27 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   public int execute(DriverContext driverContext) {
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;
+
     for (Task<? extends Serializable> tsk : getListTasks()) {
       if (!resTasks.contains(tsk)) {
         driverContext.getRunnable().remove(tsk);
-        console.printInfo(ExecDriver.getJobEndMsg(""
-            + Utilities.randGen.nextInt())
+        console.printInfo(ExecDriver.getJobEndMsg("" + Utilities.randGen.nextInt())
             + ", job is filtered out (removed at runtime).");
-        if(tsk.isMapRedTask()) {
+        if (tsk.isMapRedTask()) {
           driverContext.incCurJobNo(1);
         }
-        if (tsk.getChildTasks() != null) {
-          for (Task<? extends Serializable> child : tsk.getChildTasks()) {
-            child.parentTasks.remove(tsk);
-            if (DriverContext.isLaunchable(child)) {
-              driverContext.addToRunnable(child);
-            }
-          }
+        //recursively remove this task from its children's parent task
+        tsk.removeFromChildrenTasks();
+      } else {
+        // resolved task
+        if (!driverContext.getRunnable().contains(tsk)) {
+          driverContext.addToRunnable(tsk);
         }
-      } else if (!driverContext.getRunnable().contains(tsk)) {
-        driverContext.addToRunnable(tsk);
       }
     }
     return 0;
   }
+
 
   /**
    * @return the resolver
@@ -184,9 +182,8 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   }
 
   /**
-   * Add a dependent task on the current conditional task. The task will not be
-   * a direct child of conditional task. Actually it will be added as child task
-   * of associated tasks.
+   * Add a dependent task on the current conditional task. The task will not be a direct child of
+   * conditional task. Actually it will be added as child task of associated tasks.
    *
    * @return true if the task got added false if it already existed
    */
@@ -204,7 +201,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements
   @Override
   protected void localizeMRTmpFilesImpl(Context ctx) {
     if (getListTasks() != null) {
-      for(Task<? extends Serializable> t: getListTasks()) {
+      for (Task<? extends Serializable> t : getListTasks()) {
         t.localizeMRTmpFiles(ctx);
       }
     }

@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -43,20 +44,20 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  * the main memory hash table exceeds a certain threshold, new elements will go into the persistent
  * hash table.
  */
+
 public class HashMapWrapper<K, V> implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   protected Log LOG = LogFactory.getLog(this.getClass().getName());
 
   // default threshold for using main memory based HashMap
+
   private static final int THRESHOLD = 1000000;
   private static final float LOADFACTOR = 0.75f;
+  private static final float MEMORYUSAGE = 1;
 
-  private double threshold; // threshold to put data into persistent hash table
-  // instead
+  private float maxMemoryUsage;
   private HashMap<K, V> mHash; // main memory HashMap
-
-
-
   protected transient LogHelper console;
 
   private File dumpFile;
@@ -71,10 +72,9 @@ public class HashMapWrapper<K, V> implements Serializable {
    * @param threshold
    *          User specified threshold to store new values into persistent storage.
    */
-  public HashMapWrapper(int threshold, float loadFactor) {
-    this.threshold = 0.9;
+  public HashMapWrapper(int threshold, float loadFactor, float memoryUsage) {
+    maxMemoryUsage = memoryUsage;
     mHash = new HashMap<K, V>(threshold, loadFactor);
-    console = new LogHelper(LOG);
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
     LOG.info("maximum memory: " + maxMemory);
@@ -83,18 +83,16 @@ public class HashMapWrapper<K, V> implements Serializable {
   }
 
   public HashMapWrapper(int threshold) {
-    this(THRESHOLD, 0.75f);
+    this(threshold, LOADFACTOR, MEMORYUSAGE);
   }
 
   public HashMapWrapper() {
-    this(THRESHOLD, LOADFACTOR);
+    this(THRESHOLD, LOADFACTOR, MEMORYUSAGE);
   }
-
 
   public V get(K key) {
     return mHash.get(key);
   }
-
 
   public boolean put(K key, V value) throws HiveException {
     // isAbort();
@@ -102,10 +100,10 @@ public class HashMapWrapper<K, V> implements Serializable {
     return false;
   }
 
+
   public void remove(K key) {
     mHash.remove(key);
   }
-
 
   /**
    * Flush the main memory hash table into the persistent cache file
@@ -146,7 +144,6 @@ public class HashMapWrapper<K, V> implements Serializable {
    * @throws HiveException
    */
   public void close() throws HiveException {
-    // isAbort();
     mHash.clear();
   }
 
@@ -158,34 +155,23 @@ public class HashMapWrapper<K, V> implements Serializable {
     return mHash.size();
   }
 
-  private boolean isAbort() {
+  public boolean isAbort(long numRows,LogHelper console) {
+    System.gc();
+    System.gc();
     int size = mHash.size();
-    // if(size >= 1000000 && size % 1000000 == 0 ){
-    System.gc();
-    System.gc();
     long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
     double rate = (double) usedMemory / (double) maxMemory;
     long mem1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-    console.printInfo("Hashtable size:\t" + size + "\tMemory usage:\t" + usedMemory + "\t rate:\t"
-        + num.format(rate));
-    return true;
-
-  }
-
-  public Log getLOG() {
-    return LOG;
+    console.printInfo(Utilities.now() + "\tProcessing rows:\t" + numRows + "\tHashtable size:\t"
+        + size + "\tMemory usage:\t" + usedMemory + "\trate:\t" + num.format(rate));
+    if (rate > (double) maxMemoryUsage) {
+      return true;
+    }
+    return false;
   }
 
   public void setLOG(Log log) {
     LOG = log;
-  }
-
-  public double getThreshold() {
-    return threshold;
-  }
-
-  public void setThreshold(double threshold) {
-    this.threshold = threshold;
   }
 
   public HashMap<K, V> getMHash() {

@@ -179,7 +179,7 @@ public final class ColumnPrunerProcFactory {
       cppCtx.getPrunedColLists().put((Operator<? extends Serializable>) nd,
           cols);
       ArrayList<Integer> needed_columns = new ArrayList<Integer>();
-      RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRR();
+      RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRowResolver();
       TableScanDesc desc = scanOp.getConf();
       List<VirtualColumn> virtualCols = desc.getVirtualCols();
       List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
@@ -232,7 +232,7 @@ public final class ColumnPrunerProcFactory {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap = cppCtx
           .getOpToParseCtxMap();
-      RowResolver redSinkRR = opToParseCtxMap.get(op).getRR();
+      RowResolver redSinkRR = opToParseCtxMap.get(op).getRowResolver();
       ReduceSinkDesc conf = op.getConf();
       List<Operator<? extends Serializable>> childOperators = op
           .getChildOperators();
@@ -250,7 +250,7 @@ public final class ColumnPrunerProcFactory {
         assert parentOperators.size() == 1;
         Operator<? extends Serializable> par = parentOperators.get(0);
         JoinOperator childJoin = (JoinOperator) childOperators.get(0);
-        RowResolver parRR = opToParseCtxMap.get(par).getRR();
+        RowResolver parRR = opToParseCtxMap.get(par).getRowResolver();
         List<String> childJoinCols = cppCtx.getJoinPrunedColLists().get(
             childJoin).get((byte) conf.getTag());
         boolean[] flags = new boolean[conf.getValueCols().size()];
@@ -383,7 +383,7 @@ public final class ColumnPrunerProcFactory {
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();
         ArrayList<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
         ArrayList<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
-        RowResolver old_rr = cppCtx.getOpToParseCtxMap().get(op).getRR();
+        RowResolver old_rr = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
         RowResolver new_rr = new RowResolver();
         for (String col : cols) {
           int index = originalOutputColumnNames.indexOf(col);
@@ -394,7 +394,7 @@ public final class ColumnPrunerProcFactory {
           ColumnInfo columnInfo = old_rr.get(tabcol[0], tabcol[1]);
           new_rr.put(tabcol[0], tabcol[1], columnInfo);
         }
-        cppCtx.getOpToParseCtxMap().get(op).setRR(new_rr);
+        cppCtx.getOpToParseCtxMap().get(op).setRowResolver(new_rr);
         op.getSchema().setSignature(rs_newsignature);
         conf.setColList(newColList);
         conf.setOutputColumnNames(newOutputColumnNames);
@@ -465,7 +465,7 @@ public final class ColumnPrunerProcFactory {
     Map<String, ExprNodeDesc> oldMap = reduce.getColumnExprMap();
     Map<String, ExprNodeDesc> newMap = new HashMap<String, ExprNodeDesc>();
     ArrayList<ColumnInfo> sig = new ArrayList<ColumnInfo>();
-    RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(reduce).getRR();
+    RowResolver oldRR = cppCtx.getOpToParseCtxMap().get(reduce).getRowResolver();
     RowResolver newRR = new RowResolver();
     ArrayList<String> originalValueOutputColNames = reduceConf
         .getOutputValueColumnNames();
@@ -493,7 +493,7 @@ public final class ColumnPrunerProcFactory {
     ArrayList<ExprNodeDesc> keyCols = reduceConf.getKeyCols();
     List<String> keys = new ArrayList<String>();
     RowResolver parResover = cppCtx.getOpToParseCtxMap().get(
-        reduce.getParentOperators().get(0)).getRR();
+        reduce.getParentOperators().get(0)).getRowResolver();
     for (int i = 0; i < keyCols.size(); i++) {
       keys = Utilities.mergeUniqElems(keys, keyCols.get(i).getCols());
     }
@@ -506,7 +506,7 @@ public final class ColumnPrunerProcFactory {
       }
     }
 
-    cppCtx.getOpToParseCtxMap().get(reduce).setRR(newRR);
+    cppCtx.getOpToParseCtxMap().get(reduce).setRowResolver(newRR);
     reduce.setColumnExprMap(newMap);
     reduce.getSchema().setSignature(sig);
     reduceConf.setOutputValueColumnNames(newOutputColNames);
@@ -614,7 +614,7 @@ public final class ColumnPrunerProcFactory {
      }
     }
 
-    RowResolver joinRR = cppCtx.getOpToParseCtxMap().get(op).getRR();
+    RowResolver joinRR = cppCtx.getOpToParseCtxMap().get(op).getRowResolver();
     RowResolver newJoinRR = new RowResolver();
     ArrayList<String> outputCols = new ArrayList<String>();
     ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
@@ -699,7 +699,7 @@ public final class ColumnPrunerProcFactory {
     op.setColumnExprMap(newColExprMap);
     conf.setOutputColumnNames(outputCols);
     op.getSchema().setSignature(rs);
-    cppCtx.getOpToParseCtxMap().get(op).setRR(newJoinRR);
+    cppCtx.getOpToParseCtxMap().get(op).setRowResolver(newJoinRR);
     cppCtx.getJoinPrunedColLists().put(op, prunedColLists);
   }
 

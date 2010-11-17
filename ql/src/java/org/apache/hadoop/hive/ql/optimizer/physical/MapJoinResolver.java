@@ -42,11 +42,16 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
 
 /**
@@ -60,7 +65,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
 
     //create dispatcher and graph walker
     Dispatcher disp = new LocalMapJoinTaskDispatcher(pctx);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+    TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     //get all the tasks nodes from root task
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -106,6 +111,11 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork,
             physicalContext.getParseContext().getConf());
 
+        //set the backup task from curr task
+        localTask.setBackupTask(currTask.getBackupTask());
+        localTask.setBackupChildrenTasks(currTask.getBackupChildrenTasks());
+        currTask.setBackupChildrenTasks(null);
+        currTask.setBackupTask(null);
 
         //replace the map join operator to local_map_join operator in the operator tree
         //and return all the dummy parent
@@ -149,31 +159,64 @@ public class MapJoinResolver implements PhysicalPlanResolver {
             listWork.set(index,(Serializable)localwork);
             conditionalWork.setListWorks(listWork);
 
-            //get bigKeysDirToTaskMap
-            ConditionalResolverSkewJoinCtx context  =
-              (ConditionalResolverSkewJoinCtx) conditionalTask.getResolverCtx();
-            HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
-              context.getDirToTaskMap();
+            ConditionalResolver resolver = conditionalTask.getResolver();
+            if(resolver instanceof ConditionalResolverSkewJoin){
+              //get bigKeysDirToTaskMap
+              ConditionalResolverSkewJoinCtx context  =
+                (ConditionalResolverSkewJoinCtx) conditionalTask.getResolverCtx();
+              HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
+                context.getDirToTaskMap();
 
-            //to avoid concurrent modify the hashmap
-            HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap =
-              new HashMap<String, Task<? extends Serializable>>();
+              //to avoid concurrent modify the hashmap
+              HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap =
+                new HashMap<String, Task<? extends Serializable>>();
 
 
-            //reset the resolver
-            for(Map.Entry<String, Task<? extends Serializable>> entry: bigKeysDirToTaskMap.entrySet()){
-              Task<? extends Serializable> task = entry.getValue();
-              String key = entry.getKey();
-
-              if(task.equals(currTask)){
-                newbigKeysDirToTaskMap.put(key, localTask);
-              }else{
-                newbigKeysDirToTaskMap.put(key, task);
+              //reset the resolver
+              for(Map.Entry<String, Task<? extends Serializable>> entry: bigKeysDirToTaskMap.entrySet()){
+                Task<? extends Serializable> task = entry.getValue();
+                String key = entry.getKey();
+                if(task.equals(currTask)){
+                  newbigKeysDirToTaskMap.put(key, localTask);
+                }else{
+                  newbigKeysDirToTaskMap.put(key, task);
+                }
               }
+
+              context.setDirToTaskMap(newbigKeysDirToTaskMap);
+              conditionalTask.setResolverCtx(context);
+
+            }else if(resolver instanceof ConditionalResolverCommonJoin){
+              //get bigKeysDirToTaskMap
+              ConditionalResolverCommonJoinCtx context  =
+                (ConditionalResolverCommonJoinCtx) conditionalTask.getResolverCtx();
+              HashMap<String, Task<? extends Serializable>> aliasToWork =
+                context.getAliasToTask();
+
+              //to avoid concurrent modify the hashmap
+              HashMap<String, Task<? extends Serializable>> newAliasToWork =
+                new HashMap<String, Task<? extends Serializable>>();
+
+              //reset the resolver
+              for(Map.Entry<String, Task<? extends Serializable>> entry: aliasToWork.entrySet()){
+                Task<? extends Serializable> task = entry.getValue();
+                String key = entry.getKey();
+
+                if(task.equals(currTask)){
+                  newAliasToWork.put(key, localTask);
+                }else{
+                  newAliasToWork.put(key, task);
+                }
+              }
+
+              context.setAliasToTask(newAliasToWork);
+              conditionalTask.setResolverCtx(context);
+
+            }else{
+
             }
 
-            context.setDirToTaskMap(newbigKeysDirToTaskMap);
-            conditionalTask.setResolverCtx(context);
+
           }
         }
 

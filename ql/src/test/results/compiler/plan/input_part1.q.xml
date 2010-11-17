@@ -75,11 +75,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/srcpart</string> 
+          <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/srcpart</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1288976861</string> 
+          <string>1290011674</string> 
          </void> 
         </object> 
        </void> 
@@ -132,13 +132,13 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/tmp/njain/hive_2010-11-05_10-07-56_176_5921530682191831092/-ext-10001</string> 
+                           <string>file:/tmp/njain/hive_2010-11-17_08-34-46_008_2039338248727502656/-ext-10001</string> 
                           </void> 
                           <void property="numFiles"> 
                            <int>1</int> 
                           </void> 
                           <void property="statsAggPrefix"> 
-                           <string>file:/tmp/njain/hive_2010-11-05_10-07-56_176_5921530682191831092/-ext-10001/</string> 
+                           <string>file:/tmp/njain/hive_2010-11-17_08-34-46_008_2039338248727502656/-ext-10001/</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -209,6 +209,9 @@
                               <void property="internalName"> 
                                <string>_col0</string> 
                               </void> 
+                              <void property="tabAlias"> 
+                               <string></string> 
+                              </void> 
                               <void property="type"> 
                                <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                                 <void property="typeName"> 
@@ -223,6 +226,9 @@
                               <void property="internalName"> 
                                <string>_col1</string> 
                               </void> 
+                              <void property="tabAlias"> 
+                               <string></string> 
+                              </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
                               </void> 
@@ -233,6 +239,9 @@
                               <void property="internalName"> 
                                <string>_col2</string> 
                               </void> 
+                              <void property="tabAlias"> 
+                               <string></string> 
+                              </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
                               </void> 
@@ -242,6 +251,9 @@
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
                                <string>_col3</string> 
+                              </void> 
+                              <void property="tabAlias"> 
+                               <string></string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -396,6 +408,9 @@
                           <void property="internalName"> 
                            <string>_col0</string> 
                           </void> 
+                          <void property="tabAlias"> 
+                           <string>srcpart</string> 
+                          </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
@@ -408,6 +423,9 @@
                           </void> 
                           <void property="internalName"> 
                            <string>_col1</string> 
+                          </void> 
+                          <void property="tabAlias"> 
+                           <string>srcpart</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -422,6 +440,9 @@
                           <void property="internalName"> 
                            <string>_col2</string> 
                           </void> 
+                          <void property="tabAlias"> 
+                           <string>srcpart</string> 
+                          </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
@@ -434,6 +455,9 @@
                           </void> 
                           <void property="internalName"> 
                            <string>_col3</string> 
+                          </void> 
+                          <void property="tabAlias"> 
+                           <string>srcpart</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -640,6 +664,9 @@
                       <void property="internalName"> 
                        <string>key</string> 
                       </void> 
+                      <void property="tabAlias"> 
+                       <string>srcpart</string> 
+                      </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
@@ -649,6 +676,9 @@
                      <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>value</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string>srcpart</string> 
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
@@ -660,6 +690,9 @@
                       <void property="internalName"> 
                        <string>ds</string> 
                       </void> 
+                      <void property="tabAlias"> 
+                       <string>srcpart</string> 
+                      </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
@@ -669,6 +702,9 @@
                      <object id="ColumnInfo3" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>hr</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string>srcpart</string> 
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
@@ -768,8 +804,14 @@
                 </void> 
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                  <void property="hiddenVirtualCol"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="internalName"> 
                    <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+                  </void> 
+                  <void property="tabAlias"> 
+                   <string>srcpart</string> 
                   </void> 
                   <void property="type"> 
                    <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -782,8 +824,14 @@
                 </void> 
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                  <void property="hiddenVirtualCol"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="internalName"> 
                    <string>INPUT__FILE__NAME</string> 
+                  </void> 
+                  <void property="tabAlias"> 
+                   <string>srcpart</string> 
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
@@ -851,7 +899,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>srcpart</string> 
@@ -863,7 +911,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>hr=12</string> 
@@ -933,11 +981,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/srcpart</string> 
+           <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/srcpart</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1288976861</string> 
+           <string>1290011674</string> 
           </void> 
          </object> 
         </void> 

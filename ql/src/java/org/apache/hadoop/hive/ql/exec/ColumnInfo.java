@@ -49,7 +49,7 @@ public class ColumnInfo implements Serializable {
   private boolean isVirtualCol;
 
   private transient TypeInfo type;
-  
+
   private boolean isHiddenVirtualCol;
 
   public ColumnInfo() {
@@ -66,7 +66,7 @@ public class ColumnInfo implements Serializable {
         .getPrimitiveTypeInfoFromPrimitiveWritable(type), tabAlias,
         isVirtualCol, false);
   }
-  
+
   public ColumnInfo(String internalName, TypeInfo type, String tabAlias,
       boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this.internalName = internalName;
@@ -99,7 +99,7 @@ public class ColumnInfo implements Serializable {
   public boolean getIsVirtualCol() {
     return isVirtualCol;
   }
-  
+
   public boolean isHiddenVirtualCol() {
     return isHiddenVirtualCol;
   }
@@ -119,5 +119,18 @@ public class ColumnInfo implements Serializable {
   public String getAlias() {
     return alias;
   }
+
+  public void setTabAlias(String tabAlias) {
+    this.tabAlias = tabAlias;
+  }
+
+  public void setVirtualCol(boolean isVirtualCol) {
+    this.isVirtualCol = isVirtualCol;
+  }
+
+  public void setHiddenVirtualCol(boolean isHiddenVirtualCol) {
+    this.isHiddenVirtualCol = isHiddenVirtualCol;
+  }
+
 
 }

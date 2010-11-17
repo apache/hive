@@ -187,6 +187,7 @@ public final class ObjectInspectorUtils {
     return copyToStandardObject(o, oi, ObjectInspectorCopyOption.DEFAULT);
   }
 
+
   public static Object copyToStandardObject(Object o, ObjectInspector oi,
       ObjectInspectorCopyOption objectInspectorOption) {
     if (o == null) {

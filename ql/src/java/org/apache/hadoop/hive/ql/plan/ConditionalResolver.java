@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 public interface ConditionalResolver {
   /**
    * All conditional resolvers implement this interface.
-   * 
+   *
    * @param conf
    *          configuration
    * @param ctx
@@ -39,4 +39,5 @@ public interface ConditionalResolver {
    * @return position of the task
    */
   List<Task<? extends Serializable>> getTasks(HiveConf conf, Object ctx);
+
 }

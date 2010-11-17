@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.OpParseContext;
+import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 
 /**
  * MapredWork.
@@ -68,6 +70,11 @@ public class MapredWork implements Serializable {
   private boolean gatheringStats;
 
   private String tmpHDFSFileURI;
+
+  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap;
+
+  private QBJoinTree joinTree;
+
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -340,4 +347,23 @@ public class MapredWork implements Serializable {
   public void setTmpHDFSFileURI(String tmpHDFSFileURI) {
     this.tmpHDFSFileURI = tmpHDFSFileURI;
   }
+
+
+  public QBJoinTree getJoinTree() {
+    return joinTree;
+  }
+
+  public void setJoinTree(QBJoinTree joinTree) {
+    this.joinTree = joinTree;
+  }
+
+  public LinkedHashMap<Operator<? extends Serializable>, OpParseContext> getOpParseCtxMap() {
+    return opParseCtxMap;
+  }
+
+  public void setOpParseCtxMap(
+      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap) {
+    this.opParseCtxMap = opParseCtxMap;
+  }
+
 }

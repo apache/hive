@@ -39,6 +39,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private Map<Byte, List<ExprNodeDesc>> keys;
   private TableDesc keyTblDesc;
   private List<TableDesc> valueTblDescs;
+  private List<TableDesc> valueFilteredTblDescs;
 
   private int posBigTable;
 
@@ -67,13 +68,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   public MapJoinDesc(final Map<Byte, List<ExprNodeDesc>> keys,
       final TableDesc keyTblDesc, final Map<Byte, List<ExprNodeDesc>> values,
-      final List<TableDesc> valueTblDescs, List<String> outputColumnNames,
+      final List<TableDesc> valueTblDescs,final List<TableDesc> valueFilteredTblDescs,  List<String> outputColumnNames,
       final int posBigTable, final JoinCondDesc[] conds,
       final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin) {
     super(values, outputColumnNames, noOuterJoin, conds, filters);
     this.keys = keys;
     this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
+    this.valueFilteredTblDescs = valueFilteredTblDescs;
     this.posBigTable = posBigTable;
     this.bucketFileNameMapping = new LinkedHashMap<String, Integer>();
     initRetainExprList();
@@ -146,6 +148,14 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    */
   public void setKeyTblDesc(TableDesc keyTblDesc) {
     this.keyTblDesc = keyTblDesc;
+  }
+
+  public List<TableDesc> getValueFilteredTblDescs() {
+    return valueFilteredTblDescs;
+  }
+
+  public void setValueFilteredTblDescs(List<TableDesc> valueFilteredTblDescs) {
+    this.valueFilteredTblDescs = valueFilteredTblDescs;
   }
 
   /**

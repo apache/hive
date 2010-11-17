@@ -28,17 +28,17 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.Context;
 
 
 /**
@@ -304,7 +304,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       return;
     }
     dependeciesTaskSet.add(task);
-
+    boolean first = true;
     out.print(indentString(indent));
     out.printf("%s", task.getId());
     if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
@@ -313,7 +313,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     } else {
       out.print(" depends on stages: ");
-      boolean first = true;
+      first = true;
       for (Task<? extends Serializable> parent : task.getParentTasks()) {
         if (!first) {
           out.print(", ");
@@ -321,22 +321,34 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         first = false;
         out.print(parent.getId());
       }
-
-      if (task instanceof ConditionalTask
-          && ((ConditionalTask) task).getListTasks() != null) {
-        out.print(" , consists of ");
-        first = true;
-        for (Task<? extends Serializable> con : ((ConditionalTask) task)
-            .getListTasks()) {
-          if (!first) {
-            out.print(", ");
-          }
-          first = false;
-          out.print(con.getId());
-        }
-      }
-
     }
+
+    Task<? extends Serializable> cuurBackupTask = task.getBackupTask();
+    if(cuurBackupTask != null) {
+      out.print(" has a backup stage: ");
+      if (!first) {
+        out.print(", ");
+      }
+      first = false;
+      out.print(cuurBackupTask.getId());
+    }
+
+
+    if (task instanceof ConditionalTask
+        && ((ConditionalTask) task).getListTasks() != null) {
+      out.print(" , consists of ");
+      first = true;
+      for (Task<? extends Serializable> con : ((ConditionalTask) task)
+          .getListTasks()) {
+        if (!first) {
+          out.print(", ");
+        }
+        first = false;
+        out.print(con.getId());
+      }
+    }
+
+
     out.println();
 
     if (task instanceof ConditionalTask
@@ -406,7 +418,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   @Override
   protected void localizeMRTmpFilesImpl(Context ctx) {
-    // explain task has nothing to localize 
+    // explain task has nothing to localize
     // we don't expect to enter this code path at all
     throw new RuntimeException ("Unexpected call");
   }

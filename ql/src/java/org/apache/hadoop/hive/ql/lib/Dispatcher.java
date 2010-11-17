@@ -30,7 +30,7 @@ public interface Dispatcher {
 
   /**
    * Dispatcher function.
-   * 
+   *
    * @param nd
    *          operator to process.
    * @param stack
@@ -43,4 +43,5 @@ public interface Dispatcher {
    */
   Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException;
+
 }

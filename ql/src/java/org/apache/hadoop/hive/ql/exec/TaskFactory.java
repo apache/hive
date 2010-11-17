@@ -73,7 +73,8 @@ public final class TaskFactory {
     taskvec.add(new taskTuple<MapredLocalWork>(MapredLocalWork.class,
         MapredLocalTask.class));
     taskvec.add(new taskTuple<StatsWork>(StatsWork.class,
-        StatsTask.class));        
+        StatsTask.class));
+
 
   }
 

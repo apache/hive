@@ -68,6 +68,8 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   private Map<Byte, List<ExprNodeDesc>> keys;
   private TableDesc keyTblDesc;
   private List<TableDesc> valueTblDescs;
+  private List<TableDesc> valueTblFilteredDescs;
+
 
   private int posBigTable;
 
@@ -100,6 +102,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.keys = clone.getKeys();
     this.keyTblDesc = clone.getKeyTblDesc();
     this.valueTblDescs = clone.getValueTblDescs();
+    this.valueTblFilteredDescs = clone.getValueFilteredTblDescs();
     this.posBigTable = clone.getPosBigTable();
     this.retainList = clone.getRetainList();
     this.bigTableAlias = clone.getBigTableAlias();
@@ -184,6 +187,15 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   @Override
   public Map<Byte, List<ExprNodeDesc>> getFilters() {
     return filters;
+  }
+
+
+  public List<TableDesc> getValueTblFilteredDescs() {
+    return valueTblFilteredDescs;
+  }
+
+  public void setValueTblFilteredDescs(List<TableDesc> valueTblFilteredDescs) {
+    this.valueTblFilteredDescs = valueTblFilteredDescs;
   }
 
   @Override

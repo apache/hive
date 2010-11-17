@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1590,5 +1591,10 @@ public final class Utilities {
     Calendar cal = Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     return sdf.format(cal.getTime());
+  }
+
+  public static String showTime(long time) {
+    SimpleDateFormat sdf = new SimpleDateFormat("ss");
+    return sdf.format(new Date(time));
   }
 }

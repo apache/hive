@@ -17,14 +17,15 @@
  */
 
 package org.apache.hadoop.hive.ql.parse;
-
+import java.io.Serializable;
 /**
  * Implementation of the Operator Parse Context. It maintains the parse context
  * that may be needed by an operator. Currently, it only maintains the row
  * resolver.
  **/
 
-public class OpParseContext {
+public class OpParseContext implements Serializable {
+  private static final long serialVersionUID = 1L;
   private RowResolver rr; // row resolver for the operator
 
   public OpParseContext() {
@@ -41,7 +42,7 @@ public class OpParseContext {
   /**
    * @return the row resolver
    */
-  public RowResolver getRR() {
+  public RowResolver getRowResolver() {
     return rr;
   }
 
@@ -49,7 +50,7 @@ public class OpParseContext {
    * @param rr
    *          the row resolver to set
    */
-  public void setRR(RowResolver rr) {
+  public void setRowResolver(RowResolver rr) {
     this.rr = rr;
   }
 }

@@ -107,6 +107,9 @@ Trunk -  Unreleased
     HIVE-1779 Add udf str_to_map
     (Siying Dong via namit)
 
+    HIVE-1642 Convert join queries to map-join based on size of table/row
+    (Liyin Tang via namit)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +26,10 @@ import java.util.Map.Entry;
 
 /**
  * Internal representation of the join tree.
- * 
+ *
  */
-public class QBJoinTree {
+public class QBJoinTree implements Serializable{
+  private static final long serialVersionUID = 1L;
   private String leftAlias;
   private String[] rightAliases;
   private String[] leftAliases;
@@ -70,7 +72,7 @@ public class QBJoinTree {
 
   /**
    * returns left alias if any - this is used for merging later on.
-   * 
+   *
    * @return left alias if any
    */
   public String getLeftAlias() {
@@ -79,7 +81,7 @@ public class QBJoinTree {
 
   /**
    * set left alias for the join expression.
-   * 
+   *
    * @param leftAlias
    *          String
    */
@@ -229,7 +231,7 @@ public class QBJoinTree {
 
   /**
    * Insert only a key to the semijoin table name to column names map.
-   * 
+   *
    * @param alias
    *          table name alias.
    */
@@ -241,7 +243,7 @@ public class QBJoinTree {
 
   /**
    * Remeber the mapping of table alias to set of columns.
-   * 
+   *
    * @param alias
    * @param columns
    */
@@ -256,7 +258,7 @@ public class QBJoinTree {
 
   /**
    * Remeber the mapping of table alias to set of columns.
-   * 
+   *
    * @param alias
    * @param columns
    */
@@ -277,7 +279,7 @@ public class QBJoinTree {
 
   /**
    * Merge the rhs tables from another join tree.
-   * 
+   *
    * @param src
    *          the source join tree
    */

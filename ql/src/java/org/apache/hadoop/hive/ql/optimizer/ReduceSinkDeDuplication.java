@@ -205,7 +205,7 @@ public class ReduceSinkDeDuplication implements Transform{
         Operator<? extends Serializable> input = parentOp.get(0);
         input.getChildOperators().clear();
         
-        RowResolver inputRR = pGraphContext.getOpParseCtx().get(input).getRR();
+        RowResolver inputRR = pGraphContext.getOpParseCtx().get(input).getRowResolver();
 
         ArrayList<ExprNodeDesc> exprs = new ArrayList<ExprNodeDesc>();
         ArrayList<String> outputs = new ArrayList<String>();

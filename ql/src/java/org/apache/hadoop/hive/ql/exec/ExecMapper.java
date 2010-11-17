@@ -89,7 +89,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       // initialize map operator
       mo.setChildren(job);
       l4j.info(mo.dump(0));
-   // initialize map local work
+      // initialize map local work
       localWork = mrwork.getMapLocalWork();
       execContext.setLocalWork(localWork);
 

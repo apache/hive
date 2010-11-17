@@ -42,8 +42,7 @@ import org.apache.hadoop.util.StringUtils;
  * Task implementation.
  **/
 
-public abstract class Task<T extends Serializable> implements Serializable,
-    Node {
+public abstract class Task<T extends Serializable> implements Serializable, Node {
 
   private static final long serialVersionUID = 1L;
   protected transient boolean started;
@@ -59,6 +58,9 @@ public abstract class Task<T extends Serializable> implements Serializable,
   protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
   protected transient boolean clonedConf = false;
+  protected Task<? extends Serializable> backupTask;
+  protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
+
 
   // Descendants tasks who subscribe feeds from this task
   protected transient List<Task<? extends Serializable>> feedSubscribers;
@@ -81,8 +83,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
     this.taskCounters = new HashMap<String, Long>();
   }
 
-  public void initialize(HiveConf conf, QueryPlan queryPlan,
-      DriverContext driverContext) {
+  public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     this.queryPlan = queryPlan;
     isdone = false;
     started = false;
@@ -103,8 +104,8 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * This method is called in the Driver on every task. It updates counters and
-   * calls execute(), which is overridden in each task
+   * This method is called in the Driver on every task. It updates counters and calls execute(),
+   * which is overridden in each task
    *
    * @return return value of execute()
    */
@@ -127,8 +128,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * This method is overridden in each Task. TODO execute should return a
-   * TaskHandle.
+   * This method is overridden in each Task. TODO execute should return a TaskHandle.
    *
    * @return status of executing the task
    */
@@ -160,10 +160,61 @@ public abstract class Task<T extends Serializable> implements Serializable,
     return parentTasks;
   }
 
+  public Task<? extends Serializable> getBackupTask() {
+    return backupTask;
+  }
+
+
+  public void setBackupTask(Task<? extends Serializable> backupTask) {
+    this.backupTask = backupTask;
+  }
+
+  public List<Task<? extends Serializable>> getBackupChildrenTasks() {
+    return backupChildrenTasks;
+  }
+
+  public void setBackupChildrenTasks(List<Task<? extends Serializable>> backupChildrenTasks) {
+    this.backupChildrenTasks = backupChildrenTasks;
+  }
+
+  public Task<? extends Serializable> getAndInitBackupTask() {
+    if (backupTask != null) {
+      // first set back the backup task with its children task.
+      for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
+        backupChild.getParentTasks().add(backupTask);
+      }
+
+      // recursively remove task from its children tasks if this task doesn't have any parent task
+      this.removeFromChildrenTasks();
+    }
+    return backupTask;
+  }
+
+  public void removeFromChildrenTasks() {
+
+    List<Task<? extends Serializable>> childrenTasks = this.getChildTasks();
+    if (childrenTasks == null) {
+      return;
+    }
+
+    for (Task<? extends Serializable> childTsk : childrenTasks) {
+      // remove this task from its children tasks
+      childTsk.getParentTasks().remove(this);
+
+      // recursively remove non-parent task from its children
+      List<Task<? extends Serializable>> siblingTasks = childTsk.getParentTasks();
+      if (siblingTasks == null || siblingTasks.size() == 0) {
+        childTsk.removeFromChildrenTasks();
+      }
+    }
+
+    return;
+  }
+
+
   /**
-   * The default dependent tasks are just child tasks, but different types
-   * could implement their own (e.g. ConditionalTask will use the listTasks
-   * as dependents).
+   * The default dependent tasks are just child tasks, but different types could implement their own
+   * (e.g. ConditionalTask will use the listTasks as dependents).
    *
    * @return a list of tasks that are dependent on this task.
    */
@@ -172,8 +223,8 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * Add a dependent task on the current task. Return if the dependency already
-   * existed or is this a new one
+   * Add a dependent task on the current task. Return if the dependency already existed or is this a
+   * new one
    *
    * @return true if the task got added false if it already existed
    */
@@ -204,8 +255,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   public void removeDependentTask(Task<? extends Serializable> dependent) {
     if ((getChildTasks() != null) && (getChildTasks().contains(dependent))) {
       getChildTasks().remove(dependent);
-      if ((dependent.getParentTasks() != null)
-          && (dependent.getParentTasks().contains(this))) {
+      if ((dependent.getParentTasks() != null) && (dependent.getParentTasks().contains(this))) {
         dependent.getParentTasks().remove(this);
       }
     }
@@ -279,6 +329,10 @@ public abstract class Task<T extends Serializable> implements Serializable,
     return false;
   }
 
+  public boolean isMapRedLocalTask() {
+    return false;
+  }
+
   public boolean hasReduce() {
     return false;
   }
@@ -288,8 +342,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * Should be overridden to return the type of the specific task among the
-   * types in TaskType.
+   * Should be overridden to return the type of the specific task among the types in TaskType.
    *
    * @return TaskTypeType.* or -1 if not overridden
    */
@@ -299,21 +352,23 @@ public abstract class Task<T extends Serializable> implements Serializable,
   }
 
   /**
-   * If this task uses any map-reduce intermediate data (either for reading
-   * or for writing), localize them (using the supplied Context). Map-Reduce
-   * intermediate directories are allocated using Context.getMRTmpFileURI()
-   * and can be localized using localizeMRTmpFileURI().
+   * If this task uses any map-reduce intermediate data (either for reading or for writing),
+   * localize them (using the supplied Context). Map-Reduce intermediate directories are allocated
+   * using Context.getMRTmpFileURI() and can be localized using localizeMRTmpFileURI().
    *
-   * This method is declared abstract to force any task code to explicitly
-   * deal with this aspect of execution.
+   * This method is declared abstract to force any task code to explicitly deal with this aspect of
+   * execution.
    *
-   * @param ctx context object with which to localize
+   * @param ctx
+   *          context object with which to localize
    */
   abstract protected void localizeMRTmpFilesImpl(Context ctx);
 
   /**
    * Localize a task tree
-   * @param ctx context object with which to localize
+   *
+   * @param ctx
+   *          context object with which to localize
    */
   public final void localizeMRTmpFiles(Context ctx) {
     localizeMRTmpFilesImpl(ctx);
@@ -322,7 +377,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
       return;
     }
 
-    for (Task<? extends Serializable> t: childTasks) {
+    for (Task<? extends Serializable> t : childTasks) {
       t.localizeMRTmpFiles(ctx);
     }
   }
@@ -330,12 +385,13 @@ public abstract class Task<T extends Serializable> implements Serializable,
   /**
    * Subscribe the feed of publisher. To prevent cycles, a task can only subscribe to its ancestor.
    * Feed is a generic form of execution-time feedback (type, value) pair from one task to another
-   * task. Examples include dynamic partitions (which are only available at execution time).
-   * The MoveTask may pass the list of dynamic partitions to the StatsTask since after the
-   * MoveTask the list of dynamic partitions are lost (MoveTask moves them to the table's
-   * destination directory which is mixed with old partitions).
+   * task. Examples include dynamic partitions (which are only available at execution time). The
+   * MoveTask may pass the list of dynamic partitions to the StatsTask since after the MoveTask the
+   * list of dynamic partitions are lost (MoveTask moves them to the table's destination directory
+   * which is mixed with old partitions).
    *
-   * @param publisher this feed provider.
+   * @param publisher
+   *          this feed provider.
    */
   public void subscribeFeed(Task<? extends Serializable> publisher) {
     if (publisher != this && publisher.ancestorOrSelf(this)) {
@@ -353,7 +409,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
     }
     List<Task<? extends Serializable>> deps = getDependentTasks();
     if (deps != null) {
-      for (Task<? extends Serializable> d: deps) {
+      for (Task<? extends Serializable> d : deps) {
         if (d.ancestorOrSelf(desc)) {
           return true;
         }
@@ -373,7 +429,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   // push the feed to its subscribers
   protected void pushFeed(FeedType feedType, Object feedValue) {
     if (feedSubscribers != null) {
-      for (Task<? extends Serializable> s: feedSubscribers) {
+      for (Task<? extends Serializable> s : feedSubscribers) {
         s.receiveFeed(feedType, feedValue);
       }
     }
@@ -383,7 +439,7 @@ public abstract class Task<T extends Serializable> implements Serializable,
   protected void receiveFeed(FeedType feedType, Object feedValue) {
   }
 
-  protected void cloneConf () {
+  protected void cloneConf() {
     if (!clonedConf) {
       clonedConf = true;
       conf = new HiveConf(conf);

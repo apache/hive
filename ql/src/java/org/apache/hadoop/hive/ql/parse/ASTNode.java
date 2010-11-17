@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.antlr.runtime.Token;
@@ -26,9 +27,10 @@ import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
  * @author athusoo
- * 
+ *
  */
-public class ASTNode extends CommonTree implements Node {
+public class ASTNode extends CommonTree implements Node,Serializable {
+  private static final long serialVersionUID = 1L;
 
   private ASTNodeOrigin origin;
 
@@ -37,7 +39,7 @@ public class ASTNode extends CommonTree implements Node {
 
   /**
    * Constructor.
-   * 
+   *
    * @param t
    *          Token for the CommonTree Node
    */
@@ -47,7 +49,7 @@ public class ASTNode extends CommonTree implements Node {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
   public ArrayList<Node> getChildren() {
@@ -65,7 +67,7 @@ public class ASTNode extends CommonTree implements Node {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.hadoop.hive.ql.lib.Node#getName()
    */
   public String getName() {

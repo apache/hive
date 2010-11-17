@@ -41,7 +41,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
                        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -50,7 +50,7 @@
                             <void property="conf"> 
                              <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                               <void property="dirName"> 
-                               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10000</string> 
+                               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10000</string> 
                               </void> 
                               <void property="numFiles"> 
                                <int>1</int> 
@@ -124,6 +124,9 @@
                                   <void property="internalName"> 
                                    <string>_col0</string> 
                                   </void> 
+                                  <void property="tabAlias"> 
+                                   <string></string> 
+                                  </void> 
                                   <void property="type"> 
                                    <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                                     <void property="typeName"> 
@@ -137,6 +140,9 @@
                                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                                   <void property="internalName"> 
                                    <string>_col1</string> 
+                                  </void> 
+                                  <void property="tabAlias"> 
+                                   <string></string> 
                                   </void> 
                                   <void property="type"> 
                                    <object idref="PrimitiveTypeInfo0"/> 
@@ -186,10 +192,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+                         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -198,7 +204,7 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
                         <void property="baseFileName"> 
                          <string>-ext-10001</string> 
@@ -271,7 +277,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10000</string> 
+                   <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10000</string> 
                   </void> 
                   <void property="targetDir"> 
                    <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -295,10 +301,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10000</string> 
+               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10000</string> 
               </void> 
              </object> 
             </void> 
@@ -324,7 +330,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -410,11 +416,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1287465229</string> 
+          <string>1290011964</string> 
          </void> 
         </object> 
        </void> 
@@ -474,13 +480,13 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10001</string> 
+                               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10001</string> 
                               </void> 
                               <void property="numFiles"> 
                                <int>1</int> 
                               </void> 
                               <void property="statsAggPrefix"> 
-                               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/scratchdir/hive_2010-10-18_22-13-53_475_6468347213258050555/-ext-10000/</string> 
+                               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/scratchdir/hive_2010-11-17_08-39-28_369_4065673259860755711/-ext-10000/</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object idref="TableDesc0"/> 
@@ -620,6 +626,9 @@
                               <void property="internalName"> 
                                <string>_col0</string> 
                               </void> 
+                              <void property="tabAlias"> 
+                               <string>src</string> 
+                              </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
                               </void> 
@@ -632,6 +641,9 @@
                               </void> 
                               <void property="internalName"> 
                                <string>_col1</string> 
+                              </void> 
+                              <void property="tabAlias"> 
+                               <string>src</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -740,6 +752,9 @@
                           <void property="internalName"> 
                            <string>_col0</string> 
                           </void> 
+                          <void property="tabAlias"> 
+                           <string>src</string> 
+                          </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
@@ -749,6 +764,9 @@
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
                            <string>_col1</string> 
+                          </void> 
+                          <void property="tabAlias"> 
+                           <string>src</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -847,6 +865,9 @@
                       <void property="internalName"> 
                        <string>key</string> 
                       </void> 
+                      <void property="tabAlias"> 
+                       <string>src</string> 
+                      </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
@@ -856,6 +877,9 @@
                      <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                       <void property="internalName"> 
                        <string>value</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string>src</string> 
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
@@ -949,8 +973,14 @@
                 </void> 
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                  <void property="hiddenVirtualCol"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="internalName"> 
                    <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+                  </void> 
+                  <void property="tabAlias"> 
+                   <string>src</string> 
                   </void> 
                   <void property="type"> 
                    <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -963,8 +993,14 @@
                 </void> 
                 <void method="add"> 
                  <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                  <void property="hiddenVirtualCol"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="internalName"> 
                    <string>INPUT__FILE__NAME</string> 
+                  </void> 
+                  <void property="tabAlias"> 
+                   <string>src</string> 
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
@@ -1032,7 +1068,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>unioninput:src</string> 
@@ -1044,7 +1080,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1101,11 +1137,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1287465229</string> 
+           <string>1290011964</string> 
           </void> 
          </object> 
         </void> 
