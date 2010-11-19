@@ -256,6 +256,9 @@ Trunk -  Unreleased
     command for SHOW INDEXES
     (Russell Melick via jvs)
 
+    HIVE-1783 optimize join code path in the scenario where there is 1 value for a key
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -240,8 +240,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     condn = conf.getConds();
     noOuterJoin = conf.isNoOuterJoin();
 
-
-
     totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),
         order,NOTSKIPBIGTABLE);
 
@@ -744,6 +742,21 @@ transient boolean newGroupStarted = false;
     }
   }
 
+  private void genAllOneUniqueJoinObject()
+      throws HiveException {
+    int p = 0;
+    for (int i = 0; i < numAliases; i++) {
+      int sz = joinValues.get(order[i]).size();
+      ArrayList<Object> obj = storage.get(order[i]).first();
+      for (int j = 0; j < sz; j++) {
+        forwardCache[p++] = obj.get(j);
+      }
+    }
+
+    forward(forwardCache, outputObjInspector);
+    countAfterReport = 0;
+  }
+
   protected void checkAndGenObject() throws HiveException {
     if (condn[0].getType() == JoinDesc.UNIQUE_JOIN) {
       new IntermediateObject(new ArrayList[numAliases], 0);
@@ -754,9 +767,15 @@ transient boolean newGroupStarted = false;
       boolean preserve = false; // Will be true if there is a non-null entry
       // in a preserved table
       boolean hasNulls = false; // Will be true if there are null entries
+      boolean allOne = true;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
         AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
+
+        if (alw.size() != 1) {
+          allOne = false;
+        }
+
         if (alw.size() == 0) {
           alw.add((ArrayList<Object>) dummyObj[i]);
           hasNulls = true;
@@ -769,29 +788,58 @@ transient boolean newGroupStarted = false;
         return;
       }
 
-      LOG.trace("calling genUniqueJoinObject");
-      genUniqueJoinObject(0, new IntermediateObject(new ArrayList[numAliases],
-          0));
-      LOG.trace("called genUniqueJoinObject");
+      if (allOne) {
+        LOG.info("calling genAllOneUniqueJoinObject");
+        genAllOneUniqueJoinObject();
+        LOG.info("called genAllOneUniqueJoinObject");
+      } else {
+        LOG.trace("calling genUniqueJoinObject");
+        genUniqueJoinObject(0, new IntermediateObject(new ArrayList[numAliases],
+            0));
+        LOG.trace("called genUniqueJoinObject");
+      }
     } else {
       // does any result need to be emitted
+      boolean hasMoreThanOne = false;
+      boolean hasEmpty = false;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
         AbstractRowContainer<ArrayList<Object>> alw = storage.get(alias);
-        if (alw.size() == 0) {
-          if (noOuterJoin) {
+
+        if (noOuterJoin) {
+          if (alw.size() == 0) {
             LOG.trace("No data for alias=" + i);
             return;
-          } else {
+          } else if (alw.size() > 1) {
+            hasMoreThanOne = true;
+          }
+        } else {
+          if (alw.size() == 0) {
+            hasEmpty = true;
             alw.add((ArrayList<Object>) dummyObj[i]);
+          } else if (alw.size() == 1) {
+            ArrayList<Object> row = alw.first();
+            int numValues = joinValues.get(alias).size();
+            if (row == dummyObj[alias]
+                || (row.size() > numValues && ((BooleanWritable) (row.get(numValues))).get())) {
+              hasEmpty = true;
+            }
+          } else {
+            hasMoreThanOne = true;
           }
         }
       }
 
-      LOG.trace("calling genObject");
-      genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0),
-          true);
-      LOG.trace("called genObject");
+      if (!hasEmpty && !hasMoreThanOne) {
+        LOG.trace("calling genAllOneUniqueJoinObject");
+        genAllOneUniqueJoinObject();
+        LOG.trace("called genAllOneUniqueJoinObject");
+      } else {
+        LOG.trace("calling genObject");
+        genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0),
+            true);
+        LOG.trace("called genObject");
+      }
     }
   }
 
