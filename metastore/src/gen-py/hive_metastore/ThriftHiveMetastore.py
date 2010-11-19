@@ -294,6 +294,16 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
+  def alter_index(self, dbname, base_tbl_name, idx_name, new_idx):
+    """
+    Parameters:
+     - dbname
+     - base_tbl_name
+     - idx_name
+     - new_idx
+    """
+    pass
+
   def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData):
     """
     Parameters:
@@ -1558,6 +1568,44 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o3
     raise TApplicationException(TApplicationException.MISSING_RESULT, "add_index failed: unknown result");
 
+  def alter_index(self, dbname, base_tbl_name, idx_name, new_idx):
+    """
+    Parameters:
+     - dbname
+     - base_tbl_name
+     - idx_name
+     - new_idx
+    """
+    self.send_alter_index(dbname, base_tbl_name, idx_name, new_idx)
+    self.recv_alter_index()
+
+  def send_alter_index(self, dbname, base_tbl_name, idx_name, new_idx):
+    self._oprot.writeMessageBegin('alter_index', TMessageType.CALL, self._seqid)
+    args = alter_index_args()
+    args.dbname = dbname
+    args.base_tbl_name = base_tbl_name
+    args.idx_name = idx_name
+    args.new_idx = new_idx
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_alter_index(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = alter_index_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.o1 != None:
+      raise result.o1
+    if result.o2 != None:
+      raise result.o2
+    return
+
   def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData):
     """
     Parameters:
@@ -1748,6 +1796,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["partition_name_to_vals"] = Processor.process_partition_name_to_vals
     self._processMap["partition_name_to_spec"] = Processor.process_partition_name_to_spec
     self._processMap["add_index"] = Processor.process_add_index
+    self._processMap["alter_index"] = Processor.process_alter_index
     self._processMap["drop_index_by_name"] = Processor.process_drop_index_by_name
     self._processMap["get_index_by_name"] = Processor.process_get_index_by_name
     self._processMap["get_indexes"] = Processor.process_get_indexes
@@ -2308,6 +2357,22 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     except MetaException, o3:
       result.o3 = o3
     oprot.writeMessageBegin("add_index", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_alter_index(self, seqid, iprot, oprot):
+    args = alter_index_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = alter_index_result()
+    try:
+      self._handler.alter_index(args.dbname, args.base_tbl_name, args.idx_name, args.new_idx)
+    except InvalidOperationException, o1:
+      result.o1 = o1
+    except MetaException, o2:
+      result.o2 = o2
+    oprot.writeMessageBegin("alter_index", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -7595,6 +7660,169 @@ class add_index_result:
     if self.o3 != None:
       oprot.writeFieldBegin('o3', TType.STRUCT, 3)
       self.o3.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class alter_index_args:
+  """
+  Attributes:
+   - dbname
+   - base_tbl_name
+   - idx_name
+   - new_idx
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'dbname', None, None, ), # 1
+    (2, TType.STRING, 'base_tbl_name', None, None, ), # 2
+    (3, TType.STRING, 'idx_name', None, None, ), # 3
+    (4, TType.STRUCT, 'new_idx', (Index, Index.thrift_spec), None, ), # 4
+  )
+
+  def __init__(self, dbname=None, base_tbl_name=None, idx_name=None, new_idx=None,):
+    self.dbname = dbname
+    self.base_tbl_name = base_tbl_name
+    self.idx_name = idx_name
+    self.new_idx = new_idx
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.dbname = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.base_tbl_name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.idx_name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.new_idx = Index()
+          self.new_idx.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('alter_index_args')
+    if self.dbname != None:
+      oprot.writeFieldBegin('dbname', TType.STRING, 1)
+      oprot.writeString(self.dbname)
+      oprot.writeFieldEnd()
+    if self.base_tbl_name != None:
+      oprot.writeFieldBegin('base_tbl_name', TType.STRING, 2)
+      oprot.writeString(self.base_tbl_name)
+      oprot.writeFieldEnd()
+    if self.idx_name != None:
+      oprot.writeFieldBegin('idx_name', TType.STRING, 3)
+      oprot.writeString(self.idx_name)
+      oprot.writeFieldEnd()
+    if self.new_idx != None:
+      oprot.writeFieldBegin('new_idx', TType.STRUCT, 4)
+      self.new_idx.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class alter_index_result:
+  """
+  Attributes:
+   - o1
+   - o2
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'o1', (InvalidOperationException, InvalidOperationException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, o1=None, o2=None,):
+    self.o1 = o1
+    self.o2 = o2
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = InvalidOperationException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.o2 = MetaException()
+          self.o2.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('alter_index_result')
+    if self.o1 != None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
+    if self.o2 != None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+      self.o2.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

@@ -55,6 +55,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, "ALTERTABLE_PROPERTIES");
     commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, "ALTERTABLE_SERIALIZER");
     commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, "ALTERTABLE_SERDEPROPERTIES");
+    commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, "ALTERINDEX_REBUILD");
+    commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, "ALTERINDEX_PROPS");
     commandType.put(HiveParser.TOK_SHOWDATABASES, "SHOWDATABASES");
     commandType.put(HiveParser.TOK_SHOWTABLES, "SHOWTABLES");
     commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
@@ -68,7 +70,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_DROPVIEW, "DROPVIEW");
     commandType.put(HiveParser.TOK_CREATEINDEX, "CREATEINDEX");
     commandType.put(HiveParser.TOK_DROPINDEX, "DROPINDEX");
-    commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, "ALTERINDEX_REBUILD");
     commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, "ALTERVIEW_PROPERTIES");
     commandType.put(HiveParser.TOK_QUERY, "QUERY");
     commandType.put(HiveParser.TOK_LOCKTABLE, "LOCKTABLE");
@@ -115,6 +116,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_SERIALIZER:
       case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
       case HiveParser.TOK_ALTERINDEX_REBUILD:
+      case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       case HiveParser.TOK_ALTERVIEW_PROPERTIES:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:

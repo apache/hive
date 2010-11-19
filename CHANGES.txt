@@ -262,6 +262,9 @@ Trunk -  Unreleased
     HIVE-1796 dumps time at which lock was taken along with the queryid in show locks <T> extended
     (namit via He Yongqiang)
 
+    HIVE-1746 Support for using ALTER to set IDXPROPERTIES
+    (Marquis Wang via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

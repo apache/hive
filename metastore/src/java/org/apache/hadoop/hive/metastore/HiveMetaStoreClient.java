@@ -684,6 +684,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * @param dbname
+   * @param base_tbl_name
+   * @param idx_name
+   * @param new_idx
+   * @throws InvalidOperationException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#alter_index(java.lang.String,
+   *      java.lang.String, java.lang.String, org.apache.hadoop.hive.metastore.api.Index)
+   */
+  public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_index(dbname, base_tbl_name, idx_name, new_idx);
+  }
+
+  /**
    * @param dbName
    * @param tblName
    * @param indexName
@@ -696,7 +712,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Index getIndex(String dbName, String tblName, String indexName)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException {
-    return client.get_index_by_name(dbName, tblName, indexName);
+    return deepCopy(client.get_index_by_name(dbName, tblName, indexName));
   }
 
   /**
@@ -807,6 +823,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     Table copy = null;
     if (table != null) {
       copy = new Table(table);
+    }
+    return copy;
+  }
+
+  private Index deepCopy(Index index) {
+    Index copy = null;
+    if (index != null) {
+      copy = new Index(index);
     }
     return copy;
   }

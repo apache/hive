@@ -115,6 +115,7 @@ TOK_ALTERTABLE_LOCATION;
 TOK_ALTERTABLE_PROPERTIES;
 TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_ALTERINDEX_REBUILD;
+TOK_ALTERINDEX_PROPERTIES;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
@@ -255,7 +256,6 @@ ddlStatement
     | createFunctionStatement
     | createIndexStatement
     | dropIndexStatement
-    | alterIndexRebuild
     | dropFunctionStatement
     | analyzeStatement
     | lockStatement
@@ -426,6 +426,8 @@ alterStatement
             KW_TABLE! alterTableStatementSuffix
         |
             KW_VIEW! alterViewStatementSuffix
+        |
+            KW_INDEX! alterIndexStatementSuffix
         )
     ;
 
@@ -450,6 +452,22 @@ alterViewStatementSuffix
 @init { msgs.push("alter view statement"); }
 @after { msgs.pop(); }
     : alterViewSuffixProperties
+    ;
+
+alterIndexStatementSuffix
+@init { msgs.push("alter index statement"); }
+@after { msgs.pop(); }
+    : indexName=Identifier
+      (KW_ON tableName=Identifier)
+      partitionSpec?
+    (
+      KW_REBUILD
+      ->^(TOK_ALTERINDEX_REBUILD $tableName $indexName partitionSpec?)
+    |
+      KW_SET KW_IDXPROPERTIES
+      indexProperties
+      ->^(TOK_ALTERINDEX_PROPERTIES $tableName $indexName indexProperties)
+    )
     ;
 
 alterStatementSuffixRename
@@ -613,16 +631,6 @@ alterStatementSuffixClusterbySortby
 	name=Identifier KW_NOT KW_CLUSTERED
 	->^(TOK_ALTERTABLE_CLUSTER_SORT $name)
 	;
-
-alterIndexRebuild
-@init { msgs.push("update index statement");}
-@after {msgs.pop();}
-    : KW_ALTER KW_INDEX indexName=Identifier
-      KW_ON base_table_name=Identifier
-      partitionSpec?
-      KW_REBUILD
-    ->^(TOK_ALTERINDEX_REBUILD $base_table_name $indexName partitionSpec?)
-    ;
 
 fileFormat
 @init { msgs.push("file format specification"); }

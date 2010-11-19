@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -85,6 +86,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -186,6 +189,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       CreateIndexDesc crtIndex = work.getCreateIndexDesc();
       if (crtIndex != null) {
         return createIndex(db, crtIndex);
+      }
+
+      AlterIndexDesc alterIndex = work.getAlterIndexDesc();
+      if (alterIndex != null) {
+        return alterIndex(db, alterIndex);
       }
 
       DropIndexDesc dropIdx = work.getDropIdxDesc();
@@ -328,6 +336,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
         crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
         );
+    return 0;
+  }
+
+  private int alterIndex(Hive db, AlterIndexDesc alterIndex) throws HiveException {
+    String dbName = alterIndex.getDbName();
+    String baseTableName = alterIndex.getBaseTableName();
+    String indexName = alterIndex.getIndexName();
+    Index idx = db.getIndex(dbName, baseTableName, indexName);
+
+    if (alterIndex.getOp() == AlterIndexDesc.AlterIndexTypes.ADDPROPS) {
+      idx.getParameters().putAll(alterIndex.getProps());
+    } else {
+      console.printError("Unsupported Alter commnad");
+      return 1;
+    }
+
+    // set last modified by properties
+    if (!updateModifiedParameters(idx.getParameters(), conf)) {
+      return 1;
+    }
+
+    try {
+      db.alterIndex(dbName, baseTableName, indexName, idx);
+    } catch (InvalidOperationException e) {
+      console.printError("Invalid alter operation: " + e.getMessage());
+      LOG.info("alter index: " + stringifyException(e));
+      return 1;
+    } catch (HiveException e) {
+      console.printError("Invalid alter operation: " + e.getMessage());
+      return 1;
+    }
     return 0;
   }
 
@@ -2161,20 +2200,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     }
 
-    // set last modified by properties
-    String user = null;
-    try {
-      user = conf.getUser();
-    } catch (IOException e) {
-      console.printError("Unable to get current user: " + e.getMessage(),
-          stringifyException(e));
-      return 1;
-    }
-
     if(part == null) {
-      tbl.setProperty("last_modified_by", user);
-      tbl.setProperty("last_modified_time", Long.toString(System
-          .currentTimeMillis() / 1000));
+      if (!updateModifiedParameters(tbl.getTTable().getParameters(), conf)) {
+        return 1;
+      }
       try {
         tbl.checkValidity();
       } catch (HiveException e) {
@@ -2183,9 +2212,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 1;
       }
     } else {
-      part.getParameters().put("last_modified_by", user);
-      part.getParameters().put("last_modified_time", Long.toString(System
-          .currentTimeMillis() / 1000));
+      if (!updateModifiedParameters(part.getParameters(), conf)) {
+        return 1;
+      }
     }
 
     try {
@@ -2325,6 +2354,29 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  /**
+   * Update last_modified_by and last_modified_time parameters in parameter map.
+   *
+   * @param params
+   *          Parameters.
+   * @param user
+   *          user that is doing the updating.
+   */
+  private boolean updateModifiedParameters(Map<String, String> params, HiveConf conf) {
+    String user = null;
+    try {
+      user = conf.getUser();
+    } catch (IOException e) {
+      console.printError("Unable to get current user: " + e.getMessage(),
+          stringifyException(e));
+      return false;
+    }
+
+    params.put("last_modified_by", user);
+    params.put("last_modified_time", Long.toString(System.currentTimeMillis() / 1000));
+    return true;
   }
 
   /**

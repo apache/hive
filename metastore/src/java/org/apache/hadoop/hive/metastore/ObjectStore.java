@@ -1122,6 +1122,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return partNames;
   }
+
   public void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     boolean success = false;
@@ -1148,6 +1149,36 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());
+
+      // commit the changes
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
+      throws InvalidObjectException, MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      name = name.toLowerCase();
+      baseTblName = baseTblName.toLowerCase();
+      dbname = dbname.toLowerCase();
+      MIndex newi = convertToMIndex(newIndex);
+      if (newi == null) {
+        throw new InvalidObjectException("new index is invalid");
+      }
+
+      MIndex oldi = getMIndex(dbname, baseTblName, name);
+      if (oldi == null) {
+        throw new MetaException("index " + name + " doesn't exist");
+      }
+
+      // For now only alter paramters are allowed
+      oldi.setParameters(newi.getParameters());
 
       // commit the changes
       success = commitTransaction();

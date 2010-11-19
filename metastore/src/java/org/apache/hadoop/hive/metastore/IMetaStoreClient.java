@@ -420,6 +420,9 @@ public interface IMetaStoreClient {
   public void createIndex(Index index, Table indexTable) throws InvalidObjectException,
       MetaException, NoSuchObjectException, TException, AlreadyExistsException;
 
+  public void alter_index(String dbName, String tblName, String indexName,
+      Index index) throws InvalidOperationException, MetaException, TException;
+
   /**
    *
    * @param dbName

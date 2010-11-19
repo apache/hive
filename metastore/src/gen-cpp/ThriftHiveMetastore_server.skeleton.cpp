@@ -192,6 +192,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_index\n");
   }
 
+  void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) {
+    // Your implementation goes here
+    printf("alter_index\n");
+  }
+
   bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_index_by_name\n");

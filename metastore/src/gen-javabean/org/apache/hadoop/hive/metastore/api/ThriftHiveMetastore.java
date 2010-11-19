@@ -93,6 +93,8 @@ public class ThriftHiveMetastore {
 
     public Index add_index(Index new_index, Table index_table) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
+    public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx) throws InvalidOperationException, MetaException, TException;
+
     public boolean drop_index_by_name(String db_name, String tbl_name, String index_name, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
 
     public Index get_index_by_name(String db_name, String tbl_name, String index_name) throws MetaException, NoSuchObjectException, TException;
@@ -1461,6 +1463,45 @@ public class ThriftHiveMetastore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "add_index failed: unknown result");
     }
 
+    public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx) throws InvalidOperationException, MetaException, TException
+    {
+      send_alter_index(dbname, base_tbl_name, idx_name, new_idx);
+      recv_alter_index();
+    }
+
+    public void send_alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("alter_index", TMessageType.CALL, seqid_));
+      alter_index_args args = new alter_index_args();
+      args.dbname = dbname;
+      args.base_tbl_name = base_tbl_name;
+      args.idx_name = idx_name;
+      args.new_idx = new_idx;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_alter_index() throws InvalidOperationException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      alter_index_result result = new alter_index_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      return;
+    }
+
     public boolean drop_index_by_name(String db_name, String tbl_name, String index_name, boolean deleteData) throws NoSuchObjectException, MetaException, TException
     {
       send_drop_index_by_name(db_name, tbl_name, index_name, deleteData);
@@ -1664,6 +1705,7 @@ public class ThriftHiveMetastore {
       processMap_.put("partition_name_to_vals", new partition_name_to_vals());
       processMap_.put("partition_name_to_spec", new partition_name_to_spec());
       processMap_.put("add_index", new add_index());
+      processMap_.put("alter_index", new alter_index());
       processMap_.put("drop_index_by_name", new drop_index_by_name());
       processMap_.put("get_index_by_name", new get_index_by_name());
       processMap_.put("get_indexes", new get_indexes());
@@ -2707,6 +2749,36 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("add_index", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class alter_index implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        alter_index_args args = new alter_index_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        alter_index_result result = new alter_index_result();
+        try {
+          iface_.alter_index(args.dbname, args.base_tbl_name, args.idx_name, args.new_idx);
+        } catch (InvalidOperationException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing alter_index", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing alter_index");
+          oprot.writeMessageBegin(new TMessage("alter_index", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("alter_index", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -23444,6 +23516,665 @@ public class ThriftHiveMetastore {
         sb.append("null");
       } else {
         sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_index_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_index_args");
+    private static final TField DBNAME_FIELD_DESC = new TField("dbname", TType.STRING, (short)1);
+    private static final TField BASE_TBL_NAME_FIELD_DESC = new TField("base_tbl_name", TType.STRING, (short)2);
+    private static final TField IDX_NAME_FIELD_DESC = new TField("idx_name", TType.STRING, (short)3);
+    private static final TField NEW_IDX_FIELD_DESC = new TField("new_idx", TType.STRUCT, (short)4);
+
+    private String dbname;
+    public static final int DBNAME = 1;
+    private String base_tbl_name;
+    public static final int BASE_TBL_NAME = 2;
+    private String idx_name;
+    public static final int IDX_NAME = 3;
+    private Index new_idx;
+    public static final int NEW_IDX = 4;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DBNAME, new FieldMetaData("dbname", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(BASE_TBL_NAME, new FieldMetaData("base_tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(IDX_NAME, new FieldMetaData("idx_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(NEW_IDX, new FieldMetaData("new_idx", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Index.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_index_args.class, metaDataMap);
+    }
+
+    public alter_index_args() {
+    }
+
+    public alter_index_args(
+      String dbname,
+      String base_tbl_name,
+      String idx_name,
+      Index new_idx)
+    {
+      this();
+      this.dbname = dbname;
+      this.base_tbl_name = base_tbl_name;
+      this.idx_name = idx_name;
+      this.new_idx = new_idx;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_index_args(alter_index_args other) {
+      if (other.isSetDbname()) {
+        this.dbname = other.dbname;
+      }
+      if (other.isSetBase_tbl_name()) {
+        this.base_tbl_name = other.base_tbl_name;
+      }
+      if (other.isSetIdx_name()) {
+        this.idx_name = other.idx_name;
+      }
+      if (other.isSetNew_idx()) {
+        this.new_idx = new Index(other.new_idx);
+      }
+    }
+
+    @Override
+    public alter_index_args clone() {
+      return new alter_index_args(this);
+    }
+
+    public String getDbname() {
+      return this.dbname;
+    }
+
+    public void setDbname(String dbname) {
+      this.dbname = dbname;
+    }
+
+    public void unsetDbname() {
+      this.dbname = null;
+    }
+
+    // Returns true if field dbname is set (has been asigned a value) and false otherwise
+    public boolean isSetDbname() {
+      return this.dbname != null;
+    }
+
+    public String getBase_tbl_name() {
+      return this.base_tbl_name;
+    }
+
+    public void setBase_tbl_name(String base_tbl_name) {
+      this.base_tbl_name = base_tbl_name;
+    }
+
+    public void unsetBase_tbl_name() {
+      this.base_tbl_name = null;
+    }
+
+    // Returns true if field base_tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetBase_tbl_name() {
+      return this.base_tbl_name != null;
+    }
+
+    public String getIdx_name() {
+      return this.idx_name;
+    }
+
+    public void setIdx_name(String idx_name) {
+      this.idx_name = idx_name;
+    }
+
+    public void unsetIdx_name() {
+      this.idx_name = null;
+    }
+
+    // Returns true if field idx_name is set (has been asigned a value) and false otherwise
+    public boolean isSetIdx_name() {
+      return this.idx_name != null;
+    }
+
+    public Index getNew_idx() {
+      return this.new_idx;
+    }
+
+    public void setNew_idx(Index new_idx) {
+      this.new_idx = new_idx;
+    }
+
+    public void unsetNew_idx() {
+      this.new_idx = null;
+    }
+
+    // Returns true if field new_idx is set (has been asigned a value) and false otherwise
+    public boolean isSetNew_idx() {
+      return this.new_idx != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DBNAME:
+        if (value == null) {
+          unsetDbname();
+        } else {
+          setDbname((String)value);
+        }
+        break;
+
+      case BASE_TBL_NAME:
+        if (value == null) {
+          unsetBase_tbl_name();
+        } else {
+          setBase_tbl_name((String)value);
+        }
+        break;
+
+      case IDX_NAME:
+        if (value == null) {
+          unsetIdx_name();
+        } else {
+          setIdx_name((String)value);
+        }
+        break;
+
+      case NEW_IDX:
+        if (value == null) {
+          unsetNew_idx();
+        } else {
+          setNew_idx((Index)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return getDbname();
+
+      case BASE_TBL_NAME:
+        return getBase_tbl_name();
+
+      case IDX_NAME:
+        return getIdx_name();
+
+      case NEW_IDX:
+        return getNew_idx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return isSetDbname();
+      case BASE_TBL_NAME:
+        return isSetBase_tbl_name();
+      case IDX_NAME:
+        return isSetIdx_name();
+      case NEW_IDX:
+        return isSetNew_idx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_index_args)
+        return this.equals((alter_index_args)that);
+      return false;
+    }
+
+    public boolean equals(alter_index_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_dbname = true && this.isSetDbname();
+      boolean that_present_dbname = true && that.isSetDbname();
+      if (this_present_dbname || that_present_dbname) {
+        if (!(this_present_dbname && that_present_dbname))
+          return false;
+        if (!this.dbname.equals(that.dbname))
+          return false;
+      }
+
+      boolean this_present_base_tbl_name = true && this.isSetBase_tbl_name();
+      boolean that_present_base_tbl_name = true && that.isSetBase_tbl_name();
+      if (this_present_base_tbl_name || that_present_base_tbl_name) {
+        if (!(this_present_base_tbl_name && that_present_base_tbl_name))
+          return false;
+        if (!this.base_tbl_name.equals(that.base_tbl_name))
+          return false;
+      }
+
+      boolean this_present_idx_name = true && this.isSetIdx_name();
+      boolean that_present_idx_name = true && that.isSetIdx_name();
+      if (this_present_idx_name || that_present_idx_name) {
+        if (!(this_present_idx_name && that_present_idx_name))
+          return false;
+        if (!this.idx_name.equals(that.idx_name))
+          return false;
+      }
+
+      boolean this_present_new_idx = true && this.isSetNew_idx();
+      boolean that_present_new_idx = true && that.isSetNew_idx();
+      if (this_present_new_idx || that_present_new_idx) {
+        if (!(this_present_new_idx && that_present_new_idx))
+          return false;
+        if (!this.new_idx.equals(that.new_idx))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DBNAME:
+            if (field.type == TType.STRING) {
+              this.dbname = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case BASE_TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.base_tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case IDX_NAME:
+            if (field.type == TType.STRING) {
+              this.idx_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case NEW_IDX:
+            if (field.type == TType.STRUCT) {
+              this.new_idx = new Index();
+              this.new_idx.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.dbname != null) {
+        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+        oprot.writeString(this.dbname);
+        oprot.writeFieldEnd();
+      }
+      if (this.base_tbl_name != null) {
+        oprot.writeFieldBegin(BASE_TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.base_tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.idx_name != null) {
+        oprot.writeFieldBegin(IDX_NAME_FIELD_DESC);
+        oprot.writeString(this.idx_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.new_idx != null) {
+        oprot.writeFieldBegin(NEW_IDX_FIELD_DESC);
+        this.new_idx.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_index_args(");
+      boolean first = true;
+
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("base_tbl_name:");
+      if (this.base_tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.base_tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("idx_name:");
+      if (this.idx_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.idx_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("new_idx:");
+      if (this.new_idx == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_idx);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_index_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_index_result");
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private InvalidOperationException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_index_result.class, metaDataMap);
+    }
+
+    public alter_index_result() {
+    }
+
+    public alter_index_result(
+      InvalidOperationException o1,
+      MetaException o2)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_index_result(alter_index_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new InvalidOperationException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public alter_index_result clone() {
+      return new alter_index_result(this);
+    }
+
+    public InvalidOperationException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidOperationException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidOperationException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_index_result)
+        return this.equals((alter_index_result)that);
+      return false;
+    }
+
+    public boolean equals(alter_index_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new InvalidOperationException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_index_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
       }
       first = false;
       sb.append(")");

@@ -49,6 +49,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
   virtual void add_index(Index& _return, const Index& new_index, const Table& index_table) = 0;
+  virtual void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) = 0;
   virtual bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) = 0;
   virtual void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) = 0;
   virtual void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) = 0;
@@ -162,6 +163,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_index(Index& /* _return */, const Index& /* new_index */, const Table& /* index_table */) {
+    return;
+  }
+  void alter_index(const std::string& /* dbname */, const std::string& /* base_tbl_name */, const std::string& /* idx_name */, const Index& /* new_idx */) {
     return;
   }
   bool drop_index_by_name(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* index_name */, const bool /* deleteData */) {
@@ -3904,6 +3908,120 @@ class ThriftHiveMetastore_add_index_presult {
 
 };
 
+class ThriftHiveMetastore_alter_index_args {
+ public:
+
+  ThriftHiveMetastore_alter_index_args() : dbname(""), base_tbl_name(""), idx_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_index_args() throw() {}
+
+  std::string dbname;
+  std::string base_tbl_name;
+  std::string idx_name;
+  Index new_idx;
+
+  struct __isset {
+    __isset() : dbname(false), base_tbl_name(false), idx_name(false), new_idx(false) {}
+    bool dbname;
+    bool base_tbl_name;
+    bool idx_name;
+    bool new_idx;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_alter_index_args & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(base_tbl_name == rhs.base_tbl_name))
+      return false;
+    if (!(idx_name == rhs.idx_name))
+      return false;
+    if (!(new_idx == rhs.new_idx))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_index_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_index_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_alter_index_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_index_pargs() throw() {}
+
+  const std::string* dbname;
+  const std::string* base_tbl_name;
+  const std::string* idx_name;
+  const Index* new_idx;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_alter_index_result {
+ public:
+
+  ThriftHiveMetastore_alter_index_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_index_result() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  struct __isset {
+    __isset() : o1(false), o2(false) {}
+    bool o1;
+    bool o2;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_alter_index_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_index_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_index_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_alter_index_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_index_presult() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  struct __isset {
+    __isset() : o1(false), o2(false) {}
+    bool o1;
+    bool o2;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastore_drop_index_by_name_args {
  public:
 
@@ -4477,6 +4595,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void add_index(Index& _return, const Index& new_index, const Table& index_table);
   void send_add_index(const Index& new_index, const Table& index_table);
   void recv_add_index(Index& _return);
+  void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx);
+  void send_alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx);
+  void recv_alter_index();
   bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData);
   void send_drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData);
   bool recv_drop_index_by_name();
@@ -4531,6 +4652,7 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
   void process_partition_name_to_vals(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_partition_name_to_spec(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_add_index(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_alter_index(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_drop_index_by_name(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_index_by_name(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_indexes(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
@@ -4573,6 +4695,7 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
     processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
     processMap_["add_index"] = &ThriftHiveMetastoreProcessor::process_add_index;
+    processMap_["alter_index"] = &ThriftHiveMetastoreProcessor::process_alter_index;
     processMap_["drop_index_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_index_by_name;
     processMap_["get_index_by_name"] = &ThriftHiveMetastoreProcessor::process_get_index_by_name;
     processMap_["get_indexes"] = &ThriftHiveMetastoreProcessor::process_get_indexes;
@@ -4971,6 +5094,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       } else {
         ifaces_[i]->add_index(_return, new_index, index_table);
       }
+    }
+  }
+
+  void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      ifaces_[i]->alter_index(dbname, base_tbl_name, idx_name, new_idx);
     }
   }
 

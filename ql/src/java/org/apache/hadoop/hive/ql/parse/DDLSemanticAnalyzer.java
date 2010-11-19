@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -88,6 +89,7 @@ import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -229,7 +231,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
       analyzeAlterTableClusterSort(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_REBUILD) {
-      analyzeUpdateIndex(ast);
+      analyzeAlterIndexRebuild(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_PROPERTIES) {
+      analyzeAlterIndexProps(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
@@ -407,7 +411,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         dropIdxDesc), conf));
   }
 
-  private void analyzeUpdateIndex(ASTNode ast) throws SemanticException {
+  private void analyzeAlterIndexRebuild(ASTNode ast) throws SemanticException {
     String baseTableName = unescapeIdentifier(ast.getChild(0).getText());
     String indexName = unescapeIdentifier(ast.getChild(1).getText());
     HashMap<String, String> partSpec = null;
@@ -417,6 +421,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     List<Task<?>> indexBuilder = getIndexBuilderMapRed(baseTableName, indexName, partSpec);
     rootTasks.addAll(indexBuilder);
+  }
+
+  private void analyzeAlterIndexProps(ASTNode ast)
+    throws SemanticException {
+
+    String baseTableName = unescapeIdentifier(ast.getChild(0).getText());
+    String indexName = unescapeIdentifier(ast.getChild(1).getText());
+    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(2))
+        .getChild(0));
+
+    AlterIndexDesc alterIdxDesc =
+      new AlterIndexDesc(AlterIndexTypes.ADDPROPS);
+    alterIdxDesc.setProps(mapProp);
+    alterIdxDesc.setIndexName(indexName);
+    alterIdxDesc.setBaseTableName(baseTableName);
+    alterIdxDesc.setDbName(db.getCurrentDatabase());
+
+    rootTasks.add(TaskFactory.get(new DDLWork(alterIdxDesc), conf));
   }
 
   private List<Task<?>> getIndexBuilderMapRed(String baseTableName, String indexName,

@@ -55,6 +55,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   partition_name_to_vals(string part_name)'
   print '   partition_name_to_spec(string part_name)'
   print '  Index add_index(Index new_index, Table index_table)'
+  print '  void alter_index(string dbname, string base_tbl_name, string idx_name, Index new_idx)'
   print '  bool drop_index_by_name(string db_name, string tbl_name, string index_name, bool deleteData)'
   print '  Index get_index_by_name(string db_name, string tbl_name, string index_name)'
   print '   get_indexes(string db_name, string tbl_name, i16 max_indexes)'
@@ -310,6 +311,12 @@ elif cmd == 'add_index':
     print 'add_index requires 2 args'
     sys.exit(1)
   pp.pprint(client.add_index(eval(args[0]),eval(args[1]),))
+
+elif cmd == 'alter_index':
+  if len(args) != 4:
+    print 'alter_index requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.alter_index(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'drop_index_by_name':
   if len(args) != 4:
