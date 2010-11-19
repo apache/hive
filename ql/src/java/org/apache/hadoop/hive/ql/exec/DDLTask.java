@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.lang.Long;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1343,7 +1344,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(lock.getHiveLockMode().toString());
         if (isExt) {
           outStream.write(terminator);
-          outStream.writeBytes("QUERYID_LOCK:"+ lock.getHiveLockObject().getData());
+          String lockData = lock.getHiveLockObject().getData();
+          if (lockData != null) {
+            String[] lockDataArr = lockData.split(":");
+            if (lockDataArr.length == 1) {
+              outStream.writeBytes("QUERYID_LOCK:" + lockData);
+            }
+            else {
+              outStream.writeBytes("QUERYID_LOCK:" + lockDataArr[0] + " TIME : " + Long.parseLong(lockDataArr[1]));
+            }
+          }
         }
         outStream.write(terminator);
       }
@@ -1384,8 +1394,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     Map<String, String> partSpec = lockTbl.getPartSpec();
+    String lockData = lockTbl.getQueryId() + ":" + String.valueOf(System.currentTimeMillis());
+
     if (partSpec == null) {
-      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockTbl.getQueryId()), mode, true);
+      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
       if (lck == null) {
         return 1;
       }
@@ -1396,7 +1408,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (par == null) {
       throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
     }
-    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockTbl.getQueryId()), mode, true);
+    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true);
     if (lck == null) {
       return 1;
     }

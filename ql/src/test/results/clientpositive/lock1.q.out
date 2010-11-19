@@ -56,7 +56,7 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-QUERYID_LOCK:njain_20101104183131_7ee0480d-77f6-4bc2-8cec-26b808b026df	 
+QUERYID_LOCK:njain_20101116183333_f1267a1d-8cc2-4077-ab5d-380708a0494b TIME : 1289961194566	 
 PREHOOK: query: UNLOCK TABLE tstsrc
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrc

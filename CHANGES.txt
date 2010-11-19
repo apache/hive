@@ -259,6 +259,9 @@ Trunk -  Unreleased
     HIVE-1783 optimize join code path in the scenario where there is 1 value for a key
     (Siying Dong via namit)
 
+    HIVE-1796 dumps time at which lock was taken along with the queryid in show locks <T> extended
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES
