@@ -265,6 +265,9 @@ Trunk -  Unreleased
     HIVE-1746 Support for using ALTER to set IDXPROPERTIES
     (Marquis Wang via jvs)
 
+    HIVE-1787 optimize the code path when there are no outer joins
+    (Siying Dong via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -717,28 +717,21 @@ transient boolean newGroupStarted = false;
     checkAndGenObject();
   }
 
-  private void genUniqueJoinObject(int aliasNum, IntermediateObject intObj)
+  private void genUniqueJoinObject(int aliasNum, int forwardCachePos)
       throws HiveException {
-    if (aliasNum == numAliases) {
-      int p = 0;
-      for (int i = 0; i < numAliases; i++) {
-        int sz = joinValues.get(order[i]).size();
-        ArrayList<Object> obj = intObj.getObjs()[i];
-        for (int j = 0; j < sz; j++) {
-          forwardCache[p++] = obj.get(j);
-        }
-      }
-
-      forward(forwardCache, outputObjInspector);
-      countAfterReport = 0;
-      return;
-    }
-
     AbstractRowContainer<ArrayList<Object>> alias = storage.get(order[aliasNum]);
     for (ArrayList<Object> row = alias.first(); row != null; row = alias.next()) {
-      intObj.pushObj(row);
-      genUniqueJoinObject(aliasNum + 1, intObj);
-      intObj.popObj();
+      int sz = joinValues.get(order[aliasNum]).size();
+      int p = forwardCachePos;
+      for (int j = 0; j < sz; j++) {
+        forwardCache[p++] = row.get(j);
+      }
+      if (aliasNum == numAliases - 1) {
+        forward(forwardCache, outputObjInspector);
+        countAfterReport = 0;
+      } else {
+        genUniqueJoinObject(aliasNum + 1, p);
+      }
     }
   }
 
@@ -794,13 +787,12 @@ transient boolean newGroupStarted = false;
         LOG.info("called genAllOneUniqueJoinObject");
       } else {
         LOG.trace("calling genUniqueJoinObject");
-        genUniqueJoinObject(0, new IntermediateObject(new ArrayList[numAliases],
-            0));
+        genUniqueJoinObject(0, 0);
         LOG.trace("called genUniqueJoinObject");
       }
     } else {
       // does any result need to be emitted
-      boolean hasMoreThanOne = false;
+      boolean mayHasMoreThanOne = false;
       boolean hasEmpty = false;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
@@ -811,13 +803,13 @@ transient boolean newGroupStarted = false;
             LOG.trace("No data for alias=" + i);
             return;
           } else if (alw.size() > 1) {
-            hasMoreThanOne = true;
+            mayHasMoreThanOne = true;
           }
         } else {
           if (alw.size() == 0) {
             hasEmpty = true;
             alw.add((ArrayList<Object>) dummyObj[i]);
-          } else if (alw.size() == 1) {
+          } else if (!hasEmpty && alw.size() == 1) {
             ArrayList<Object> row = alw.first();
             int numValues = joinValues.get(alias).size();
             if (row == dummyObj[alias]
@@ -825,15 +817,29 @@ transient boolean newGroupStarted = false;
               hasEmpty = true;
             }
           } else {
-            hasMoreThanOne = true;
+            mayHasMoreThanOne = true;
+            if (!hasEmpty) {
+              int numValues = joinValues.get(alias).size();
+              for (ArrayList<Object> row = alw.first(); row != null; row = alw.next()) {
+                if (row == dummyObj[alias]
+                    || (row.size() > numValues && ((BooleanWritable) (row.get(numValues))).get())) {
+                  hasEmpty = true;
+                  break;
+                }
+              }
+            }
           }
         }
       }
 
-      if (!hasEmpty && !hasMoreThanOne) {
+      if (!hasEmpty && !mayHasMoreThanOne) {
         LOG.trace("calling genAllOneUniqueJoinObject");
         genAllOneUniqueJoinObject();
         LOG.trace("called genAllOneUniqueJoinObject");
+      } else if (!hasEmpty) {
+        LOG.trace("calling genUniqueJoinObject");
+        genUniqueJoinObject(0, 0);
+        LOG.trace("called genUniqueJoinObject");
       } else {
         LOG.trace("calling genObject");
         genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0),
