@@ -255,10 +255,14 @@ public class BucketMapJoinOptimizer implements Transform {
             Partition part = null;
             Iterator<Partition> iter = prunedParts.getConfirmedPartns()
                 .iterator();
-            part = iter.next();
+            if (iter.hasNext()) {
+              part = iter.next();              
+            }
             if (part == null) {
               iter = prunedParts.getUnknownPartns().iterator();
-              part = iter.next();
+              if (iter.hasNext()) {
+                part = iter.next();              
+              }
             }
             assert part != null;
             Integer num = new Integer(part.getBucketCount());

@@ -528,6 +528,9 @@ Trunk -  Unreleased
     HIVE-1795 outputs not correctly populated for alter table
     (namit via He Yongqiang)
 
+    HIVE-1807 No Element found exception in BucketMapJoinOptimizer
+    (He Yongqiang via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance
