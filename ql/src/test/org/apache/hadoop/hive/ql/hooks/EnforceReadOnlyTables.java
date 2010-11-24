@@ -31,9 +31,17 @@ import org.apache.hadoop.security.UserGroupInformation;
  * Implementation of a pre execute hook that prevents modifications
  * of read-only tables used by the test framework
  */
-public class EnforceReadOnlyTables implements PreExecute {
+public class EnforceReadOnlyTables implements ExecuteWithHookContext {
 
   @Override
+  public void run(HookContext hookContext) throws Exception {
+    SessionState ss = SessionState.get();
+    Set<ReadEntity> inputs = hookContext.getInputs();
+    Set<WriteEntity> outputs = hookContext.getOutputs();
+    UserGroupInformation ugi = hookContext.getUgi();
+    this.run(ss,inputs,outputs,ugi);
+  }
+
   public void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi)
     throws Exception {

@@ -55,6 +55,9 @@ import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
+import org.apache.hadoop.hive.ql.hooks.Hook;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -702,8 +705,8 @@ public class Driver implements CommandProcessor {
     return new CommandProcessorResponse(ret);
   }
 
-  private List<PreExecute> getPreExecHooks() throws Exception {
-    ArrayList<PreExecute> pehooks = new ArrayList<PreExecute>();
+  private List<Hook> getPreExecHooks() throws Exception {
+    ArrayList<Hook> pehooks = new ArrayList<Hook>();
     String pestr = conf.getVar(HiveConf.ConfVars.PREEXECHOOKS);
     pestr = pestr.trim();
     if (pestr.equals("")) {
@@ -714,7 +717,7 @@ public class Driver implements CommandProcessor {
 
     for (String peClass : peClasses) {
       try {
-        pehooks.add((PreExecute) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
+        pehooks.add((Hook) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
             .newInstance());
       } catch (ClassNotFoundException e) {
         console.printError("Pre Exec Hook Class not found:" + e.getMessage());
@@ -725,8 +728,8 @@ public class Driver implements CommandProcessor {
     return pehooks;
   }
 
-  private List<PostExecute> getPostExecHooks() throws Exception {
-    ArrayList<PostExecute> pehooks = new ArrayList<PostExecute>();
+  private List<Hook> getPostExecHooks() throws Exception {
+    ArrayList<Hook> pehooks = new ArrayList<Hook>();
     String pestr = conf.getVar(HiveConf.ConfVars.POSTEXECHOOKS);
     pestr = pestr.trim();
     if (pestr.equals("")) {
@@ -737,7 +740,7 @@ public class Driver implements CommandProcessor {
 
     for (String peClass : peClasses) {
       try {
-        pehooks.add((PostExecute) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
+        pehooks.add((Hook) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
             .newInstance());
       } catch (ClassNotFoundException e) {
         console.printError("Post Exec Hook Class not found:" + e.getMessage());
@@ -773,11 +776,17 @@ public class Driver implements CommandProcessor {
       }
       resStream = null;
 
-      // Get all the pre execution hooks and execute them.
-      for (PreExecute peh : getPreExecHooks()) {
-        peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(), ShimLoader
-            .getHadoopShims().getUGIForConf(conf));
+      HookContext hookContext = new HookContext(plan, conf);
+
+      for (Hook peh : getPreExecHooks()) {
+        if (peh instanceof ExecuteWithHookContext) {
+          ((ExecuteWithHookContext) peh).run(hookContext);
+        } else if (peh instanceof PreExecute) {
+          ((PreExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
+              ShimLoader.getHadoopShims().getUGIForConf(conf));
+        }
       }
+
 
       int jobs = Utilities.getMRTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
@@ -820,6 +829,7 @@ public class Driver implements CommandProcessor {
         TaskResult tskRes = pollTasks(running.keySet());
         TaskRunner tskRun = running.remove(tskRes);
         Task<? extends Serializable> tsk = tskRun.getTask();
+        hookContext.addCompleteTask(tskRun);
 
         int exitVal = tskRes.getExitVal();
         if (exitVal != 0) {
@@ -885,11 +895,16 @@ public class Driver implements CommandProcessor {
       }
 
       // Get all the post execution hooks and execute them.
-      for (PostExecute peh : getPostExecHooks()) {
-        peh.run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
-            (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
-                : null), ShimLoader.getHadoopShims().getUGIForConf(conf));
+      for (Hook peh : getPostExecHooks()) {
+        if (peh instanceof ExecuteWithHookContext) {
+          ((ExecuteWithHookContext) peh).run(hookContext);
+        } else if (peh instanceof PostExecute) {
+          ((PostExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
+              (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
+                  : null), ShimLoader.getHadoopShims().getUGIForConf(conf));
+        }
       }
+
 
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().setQueryProperty(queryId, Keys.QUERY_RET_CODE,

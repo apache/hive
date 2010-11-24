@@ -38,7 +38,7 @@ import org.apache.hadoop.security.UserGroupInformation;
  * Implementation of a post execute hook that simply prints out its parameters
  * to standard output.
  */
-public class PostExecutePrinter implements PostExecute {
+public class PostExecutePrinter implements ExecuteWithHookContext {
 
   public class DependencyKeyComp implements
     Comparator<Map.Entry<DependencyKey, Dependency>> {
@@ -94,6 +94,15 @@ public class PostExecutePrinter implements PostExecute {
   }
 
   @Override
+  public void run(HookContext hookContext) throws Exception {
+    SessionState ss = SessionState.get();
+    Set<ReadEntity> inputs = hookContext.getInputs();
+    Set<WriteEntity> outputs = hookContext.getOutputs();
+    LineageInfo linfo = hookContext.getLinfo();
+    UserGroupInformation ugi = hookContext.getUgi();
+    this.run(ss,inputs,outputs,linfo,ugi);
+  }
+
   public void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, LineageInfo linfo,
       UserGroupInformation ugi) throws Exception {

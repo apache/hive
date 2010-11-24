@@ -27,7 +27,7 @@ import org.apache.hadoop.security.UserGroupInformation;
  * The post execute hook interface. A list of such hooks can be configured to be
  * called after compilation and before execution.
  */
-public interface PostExecute {
+public interface PostExecute extends Hook {
 
   /**
    * The run command that is called just before the execution of the query.
@@ -43,6 +43,7 @@ public interface PostExecute {
    * @param ugi
    *          The user group security information.
    */
+  @Deprecated
   void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, LineageInfo lInfo,
       UserGroupInformation ugi) throws Exception;

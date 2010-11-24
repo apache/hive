@@ -271,6 +271,9 @@ Trunk -  Unreleased
     HIVE-1801 HiveInputFormat or CombineHiveInputFormat always sync blocks of RCFile twice
     (Siying Dong via He Yongqiang)
 
+    HIVE-1785 change Pre/Post Query Hooks to take in 1 parameter:  HookContext
+    (Liyin Tang via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
