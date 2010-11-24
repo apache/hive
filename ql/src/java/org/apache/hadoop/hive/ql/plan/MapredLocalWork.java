@@ -43,6 +43,7 @@ public class MapredLocalWork implements Serializable {
   private boolean inputFileChangeSensitive;
   private BucketMapJoinContext bucketMapjoinContext;
   private String tmpFileURI;
+  private String stageID;
 
 
   private List<Operator<? extends Serializable>> dummyParentOp ;
@@ -79,6 +80,14 @@ public class MapredLocalWork implements Serializable {
   @Explain(displayName = "Alias -> Map Local Operator Tree")
   public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
     return aliasToWork;
+  }
+
+  public String getStageID() {
+    return stageID;
+  }
+
+  public void setStageID(String stageID) {
+    this.stageID = stageID;
   }
 
 

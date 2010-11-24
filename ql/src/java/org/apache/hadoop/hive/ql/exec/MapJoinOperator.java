@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
@@ -144,7 +145,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private void loadHashTable() throws HiveException {
     boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
-    String tmpURI = null;
+    String baseDir = null;
     HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashtable;
     Byte pos;
 
@@ -161,57 +162,36 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     try {
       if (localMode) {
-        LOG.info("******* Load from tmp file uri ***");
-        tmpURI = this.getExecContext().getLocalWork().getTmpFileURI();
-        for (Map.Entry<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> entry : mapJoinTables
-            .entrySet()) {
-          pos = entry.getKey();
-          hashtable = entry.getValue();
-          String filePath = Utilities.generatePath(tmpURI, pos, currentFileName);
-          Path path = new Path(filePath);
-          LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path.toString());
-
-          hashtable.initilizePersistentHash(path.toUri().getPath());
-        }
+        baseDir = this.getExecContext().getLocalWork().getTmpFileURI();
       } else {
-
-        Path[] localFiles = DistributedCache.getLocalCacheFiles(this.hconf);
-
-        for (Map.Entry<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> entry : mapJoinTables
-            .entrySet()) {
-          pos = entry.getKey();
-          hashtable = entry.getValue();
-          String suffix = Utilities.generateFileName(pos, currentFileName);
-          LOG.info("Looking for hashtable file with suffix: " + suffix);
-
-          boolean found = false;
-          for (int i = 0; i < localFiles.length; i++) {
-            Path path = localFiles[i];
-
-            if (path.toString().endsWith(suffix)) {
-              LOG.info("Matching suffix with cached file:" + path.toString());
-              LOG.info("\tInitializing the hashtable by cached file:" + path.toString());
-              hashtable.initilizePersistentHash(path.toString());
-              found = true;
-              LOG.info("\tLoad back 1 hashtable file from distributed cache:" + path.toString());
-              break;
-            }
+        Path[] localArchives;
+        String stageID = this.getExecContext().getLocalWork().getStageID();
+        String suffix = Utilities.generateTarFileName(stageID);
+        FileSystem localFs = FileSystem.getLocal(hconf);
+        localArchives = DistributedCache.getLocalCacheArchives(this.hconf);
+        Path archive;
+        for (int j = 0; j < localArchives.length; j++) {
+          archive = localArchives[j];
+          if (!archive.getName().endsWith(suffix)) {
+            continue;
           }
-          if (!found) {
-            LOG.error("Load nothing from Distributed Cache");
-            throw new HiveException();
-          }
+          Path archiveLocalLink = archive.makeQualified(localFs);
+          baseDir = archiveLocalLink.toUri().getPath();
         }
-
+      }
+      for (Map.Entry<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> entry : mapJoinTables
+          .entrySet()) {
+        pos = entry.getKey();
+        hashtable = entry.getValue();
+        String filePath = Utilities.generatePath(baseDir, pos, currentFileName);
+        Path path = new Path(filePath);
+        LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path.toString());
+        hashtable.initilizePersistentHash(path.toUri().getPath());
       }
     } catch (Exception e) {
-      e.printStackTrace();
-      LOG.error("Load Hash Table error");
-
-      throw new HiveException();
+      LOG.error("Load Distributed Cache Error");
+      throw new HiveException(e.getMessage());
     }
-
-
   }
 
   @Override

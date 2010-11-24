@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Shell.ShellCommandExecutor;
 
 /**
  * Collection of file manipulation utilities common across Hive.
@@ -34,12 +35,12 @@ import org.apache.hadoop.fs.Path;
 public final class FileUtils {
 
   /**
-   * Variant of Path.makeQualified that qualifies the input path against the
-   * default file system indicated by the configuration
+   * Variant of Path.makeQualified that qualifies the input path against the default file system
+   * indicated by the configuration
    *
-   * This does not require a FileSystem handle in most cases - only requires the
-   * Filesystem URI. This saves the cost of opening the Filesystem - which can
-   * involve RPCs - as well as cause errors
+   * This does not require a FileSystem handle in most cases - only requires the Filesystem URI.
+   * This saves the cost of opening the Filesystem - which can involve RPCs - as well as cause
+   * errors
    *
    * @param path
    *          path to be fully qualified
@@ -70,14 +71,13 @@ public final class FileUtils {
       // no scheme - use default file system uri
       scheme = fsUri.getScheme();
       authority = fsUri.getAuthority();
-      if(authority == null) {
+      if (authority == null) {
         authority = "";
       }
     } else {
-      if(authority == null) {
+      if (authority == null) {
         // no authority - use default one if it applies
-        if(scheme.equals(fsUri.getScheme()) &&
-           fsUri.getAuthority() != null) {
+        if (scheme.equals(fsUri.getScheme()) && fsUri.getAuthority() != null) {
           authority = fsUri.getAuthority();
         } else {
           authority = "";
@@ -93,8 +93,7 @@ public final class FileUtils {
   }
 
 
-  public static String makePartName(List<String> partCols,
-      List<String> vals) {
+  public static String makePartName(List<String> partCols, List<String> vals) {
 
     StringBuilder name = new StringBuilder();
     for (int i = 0; i < partCols.size(); i++) {
@@ -122,8 +121,8 @@ public final class FileUtils {
     for (char c = 0; c < ' '; c++) {
       charToEscape.set(c);
     }
-    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':', '=', '?',
-        '\\', '\u007F', '{', ']' };
+    char[] clist = new char[] {'"', '#', '%', '\'', '*', '/', ':', '=', '?', '\\', '\u007F', '{',
+        ']'};
     for (char c : clist) {
       charToEscape.set(c);
     }
@@ -177,18 +176,20 @@ public final class FileUtils {
   }
 
   /**
-   * Recursively lists status for all files starting from a particular
-   * directory (or individual file as base case).
+   * Recursively lists status for all files starting from a particular directory (or individual file
+   * as base case).
    *
-   * @param fs file system
+   * @param fs
+   *          file system
    *
-   * @param fileStatus starting point in file system
+   * @param fileStatus
+   *          starting point in file system
    *
-   * @param results receives enumeration of all files found
+   * @param results
+   *          receives enumeration of all files found
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
-    List<FileStatus> results)
-    throws IOException {
+      List<FileStatus> results) throws IOException {
 
     if (fileStatus.isDir()) {
       for (FileStatus stat : fs.listStatus(fileStatus.getPath())) {
@@ -196,6 +197,32 @@ public final class FileUtils {
       }
     } else {
       results.add(fileStatus);
+    }
+  }
+
+  /**
+   * Archive all the files in the inputFiles into outputFile
+   *
+   * @param inputFiles
+   * @param outputFile
+   * @throws IOException
+   */
+  public static void tar(String parentDir, String[] inputFiles, String outputFile)
+      throws IOException {
+    StringBuffer tarCommand = new StringBuffer();
+    tarCommand.append("cd " + parentDir + " ; ");
+    tarCommand.append(" tar -zcvf ");
+    tarCommand.append(" " + outputFile);
+    for (int i = 0; i < inputFiles.length; i++) {
+      tarCommand.append(" " + inputFiles[i]);
+    }
+    String[] shellCmd = {"bash", "-c", tarCommand.toString()};
+    ShellCommandExecutor shexec = new ShellCommandExecutor(shellCmd);
+    shexec.execute();
+    int exitcode = shexec.getExitCode();
+    if (exitcode != 0) {
+      throw new IOException("Error tarring file " + outputFile
+          + ". Tar process exited with exit code " + exitcode);
     }
   }
 }

@@ -277,6 +277,9 @@ Trunk -  Unreleased
     HIVE-1810 doc followup to HIVE-1785
     (Liyin Tang via jvs)
 
+    HIVE-1797 Compressed the hashtable dump file before put into distributed cache
+    (Liyin Tang via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

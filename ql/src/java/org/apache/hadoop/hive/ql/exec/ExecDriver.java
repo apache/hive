@@ -49,6 +49,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -538,6 +539,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       throw new RuntimeException(e.getMessage());
     }
 
+
     // No-Op - we don't really write anything here ..
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
@@ -560,23 +562,21 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     if (StringUtils.isNotBlank(addedFiles)) {
       initializeFiles("tmpfiles", addedFiles);
     }
-    // Transfer HIVEADDEDARCHIVES to "tmparchives" so hadoop understands it
-    String addedArchives = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDARCHIVES);
-    if (StringUtils.isNotBlank(addedArchives)) {
-      initializeFiles("tmparchives", addedArchives);
-    }
-
     int returnVal = 0;
     RunningJob rj = null;
-
     boolean noName = StringUtils.isEmpty(HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJOBNAME));
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
       HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, "JOB" + Utilities.randGen.nextInt());
     }
-    try {
-      // propagate the file to distributed cache
+    String addedArchives = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDARCHIVES);
+    // Transfer HIVEADDEDARCHIVES to "tmparchives" so hadoop understands it
+    if (StringUtils.isNotBlank(addedArchives)) {
+      initializeFiles("tmparchives", addedArchives);
+    }
+
+    try{
       MapredLocalWork localwork = work.getMapLocalWork();
       if (localwork != null) {
         boolean localMode = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local");
@@ -587,31 +587,38 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
           FileSystem hdfs = hdfsPath.getFileSystem(job);
           FileSystem localFS = localPath.getFileSystem(job);
           FileStatus[] hashtableFiles = localFS.listStatus(localPath);
-          for (int i = 0; i < hashtableFiles.length; i++) {
-            FileStatus file = hashtableFiles[i];
-            Path path = file.getPath();
-            String fileName = path.getName();
-            String hdfsFile = hdfsPath + Path.SEPARATOR + fileName;
+          int fileNumber = hashtableFiles.length;
+          String[] fileNames = new String[fileNumber];
 
-            LOG.info("Upload 1 HashTable from" + path + " to: " + hdfsFile);
-            Path hdfsFilePath = new Path(hdfsFile);
-
-            hdfs.copyFromLocalFile(path, hdfsFilePath);
-            short replication = (short) job.getInt("mapred.submit.replication", 10);
-            hdfs.setReplication(hdfsFilePath, replication);
+          for ( int i = 0; i < fileNumber; i++){
+            fileNames[i] = hashtableFiles[i].getPath().getName();
           }
-          FileStatus[] hashtableRemoteFiles = hdfs.listStatus(hdfsPath);
-          for (int i = 0; i < hashtableRemoteFiles.length; i++) {
-            FileStatus file = hashtableRemoteFiles[i];
-            Path path = file.getPath();
-            DistributedCache.addCacheFile(path.toUri(), job);
 
-            LOG.info("add 1 hashtable file to distributed cache: " + path.toUri());
-          }
+          //package and compress all the hashtable files to an archive file
+          String parentDir = localPath.toUri().getPath();
+          String stageId = this.getId();
+          String archiveFileURI = Utilities.generateTarURI(parentDir, stageId);
+          String archiveFileName = Utilities.generateTarFileName(stageId);
+          localwork.setStageID(stageId);
+
+          FileUtils.tar(parentDir, fileNames,archiveFileName);
+          Path archivePath = new Path(archiveFileURI);
+          LOG.info("Archive "+ hashtableFiles.length+" hash table files to " + archiveFileURI);
+
+          //upload archive file to hdfs
+          String hdfsFile =Utilities.generateTarURI(hdfsPath, stageId);
+          Path hdfsFilePath = new Path(hdfsFile);
+          short replication = (short) job.getInt("mapred.submit.replication", 10);
+          hdfs.setReplication(hdfsFilePath, replication);
+          hdfs.copyFromLocalFile(archivePath, hdfsFilePath);
+          LOG.info("Upload 1 archive file  from" + archivePath + " to: " + hdfsFilePath);
+
+          //add the archive file to distributed cache
+          DistributedCache.createSymlink(job);
+          DistributedCache.addCacheArchive(hdfsFilePath.toUri(), job);
+          LOG.info("Add 1 archive file to distributed cache. Archive file: " + hdfsFilePath.toUri());
         }
       }
-
-
 
       addInputPaths(job, work, emptyScratchDirStr);
 

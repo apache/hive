@@ -1572,19 +1572,39 @@ public final class Utilities {
   public static String suffix = ".hashtable";
 
   public static String generatePath(String baseURI, Byte tag, String bigBucketFileName) {
-    String path = new String(baseURI + Path.SEPARATOR + "-" + tag + "-" + bigBucketFileName
+    String path = new String(baseURI + Path.SEPARATOR + "MapJoin-" + tag + "-" + bigBucketFileName
         + suffix);
     return path;
   }
 
   public static String generateFileName(Byte tag, String bigBucketFileName) {
-    String fileName = new String("-" + tag + "-" + bigBucketFileName + suffix);
+    String fileName = new String("MapJoin-" + tag + "-" + bigBucketFileName + suffix);
     return fileName;
   }
 
   public static String generateTmpURI(String baseURI, String id) {
     String tmpFileURI = new String(baseURI + Path.SEPARATOR + "HashTable-" + id);
     return tmpFileURI;
+  }
+
+  public static String generateTarURI(String baseURI, String filename) {
+    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename+".tar.gz");
+    return tmpFileURI;
+  }
+
+  public static String generateTarURI(Path baseURI, String filename) {
+    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename+".tar.gz");
+    return tmpFileURI;
+  }
+
+  public static String generateTarFileName(String name) {
+    String tmpFileURI = new String(name+".tar.gz");
+    return tmpFileURI;
+  }
+
+  public static String generatePath(Path baseURI, String filename) {
+    String path = new String(baseURI + Path.SEPARATOR + filename);
+    return path;
   }
 
   public static String now() {

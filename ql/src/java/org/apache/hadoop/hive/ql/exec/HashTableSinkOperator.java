@@ -400,7 +400,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
             .entrySet()) {
           // get the key and value
           Byte tag = hashTables.getKey();
-          HashMapWrapper hashTable = hashTables.getValue();
+          HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = hashTables.getValue();
 
           // get current input file name
           String bigBucketFileName = this.getExecContext().getCurrentBigBucketFile();
@@ -408,7 +408,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
             bigBucketFileName = "-";
           }
           // get the tmp URI path; it will be a hdfs path if not local mode
-          String tmpURIPath = PathUtil.generatePath(tmpURI, tag, bigBucketFileName);
+          String tmpURIPath = Utilities.generatePath(tmpURI, tag, bigBucketFileName);
           hashTable.isAbort(rowNumber, console);
           console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
           // get the hashtable file and path
