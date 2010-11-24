@@ -540,6 +540,9 @@ Trunk -  Unreleased
     HIVE-1807 No Element found exception in BucketMapJoinOptimizer
     (He Yongqiang via Ning Zhang)
 
+    HIVE-1809 Hive Comparison Operators are broken for NaN values
+    (Paul Butler via Ning Zhang)
+
   TESTS
 
     HIVE-1464. improve  test query performance

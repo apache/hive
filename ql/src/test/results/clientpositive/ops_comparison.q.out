@@ -1,0 +1,162 @@
+PREHOOK: query: select 1.0 < 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-43_171_8359342299792578494/-mr-10000
+POSTHOOK: query: select 1.0 < 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-43_171_8359342299792578494/-mr-10000
+true
+PREHOOK: query: select 2.0 < 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-47_563_6509004989273547234/-mr-10000
+POSTHOOK: query: select 2.0 < 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-47_563_6509004989273547234/-mr-10000
+false
+PREHOOK: query: select 2.0 > 1.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-51_147_4921144132913433715/-mr-10000
+POSTHOOK: query: select 2.0 > 1.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-51_147_4921144132913433715/-mr-10000
+true
+PREHOOK: query: select 2.0 > 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-54_792_405822316321812886/-mr-10000
+POSTHOOK: query: select 2.0 > 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-54_792_405822316321812886/-mr-10000
+false
+PREHOOK: query: select 'NaN' < 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-58_235_6381965909893763309/-mr-10000
+POSTHOOK: query: select 'NaN' < 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-36-58_235_6381965909893763309/-mr-10000
+false
+PREHOOK: query: select 1.0 < 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-01_805_3406552689505838240/-mr-10000
+POSTHOOK: query: select 1.0 < 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-01_805_3406552689505838240/-mr-10000
+true
+PREHOOK: query: select 1.0 > 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-06_098_3368587280982912415/-mr-10000
+POSTHOOK: query: select 1.0 > 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-06_098_3368587280982912415/-mr-10000
+false
+PREHOOK: query: select 'NaN' > 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-09_598_8795319605305040803/-mr-10000
+POSTHOOK: query: select 'NaN' > 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-09_598_8795319605305040803/-mr-10000
+true
+PREHOOK: query: select 'NaN' > 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-13_054_3393533389220441923/-mr-10000
+POSTHOOK: query: select 'NaN' > 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-13_054_3393533389220441923/-mr-10000
+false
+PREHOOK: query: select 'NaN' < 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-16_767_6332302817430866113/-mr-10000
+POSTHOOK: query: select 'NaN' < 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-16_767_6332302817430866113/-mr-10000
+false
+PREHOOK: query: select 'NaN' = 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-20_272_3118451494666412808/-mr-10000
+POSTHOOK: query: select 'NaN' = 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-20_272_3118451494666412808/-mr-10000
+false
+PREHOOK: query: select 1.0 = 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-23_936_1948317467590272623/-mr-10000
+POSTHOOK: query: select 1.0 = 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-23_936_1948317467590272623/-mr-10000
+false
+PREHOOK: query: select 'NaN' = 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-27_763_4197853802869223089/-mr-10000
+POSTHOOK: query: select 'NaN' = 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-27_763_4197853802869223089/-mr-10000
+false
+PREHOOK: query: select 'NaN' = 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-31_373_6623902100898132587/-mr-10000
+POSTHOOK: query: select 'NaN' = 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-31_373_6623902100898132587/-mr-10000
+true
+PREHOOK: query: select 'NaN' <> 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-34_888_733814877538910170/-mr-10000
+POSTHOOK: query: select 'NaN' <> 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-34_888_733814877538910170/-mr-10000
+true
+PREHOOK: query: select 1.0 <> 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-38_678_7424470523261520477/-mr-10000
+POSTHOOK: query: select 1.0 <> 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-38_678_7424470523261520477/-mr-10000
+true
+PREHOOK: query: select 'NaN' <> 2.0 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-42_137_8062365212971009367/-mr-10000
+POSTHOOK: query: select 'NaN' <> 2.0 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-42_137_8062365212971009367/-mr-10000
+true
+PREHOOK: query: select 'NaN' <> 'NaN' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-45_602_40266132423363774/-mr-10000
+POSTHOOK: query: select 'NaN' <> 'NaN' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/pbutler/hive_2010-11-23_14-37-45_602_40266132423363774/-mr-10000
+false

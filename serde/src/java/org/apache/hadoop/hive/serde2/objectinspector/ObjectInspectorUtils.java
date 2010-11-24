@@ -564,12 +564,12 @@ public final class ObjectInspectorUtils {
       case FLOAT: {
         float v1 = ((FloatObjectInspector) poi1).get(o1);
         float v2 = ((FloatObjectInspector) poi2).get(o2);
-        return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+        return Float.compare(v1, v2);
       }
       case DOUBLE: {
         double v1 = ((DoubleObjectInspector) poi1).get(o1);
         double v2 = ((DoubleObjectInspector) poi2).get(o2);
-        return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+        return Double.compare(v1, v2);
       }
       case STRING: {
         if (poi1.preferWritable() || poi2.preferWritable()) {
