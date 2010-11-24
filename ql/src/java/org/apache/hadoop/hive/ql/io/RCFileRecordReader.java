@@ -110,7 +110,7 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
 
   /**
    * Return the progress within the input split.
-   * 
+   *
    * @return 0.0 to 1.0 of the input byte range
    */
   public float getProgress() throws IOException {
@@ -127,6 +127,10 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
 
   protected void seek(long pos) throws IOException {
     in.seek(pos);
+  }
+
+  public long getStart() {
+    return start;
   }
 
   public void close() throws IOException {

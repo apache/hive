@@ -33,9 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -185,7 +183,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
-  
+
     if (inputFormats == null) {
       inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
     }
@@ -229,10 +227,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if ((part != null) && (part.getTableDesc() != null)) {
       Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
     }
-    
-    HiveRecordReader<K,V> rr = new HiveRecordReader(inputFormat.getRecordReader(inputSplit,
-        cloneJobConf, reporter));
-    rr.initIOContext(hsplit, job, inputFormatClass);
+
+    RecordReader innerReader = inputFormat.getRecordReader(inputSplit,
+        cloneJobConf, reporter);
+
+    HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader);
+    rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
   }
 
@@ -274,7 +274,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushFilters(newjob, tableScan);
         }
       }
-      
+
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
       InputSplit[] iss = inputFormat.getSplits(newjob, numSplits / dirs.length);
@@ -353,7 +353,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableScanDesc.FILTER_EXPR_CONF_STR,
       filterExprSerialized);
   }
-  
+
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
       String splitPath, String splitPathWithNoSchema) {
     if (this.mrwork == null) {

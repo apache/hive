@@ -66,9 +66,10 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
         .getLocations());
 
     this.recordReader = inputFormat.getRecordReader(fsplit, job, reporter);
-    this.initIOContext(fsplit, job, inputFormatClass);
+    this.initIOContext(fsplit, job, inputFormatClass, this.recordReader);
   }
 
+  @Override
   public void doClose() throws IOException {
     recordReader.close();
   }
@@ -89,6 +90,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     return recordReader.getProgress();
   }
 
+  @Override
   public boolean doNext(K key, V value) throws IOException {
     if (ExecMapper.getDone()) {
       return false;

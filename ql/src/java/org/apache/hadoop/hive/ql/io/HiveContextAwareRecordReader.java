@@ -105,6 +105,11 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
 
   public void initIOContext(FileSplit split, JobConf job,
       Class inputFormatClass) throws IOException {
+    this.initIOContext(split, job, inputFormatClass, null);
+  }
+
+  public void initIOContext(FileSplit split, JobConf job,
+      Class inputFormatClass, RecordReader recordReader) throws IOException {
     boolean blockPointer = false;
     long blockStart = -1;
     FileSplit fileSplit = (FileSplit) split;
@@ -116,9 +121,12 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       in.sync(fileSplit.getStart());
       blockStart = in.getPosition();
       in.close();
-    } else if (inputFormatClass.getName().contains("RCFile")) {
-      RCFile.Reader in = new RCFile.Reader(fs, path, job);
+    } else if (recordReader instanceof RCFileRecordReader) {
       blockPointer = true;
+      blockStart = ((RCFileRecordReader) recordReader).getStart();
+    } else if (inputFormatClass.getName().contains("RCFile")) {
+      blockPointer = true;
+      RCFile.Reader in = new RCFile.Reader(fs, path, job);
       in.sync(fileSplit.getStart());
       blockStart = in.getPosition();
       in.close();
