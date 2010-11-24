@@ -256,8 +256,8 @@ public class HiveConf extends Configuration {
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),
     HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000),
     HIVEHASHTABLELOADFACTOR("hive.hashtable.loadfactor", (float) 0.75),
-    HIVEHASHTABLEMAXMEMORYUSAGE("hive.hashtable.max.memory.usage", (float) 0.90),
-    HIVEHASHTABLESCALE("hive.hashtable.scale", (long)100000),
+    HIVEHASHTABLEMAXMEMORYUSAGE("hive.mapjoin.localtask.max.memory.usage", (float) 0.90),
+    HIVEHASHTABLESCALE("hive.mapjoin.check.memory.rows", (long)100000),
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false),
 

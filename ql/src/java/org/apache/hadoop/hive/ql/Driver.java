@@ -837,10 +837,10 @@ public class Driver implements CommandProcessor {
           if (backupTask != null) {
             errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
                 + tsk.getClass().getName();
-            console.printInfo(errorMessage);
+            console.printError(errorMessage);
 
             errorMessage = "ATTEMPT: Execute BackupTask: " + backupTask.getClass().getName();
-            console.printInfo(errorMessage);
+            console.printError(errorMessage);
 
             // add backup task to runnable
             if (DriverContext.isLaunchable(backupTask)) {
