@@ -428,13 +428,13 @@
 <property>
   <name>hive.exec.pre.hooks</name>
   <value></value>
-  <description>Comma-separated list of pre-execution hooks to be invoked for each statement.  A pre-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.PreExecute interface.</description>
+  <description>Comma-separated list of pre-execution hooks to be invoked for each statement.  A pre-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface.</description>
 </property>
 
 <property>
   <name>hive.exec.post.hooks</name>
   <value></value>
-  <description>Comma-separated list of post-execution hooks to be invoked for each statement.  A post-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.PostExecute interface.</description>
+  <description>Comma-separated list of post-execution hooks to be invoked for each statement.  A post-execution hook is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface.</description>
 </property>
 
 <property>

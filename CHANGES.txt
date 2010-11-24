@@ -274,6 +274,9 @@ Trunk -  Unreleased
     HIVE-1785 change Pre/Post Query Hooks to take in 1 parameter:  HookContext
     (Liyin Tang via jvs)
 
+    HIVE-1810 doc followup to HIVE-1785
+    (Liyin Tang via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
