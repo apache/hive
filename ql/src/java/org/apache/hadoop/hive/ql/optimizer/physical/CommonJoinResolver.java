@@ -72,6 +72,8 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       if (joinOp == null) {
         return null;
       }
+      currTask.setTaskTag(Task.COMMON_JOIN);
+
       MapredWork currWork = currTask.getWork();
       // create conditional work list and task list
       List<Serializable> listWorks = new ArrayList<Serializable>();
@@ -129,6 +131,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           // add into conditional task
           listWorks.add(newWork);
           listTasks.add(newTask);
+          newTask.setTaskTag(Task.CONVERTED_MAPJOIN);
 
           //set up backup task
           newTask.setBackupTask(currTask);

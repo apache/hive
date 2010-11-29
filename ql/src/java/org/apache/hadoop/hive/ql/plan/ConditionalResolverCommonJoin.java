@@ -97,7 +97,13 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       resTsks.add(ctx.getCommonJoinTask());
     } else {
       // run the map join task
-      resTsks.add(ctx.getAliasToTask().get(bigTableAlias));
+      Task<? extends Serializable> task = ctx.getAliasToTask().get(bigTableAlias);
+      //set task tag
+      if(task.getTaskTag() == Task.CONVERTED_LOCAL_MAPJOIN) {
+        task.getBackupTask().setTaskTag(Task.BACKUP_COMMON_JOIN);
+      }
+      resTsks.add(task);
+
     }
 
     return resTsks;

@@ -549,6 +549,9 @@ Trunk -  Unreleased
     HIVE-1808 Wrong parameter names in HiveConf/hive-default.xml
     for joins (Liyin Tang via namit)
 
+    HIVE-1792 Track the joins which are being converted to map-join
+    automatically (Liyin Tang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

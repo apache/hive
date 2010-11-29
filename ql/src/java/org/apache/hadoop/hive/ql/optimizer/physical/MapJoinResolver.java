@@ -117,6 +117,12 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         currTask.setBackupChildrenTasks(null);
         currTask.setBackupTask(null);
 
+        if(currTask.getTaskTag() == Task.CONVERTED_MAPJOIN) {
+          localTask.setTaskTag(Task.CONVERTED_LOCAL_MAPJOIN);
+        } else {
+          localTask.setTaskTag(Task.LOCAL_MAPJOIN);
+        }
+
         //replace the map join operator to local_map_join operator in the operator tree
         //and return all the dummy parent
         List<Operator<? extends Serializable>>  dummyOps= adjustLocalTask(localTask);

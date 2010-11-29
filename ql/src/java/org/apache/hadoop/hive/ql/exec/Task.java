@@ -60,6 +60,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean clonedConf = false;
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
+  protected int taskTag;
+
+  public static final int NO_TAG = 0;
+  public static final int COMMON_JOIN = 1;
+  public static final int CONVERTED_MAPJOIN = 2;
+  public static final int CONVERTED_LOCAL_MAPJOIN = 3;
+  public static final int BACKUP_COMMON_JOIN = 4;
+  public static final int LOCAL_MAPJOIN=5;
 
 
   // Descendants tasks who subscribe feeds from this task
@@ -81,6 +89,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     queued = false;
     LOG = LogFactory.getLog(this.getClass().getName());
     this.taskCounters = new HashMap<String, Long>();
+    taskTag = Task.NO_TAG;
   }
 
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
@@ -444,5 +453,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       clonedConf = true;
       conf = new HiveConf(conf);
     }
+  }
+
+
+  public int getTaskTag() {
+    return taskTag;
+  }
+
+  public void setTaskTag(int taskTag) {
+    this.taskTag = taskTag;
   }
 }
