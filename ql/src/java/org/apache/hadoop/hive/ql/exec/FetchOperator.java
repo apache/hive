@@ -64,6 +64,26 @@ public class FetchOperator implements Serializable {
   static Log LOG = LogFactory.getLog(FetchOperator.class.getName());
   static LogHelper console = new LogHelper(LOG);
 
+  private boolean isEmptyTable;
+  private boolean isNativeTable;
+  private FetchWork work;
+  private int splitNum;
+  private PartitionDesc currPart;
+  private TableDesc currTbl;
+  private boolean tblDataDone;
+
+  private transient RecordReader<WritableComparable, Writable> currRecReader;
+  private transient InputSplit[] inputSplits;
+  private transient InputFormat inputFormat;
+  private transient JobConf job;
+  private transient WritableComparable key;
+  private transient Writable value;
+  private transient Deserializer serde;
+  private transient Iterator<Path> iterPath;
+  private transient Iterator<PartitionDesc> iterPartDesc;
+  private transient Path currPath;
+  private transient StructObjectInspector rowObjectInspector;
+  private transient Object[] rowWithPart;
   public FetchOperator() {
   }
 
@@ -123,38 +143,24 @@ public class FetchOperator implements Serializable {
     this.tblDataDone = tblDataDone;
   }
 
-  private boolean isNativeTable;
-  private FetchWork work;
-  private int splitNum;
-  private PartitionDesc currPart;
-  private TableDesc currTbl;
-  private boolean tblDataDone;
+  public boolean isEmptyTable() {
+    return isEmptyTable;
+  }
 
-  private transient RecordReader<WritableComparable, Writable> currRecReader;
-  private transient InputSplit[] inputSplits;
-  private transient InputFormat inputFormat;
-  private transient JobConf job;
-  private transient WritableComparable key;
-  private transient Writable value;
-  private transient Deserializer serde;
-  private transient Iterator<Path> iterPath;
-  private transient Iterator<PartitionDesc> iterPartDesc;
-  private transient Path currPath;
-  private transient StructObjectInspector rowObjectInspector;
-  private transient Object[] rowWithPart;
+  public void setEmptyTable(boolean isEmptyTable) {
+    this.isEmptyTable = isEmptyTable;
+  }
 
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats =
-      new HashMap<Class, InputFormat<WritableComparable, Writable>>();
+  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
 
-  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
-      Class inputFormatClass, Configuration conf) throws IOException {
+  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass,
+      Configuration conf) throws IOException {
     if (!inputFormats.containsKey(inputFormatClass)) {
       try {
-        InputFormat<WritableComparable, Writable> newInstance =
-          (InputFormat<WritableComparable, Writable>) ReflectionUtils
+        InputFormat<WritableComparable, Writable> newInstance = (InputFormat<WritableComparable, Writable>) ReflectionUtils
             .newInstance(inputFormatClass, conf);
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
@@ -169,10 +175,7 @@ public class FetchOperator implements Serializable {
     List<String> partNames = new ArrayList<String>();
     List<String> partValues = new ArrayList<String>();
 
-    String pcols = currPart
-        .getTableDesc()
-        .getProperties()
-        .getProperty(
+    String pcols = currPart.getTableDesc().getProperties().getProperty(
         org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
     LinkedHashMap<String, String> partSpec = currPart.getPartSpec();
 
@@ -181,16 +184,14 @@ public class FetchOperator implements Serializable {
     for (String key : partKeys) {
       partNames.add(key);
       partValues.add(partSpec.get(key));
-      partObjectInspectors
-          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
     rowObjectInspector = (StructObjectInspector) serde.getObjectInspector();
 
     rowWithPart[1] = partValues;
-    rowObjectInspector = ObjectInspectorFactory
-        .getUnionStructObjectInspector(Arrays
+    rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
         .asList(new StructObjectInspector[] {rowObjectInspector, partObjectInspector}));
   }
 
@@ -226,8 +227,7 @@ public class FetchOperator implements Serializable {
         }
         return;
       } else {
-        iterPath = FetchWork.convertStringToPathArray(work.getPartDir())
-            .iterator();
+        iterPath = FetchWork.convertStringToPathArray(work.getPartDir()).iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
     }
@@ -235,15 +235,16 @@ public class FetchOperator implements Serializable {
     while (iterPath.hasNext()) {
       Path nxt = iterPath.next();
       PartitionDesc prt = null;
-      if(iterPartDesc != null)
+      if (iterPartDesc != null) {
         prt = iterPartDesc.next();
+      }
       FileSystem fs = nxt.getFileSystem(job);
       if (fs.exists(nxt)) {
         FileStatus[] fStats = listStatusUnderPath(fs, nxt);
         for (FileStatus fStat : fStats) {
           if (fStat.getLen() > 0) {
             currPath = nxt;
-            if(iterPartDesc != null) {
+            if (iterPartDesc != null) {
               currPart = prt;
             }
             return;
@@ -265,14 +266,13 @@ public class FetchOperator implements Serializable {
       // to the default file system - which may or may not be online during pure
       // metadata
       // operations
-      job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils
-          .escapeString(currPath.toString()));
+      job.set("mapred.input.dir", org.apache.hadoop.util.StringUtils.escapeString(currPath
+          .toString()));
 
       PartitionDesc tmp;
       if (currTbl == null) {
         tmp = currPart;
-      }
-      else {
+      } else {
         tmp = new PartitionDesc(currTbl, null);
       }
 
@@ -283,9 +283,9 @@ public class FetchOperator implements Serializable {
       serde = tmp.getDeserializerClass().newInstance();
       serde.initialize(job, tmp.getProperties());
 
-      if(LOG.isDebugEnabled()) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
-                  + serde.getObjectInspector().getTypeName());
+            + serde.getObjectInspector().getTypeName());
         LOG.debug("deserializer properties: " + tmp.getProperties());
       }
 
@@ -303,8 +303,7 @@ public class FetchOperator implements Serializable {
       return getRecordReader();
     }
 
-    currRecReader = inputFormat.getRecordReader(inputSplits[splitNum++], job,
-        Reporter.NULL);
+    currRecReader = inputFormat.getRecordReader(inputSplits[splitNum++], job, Reporter.NULL);
     key = currRecReader.createKey();
     value = currRecReader.createValue();
     return currRecReader;
@@ -363,17 +362,17 @@ public class FetchOperator implements Serializable {
   }
 
   /**
-   * used for bucket map join. there is a hack for getting partitionDesc.
-   * bucket map join right now only allow one partition present in bucket map join.
+   * used for bucket map join. there is a hack for getting partitionDesc. bucket map join right now
+   * only allow one partition present in bucket map join.
    */
-  public void setupContext (Iterator<Path> iterPath, Iterator<PartitionDesc> iterPartDesc) {
+  public void setupContext(Iterator<Path> iterPath, Iterator<PartitionDesc> iterPartDesc) {
     this.iterPath = iterPath;
     this.iterPartDesc = iterPartDesc;
-    if(iterPartDesc == null) {
+    if (iterPartDesc == null) {
       if (work.getTblDir() != null) {
         this.currTbl = work.getTblDesc();
       } else {
-        //hack, get the first.
+        // hack, get the first.
         List<PartitionDesc> listParts = work.getPartDesc();
         currPart = listParts.get(0);
       }
@@ -387,14 +386,19 @@ public class FetchOperator implements Serializable {
         Deserializer serde = tbl.getDeserializerClass().newInstance();
         serde.initialize(job, tbl.getProperties());
         return serde.getObjectInspector();
-      } else {
+      } else if (work.getPartDesc() != null) {
         List<PartitionDesc> listParts = work.getPartDesc();
+        if(listParts.size() == 0) {
+          return null;
+        }
         currPart = listParts.get(0);
         serde = currPart.getTableDesc().getDeserializerClass().newInstance();
         serde.initialize(job, currPart.getTableDesc().getProperties());
         setPrtnDesc();
         currPart = null;
         return rowObjectInspector;
+      } else {
+        return null;
       }
     } catch (Exception e) {
       throw new HiveException("Failed with exception " + e.getMessage()
@@ -403,21 +407,20 @@ public class FetchOperator implements Serializable {
   }
 
   /**
-   * Lists status for all files under a given path.  Whether or not
-   * this is recursive depends on the setting of
-   * job configuration parameter mapred.input.dir.recursive.
+   * Lists status for all files under a given path. Whether or not this is recursive depends on the
+   * setting of job configuration parameter mapred.input.dir.recursive.
    *
-   * @param fs file system
+   * @param fs
+   *          file system
    *
-   * @param p path in file system
+   * @param p
+   *          path in file system
    *
    * @return list of file status entries
    */
-  private FileStatus[] listStatusUnderPath(FileSystem fs, Path p)
-  throws IOException {
+  private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
     HiveConf hiveConf = new HiveConf(job, FetchOperator.class);
-    boolean recursive = 
-      hiveConf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
+    boolean recursive = hiveConf.getBoolVar(HiveConf.ConfVars.HADOOPMAPREDINPUTDIRRECURSIVE);
     if (!recursive) {
       return fs.listStatus(p);
     }

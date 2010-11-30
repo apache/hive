@@ -552,6 +552,10 @@ Trunk -  Unreleased
     HIVE-1792 Track the joins which are being converted to map-join
     automatically (Liyin Tang via namit)
 
+    HIVE-1804 Mapjoin will fail if there are no files associating with the join tables
+    (Liyin Tang via He Yongqiang)
+
+
   TESTS
 
     HIVE-1464. improve  test query performance

@@ -44,6 +44,9 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
+import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -234,7 +237,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     memoryMXBean = ManagementFactory.getMemoryMXBean();
     long startTime = System.currentTimeMillis();
     console.printInfo(Utilities.now()
-        + "\tStarting to luaunch local task to process map join;\tmaximum memory = "
+        + "\tStarting to launch local task to process map join;\tmaximum memory = "
         + memoryMXBean.getHeapMemoryUsage().getMax());
     fetchOperators = new HashMap<String, FetchOperator>();
     Map<FetchOperator, JobConf> fetchOpJobConfMap = new HashMap<FetchOperator, JobConf>();
@@ -284,6 +287,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       if (inputFileChangeSenstive) {
         fetchOp.clearFetchContext();
         setUpFetchOpContext(fetchOp, alias, bigTableBucket);
+      }
+
+      if (fetchOp.isEmptyTable()) {
+        //generate empty hashtable for empty table
+        this.generateDummyHashTable(alias, bigTableBucket);
+        continue;
       }
 
       // get the root operator
@@ -341,7 +350,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     // initilize all forward operator
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
       // get the forward op
-      Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(entry.getKey());
+      String alias = entry.getKey();
+      Operator<? extends Serializable> forwardOp = work.getAliasToWork().get(alias);
 
       // put the exe context into all the operators
       forwardOp.setExecContext(execContext);
@@ -353,11 +363,50 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         jobConf = job;
       }
       // initialize the forward operator
-      forwardOp.initialize(jobConf, new ObjectInspector[] {fetchOp.getOutputObjectInspector()});
-      l4j.info("fetchoperator for " + entry.getKey() + " initialized");
+      ObjectInspector objectInspector = fetchOp.getOutputObjectInspector();
+      if (objectInspector != null) {
+        forwardOp.initialize(jobConf, new ObjectInspector[] {objectInspector});
+        l4j.info("fetchoperator for " + entry.getKey() + " initialized");
+      } else {
+        fetchOp.setEmptyTable(true);
+      }
     }
   }
 
+  private void generateDummyHashTable(String alias, String bigBucketFileName) throws HiveException,IOException {
+    // find the (byte)tag for the map join(HashTableSinkOperator)
+    Operator<? extends Serializable> parentOp = work.getAliasToWork().get(alias);
+    Operator<? extends Serializable> childOp = parentOp.getChildOperators().get(0);
+    while ((childOp != null) && (!(childOp instanceof HashTableSinkOperator))) {
+      parentOp = childOp;
+      assert parentOp.getChildOperators().size() == 1;
+      childOp = parentOp.getChildOperators().get(0);
+    }
+    if (childOp == null) {
+      throw new HiveException(
+          "Cannot find HashTableSink op by tracing down the table scan operator tree");
+    }
+    byte tag = (byte) childOp.getParentOperators().indexOf(parentOp);
+
+    // generate empty hashtable for this (byte)tag
+    String tmpURI = this.getWork().getTmpFileURI();
+    HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable =
+      new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>();
+
+    if (bigBucketFileName == null || bigBucketFileName.length() == 0) {
+      bigBucketFileName = "-";
+    }
+    String tmpURIPath = Utilities.generatePath(tmpURI, tag, bigBucketFileName);
+    console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
+    Path path = new Path(tmpURIPath);
+    FileSystem fs = path.getFileSystem(job);
+    File file = new File(path.toUri().getPath());
+    fs.create(path);
+    long fileLength = hashTable.flushMemoryCacheToPersistent(file);
+    console.printInfo(Utilities.now() + "\tUpload 1 File to: " + tmpURIPath + " File size: "
+        + fileLength);
+    hashTable.close();
+  }
 
   private void setUpFetchOpContext(FetchOperator fetchOp, String alias, String currentInputFile)
       throws Exception {

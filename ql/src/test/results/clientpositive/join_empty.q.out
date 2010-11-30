@@ -1,0 +1,46 @@
+PREHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table srcpart_empty(key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_empty
+PREHOOK: query: create table src2_empty (key int, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src2_empty (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src2_empty
+PREHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-39_138_107997606390957326/-mr-10000
+POSTHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from srcpart_empty a join src b on a.key=b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-39_138_107997606390957326/-mr-10000
+PREHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from src2_empty a join src b on a.key=b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src2_empty
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-43_473_3587274534534962486/-mr-10000
+POSTHOOK: query: select /*+mapjoin(a)*/ a.key, b.value from src2_empty a join src b on a.key=b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src2_empty
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-43_473_3587274534534962486/-mr-10000
+PREHOOK: query: select a.key, b.value from srcpart_empty a join src b on a.key=b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-47_872_1531725911506590422/-mr-10000
+POSTHOOK: query: select a.key, b.value from srcpart_empty a join src b on a.key=b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-47_872_1531725911506590422/-mr-10000
+PREHOOK: query: select a.key, b.value from src2_empty a join src b on a.key=b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src2_empty
+PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-52_182_4671419724484282586/-mr-10000
+POSTHOOK: query: select a.key, b.value from src2_empty a join src b on a.key=b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src2_empty
+POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-22_17-44-52_182_4671419724484282586/-mr-10000

@@ -582,6 +582,7 @@ public final class GenMapRedUtils {
     if (aliasPartnDesc == null) {
       aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(parseCtx
           .getTopToTable().get(topOp)), null);
+
     }
 
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);

@@ -184,10 +184,6 @@ public class MapJoinProcessor implements Transform {
         pathToAliases.remove(path);
       }
 
-      if (pathSet.size() == 0) {
-        throw new SemanticException("No input path for alias " + alias);
-      }
-
       // create fetch work
       FetchWork fetchWork = null;
       List<String> partDir = new ArrayList<String>();

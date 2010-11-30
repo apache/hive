@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * ConditionalResolverSkewJoin.
@@ -131,9 +130,6 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
         long fileSize = 0;
         for (int i = 0; i < fstatus.length; i++) {
           fileSize += fstatus[i].getLen();
-        }
-        if (fileSize == 0) {
-          throw new HiveException("Input file size is 0");
         }
 
         // put into list and sorted set
