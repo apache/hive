@@ -49,7 +49,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1613,8 +1612,8 @@ public final class Utilities {
     return sdf.format(cal.getTime());
   }
 
-  public static String showTime(long time) {
-    SimpleDateFormat sdf = new SimpleDateFormat("ss");
-    return sdf.format(new Date(time));
+  public static double showTime(long time) {
+    double result = (double) time / (double)1000;
+    return result;
   }
 }

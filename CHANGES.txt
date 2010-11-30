@@ -555,6 +555,8 @@ Trunk -  Unreleased
     HIVE-1804 Mapjoin will fail if there are no files associating with the join tables
     (Liyin Tang via He Yongqiang)
 
+    HIVE-1811 Show the time the local task takes
+    (Liyin Tang via He Yongqiang)
 
   TESTS
 
