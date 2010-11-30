@@ -315,6 +315,9 @@ public class HiveConf extends Configuration {
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
+    
+    // Print column names in output
+    HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false);
     ;
 
 

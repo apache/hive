@@ -36,6 +36,12 @@
 </property>
 
 <property>
+  <name>hive.cli.print.header</name>
+  <value>false</value>
+  <description>Whether to print the names of the columns in query output.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>

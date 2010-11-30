@@ -280,6 +280,9 @@ Trunk -  Unreleased
     HIVE-1797 Compressed the hashtable dump file before put into distributed cache
     (Liyin Tang via He Yongqiang)
 
+    HIVE-138 Provide option to export a HEADER
+    (Paul Butler via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 
 /**
  * CliDriver.
@@ -144,6 +146,21 @@ public class CliDriver {
           }
 
           ArrayList<String> res = new ArrayList<String>();
+          
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)) {
+            // Print the column names
+            boolean first_col = true;
+            Schema sc = qp.getSchema();
+            for (FieldSchema fs : sc.getFieldSchemas()) {
+              if (!first_col) {
+                out.print('\t');
+              }
+              out.print(fs.getName());
+              first_col = false;
+            }
+            out.println();
+          }
+
           try {
             while (qp.getResults(res)) {
               for (String r : res) {
