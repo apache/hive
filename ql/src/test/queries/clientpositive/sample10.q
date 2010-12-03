@@ -5,6 +5,7 @@ set hive.enforce.bucketing=true;
 set hive.exec.reducers.max=4;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set hive.default.fileformat=RCFILE;
+set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.PreExecutePrinter,org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables,org.apache.hadoop.hive.ql.hooks.UpdateInputAccessTimeHook$PreExec;
 
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 

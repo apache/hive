@@ -737,6 +737,14 @@ public class Table implements Serializable {
     tTable.setCreateTime(createTime);
   }
 
+  public int getLastAccessTime() {
+    return tTable.getLastAccessTime();
+  }
+
+  public void setLastAccessTime(int lastAccessTime) {
+    tTable.setLastAccessTime(lastAccessTime);
+  }
+
   public boolean isNonNative() {
     return getProperty(
       org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)

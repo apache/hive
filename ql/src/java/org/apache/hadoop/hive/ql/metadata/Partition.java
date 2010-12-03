@@ -537,4 +537,11 @@ public class Partition implements Serializable {
     return getTable().getCompleteName() + "@" + getName();
   }
 
+  public int getLastAccessTime() {
+    return tPartition.getLastAccessTime();
+  }
+
+  public void setLastAccessTime(int lastAccessTime) {
+    tPartition.setLastAccessTime(lastAccessTime);
+  }
 }
