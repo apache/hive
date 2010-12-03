@@ -575,26 +575,14 @@ public class Driver implements CommandProcessor {
       // walk the list and acquire the locks - if any lock cant be acquired, release all locks,
       // sleep and retry
       LockObjectContainer notFound = new LockObjectContainer();
-      while (true) {
-        notFound.setLck(null);
-        List<HiveLock> hiveLocks = acquireLocks(lockObjects, notFound);
+      notFound.setLck(null);
+      List<HiveLock> hiveLocks = acquireLocks(lockObjects, notFound,
+          numRetries, sleepTime);
 
-        if (hiveLocks == null) {
-          if (tryNum == numRetries) {
-            console.printError("Lock for " + notFound.getLck().getObj().getName()
-                + " cannot be acquired in " + notFound.getLck().getMode());
-            throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
-          }
-          tryNum++;
-
-          try {
-            Thread.sleep(sleepTime);
-          } catch (InterruptedException e) {
-          }
-        } else {
-          ctx.setHiveLocks(hiveLocks);
-          break;
-        }
+      if (hiveLocks == null) {
+        throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
+      } else {
+        ctx.setHiveLocks(hiveLocks);
       }
       return (0);
     } catch (SemanticException e) {
@@ -611,8 +599,11 @@ public class Driver implements CommandProcessor {
    *          The list of objects to be locked Lock the objects specified in the list. The same
    *          object is not locked twice, and the list passed is sorted such that EXCLUSIVE locks
    *          occur before SHARED locks.
+   * @param sleepTime
+   * @param numRetries 
    **/
-  private List<HiveLock> acquireLocks(List<LockObject> lockObjects, LockObjectContainer notFound)
+  private List<HiveLock> acquireLocks(List<LockObject> lockObjects,
+      LockObjectContainer notFound, int numRetries, int sleepTime)
       throws SemanticException {
     // walk the list and acquire the locks - if any lock cant be acquired, release all locks, sleep
     // and retry
@@ -629,8 +620,9 @@ public class Driver implements CommandProcessor {
 
       HiveLock lock = null;
       try {
-        lock = ctx.getHiveLockMgr().lock(lockObject.getObj(), lockObject.getMode(), false);
+        lock = ctx.getHiveLockMgr().lock(lockObject.getObj(), lockObject.getMode(), false, numRetries, sleepTime);
       } catch (LockException e) {
+        console.printError("Error in acquireLocks: "+ e.getLocalizedMessage());
         lock = null;
       }
 

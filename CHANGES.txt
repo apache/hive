@@ -564,6 +564,9 @@ Trunk -  Unreleased
     HIVE-1811 Show the time the local task takes
     (Liyin Tang via He Yongqiang)
 
+    HIVE-1824 Create a new ZooKeeper instance when retrying lock
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

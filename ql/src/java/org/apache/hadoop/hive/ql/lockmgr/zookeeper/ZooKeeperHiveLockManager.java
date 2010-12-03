@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.zookeeper.KeeperException;
 
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -61,6 +62,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   // All the locks are created under this parent
   private String    parent;
+  
+  private int sessionTimeout;
+  private String quorumServers;
 
   public ZooKeeperHiveLockManager() {
   }
@@ -83,15 +87,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   public void setContext(HiveLockManagerCtx ctx) throws LockException {
     this.ctx = ctx;
     HiveConf conf = ctx.getConf();
-    int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
-    String quorumServers = ZooKeeperHiveLockManager.getQuorumServers(conf);
+    sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
+    quorumServers = ZooKeeperHiveLockManager.getQuorumServers(conf);
 
     try {
-      if (zooKeeper != null) {
-        zooKeeper.close();
-      }
-
-      zooKeeper = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
+      renewZookeeperInstance(sessionTimeout, quorumServers);
       parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
 
       try {
@@ -105,6 +105,15 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       LOG.error("Failed to create ZooKeeper object: " + e);
       throw new LockException(ErrorMsg.ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED.getMsg());
     }
+  }
+
+  private void renewZookeeperInstance(int sessionTimeout, String quorumServers)
+      throws InterruptedException, IOException {
+    if (zooKeeper != null) {
+      zooKeeper.close();
+    }
+
+    zooKeeper = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
   }
 
   /**
@@ -121,19 +130,54 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * @param  key          The object to be locked
    * @param  mode         The mode of the lock
    * @param  keepAlive    Whether the lock is to be persisted after the statement
+   * @param  numRetries   number of retries when the lock can not be acquired
+   * @param  sleepTime    sleep time between retries
+   * 
    * Acuire the lock. Return null if a conflicting lock is present.
    **/
-  public ZooKeeperHiveLock lock(HiveLockObject key, HiveLockMode mode, boolean keepAlive)
+  public ZooKeeperHiveLock lock(HiveLockObject key, HiveLockMode mode,
+      boolean keepAlive, int numRetries, int sleepTime)
     throws LockException {
     String name = getObjectName(key, mode);
-    String res;
+    String res = null;
 
     try {
-      if (keepAlive) {
-        res = zooKeeper.create(name, key.getData().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-      }
-      else {
-        res = zooKeeper.create(name, key.getData().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+      int tryNum = 0;
+      while (true) {
+        String msg = null;
+        try {
+          if (keepAlive) {
+            res = zooKeeper.create(name, key.getData().getBytes(),
+                Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+          } else {
+            res = zooKeeper.create(name, key.getData().getBytes(),
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+          }
+        } catch (Exception e) {
+          msg = e.getLocalizedMessage();
+        }
+
+        if (res != null) {
+          break;
+        }
+        
+        renewZookeeperInstance(sessionTimeout, quorumServers);
+        
+        if (tryNum == numRetries) {
+          console.printError("Lock for " + key.getName()
+              + " cannot be acquired in " + mode);
+          throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
+        }
+
+        tryNum++;
+        
+        console.printInfo("Lock for " + key.getName()
+            + " cannot be acquired in " + mode +", will retry again later..., more info: " + msg);
+
+        try {
+          Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+        }
       }
 
       int seqNo = getSequenceNumber(res, name);
@@ -258,6 +302,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       HiveLockObject obj   = getLockObject(conf, child, mode, data);
+      if (obj == null) {
+        continue;
+      }
       if ((key == null) ||
           (obj.getName().equals(key.getName()))) {
         HiveLock lck = (HiveLock)(new ZooKeeperHiveLock(child, obj, mode));
@@ -306,10 +353,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       int indx = path.lastIndexOf(mode.toString());
       String objName = path.substring(1, indx-1);
       String[] names = objName.split("/")[1].split("@");
+      
+      if (names.length < 2) {
+        return null;
+      }
 
       Table tab = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
                               names[1], false); // do not throw exception if table does not exist
-      assert (tab != null);
+      if (tab == null) {
+        return null;
+      }
 
       if (names.length == 2) {
         return new HiveLockObject(tab, data);
