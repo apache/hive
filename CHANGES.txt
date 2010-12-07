@@ -113,6 +113,9 @@ Trunk -  Unreleased
     HIVE-1819 maintain lastAccessTime in the metastore
     (namit via He Yongqiang)
 
+    HIVE-1827 Add a new local mode flag in Task
+    (Liyin Tang via He Yongqiang)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

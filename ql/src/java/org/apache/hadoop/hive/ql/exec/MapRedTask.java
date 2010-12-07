@@ -106,8 +106,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
           cloneConf();
           conf.setVar(HiveConf.ConfVars.HADOOPJT, "local");
           console.printInfo("Selecting local mode for task: " + getId());
+          this.setLocalMode(true);
         } else {
           console.printInfo("Cannot run job locally: " + reason);
+          this.setLocalMode(false);
         }
       }
 

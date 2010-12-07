@@ -61,6 +61,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
   protected int taskTag;
+  private boolean isLocalMode =false;
 
   public static final int NO_TAG = 0;
   public static final int COMMON_JOIN = 1;
@@ -462,5 +463,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setTaskTag(int taskTag) {
     this.taskTag = taskTag;
+  }
+
+  public boolean isLocalMode() {
+    return isLocalMode;
+  }
+
+  public void setLocalMode(boolean isLocalMode) {
+    this.isLocalMode = isLocalMode;
   }
 }
