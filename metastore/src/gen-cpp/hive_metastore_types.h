@@ -153,8 +153,8 @@ class Type {
 class Database {
  public:
 
-  static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
-  static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
+  static const char* ascii_fingerprint; // = "DD4B1A6F6F2E9C90B0A41B314EF1753F";
+  static const uint8_t binary_fingerprint[16]; // = {0xDD,0x4B,0x1A,0x6F,0x6F,0x2E,0x9C,0x90,0xB0,0xA4,0x1B,0x31,0x4E,0xF1,0x75,0x3F};
 
   Database() : name(""), description(""), locationUri("") {
   }
@@ -164,12 +164,14 @@ class Database {
   std::string name;
   std::string description;
   std::string locationUri;
+  std::map<std::string, std::string>  parameters;
 
   struct __isset {
-    __isset() : name(false), description(false), locationUri(false) {}
+    __isset() : name(false), description(false), locationUri(false), parameters(false) {}
     bool name;
     bool description;
     bool locationUri;
+    bool parameters;
   } __isset;
 
   bool operator == (const Database & rhs) const
@@ -179,6 +181,8 @@ class Database {
     if (!(description == rhs.description))
       return false;
     if (!(locationUri == rhs.locationUri))
+      return false;
+    if (!(parameters == rhs.parameters))
       return false;
     return true;
   }

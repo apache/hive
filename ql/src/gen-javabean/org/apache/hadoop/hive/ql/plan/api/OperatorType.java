@@ -6,10 +6,12 @@
 package org.apache.hadoop.hive.ql.plan.api;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collections;
 import org.apache.thrift.IntRangeSet;
+import java.util.Map;
+import java.util.HashMap;
 
 public class OperatorType {
   public static final int JOIN = 0;
@@ -28,28 +30,28 @@ public class OperatorType {
   public static final int UDTF = 13;
   public static final int LATERALVIEWJOIN = 14;
   public static final int LATERALVIEWFORWARD = 15;
-  public static final int HASHTABLEDUMMY = 16;
-  public static final int HASHTABLESINK = 17;
+  public static final int HASHTABLESINK = 16;
+  public static final int HASHTABLEDUMMY = 17;
 
   public static final IntRangeSet VALID_VALUES = new IntRangeSet(
-    JOIN,
-    MAPJOIN,
-    EXTRACT,
-    FILTER,
-    FORWARD,
-    GROUPBY,
-    LIMIT,
-    SCRIPT,
-    SELECT,
-    TABLESCAN,
-    FILESINK,
-    REDUCESINK,
-    UNION,
-    UDTF,
-    LATERALVIEWJOIN,
-    LATERALVIEWFORWARD,
-    HASHTABLEDUMMY,
-    HASHTABLESINK);
+    JOIN, 
+    MAPJOIN, 
+    EXTRACT, 
+    FILTER, 
+    FORWARD, 
+    GROUPBY, 
+    LIMIT, 
+    SCRIPT, 
+    SELECT, 
+    TABLESCAN, 
+    FILESINK, 
+    REDUCESINK, 
+    UNION, 
+    UDTF, 
+    LATERALVIEWJOIN, 
+    LATERALVIEWFORWARD, 
+    HASHTABLESINK, 
+    HASHTABLEDUMMY );
 
   public static final Map<Integer, String> VALUES_TO_NAMES = new HashMap<Integer, String>() {{
     put(JOIN, "JOIN");
@@ -68,7 +70,7 @@ public class OperatorType {
     put(UDTF, "UDTF");
     put(LATERALVIEWJOIN, "LATERALVIEWJOIN");
     put(LATERALVIEWFORWARD, "LATERALVIEWFORWARD");
-    put(HASHTABLEDUMMY, "HASHTABLEDUMMY");
     put(HASHTABLESINK, "HASHTABLESINK");
+    put(HASHTABLEDUMMY, "HASHTABLEDUMMY");
   }};
 }

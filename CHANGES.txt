@@ -573,6 +573,9 @@ Trunk -  Unreleased
     HIVE-1828 No need to get Table/Partition for show locks.
     (He Yongqiang via namit)
 
+    HIVE-1823 upgrade the database thrift interface to allow parameters key-value
+    pairs (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

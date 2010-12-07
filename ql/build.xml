@@ -57,7 +57,7 @@
 
   <target name="thriftif">
     <echo>Executing thrift (which needs to be in your path) on if/queryplan.thrift</echo>
-    <exec executable="thrift"  failonerror="true" dir=".">
+    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
       <arg line="${thrift.args} if/queryplan.thrift " />
     </exec>
   </target>

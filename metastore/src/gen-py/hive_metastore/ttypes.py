@@ -271,6 +271,7 @@ class Database:
    - name
    - description
    - locationUri
+   - parameters
   """
 
   thrift_spec = (
@@ -278,12 +279,14 @@ class Database:
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
     (3, TType.STRING, 'locationUri', None, None, ), # 3
+    (4, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 4
   )
 
-  def __init__(self, name=None, description=None, locationUri=None,):
+  def __init__(self, name=None, description=None, locationUri=None, parameters=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
+    self.parameters = parameters
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -309,6 +312,17 @@ class Database:
           self.locationUri = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.MAP:
+          self.parameters = {}
+          (_ktype8, _vtype9, _size7 ) = iprot.readMapBegin() 
+          for _i11 in xrange(_size7):
+            _key12 = iprot.readString();
+            _val13 = iprot.readString();
+            self.parameters[_key12] = _val13
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -330,6 +344,14 @@ class Database:
     if self.locationUri != None:
       oprot.writeFieldBegin('locationUri', TType.STRING, 3)
       oprot.writeString(self.locationUri)
+      oprot.writeFieldEnd()
+    if self.parameters != None:
+      oprot.writeFieldBegin('parameters', TType.MAP, 4)
+      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
+      for kiter14,viter15 in self.parameters.items():
+        oprot.writeString(kiter14)
+        oprot.writeString(viter15)
+      oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -387,11 +409,11 @@ class SerDeInfo:
       elif fid == 3:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype8, _vtype9, _size7 ) = iprot.readMapBegin() 
-          for _i11 in xrange(_size7):
-            _key12 = iprot.readString();
-            _val13 = iprot.readString();
-            self.parameters[_key12] = _val13
+          (_ktype17, _vtype18, _size16 ) = iprot.readMapBegin() 
+          for _i20 in xrange(_size16):
+            _key21 = iprot.readString();
+            _val22 = iprot.readString();
+            self.parameters[_key21] = _val22
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -416,9 +438,9 @@ class SerDeInfo:
     if self.parameters != None:
       oprot.writeFieldBegin('parameters', TType.MAP, 3)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter14,viter15 in self.parameters.items():
-        oprot.writeString(kiter14)
-        oprot.writeString(viter15)
+      for kiter23,viter24 in self.parameters.items():
+        oprot.writeString(kiter23)
+        oprot.writeString(viter24)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -556,11 +578,11 @@ class StorageDescriptor:
       if fid == 1:
         if ftype == TType.LIST:
           self.cols = []
-          (_etype19, _size16) = iprot.readListBegin()
-          for _i20 in xrange(_size16):
-            _elem21 = FieldSchema()
-            _elem21.read(iprot)
-            self.cols.append(_elem21)
+          (_etype28, _size25) = iprot.readListBegin()
+          for _i29 in xrange(_size25):
+            _elem30 = FieldSchema()
+            _elem30.read(iprot)
+            self.cols.append(_elem30)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -598,32 +620,32 @@ class StorageDescriptor:
       elif fid == 8:
         if ftype == TType.LIST:
           self.bucketCols = []
-          (_etype25, _size22) = iprot.readListBegin()
-          for _i26 in xrange(_size22):
-            _elem27 = iprot.readString();
-            self.bucketCols.append(_elem27)
+          (_etype34, _size31) = iprot.readListBegin()
+          for _i35 in xrange(_size31):
+            _elem36 = iprot.readString();
+            self.bucketCols.append(_elem36)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.LIST:
           self.sortCols = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = Order()
-            _elem33.read(iprot)
-            self.sortCols.append(_elem33)
+          (_etype40, _size37) = iprot.readListBegin()
+          for _i41 in xrange(_size37):
+            _elem42 = Order()
+            _elem42.read(iprot)
+            self.sortCols.append(_elem42)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 10:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype35, _vtype36, _size34 ) = iprot.readMapBegin() 
-          for _i38 in xrange(_size34):
-            _key39 = iprot.readString();
-            _val40 = iprot.readString();
-            self.parameters[_key39] = _val40
+          (_ktype44, _vtype45, _size43 ) = iprot.readMapBegin() 
+          for _i47 in xrange(_size43):
+            _key48 = iprot.readString();
+            _val49 = iprot.readString();
+            self.parameters[_key48] = _val49
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -640,8 +662,8 @@ class StorageDescriptor:
     if self.cols != None:
       oprot.writeFieldBegin('cols', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.cols))
-      for iter41 in self.cols:
-        iter41.write(oprot)
+      for iter50 in self.cols:
+        iter50.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.location != None:
@@ -671,23 +693,23 @@ class StorageDescriptor:
     if self.bucketCols != None:
       oprot.writeFieldBegin('bucketCols', TType.LIST, 8)
       oprot.writeListBegin(TType.STRING, len(self.bucketCols))
-      for iter42 in self.bucketCols:
-        oprot.writeString(iter42)
+      for iter51 in self.bucketCols:
+        oprot.writeString(iter51)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.sortCols != None:
       oprot.writeFieldBegin('sortCols', TType.LIST, 9)
       oprot.writeListBegin(TType.STRUCT, len(self.sortCols))
-      for iter43 in self.sortCols:
-        iter43.write(oprot)
+      for iter52 in self.sortCols:
+        iter52.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.parameters != None:
       oprot.writeFieldBegin('parameters', TType.MAP, 10)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter44,viter45 in self.parameters.items():
-        oprot.writeString(kiter44)
-        oprot.writeString(viter45)
+      for kiter53,viter54 in self.parameters.items():
+        oprot.writeString(kiter53)
+        oprot.writeString(viter54)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -799,22 +821,22 @@ class Table:
       elif fid == 8:
         if ftype == TType.LIST:
           self.partitionKeys = []
-          (_etype49, _size46) = iprot.readListBegin()
-          for _i50 in xrange(_size46):
-            _elem51 = FieldSchema()
-            _elem51.read(iprot)
-            self.partitionKeys.append(_elem51)
+          (_etype58, _size55) = iprot.readListBegin()
+          for _i59 in xrange(_size55):
+            _elem60 = FieldSchema()
+            _elem60.read(iprot)
+            self.partitionKeys.append(_elem60)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype53, _vtype54, _size52 ) = iprot.readMapBegin() 
-          for _i56 in xrange(_size52):
-            _key57 = iprot.readString();
-            _val58 = iprot.readString();
-            self.parameters[_key57] = _val58
+          (_ktype62, _vtype63, _size61 ) = iprot.readMapBegin() 
+          for _i65 in xrange(_size61):
+            _key66 = iprot.readString();
+            _val67 = iprot.readString();
+            self.parameters[_key66] = _val67
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -874,16 +896,16 @@ class Table:
     if self.partitionKeys != None:
       oprot.writeFieldBegin('partitionKeys', TType.LIST, 8)
       oprot.writeListBegin(TType.STRUCT, len(self.partitionKeys))
-      for iter59 in self.partitionKeys:
-        iter59.write(oprot)
+      for iter68 in self.partitionKeys:
+        iter68.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.parameters != None:
       oprot.writeFieldBegin('parameters', TType.MAP, 9)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter60,viter61 in self.parameters.items():
-        oprot.writeString(kiter60)
-        oprot.writeString(viter61)
+      for kiter69,viter70 in self.parameters.items():
+        oprot.writeString(kiter69)
+        oprot.writeString(viter70)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.viewOriginalText != None:
@@ -956,10 +978,10 @@ class Partition:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype65, _size62) = iprot.readListBegin()
-          for _i66 in xrange(_size62):
-            _elem67 = iprot.readString();
-            self.values.append(_elem67)
+          (_etype74, _size71) = iprot.readListBegin()
+          for _i75 in xrange(_size71):
+            _elem76 = iprot.readString();
+            self.values.append(_elem76)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -992,11 +1014,11 @@ class Partition:
       elif fid == 7:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype69, _vtype70, _size68 ) = iprot.readMapBegin() 
-          for _i72 in xrange(_size68):
-            _key73 = iprot.readString();
-            _val74 = iprot.readString();
-            self.parameters[_key73] = _val74
+          (_ktype78, _vtype79, _size77 ) = iprot.readMapBegin() 
+          for _i81 in xrange(_size77):
+            _key82 = iprot.readString();
+            _val83 = iprot.readString();
+            self.parameters[_key82] = _val83
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1013,8 +1035,8 @@ class Partition:
     if self.values != None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.values))
-      for iter75 in self.values:
-        oprot.writeString(iter75)
+      for iter84 in self.values:
+        oprot.writeString(iter84)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dbName != None:
@@ -1040,9 +1062,9 @@ class Partition:
     if self.parameters != None:
       oprot.writeFieldBegin('parameters', TType.MAP, 7)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter76,viter77 in self.parameters.items():
-        oprot.writeString(kiter76)
-        oprot.writeString(viter77)
+      for kiter85,viter86 in self.parameters.items():
+        oprot.writeString(kiter85)
+        oprot.writeString(viter86)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1153,11 +1175,11 @@ class Index:
       elif fid == 9:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype79, _vtype80, _size78 ) = iprot.readMapBegin() 
-          for _i82 in xrange(_size78):
-            _key83 = iprot.readString();
-            _val84 = iprot.readString();
-            self.parameters[_key83] = _val84
+          (_ktype88, _vtype89, _size87 ) = iprot.readMapBegin() 
+          for _i91 in xrange(_size87):
+            _key92 = iprot.readString();
+            _val93 = iprot.readString();
+            self.parameters[_key92] = _val93
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1211,9 +1233,9 @@ class Index:
     if self.parameters != None:
       oprot.writeFieldBegin('parameters', TType.MAP, 9)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter85,viter86 in self.parameters.items():
-        oprot.writeString(kiter85)
-        oprot.writeString(viter86)
+      for kiter94,viter95 in self.parameters.items():
+        oprot.writeString(kiter94)
+        oprot.writeString(viter95)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.deferredRebuild != None:
@@ -1263,22 +1285,22 @@ class Schema:
       if fid == 1:
         if ftype == TType.LIST:
           self.fieldSchemas = []
-          (_etype90, _size87) = iprot.readListBegin()
-          for _i91 in xrange(_size87):
-            _elem92 = FieldSchema()
-            _elem92.read(iprot)
-            self.fieldSchemas.append(_elem92)
+          (_etype99, _size96) = iprot.readListBegin()
+          for _i100 in xrange(_size96):
+            _elem101 = FieldSchema()
+            _elem101.read(iprot)
+            self.fieldSchemas.append(_elem101)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.MAP:
           self.properties = {}
-          (_ktype94, _vtype95, _size93 ) = iprot.readMapBegin() 
-          for _i97 in xrange(_size93):
-            _key98 = iprot.readString();
-            _val99 = iprot.readString();
-            self.properties[_key98] = _val99
+          (_ktype103, _vtype104, _size102 ) = iprot.readMapBegin() 
+          for _i106 in xrange(_size102):
+            _key107 = iprot.readString();
+            _val108 = iprot.readString();
+            self.properties[_key107] = _val108
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1295,16 +1317,16 @@ class Schema:
     if self.fieldSchemas != None:
       oprot.writeFieldBegin('fieldSchemas', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.fieldSchemas))
-      for iter100 in self.fieldSchemas:
-        iter100.write(oprot)
+      for iter109 in self.fieldSchemas:
+        iter109.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.properties != None:
       oprot.writeFieldBegin('properties', TType.MAP, 2)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
-      for kiter101,viter102 in self.properties.items():
-        oprot.writeString(kiter101)
-        oprot.writeString(viter102)
+      for kiter110,viter111 in self.properties.items():
+        oprot.writeString(kiter110)
+        oprot.writeString(viter111)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -360,7 +360,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (NoSuchObjectException e) {
         ms.createDatabase(
             new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-                wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString()));
+                wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
       }
       HMSHandler.createDefaultDB = true;
     }

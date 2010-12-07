@@ -43,7 +43,7 @@
 
   <target name="thriftif">
     <echo>Executing thrift (which needs to be in your path) on if/hive_service.thrift</echo>
-    <exec executable="thrift"  failonerror="true" dir=".">
+    <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
       <arg line="${thrift.args} if/hive_service.thrift " />
     </exec>
   </target>

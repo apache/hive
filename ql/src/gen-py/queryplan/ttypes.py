@@ -39,6 +39,8 @@ class OperatorType:
   UDTF = 13
   LATERALVIEWJOIN = 14
   LATERALVIEWFORWARD = 15
+  HASHTABLESINK = 16
+  HASHTABLEDUMMY = 17
 
 class TaskType:
   MAP = 0
@@ -55,6 +57,7 @@ class StageType:
   FUNC = 6
   MAPREDLOCAL = 7
   MOVE = 8
+  STATS = 9
 
 class Adjacency:
   """

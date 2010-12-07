@@ -17,9 +17,11 @@
  */
 
 /**
- * 
+ *
  */
 package org.apache.hadoop.hive.metastore.model;
+
+import java.util.Map;
 
 /**
  * Storage Class representing the Hive MDatabase in a rdbms
@@ -29,22 +31,25 @@ public class MDatabase {
   private String name;
   private String locationUri;
   private String description;
+  private Map<String, String> parameters;
 
   /**
    * Default construction to keep jpox/jdo happy
    */
   public MDatabase() {}
-  
+
   /**
    * To create a database object
    * @param name of the database
    * @param locationUri Location of the database in the warehouse
    * @param description Comment describing the database
    */
-  public MDatabase(String name, String locationUri, String description) {
+  public MDatabase(String name, String locationUri, String description,
+      Map<String, String> parameters) {
     this.name = name;
     this.locationUri = locationUri;
     this.description = description;
+    this.parameters = parameters;
   }
 
   /**
@@ -87,5 +92,19 @@ public class MDatabase {
    */
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  /**
+   * @return the parameters mapping.
+   */
+  public Map<String, String> getParameters() {
+    return parameters;
+  }
+
+  /**
+   * @param parameters the parameters mapping.
+   */
+  public void setParameters(Map<String, String> parameters) {
+    this.parameters = parameters;
   }
 }

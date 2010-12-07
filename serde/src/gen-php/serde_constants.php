@@ -66,6 +66,8 @@ $GLOBALS['serde_CONSTANTS']['MAP_TYPE_NAME'] = "map";
 
 $GLOBALS['serde_CONSTANTS']['STRUCT_TYPE_NAME'] = "struct";
 
+$GLOBALS['serde_CONSTANTS']['UNION_TYPE_NAME'] = "uniontype";
+
 $GLOBALS['serde_CONSTANTS']['LIST_COLUMNS'] = "columns";
 
 $GLOBALS['serde_CONSTANTS']['LIST_COLUMN_TYPES'] = "columns.types";

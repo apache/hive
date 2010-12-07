@@ -23,6 +23,7 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
   private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
   private static final TField DESCRIPTION_FIELD_DESC = new TField("description", TType.STRING, (short)2);
   private static final TField LOCATION_URI_FIELD_DESC = new TField("locationUri", TType.STRING, (short)3);
+  private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)4);
 
   private String name;
   public static final int NAME = 1;
@@ -30,6 +31,8 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
   public static final int DESCRIPTION = 2;
   private String locationUri;
   public static final int LOCATIONURI = 3;
+  private Map<String,String> parameters;
+  public static final int PARAMETERS = 4;
 
   private final Isset __isset = new Isset();
   private static final class Isset implements java.io.Serializable {
@@ -42,6 +45,10 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
         new FieldValueMetaData(TType.STRING)));
     put(LOCATIONURI, new FieldMetaData("locationUri", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
+    put(PARAMETERS, new FieldMetaData("parameters", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new FieldValueMetaData(TType.STRING))));
   }});
 
   static {
@@ -54,12 +61,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
   public Database(
     String name,
     String description,
-    String locationUri)
+    String locationUri,
+    Map<String,String> parameters)
   {
     this();
     this.name = name;
     this.description = description;
     this.locationUri = locationUri;
+    this.parameters = parameters;
   }
 
   /**
@@ -74,6 +83,21 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     }
     if (other.isSetLocationUri()) {
       this.locationUri = other.locationUri;
+    }
+    if (other.isSetParameters()) {
+      Map<String,String> __this__parameters = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.parameters.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__parameters_copy_key = other_element_key;
+
+        String __this__parameters_copy_value = other_element_value;
+
+        __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
+      }
+      this.parameters = __this__parameters;
     }
   }
 
@@ -133,6 +157,34 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     return this.locationUri != null;
   }
 
+  public int getParametersSize() {
+    return (this.parameters == null) ? 0 : this.parameters.size();
+  }
+
+  public void putToParameters(String key, String val) {
+    if (this.parameters == null) {
+      this.parameters = new HashMap<String,String>();
+    }
+    this.parameters.put(key, val);
+  }
+
+  public Map<String,String> getParameters() {
+    return this.parameters;
+  }
+
+  public void setParameters(Map<String,String> parameters) {
+    this.parameters = parameters;
+  }
+
+  public void unsetParameters() {
+    this.parameters = null;
+  }
+
+  // Returns true if field parameters is set (has been asigned a value) and false otherwise
+  public boolean isSetParameters() {
+    return this.parameters != null;
+  }
+
   public void setFieldValue(int fieldID, Object value) {
     switch (fieldID) {
     case NAME:
@@ -159,6 +211,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       }
       break;
 
+    case PARAMETERS:
+      if (value == null) {
+        unsetParameters();
+      } else {
+        setParameters((Map<String,String>)value);
+      }
+      break;
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -175,6 +235,9 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     case LOCATIONURI:
       return getLocationUri();
 
+    case PARAMETERS:
+      return getParameters();
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -189,6 +252,8 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       return isSetDescription();
     case LOCATIONURI:
       return isSetLocationUri();
+    case PARAMETERS:
+      return isSetParameters();
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -234,6 +299,15 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
         return false;
     }
 
+    boolean this_present_parameters = true && this.isSetParameters();
+    boolean that_present_parameters = true && that.isSetParameters();
+    if (this_present_parameters || that_present_parameters) {
+      if (!(this_present_parameters && that_present_parameters))
+        return false;
+      if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
     return true;
   }
 
@@ -274,6 +348,25 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case PARAMETERS:
+          if (field.type == TType.MAP) {
+            {
+              TMap _map4 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map4.size);
+              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
+              {
+                String _key6;
+                String _val7;
+                _key6 = iprot.readString();
+                _val7 = iprot.readString();
+                this.parameters.put(_key6, _val7);
+              }
+              iprot.readMapEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -302,6 +395,18 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
     if (this.locationUri != null) {
       oprot.writeFieldBegin(LOCATION_URI_FIELD_DESC);
       oprot.writeString(this.locationUri);
+      oprot.writeFieldEnd();
+    }
+    if (this.parameters != null) {
+      oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
+      {
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
+        for (Map.Entry<String, String> _iter8 : this.parameters.entrySet())        {
+          oprot.writeString(_iter8.getKey());
+          oprot.writeString(_iter8.getValue());
+        }
+        oprot.writeMapEnd();
+      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -334,6 +439,14 @@ public class Database implements TBase, java.io.Serializable, Cloneable {
       sb.append("null");
     } else {
       sb.append(this.locationUri);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("parameters:");
+    if (this.parameters == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.parameters);
     }
     first = false;
     sb.append(")");

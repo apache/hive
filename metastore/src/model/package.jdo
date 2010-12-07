@@ -24,6 +24,18 @@
       <field name="locationUri">
         <column name="DB_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
+      <field name="parameters" table="DATABASE_PARAMS">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <join>
+          <column name="DB_ID"/>
+        </join>
+        <key>
+           <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
+        </key>
+        <value>
+           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+        </value>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">

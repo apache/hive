@@ -47,7 +47,7 @@
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
-  <property name="test.timeout" value="13200000"/>
+  <property name="test.timeout" value="18200000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
   <property name="minimr.query.files" value="input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q"/>
@@ -190,7 +190,7 @@
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="docs"/>
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
                   pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="docs"/>
-    <ivy:cachepath pathid="docs-classpath" conf="docs"/> 		
+    <ivy:cachepath pathid="docs-classpath" conf="docs"/>
   </target>
 
   <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
@@ -414,7 +414,7 @@
       <jvmarg value="-Xdebug"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"/> -->
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
-      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf,file://${build.dir.hive}/dist/lib/derby.jar"/> 
+      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf,file://${build.dir.hive}/dist/lib/derby.jar"/>
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>

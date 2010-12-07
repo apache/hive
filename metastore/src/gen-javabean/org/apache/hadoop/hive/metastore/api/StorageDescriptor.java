@@ -688,14 +688,14 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
         case COLS:
           if (field.type == TType.LIST) {
             {
-              TList _list9 = iprot.readListBegin();
-              this.cols = new ArrayList<FieldSchema>(_list9.size);
-              for (int _i10 = 0; _i10 < _list9.size; ++_i10)
+              TList _list14 = iprot.readListBegin();
+              this.cols = new ArrayList<FieldSchema>(_list14.size);
+              for (int _i15 = 0; _i15 < _list14.size; ++_i15)
               {
-                FieldSchema _elem11;
-                _elem11 = new FieldSchema();
-                _elem11.read(iprot);
-                this.cols.add(_elem11);
+                FieldSchema _elem16;
+                _elem16 = new FieldSchema();
+                _elem16.read(iprot);
+                this.cols.add(_elem16);
               }
               iprot.readListEnd();
             }
@@ -751,13 +751,13 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
         case BUCKETCOLS:
           if (field.type == TType.LIST) {
             {
-              TList _list12 = iprot.readListBegin();
-              this.bucketCols = new ArrayList<String>(_list12.size);
-              for (int _i13 = 0; _i13 < _list12.size; ++_i13)
+              TList _list17 = iprot.readListBegin();
+              this.bucketCols = new ArrayList<String>(_list17.size);
+              for (int _i18 = 0; _i18 < _list17.size; ++_i18)
               {
-                String _elem14;
-                _elem14 = iprot.readString();
-                this.bucketCols.add(_elem14);
+                String _elem19;
+                _elem19 = iprot.readString();
+                this.bucketCols.add(_elem19);
               }
               iprot.readListEnd();
             }
@@ -768,14 +768,14 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
         case SORTCOLS:
           if (field.type == TType.LIST) {
             {
-              TList _list15 = iprot.readListBegin();
-              this.sortCols = new ArrayList<Order>(_list15.size);
-              for (int _i16 = 0; _i16 < _list15.size; ++_i16)
+              TList _list20 = iprot.readListBegin();
+              this.sortCols = new ArrayList<Order>(_list20.size);
+              for (int _i21 = 0; _i21 < _list20.size; ++_i21)
               {
-                Order _elem17;
-                _elem17 = new Order();
-                _elem17.read(iprot);
-                this.sortCols.add(_elem17);
+                Order _elem22;
+                _elem22 = new Order();
+                _elem22.read(iprot);
+                this.sortCols.add(_elem22);
               }
               iprot.readListEnd();
             }
@@ -786,15 +786,15 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
         case PARAMETERS:
           if (field.type == TType.MAP) {
             {
-              TMap _map18 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map18.size);
-              for (int _i19 = 0; _i19 < _map18.size; ++_i19)
+              TMap _map23 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map23.size);
+              for (int _i24 = 0; _i24 < _map23.size; ++_i24)
               {
-                String _key20;
-                String _val21;
-                _key20 = iprot.readString();
-                _val21 = iprot.readString();
-                this.parameters.put(_key20, _val21);
+                String _key25;
+                String _val26;
+                _key25 = iprot.readString();
+                _val26 = iprot.readString();
+                this.parameters.put(_key25, _val26);
               }
               iprot.readMapEnd();
             }
@@ -821,8 +821,8 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
       oprot.writeFieldBegin(COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.cols.size()));
-        for (FieldSchema _iter22 : this.cols)        {
-          _iter22.write(oprot);
+        for (FieldSchema _iter27 : this.cols)        {
+          _iter27.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -858,8 +858,8 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
       oprot.writeFieldBegin(BUCKET_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.bucketCols.size()));
-        for (String _iter23 : this.bucketCols)        {
-          oprot.writeString(_iter23);
+        for (String _iter28 : this.bucketCols)        {
+          oprot.writeString(_iter28);
         }
         oprot.writeListEnd();
       }
@@ -869,8 +869,8 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
       oprot.writeFieldBegin(SORT_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.sortCols.size()));
-        for (Order _iter24 : this.sortCols)        {
-          _iter24.write(oprot);
+        for (Order _iter29 : this.sortCols)        {
+          _iter29.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -880,9 +880,9 @@ public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter25 : this.parameters.entrySet())        {
-          oprot.writeString(_iter25.getKey());
-          oprot.writeString(_iter25.getValue());
+        for (Map.Entry<String, String> _iter30 : this.parameters.entrySet())        {
+          oprot.writeString(_iter30.getKey());
+          oprot.writeString(_iter30.getValue());
         }
         oprot.writeMapEnd();
       }

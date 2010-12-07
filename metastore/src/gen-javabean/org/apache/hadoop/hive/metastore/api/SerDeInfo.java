@@ -295,15 +295,15 @@ public class SerDeInfo implements TBase, java.io.Serializable, Cloneable {
         case PARAMETERS:
           if (field.type == TType.MAP) {
             {
-              TMap _map4 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map4.size);
-              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
+              TMap _map9 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map9.size);
+              for (int _i10 = 0; _i10 < _map9.size; ++_i10)
               {
-                String _key6;
-                String _val7;
-                _key6 = iprot.readString();
-                _val7 = iprot.readString();
-                this.parameters.put(_key6, _val7);
+                String _key11;
+                String _val12;
+                _key11 = iprot.readString();
+                _val12 = iprot.readString();
+                this.parameters.put(_key11, _val12);
               }
               iprot.readMapEnd();
             }
@@ -340,9 +340,9 @@ public class SerDeInfo implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter8 : this.parameters.entrySet())        {
-          oprot.writeString(_iter8.getKey());
-          oprot.writeString(_iter8.getValue());
+        for (Map.Entry<String, String> _iter13 : this.parameters.entrySet())        {
+          oprot.writeString(_iter13.getKey());
+          oprot.writeString(_iter13.getValue());
         }
         oprot.writeMapEnd();
       }

@@ -689,15 +689,15 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
         case PARAMETERS:
           if (field.type == TType.MAP) {
             {
-              TMap _map44 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map44.size);
-              for (int _i45 = 0; _i45 < _map44.size; ++_i45)
+              TMap _map49 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map49.size);
+              for (int _i50 = 0; _i50 < _map49.size; ++_i50)
               {
-                String _key46;
-                String _val47;
-                _key46 = iprot.readString();
-                _val47 = iprot.readString();
-                this.parameters.put(_key46, _val47);
+                String _key51;
+                String _val52;
+                _key51 = iprot.readString();
+                _val52 = iprot.readString();
+                this.parameters.put(_key51, _val52);
               }
               iprot.readMapEnd();
             }
@@ -768,9 +768,9 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter48 : this.parameters.entrySet())        {
-          oprot.writeString(_iter48.getKey());
-          oprot.writeString(_iter48.getValue());
+        for (Map.Entry<String, String> _iter53 : this.parameters.entrySet())        {
+          oprot.writeString(_iter53.getKey());
+          oprot.writeString(_iter53.getValue());
         }
         oprot.writeMapEnd();
       }

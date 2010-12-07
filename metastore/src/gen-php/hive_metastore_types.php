@@ -378,6 +378,7 @@ class metastore_Database {
   public $name = null;
   public $description = null;
   public $locationUri = null;
+  public $parameters = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -394,6 +395,18 @@ class metastore_Database {
           'var' => 'locationUri',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'parameters',
+          'type' => TType::MAP,
+          'ktype' => TType::STRING,
+          'vtype' => TType::STRING,
+          'key' => array(
+            'type' => TType::STRING,
+          ),
+          'val' => array(
+            'type' => TType::STRING,
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -405,6 +418,9 @@ class metastore_Database {
       }
       if (isset($vals['locationUri'])) {
         $this->locationUri = $vals['locationUri'];
+      }
+      if (isset($vals['parameters'])) {
+        $this->parameters = $vals['parameters'];
       }
     }
   }
@@ -449,6 +465,26 @@ class metastore_Database {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::MAP) {
+            $this->parameters = array();
+            $_size7 = 0;
+            $_ktype8 = 0;
+            $_vtype9 = 0;
+            $xfer += $input->readMapBegin($_ktype8, $_vtype9, $_size7);
+            for ($_i11 = 0; $_i11 < $_size7; ++$_i11)
+            {
+              $key12 = '';
+              $val13 = '';
+              $xfer += $input->readString($key12);
+              $xfer += $input->readString($val13);
+              $this->parameters[$key12] = $val13;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -475,6 +511,24 @@ class metastore_Database {
     if ($this->locationUri !== null) {
       $xfer += $output->writeFieldBegin('locationUri', TType::STRING, 3);
       $xfer += $output->writeString($this->locationUri);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('parameters', TType::MAP, 4);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
+        {
+          foreach ($this->parameters as $kiter14 => $viter15)
+          {
+            $xfer += $output->writeString($kiter14);
+            $xfer += $output->writeString($viter15);
+          }
+        }
+        $output->writeMapEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -565,17 +619,17 @@ class metastore_SerDeInfo {
         case 3:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
-            $_size7 = 0;
-            $_ktype8 = 0;
-            $_vtype9 = 0;
-            $xfer += $input->readMapBegin($_ktype8, $_vtype9, $_size7);
-            for ($_i11 = 0; $_i11 < $_size7; ++$_i11)
+            $_size16 = 0;
+            $_ktype17 = 0;
+            $_vtype18 = 0;
+            $xfer += $input->readMapBegin($_ktype17, $_vtype18, $_size16);
+            for ($_i20 = 0; $_i20 < $_size16; ++$_i20)
             {
-              $key12 = '';
-              $val13 = '';
-              $xfer += $input->readString($key12);
-              $xfer += $input->readString($val13);
-              $this->parameters[$key12] = $val13;
+              $key21 = '';
+              $val22 = '';
+              $xfer += $input->readString($key21);
+              $xfer += $input->readString($val22);
+              $this->parameters[$key21] = $val22;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -613,10 +667,10 @@ class metastore_SerDeInfo {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->parameters as $kiter14 => $viter15)
+          foreach ($this->parameters as $kiter23 => $viter24)
           {
-            $xfer += $output->writeString($kiter14);
-            $xfer += $output->writeString($viter15);
+            $xfer += $output->writeString($kiter23);
+            $xfer += $output->writeString($viter24);
           }
         }
         $output->writeMapEnd();
@@ -860,15 +914,15 @@ class metastore_StorageDescriptor {
         case 1:
           if ($ftype == TType::LST) {
             $this->cols = array();
-            $_size16 = 0;
-            $_etype19 = 0;
-            $xfer += $input->readListBegin($_etype19, $_size16);
-            for ($_i20 = 0; $_i20 < $_size16; ++$_i20)
+            $_size25 = 0;
+            $_etype28 = 0;
+            $xfer += $input->readListBegin($_etype28, $_size25);
+            for ($_i29 = 0; $_i29 < $_size25; ++$_i29)
             {
-              $elem21 = null;
-              $elem21 = new metastore_FieldSchema();
-              $xfer += $elem21->read($input);
-              $this->cols []= $elem21;
+              $elem30 = null;
+              $elem30 = new metastore_FieldSchema();
+              $xfer += $elem30->read($input);
+              $this->cols []= $elem30;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -921,14 +975,14 @@ class metastore_StorageDescriptor {
         case 8:
           if ($ftype == TType::LST) {
             $this->bucketCols = array();
-            $_size22 = 0;
-            $_etype25 = 0;
-            $xfer += $input->readListBegin($_etype25, $_size22);
-            for ($_i26 = 0; $_i26 < $_size22; ++$_i26)
+            $_size31 = 0;
+            $_etype34 = 0;
+            $xfer += $input->readListBegin($_etype34, $_size31);
+            for ($_i35 = 0; $_i35 < $_size31; ++$_i35)
             {
-              $elem27 = null;
-              $xfer += $input->readString($elem27);
-              $this->bucketCols []= $elem27;
+              $elem36 = null;
+              $xfer += $input->readString($elem36);
+              $this->bucketCols []= $elem36;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -938,15 +992,15 @@ class metastore_StorageDescriptor {
         case 9:
           if ($ftype == TType::LST) {
             $this->sortCols = array();
-            $_size28 = 0;
-            $_etype31 = 0;
-            $xfer += $input->readListBegin($_etype31, $_size28);
-            for ($_i32 = 0; $_i32 < $_size28; ++$_i32)
+            $_size37 = 0;
+            $_etype40 = 0;
+            $xfer += $input->readListBegin($_etype40, $_size37);
+            for ($_i41 = 0; $_i41 < $_size37; ++$_i41)
             {
-              $elem33 = null;
-              $elem33 = new metastore_Order();
-              $xfer += $elem33->read($input);
-              $this->sortCols []= $elem33;
+              $elem42 = null;
+              $elem42 = new metastore_Order();
+              $xfer += $elem42->read($input);
+              $this->sortCols []= $elem42;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -956,17 +1010,17 @@ class metastore_StorageDescriptor {
         case 10:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
-            $_size34 = 0;
-            $_ktype35 = 0;
-            $_vtype36 = 0;
-            $xfer += $input->readMapBegin($_ktype35, $_vtype36, $_size34);
-            for ($_i38 = 0; $_i38 < $_size34; ++$_i38)
+            $_size43 = 0;
+            $_ktype44 = 0;
+            $_vtype45 = 0;
+            $xfer += $input->readMapBegin($_ktype44, $_vtype45, $_size43);
+            for ($_i47 = 0; $_i47 < $_size43; ++$_i47)
             {
-              $key39 = '';
-              $val40 = '';
-              $xfer += $input->readString($key39);
-              $xfer += $input->readString($val40);
-              $this->parameters[$key39] = $val40;
+              $key48 = '';
+              $val49 = '';
+              $xfer += $input->readString($key48);
+              $xfer += $input->readString($val49);
+              $this->parameters[$key48] = $val49;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -994,9 +1048,9 @@ class metastore_StorageDescriptor {
       {
         $output->writeListBegin(TType::STRUCT, count($this->cols));
         {
-          foreach ($this->cols as $iter41)
+          foreach ($this->cols as $iter50)
           {
-            $xfer += $iter41->write($output);
+            $xfer += $iter50->write($output);
           }
         }
         $output->writeListEnd();
@@ -1044,9 +1098,9 @@ class metastore_StorageDescriptor {
       {
         $output->writeListBegin(TType::STRING, count($this->bucketCols));
         {
-          foreach ($this->bucketCols as $iter42)
+          foreach ($this->bucketCols as $iter51)
           {
-            $xfer += $output->writeString($iter42);
+            $xfer += $output->writeString($iter51);
           }
         }
         $output->writeListEnd();
@@ -1061,9 +1115,9 @@ class metastore_StorageDescriptor {
       {
         $output->writeListBegin(TType::STRUCT, count($this->sortCols));
         {
-          foreach ($this->sortCols as $iter43)
+          foreach ($this->sortCols as $iter52)
           {
-            $xfer += $iter43->write($output);
+            $xfer += $iter52->write($output);
           }
         }
         $output->writeListEnd();
@@ -1078,10 +1132,10 @@ class metastore_StorageDescriptor {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->parameters as $kiter44 => $viter45)
+          foreach ($this->parameters as $kiter53 => $viter54)
           {
-            $xfer += $output->writeString($kiter44);
-            $xfer += $output->writeString($viter45);
+            $xfer += $output->writeString($kiter53);
+            $xfer += $output->writeString($viter54);
           }
         }
         $output->writeMapEnd();
@@ -1290,15 +1344,15 @@ class metastore_Table {
         case 8:
           if ($ftype == TType::LST) {
             $this->partitionKeys = array();
-            $_size46 = 0;
-            $_etype49 = 0;
-            $xfer += $input->readListBegin($_etype49, $_size46);
-            for ($_i50 = 0; $_i50 < $_size46; ++$_i50)
+            $_size55 = 0;
+            $_etype58 = 0;
+            $xfer += $input->readListBegin($_etype58, $_size55);
+            for ($_i59 = 0; $_i59 < $_size55; ++$_i59)
             {
-              $elem51 = null;
-              $elem51 = new metastore_FieldSchema();
-              $xfer += $elem51->read($input);
-              $this->partitionKeys []= $elem51;
+              $elem60 = null;
+              $elem60 = new metastore_FieldSchema();
+              $xfer += $elem60->read($input);
+              $this->partitionKeys []= $elem60;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -1308,17 +1362,17 @@ class metastore_Table {
         case 9:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
-            $_size52 = 0;
-            $_ktype53 = 0;
-            $_vtype54 = 0;
-            $xfer += $input->readMapBegin($_ktype53, $_vtype54, $_size52);
-            for ($_i56 = 0; $_i56 < $_size52; ++$_i56)
+            $_size61 = 0;
+            $_ktype62 = 0;
+            $_vtype63 = 0;
+            $xfer += $input->readMapBegin($_ktype62, $_vtype63, $_size61);
+            for ($_i65 = 0; $_i65 < $_size61; ++$_i65)
             {
-              $key57 = '';
-              $val58 = '';
-              $xfer += $input->readString($key57);
-              $xfer += $input->readString($val58);
-              $this->parameters[$key57] = $val58;
+              $key66 = '';
+              $val67 = '';
+              $xfer += $input->readString($key66);
+              $xfer += $input->readString($val67);
+              $this->parameters[$key66] = $val67;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -1405,9 +1459,9 @@ class metastore_Table {
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
         {
-          foreach ($this->partitionKeys as $iter59)
+          foreach ($this->partitionKeys as $iter68)
           {
-            $xfer += $iter59->write($output);
+            $xfer += $iter68->write($output);
           }
         }
         $output->writeListEnd();
@@ -1422,10 +1476,10 @@ class metastore_Table {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->parameters as $kiter60 => $viter61)
+          foreach ($this->parameters as $kiter69 => $viter70)
           {
-            $xfer += $output->writeString($kiter60);
-            $xfer += $output->writeString($viter61);
+            $xfer += $output->writeString($kiter69);
+            $xfer += $output->writeString($viter70);
           }
         }
         $output->writeMapEnd();
@@ -1558,14 +1612,14 @@ class metastore_Partition {
         case 1:
           if ($ftype == TType::LST) {
             $this->values = array();
-            $_size62 = 0;
-            $_etype65 = 0;
-            $xfer += $input->readListBegin($_etype65, $_size62);
-            for ($_i66 = 0; $_i66 < $_size62; ++$_i66)
+            $_size71 = 0;
+            $_etype74 = 0;
+            $xfer += $input->readListBegin($_etype74, $_size71);
+            for ($_i75 = 0; $_i75 < $_size71; ++$_i75)
             {
-              $elem67 = null;
-              $xfer += $input->readString($elem67);
-              $this->values []= $elem67;
+              $elem76 = null;
+              $xfer += $input->readString($elem76);
+              $this->values []= $elem76;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -1611,17 +1665,17 @@ class metastore_Partition {
         case 7:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
-            $_size68 = 0;
-            $_ktype69 = 0;
-            $_vtype70 = 0;
-            $xfer += $input->readMapBegin($_ktype69, $_vtype70, $_size68);
-            for ($_i72 = 0; $_i72 < $_size68; ++$_i72)
+            $_size77 = 0;
+            $_ktype78 = 0;
+            $_vtype79 = 0;
+            $xfer += $input->readMapBegin($_ktype78, $_vtype79, $_size77);
+            for ($_i81 = 0; $_i81 < $_size77; ++$_i81)
             {
-              $key73 = '';
-              $val74 = '';
-              $xfer += $input->readString($key73);
-              $xfer += $input->readString($val74);
-              $this->parameters[$key73] = $val74;
+              $key82 = '';
+              $val83 = '';
+              $xfer += $input->readString($key82);
+              $xfer += $input->readString($val83);
+              $this->parameters[$key82] = $val83;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -1649,9 +1703,9 @@ class metastore_Partition {
       {
         $output->writeListBegin(TType::STRING, count($this->values));
         {
-          foreach ($this->values as $iter75)
+          foreach ($this->values as $iter84)
           {
-            $xfer += $output->writeString($iter75);
+            $xfer += $output->writeString($iter84);
           }
         }
         $output->writeListEnd();
@@ -1694,10 +1748,10 @@ class metastore_Partition {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->parameters as $kiter76 => $viter77)
+          foreach ($this->parameters as $kiter85 => $viter86)
           {
-            $xfer += $output->writeString($kiter76);
-            $xfer += $output->writeString($viter77);
+            $xfer += $output->writeString($kiter85);
+            $xfer += $output->writeString($viter86);
           }
         }
         $output->writeMapEnd();
@@ -1892,17 +1946,17 @@ class metastore_Index {
         case 9:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
-            $_size78 = 0;
-            $_ktype79 = 0;
-            $_vtype80 = 0;
-            $xfer += $input->readMapBegin($_ktype79, $_vtype80, $_size78);
-            for ($_i82 = 0; $_i82 < $_size78; ++$_i82)
+            $_size87 = 0;
+            $_ktype88 = 0;
+            $_vtype89 = 0;
+            $xfer += $input->readMapBegin($_ktype88, $_vtype89, $_size87);
+            for ($_i91 = 0; $_i91 < $_size87; ++$_i91)
             {
-              $key83 = '';
-              $val84 = '';
-              $xfer += $input->readString($key83);
-              $xfer += $input->readString($val84);
-              $this->parameters[$key83] = $val84;
+              $key92 = '';
+              $val93 = '';
+              $xfer += $input->readString($key92);
+              $xfer += $input->readString($val93);
+              $this->parameters[$key92] = $val93;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -1980,10 +2034,10 @@ class metastore_Index {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
-          foreach ($this->parameters as $kiter85 => $viter86)
+          foreach ($this->parameters as $kiter94 => $viter95)
           {
-            $xfer += $output->writeString($kiter85);
-            $xfer += $output->writeString($viter86);
+            $xfer += $output->writeString($kiter94);
+            $xfer += $output->writeString($viter95);
           }
         }
         $output->writeMapEnd();
@@ -2066,15 +2120,15 @@ class metastore_Schema {
         case 1:
           if ($ftype == TType::LST) {
             $this->fieldSchemas = array();
-            $_size87 = 0;
-            $_etype90 = 0;
-            $xfer += $input->readListBegin($_etype90, $_size87);
-            for ($_i91 = 0; $_i91 < $_size87; ++$_i91)
+            $_size96 = 0;
+            $_etype99 = 0;
+            $xfer += $input->readListBegin($_etype99, $_size96);
+            for ($_i100 = 0; $_i100 < $_size96; ++$_i100)
             {
-              $elem92 = null;
-              $elem92 = new metastore_FieldSchema();
-              $xfer += $elem92->read($input);
-              $this->fieldSchemas []= $elem92;
+              $elem101 = null;
+              $elem101 = new metastore_FieldSchema();
+              $xfer += $elem101->read($input);
+              $this->fieldSchemas []= $elem101;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -2084,17 +2138,17 @@ class metastore_Schema {
         case 2:
           if ($ftype == TType::MAP) {
             $this->properties = array();
-            $_size93 = 0;
-            $_ktype94 = 0;
-            $_vtype95 = 0;
-            $xfer += $input->readMapBegin($_ktype94, $_vtype95, $_size93);
-            for ($_i97 = 0; $_i97 < $_size93; ++$_i97)
+            $_size102 = 0;
+            $_ktype103 = 0;
+            $_vtype104 = 0;
+            $xfer += $input->readMapBegin($_ktype103, $_vtype104, $_size102);
+            for ($_i106 = 0; $_i106 < $_size102; ++$_i106)
             {
-              $key98 = '';
-              $val99 = '';
-              $xfer += $input->readString($key98);
-              $xfer += $input->readString($val99);
-              $this->properties[$key98] = $val99;
+              $key107 = '';
+              $val108 = '';
+              $xfer += $input->readString($key107);
+              $xfer += $input->readString($val108);
+              $this->properties[$key107] = $val108;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -2122,9 +2176,9 @@ class metastore_Schema {
       {
         $output->writeListBegin(TType::STRUCT, count($this->fieldSchemas));
         {
-          foreach ($this->fieldSchemas as $iter100)
+          foreach ($this->fieldSchemas as $iter109)
           {
-            $xfer += $iter100->write($output);
+            $xfer += $iter109->write($output);
           }
         }
         $output->writeListEnd();
@@ -2139,10 +2193,10 @@ class metastore_Schema {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
-          foreach ($this->properties as $kiter101 => $viter102)
+          foreach ($this->properties as $kiter110 => $viter111)
           {
-            $xfer += $output->writeString($kiter101);
-            $xfer += $output->writeString($viter102);
+            $xfer += $output->writeString($kiter110);
+            $xfer += $output->writeString($viter111);
           }
         }
         $output->writeMapEnd();

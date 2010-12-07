@@ -801,14 +801,14 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         case PARTITIONKEYS:
           if (field.type == TType.LIST) {
             {
-              TList _list26 = iprot.readListBegin();
-              this.partitionKeys = new ArrayList<FieldSchema>(_list26.size);
-              for (int _i27 = 0; _i27 < _list26.size; ++_i27)
+              TList _list31 = iprot.readListBegin();
+              this.partitionKeys = new ArrayList<FieldSchema>(_list31.size);
+              for (int _i32 = 0; _i32 < _list31.size; ++_i32)
               {
-                FieldSchema _elem28;
-                _elem28 = new FieldSchema();
-                _elem28.read(iprot);
-                this.partitionKeys.add(_elem28);
+                FieldSchema _elem33;
+                _elem33 = new FieldSchema();
+                _elem33.read(iprot);
+                this.partitionKeys.add(_elem33);
               }
               iprot.readListEnd();
             }
@@ -819,15 +819,15 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
         case PARAMETERS:
           if (field.type == TType.MAP) {
             {
-              TMap _map29 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map29.size);
-              for (int _i30 = 0; _i30 < _map29.size; ++_i30)
+              TMap _map34 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map34.size);
+              for (int _i35 = 0; _i35 < _map34.size; ++_i35)
               {
-                String _key31;
-                String _val32;
-                _key31 = iprot.readString();
-                _val32 = iprot.readString();
-                this.parameters.put(_key31, _val32);
+                String _key36;
+                String _val37;
+                _key36 = iprot.readString();
+                _val37 = iprot.readString();
+                this.parameters.put(_key36, _val37);
               }
               iprot.readMapEnd();
             }
@@ -904,8 +904,8 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.partitionKeys.size()));
-        for (FieldSchema _iter33 : this.partitionKeys)        {
-          _iter33.write(oprot);
+        for (FieldSchema _iter38 : this.partitionKeys)        {
+          _iter38.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -915,9 +915,9 @@ public class Table implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter34 : this.parameters.entrySet())        {
-          oprot.writeString(_iter34.getKey());
-          oprot.writeString(_iter34.getValue());
+        for (Map.Entry<String, String> _iter39 : this.parameters.entrySet())        {
+          oprot.writeString(_iter39.getKey());
+          oprot.writeString(_iter39.getValue());
         }
         oprot.writeMapEnd();
       }

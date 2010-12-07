@@ -16,7 +16,7 @@ struct Graph {
 }
 
 #Represents a operator along with its counters
-enum OperatorType { JOIN, MAPJOIN, EXTRACT, FILTER, FORWARD, GROUPBY, LIMIT, SCRIPT, SELECT, TABLESCAN, FILESINK, REDUCESINK, UNION, UDTF, LATERALVIEWJOIN, LATERALVIEWFORWARD }
+enum OperatorType { JOIN, MAPJOIN, EXTRACT, FILTER, FORWARD, GROUPBY, LIMIT, SCRIPT, SELECT, TABLESCAN, FILESINK, REDUCESINK, UNION, UDTF, LATERALVIEWJOIN, LATERALVIEWFORWARD, HASHTABLESINK, HASHTABLEDUMMY }
 struct Operator {
 1: string operatorId,
 2: OperatorType operatorType,
@@ -41,7 +41,7 @@ struct Task {
 }
 
 # Represents a Stage - unfortunately, it is represented as Task in ql/exec
-enum StageType { CONDITIONAL, COPY, DDL, MAPRED, EXPLAIN, FETCH, FUNC, MAPREDLOCAL, MOVE }
+enum StageType { CONDITIONAL, COPY, DDL, MAPRED, EXPLAIN, FETCH, FUNC, MAPREDLOCAL, MOVE, STATS }
 
 struct Stage {
 1: string stageId,

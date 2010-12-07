@@ -34,6 +34,7 @@ struct Database {
   1: string name,
   2: string description,
   3: string locationUri,
+  4: map<string, string> parameters // properties associated with the database
 }
 
 // This object holds the information needed by SerDes

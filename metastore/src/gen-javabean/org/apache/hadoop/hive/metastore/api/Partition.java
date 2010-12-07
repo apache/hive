@@ -501,13 +501,13 @@ public class Partition implements TBase, java.io.Serializable, Cloneable {
         case VALUES:
           if (field.type == TType.LIST) {
             {
-              TList _list35 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list35.size);
-              for (int _i36 = 0; _i36 < _list35.size; ++_i36)
+              TList _list40 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list40.size);
+              for (int _i41 = 0; _i41 < _list40.size; ++_i41)
               {
-                String _elem37;
-                _elem37 = iprot.readString();
-                this.values.add(_elem37);
+                String _elem42;
+                _elem42 = iprot.readString();
+                this.values.add(_elem42);
               }
               iprot.readListEnd();
             }
@@ -556,15 +556,15 @@ public class Partition implements TBase, java.io.Serializable, Cloneable {
         case PARAMETERS:
           if (field.type == TType.MAP) {
             {
-              TMap _map38 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map38.size);
-              for (int _i39 = 0; _i39 < _map38.size; ++_i39)
+              TMap _map43 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map43.size);
+              for (int _i44 = 0; _i44 < _map43.size; ++_i44)
               {
-                String _key40;
-                String _val41;
-                _key40 = iprot.readString();
-                _val41 = iprot.readString();
-                this.parameters.put(_key40, _val41);
+                String _key45;
+                String _val46;
+                _key45 = iprot.readString();
+                _val46 = iprot.readString();
+                this.parameters.put(_key45, _val46);
               }
               iprot.readMapEnd();
             }
@@ -591,8 +591,8 @@ public class Partition implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
-        for (String _iter42 : this.values)        {
-          oprot.writeString(_iter42);
+        for (String _iter47 : this.values)        {
+          oprot.writeString(_iter47);
         }
         oprot.writeListEnd();
       }
@@ -623,9 +623,9 @@ public class Partition implements TBase, java.io.Serializable, Cloneable {
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter43 : this.parameters.entrySet())        {
-          oprot.writeString(_iter43.getKey());
-          oprot.writeString(_iter43.getValue());
+        for (Map.Entry<String, String> _iter48 : this.parameters.entrySet())        {
+          oprot.writeString(_iter48.getKey());
+          oprot.writeString(_iter48.getValue());
         }
         oprot.writeMapEnd();
       }

@@ -52,6 +52,8 @@ $GLOBALS['E_OperatorType'] = array(
   'UDTF' => 13,
   'LATERALVIEWJOIN' => 14,
   'LATERALVIEWFORWARD' => 15,
+  'HASHTABLESINK' => 16,
+  'HASHTABLEDUMMY' => 17,
 );
 
 final class OperatorType {
@@ -71,6 +73,8 @@ final class OperatorType {
   const UDTF = 13;
   const LATERALVIEWJOIN = 14;
   const LATERALVIEWFORWARD = 15;
+  const HASHTABLESINK = 16;
+  const HASHTABLEDUMMY = 17;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -88,6 +92,8 @@ final class OperatorType {
     13 => 'UDTF',
     14 => 'LATERALVIEWJOIN',
     15 => 'LATERALVIEWFORWARD',
+    16 => 'HASHTABLESINK',
+    17 => 'HASHTABLEDUMMY',
   );
 }
 
@@ -118,6 +124,7 @@ $GLOBALS['E_StageType'] = array(
   'FUNC' => 6,
   'MAPREDLOCAL' => 7,
   'MOVE' => 8,
+  'STATS' => 9,
 );
 
 final class StageType {
@@ -130,6 +137,7 @@ final class StageType {
   const FUNC = 6;
   const MAPREDLOCAL = 7;
   const MOVE = 8;
+  const STATS = 9;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -140,6 +148,7 @@ final class StageType {
     6 => 'FUNC',
     7 => 'MAPREDLOCAL',
     8 => 'MOVE',
+    9 => 'STATS',
   );
 }
 
