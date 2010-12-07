@@ -22,60 +22,45 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class HiveLockObject {
-  /**
-   * The table.
-   */
-  private Table t;
-
-  /**
-   * The partition. This is null for a non partitioned table.
-   */
-  private Partition p;
+  
+  String [] pathNames = null;
 
   /* user supplied data for that object */
   private String    data;
 
   public HiveLockObject() {
-    this.t = null;
-    this.p = null;
     this.data = null;
   }
-
-  public HiveLockObject(Table t, String data) {
-    this.t = t;
-    this.p = null;
-    this.data = data;
+  
+  public HiveLockObject(String[] paths, String lockData) {
+    this.pathNames = paths;
+    this.data = lockData;
+  }
+  
+  public HiveLockObject(Table tbl, String lockData) {
+    this(new String[] {tbl.getDbName(), tbl.getTableName()}, lockData);
   }
 
-  public HiveLockObject(Partition p, String data) {
-    this.t = null;
-    this.p = p;
-    this.data = data;
-  }
-
-  public Table getTable() {
-    return t;
-  }
-
-  public void setTable (Table t) {
-    this.t = t;
-  }
-
-  public Partition getPartition() {
-    return p;
-  }
-
-  public void setPartition (Partition p) {
-    this.p = p;
+  public HiveLockObject(Partition par, String lockData) {
+    this(new String[] { par.getTable().getDbName(),
+        par.getTable().getTableName(), par.getName() }, lockData);
   }
 
   public String getName() {
-    if (t != null) {
-      return t.getCompleteName();
+    if (this.pathNames == null) {
+      return null;
     }
-    else {
-      return p.getCompleteName();
+    String ret = "";
+    boolean first = true;
+    for (int i = 0; i < pathNames.length; i++) {
+      if (!first) {
+        ret = ret + "@";
+      } else {
+        first = false;
+      }
+      ret = ret + pathNames[i];
     }
+    return ret;
   }
 
   public String getData() {

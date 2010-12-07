@@ -12,14 +12,18 @@ SHOW LOCKS tstsrc extended;
 
 UNLOCK TABLE tstsrc;
 SHOW LOCKS;
+SHOW LOCKS extended;
 SHOW LOCKS tstsrc;
 lock TABLE tstsrc SHARED;
 SHOW LOCKS;
+SHOW LOCKS extended;
 SHOW LOCKS tstsrc;
 LOCK TABLE tstsrc SHARED;
 SHOW LOCKS;
+SHOW LOCKS extended;
 SHOW LOCKS tstsrc;
 UNLOCK TABLE tstsrc;
 SHOW LOCKS;
+SHOW LOCKS extended;
 SHOW LOCKS tstsrc;
 drop table tstsrc;

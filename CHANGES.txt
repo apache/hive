@@ -567,6 +567,9 @@ Trunk -  Unreleased
     HIVE-1824 Create a new ZooKeeper instance when retrying lock
     (He Yongqiang via namit)
 
+    HIVE-1828 No need to get Table/Partition for show locks.
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

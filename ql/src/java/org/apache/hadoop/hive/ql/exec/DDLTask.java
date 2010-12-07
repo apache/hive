@@ -1347,11 +1347,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<HiveLock> locks = null;
 
       if (showLocks.getTableName() == null) {
-        locks = lockMgr.getLocks();
+        locks = lockMgr.getLocks(isExt);
       }
       else {
         locks = lockMgr.getLocks(getHiveObject(showLocks.getTableName(),
-                                               showLocks.getPartSpec()));
+                                               showLocks.getPartSpec()), isExt);
       }
 
       Collections.sort(locks, new Comparator<HiveLock>() {
@@ -1495,7 +1495,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tabName = unlockTbl.getTableName();
     HiveLockObject obj = getHiveObject(tabName, unlockTbl.getPartSpec());
 
-    List<HiveLock> locks = lockMgr.getLocks(obj);
+    List<HiveLock> locks = lockMgr.getLocks(obj, false);
     if ((locks == null) || (locks.isEmpty())) {
       throw new HiveException("Table " + tabName + " is not locked ");
     }

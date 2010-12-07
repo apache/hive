@@ -965,17 +965,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (ast.getChildCount() >= 1) {
       // table for which show locks is being executed
-      ASTNode tableTypeExpr = (ASTNode) ast.getChild(0);
-      tableName = getFullyQualifiedName((ASTNode)tableTypeExpr.getChild(0));
-
-      // get partition metadata if partition specified
-      if (tableTypeExpr.getChildCount() == 2) {
-        ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
-        partSpec = getPartSpec(partspec);
-      }
-
-      if (ast.getChildCount() >= 2) {
-        isExtended = (ast.getChild(1).getType() == HiveParser.KW_EXTENDED);
+      for (int i = 0; i < ast.getChildCount(); i++) {
+        ASTNode child = (ASTNode) ast.getChild(i);
+        if (child.getType() == HiveParser.TOK_TABTYPE) {
+          ASTNode tableTypeExpr = (ASTNode) child;
+          tableName = getFullyQualifiedName((ASTNode) tableTypeExpr.getChild(0));
+          // get partition metadata if partition specified
+          if (tableTypeExpr.getChildCount() == 2) {
+            ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
+            partSpec = getPartSpec(partspec);
+          }
+        } else if (child.getType() == HiveParser.KW_EXTENDED) {
+          isExtended = true;
+        }
       }
     }
 
