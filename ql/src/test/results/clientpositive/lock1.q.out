@@ -56,7 +56,7 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-QUERYID_LOCK:heyongqiang_20101203190404_a00af404-b094-4552-8ecc-0004930a878a TIME : 1291431894235	 
+LOCK_QUERYID:njain_20101206231818_eec284bc-9a38-4ba5-b59e-7bc770db8bd2 LOCK_TIME:1291706323232 LOCK_MODE:EXPLICIT 	 
 PREHOOK: query: UNLOCK TABLE tstsrc
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrc
@@ -101,7 +101,7 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-QUERYID_LOCK:heyongqiang_20101203190404_feadd884-14ab-4305-8078-605128a33c42 TIME : 1291431894956	 
+LOCK_QUERYID:njain_20101206231818_8eee6b8f-abba-41f5-8e70-e6c216d488cc LOCK_TIME:1291706324145 LOCK_MODE:EXPLICIT 	 
 PREHOOK: query: SHOW LOCKS tstsrc
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrc
@@ -130,9 +130,9 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-QUERYID_LOCK:heyongqiang_20101203190404_53022be2-f951-4b33-895a-d373a5791d16 TIME : 1291431895381	 
+LOCK_QUERYID:njain_20101206231818_d29191d9-ed78-4e6d-80df-2fc47d70adef LOCK_TIME:1291706324583 LOCK_MODE:EXPLICIT 	 
 default@tstsrc	SHARED
-QUERYID_LOCK:heyongqiang_20101203190404_feadd884-14ab-4305-8078-605128a33c42 TIME : 1291431894956	 
+LOCK_QUERYID:njain_20101206231818_8eee6b8f-abba-41f5-8e70-e6c216d488cc LOCK_TIME:1291706324145 LOCK_MODE:EXPLICIT 	 
 PREHOOK: query: SHOW LOCKS tstsrc
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrc

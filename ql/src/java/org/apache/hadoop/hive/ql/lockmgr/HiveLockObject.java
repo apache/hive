@@ -22,26 +22,69 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class HiveLockObject {
-  
   String [] pathNames = null;
 
+  public static class HiveLockObjectData {
+
+    private String queryId;  // queryId of the command
+    private String lockTime; // time at which lock was acquired
+    // mode of the lock: EXPLICIT(lock command)/IMPLICIT(query)
+    private String lockMode;
+
+    public HiveLockObjectData(String queryId,
+                              String lockTime,
+                              String lockMode) {
+      this.queryId  = queryId;
+      this.lockTime = lockTime;
+      this.lockMode = lockMode;
+    }
+
+
+    public HiveLockObjectData(String data) {
+      if (data == null) {
+        return;
+      }
+
+      String[] elem = data.split(":");
+      queryId  = elem[0];
+      lockTime = elem[1];
+      lockMode = elem[2];
+    }
+
+    public String getQueryId() {
+      return queryId;
+    }
+
+    public String getLockTime() {
+      return lockTime;
+    }
+
+    public String getLockMode() {
+      return lockMode;
+    }
+
+    public String toString() {
+      return queryId + ":" + lockTime + ":" + lockMode;
+    }
+  }
+
   /* user supplied data for that object */
-  private String    data;
+  private HiveLockObjectData data;
 
   public HiveLockObject() {
     this.data = null;
   }
-  
-  public HiveLockObject(String[] paths, String lockData) {
+
+  public HiveLockObject(String[] paths, HiveLockObjectData lockData) {
     this.pathNames = paths;
     this.data = lockData;
   }
-  
-  public HiveLockObject(Table tbl, String lockData) {
+
+  public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
     this(new String[] {tbl.getDbName(), tbl.getTableName()}, lockData);
   }
 
-  public HiveLockObject(Partition par, String lockData) {
+  public HiveLockObject(Partition par, HiveLockObjectData lockData) {
     this(new String[] { par.getTable().getDbName(),
         par.getTable().getTableName(), par.getName() }, lockData);
   }
@@ -63,11 +106,11 @@ public class HiveLockObject {
     return ret;
   }
 
-  public String getData() {
+  public HiveLockObjectData getData() {
     return data;
   }
 
-  public void setData(String data) {
+  public void setData(HiveLockObjectData data) {
     this.data = data;
   }
 

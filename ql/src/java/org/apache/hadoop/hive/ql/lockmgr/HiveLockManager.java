@@ -28,14 +28,14 @@ public interface HiveLockManager {
    * @param key        object to be locked
    * @param mode       mode of the lock (SHARED/EXCLUSIVE)
    * @param keepAlive  if the lock needs to be persisted after the statement
-   * @param sleepTime 
-   * @param numRetries 
+   * @param sleepTime
+   * @param numRetries
    */
   public HiveLock lock(HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, int numRetries, int sleepTime) throws LockException;
   public void unlock(HiveLock hiveLock) throws LockException;
 
-  public List<HiveLock> getLocks(boolean verifyTablePartitions) throws LockException;
-  public List<HiveLock> getLocks(HiveLockObject key, boolean fetchData) throws LockException;
+  public List<HiveLock> getLocks(boolean verifyTablePartitions, boolean fetchData) throws LockException;
+  public List<HiveLock> getLocks(HiveLockObject key, boolean verifyTablePartitions, boolean fetchData) throws LockException;
   public void close() throws LockException;
 }

@@ -106,7 +106,7 @@ POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrcpart@ds=2008-04-08/hr=11	EXCLUSIVE
-QUERYID_LOCK:njain_20101116183333_f625d313-c8ac-4ecf-87f8-ef6459651b9d TIME : 1289961212197	 
+LOCK_QUERYID:njain_20101206171111_df7566b7-88ed-482a-827f-6cc3fac55d63 LOCK_TIME:1291684308414 LOCK_MODE:EXPLICIT 	 
 PREHOOK: query: UNLOCK TABLE tstsrc
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrc

@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -1347,11 +1348,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<HiveLock> locks = null;
 
       if (showLocks.getTableName() == null) {
-        locks = lockMgr.getLocks(isExt);
+        locks = lockMgr.getLocks(false, isExt);
       }
       else {
         locks = lockMgr.getLocks(getHiveObject(showLocks.getTableName(),
-                                               showLocks.getPartSpec()), isExt);
+                                               showLocks.getPartSpec()),
+                                 true, isExt);
       }
 
       Collections.sort(locks, new Comparator<HiveLock>() {
@@ -1383,15 +1385,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes(lock.getHiveLockMode().toString());
         if (isExt) {
           outStream.write(terminator);
-          String lockData = lock.getHiveLockObject().getData();
+          HiveLockObjectData lockData = lock.getHiveLockObject().getData();
           if (lockData != null) {
-            String[] lockDataArr = lockData.split(":");
-            if (lockDataArr.length == 1) {
-              outStream.writeBytes("QUERYID_LOCK:" + lockData);
-            }
-            else {
-              outStream.writeBytes("QUERYID_LOCK:" + lockDataArr[0] + " TIME : " + Long.parseLong(lockDataArr[1]));
-            }
+            outStream.writeBytes("LOCK_QUERYID:" + lockData.getQueryId() + " ");
+            outStream.writeBytes("LOCK_TIME:" + lockData.getLockTime() + " ");
+            outStream.writeBytes("LOCK_MODE:" + lockData.getLockMode() + " ");
           }
         }
         outStream.write(terminator);
@@ -1433,7 +1431,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     Map<String, String> partSpec = lockTbl.getPartSpec();
-    String lockData = lockTbl.getQueryId() + ":" + String.valueOf(System.currentTimeMillis());
+    HiveLockObjectData lockData =
+      new HiveLockObjectData(lockTbl.getQueryId(),
+                             String.valueOf(System.currentTimeMillis()),
+                             "EXPLICIT");
 
     if (partSpec == null) {
       HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true, 0, 0);
@@ -1495,7 +1496,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tabName = unlockTbl.getTableName();
     HiveLockObject obj = getHiveObject(tabName, unlockTbl.getPartSpec());
 
-    List<HiveLock> locks = lockMgr.getLocks(obj, false);
+    List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
     if ((locks == null) || (locks.isEmpty())) {
       throw new HiveException("Table " + tabName + " is not locked ");
     }

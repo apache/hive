@@ -897,7 +897,7 @@ public class QTestUtil {
         "-I", "at java",
         "-I", "at junit",
         "-I", "Caused by:",
-        "-I", "QUERYID_LOCK:",
+        "-I", "LOCK_QUERYID:",
         "-I", "[.][.][.] [0-9]* more",
         (new File(logDir, tname + ".out")).getPath(),
         outFileName };

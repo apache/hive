@@ -289,6 +289,9 @@ Trunk -  Unreleased
     HIVE-138 Provide option to export a HEADER
     (Paul Butler via He Yongqiang)
 
+    HIVE-1834 more debugging for locking
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

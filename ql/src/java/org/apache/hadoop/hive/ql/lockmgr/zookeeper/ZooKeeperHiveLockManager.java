@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -62,7 +63,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   // All the locks are created under this parent
   private String    parent;
-  
+
   private int sessionTimeout;
   private String quorumServers;
 
@@ -132,7 +133,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * @param  keepAlive    Whether the lock is to be persisted after the statement
    * @param  numRetries   number of retries when the lock can not be acquired
    * @param  sleepTime    sleep time between retries
-   * 
+   *
    * Acuire the lock. Return null if a conflicting lock is present.
    **/
   public ZooKeeperHiveLock lock(HiveLockObject key, HiveLockMode mode,
@@ -147,10 +148,10 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         String msg = null;
         try {
           if (keepAlive) {
-            res = zooKeeper.create(name, key.getData().getBytes(),
+            res = zooKeeper.create(name, key.getData().toString().getBytes(),
                 Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
           } else {
-            res = zooKeeper.create(name, key.getData().getBytes(),
+            res = zooKeeper.create(name, key.getData().toString().getBytes(),
                 Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
           }
         } catch (Exception e) {
@@ -160,9 +161,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         if (res != null) {
           break;
         }
-        
+
         renewZookeeperInstance(sessionTimeout, quorumServers);
-        
+
         if (tryNum == numRetries) {
           console.printError("Lock for " + key.getName()
               + " cannot be acquired in " + mode);
@@ -170,7 +171,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         }
 
         tryNum++;
-        
+
         console.printInfo("Lock for " + key.getName()
             + " cannot be acquired in " + mode +", will retry again later..., more info: " + msg);
 
@@ -259,13 +260,15 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   }
 
   /* Get all locks */
-  public List<HiveLock> getLocks(boolean verifyTablePartition) throws LockException {
-    return getLocks(ctx.getConf(), zooKeeper, null, parent, verifyTablePartition, false);
+  public List<HiveLock> getLocks(boolean verifyTablePartition, boolean fetchData)
+    throws LockException {
+    return getLocks(ctx.getConf(), zooKeeper, null, parent, verifyTablePartition, fetchData);
   }
 
   /* Get all locks for a particular object */
-  public List<HiveLock> getLocks(HiveLockObject key, boolean fetchData) throws LockException {
-    return getLocks(ctx.getConf(), zooKeeper, key, parent, false, fetchData);
+  public List<HiveLock> getLocks(HiveLockObject key, boolean verifyTablePartitions,
+                                 boolean fetchData) throws LockException {
+    return getLocks(ctx.getConf(), zooKeeper, key, parent, verifyTablePartitions, fetchData);
   }
 
   /**
@@ -285,27 +288,27 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       // no locks present
       return locks;
     }
-    
+
     for (String child : children) {
       child = "/" + parent + "/" + child;
-      
       HiveLockMode mode = getLockMode(conf, child);
       if (mode == null) {
         continue;
       }
-      
-      String data = "NULL";
+
+      HiveLockObjectData data = null;
       //set the lock object with a dummy data, and then do a set if needed.
       HiveLockObject obj   = getLockObject(conf, child, mode, data, verifyTablePartition);
       if (obj == null) {
         continue;
       }
-      
+
       if ((key == null) ||
           (obj.getName().equals(key.getName()))) {
+
         if (fetchData) {
           try {
-            data = new String(zkpClient.getData(child, new DummyWatcher(), null));
+            data = new HiveLockObjectData(new String(zkpClient.getData(child, new DummyWatcher(), null)));
           } catch (Exception e) {
             LOG.error("Error in getting data for " + child + " " + e);
             // ignore error
@@ -350,21 +353,21 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * The object may correspond to a table, a partition or a parent to a partition.
    * For eg: if Table T is partitioned by ds, hr and ds=1/hr=1 is a valid partition,
    * the lock may also correspond to T@ds=1, which is not a valid object
-   * @param verifyTablePartition 
+   * @param verifyTablePartition
    **/
   private static HiveLockObject getLockObject(HiveConf conf, String path,
-      HiveLockMode mode, String data, boolean verifyTablePartition)
+      HiveLockMode mode, HiveLockObjectData data, boolean verifyTablePartition)
       throws LockException {
     try {
       Hive db = Hive.get(conf);
       int indx = path.lastIndexOf(mode.toString());
       String objName = path.substring(1, indx-1);
       String[] names = objName.split("/")[1].split("@");
-      
+
       if (names.length < 2) {
         return null;
       }
-      
+
       if (!verifyTablePartition) {
         if (names.length == 2) {
           return new HiveLockObject(names, data);
@@ -374,7 +377,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
               "/").split("@"), data);
         }
       }
-      
+
       Table tab = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, //need to change to names[0]
                               names[1], false); // do not throw exception if table does not exist
       if (tab == null) {

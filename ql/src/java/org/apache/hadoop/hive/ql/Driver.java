@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -459,13 +460,18 @@ public class Driver implements CommandProcessor {
       throws SemanticException {
     List<LockObject> locks = new LinkedList<LockObject>();
 
+    HiveLockObjectData lockData =
+      new HiveLockObjectData(plan.getQueryId(),
+                             String.valueOf(System.currentTimeMillis()),
+                             "IMPLICIT");
+
     if (t != null) {
-      locks.add(new LockObject(new HiveLockObject(t, plan.getQueryId()), mode));
+      locks.add(new LockObject(new HiveLockObject(t, lockData), mode));
       return locks;
     }
 
     if (p != null) {
-      locks.add(new LockObject(new HiveLockObject(p, plan.getQueryId()), mode));
+      locks.add(new LockObject(new HiveLockObject(p, lockData), mode));
 
       // All the parents are locked in shared mode
       mode = HiveLockMode.SHARED;
@@ -485,14 +491,14 @@ public class Driver implements CommandProcessor {
         try {
           locks.add(new LockObject(new HiveLockObject(new DummyPartition(p.getTable(), p.getTable()
               .getDbName()
-              + "@" + p.getTable().getTableName() + "@" + partialName), plan.getQueryId()), mode));
+              + "@" + p.getTable().getTableName() + "@" + partialName), lockData), mode));
           partialName += "/";
         } catch (HiveException e) {
           throw new SemanticException(e.getMessage());
         }
       }
 
-      locks.add(new LockObject(new HiveLockObject(p.getTable(), plan.getQueryId()), mode));
+      locks.add(new LockObject(new HiveLockObject(p.getTable(), lockData), mode));
     }
     return locks;
   }
@@ -600,7 +606,7 @@ public class Driver implements CommandProcessor {
    *          object is not locked twice, and the list passed is sorted such that EXCLUSIVE locks
    *          occur before SHARED locks.
    * @param sleepTime
-   * @param numRetries 
+   * @param numRetries
    **/
   private List<HiveLock> acquireLocks(List<LockObject> lockObjects,
       LockObjectContainer notFound, int numRetries, int sleepTime)
