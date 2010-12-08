@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * CreateDatabaseDesc.
@@ -33,6 +34,7 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
   String locationUri;
   String comment;
   boolean ifNotExists;
+  Map<String, String> dbProperties;
 
   /**
    * For serialization only.
@@ -47,6 +49,7 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
     this.comment = comment;
     this.locationUri = locationUri;
     this.ifNotExists = ifNotExists;
+    this.dbProperties = null;
   }
 
   public CreateDatabaseDesc(String databaseName, boolean ifNotExists) {
@@ -62,6 +65,14 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
 
   public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
+  }
+
+  public Map<String, String> getDatabaseProperties() {
+    return dbProperties;
+  }
+
+  public void setDatabaseProperties(Map<String, String> dbProps) {
+    this.dbProperties = dbProps;
   }
 
   @Explain(displayName="name")

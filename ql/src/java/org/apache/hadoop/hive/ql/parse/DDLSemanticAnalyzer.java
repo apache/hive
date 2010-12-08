@@ -33,9 +33,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -55,8 +55,8 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -64,12 +64,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
@@ -88,8 +91,6 @@ import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -197,6 +198,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_DESCFUNCTION) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescFunction(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_DESCDATABASE) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeDescDatabase(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);
@@ -259,6 +263,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     boolean ifNotExists = false;
     String dbComment = null;
+    Map<String, String> dbProps = null;
 
     for (int i = 1; i < ast.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) ast.getChild(i);
@@ -268,6 +273,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case TOK_DATABASECOMMENT:
         dbComment = unescapeSQLString(childNode.getChild(0).getText());
+        break;
+      case HiveParser.TOK_DATABASEPROPERTIES:
+        dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
         break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
@@ -279,6 +287,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     createDatabaseDesc.setComment(dbComment);
     createDatabaseDesc.setIfNotExists(ifNotExists);
     createDatabaseDesc.setLocationUri(null);
+    if (dbProps != null) {
+      createDatabaseDesc.setDatabaseProperties(dbProps);
+    }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createDatabaseDesc), conf));
@@ -832,6 +843,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("analyzeDescribeTable done");
   }
 
+  /**
+   * Describe database.
+   * @param ast
+   * @throws SemanticException
+   */
+  private void analyzeDescDatabase(ASTNode ast) throws SemanticException {
+
+    boolean isExtended;
+    String dbName;
+
+    if (ast.getChildCount() == 1) {
+      dbName = stripQuotes(ast.getChild(0).getText());
+      isExtended = false;
+    } else if (ast.getChildCount() == 2) {
+      dbName = stripQuotes(ast.getChild(0).getText());
+      isExtended = true;
+    } else {
+      throw new SemanticException("Unexpected Tokens at DESCRIBE DATABASE");
+    }
+
+    DescDatabaseDesc descDbDesc = new DescDatabaseDesc(ctx.getResFile(),
+        dbName, isExtended);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), descDbDesc), conf));
+    setFetchTask(createFetchTask(descDbDesc.getSchema()));
+  }
+
   private static HashMap<String, String> getPartSpec(ASTNode partspec)
       throws SemanticException {
     HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
@@ -1080,6 +1117,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         descFuncDesc), conf));
     setFetchTask(createFetchTask(descFuncDesc.getSchema()));
   }
+
 
   private void analyzeAlterTableRename(ASTNode ast) throws SemanticException {
     String tblName = unescapeIdentifier(ast.getChild(0).getText());

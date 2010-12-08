@@ -1,0 +1,30 @@
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+db1
+default
+PREHOOK: query: create database db2 with dbproperties (
+  'mapred.jobtracker.url'='http://my.jobtracker.com:53000',
+  'hive.warehouse.dir' = '/user/hive/warehouse',
+  'mapred.scratch.dir' = 'hdfs://tmp.dfs.com:50029/tmp')
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database db2 with dbproperties (
+  'mapred.jobtracker.url'='http://my.jobtracker.com:53000',
+  'hive.warehouse.dir' = '/user/hive/warehouse',
+  'mapred.scratch.dir' = 'hdfs://tmp.dfs.com:50029/tmp')
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: describe database db2
+PREHOOK: type: null
+POSTHOOK: query: describe database db2
+POSTHOOK: type: null
+db2		pfile:/data/users/nzhang/work/1/apache-hive/build/ql/test/data/warehouse/db2.db	
+PREHOOK: query: describe database extended db2
+PREHOOK: type: null
+POSTHOOK: query: describe database extended db2
+POSTHOOK: type: null
+db2		pfile:/data/users/nzhang/work/1/apache-hive/build/ql/test/data/warehouse/db2.db	{mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://tmp.dfs.com:50029/tmp, hive.warehouse.dir=/user/hive/warehouse}

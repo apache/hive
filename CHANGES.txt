@@ -116,6 +116,9 @@ Trunk -  Unreleased
     HIVE-1827 Add a new local mode flag in Task
     (Liyin Tang via He Yongqiang)
 
+    HIVE-1836 Extend CREATE DATABASE command with DBPROPERTIES
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

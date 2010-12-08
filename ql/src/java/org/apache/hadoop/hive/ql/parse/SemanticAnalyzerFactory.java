@@ -103,6 +103,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SWITCHDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROPVIEW:
+      case HiveParser.TOK_DESCDATABASE:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:

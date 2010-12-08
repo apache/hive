@@ -56,6 +56,7 @@ public class DDLWork implements Serializable {
   private MsckDesc msckDesc;
   private ShowTableStatusDesc showTblStatusDesc;
   private ShowIndexesDesc showIndexesDesc;
+  private DescDatabaseDesc descDbDesc;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -90,6 +91,20 @@ public class DDLWork implements Serializable {
       CreateDatabaseDesc createDatabaseDesc) {
     this(inputs, outputs);
     this.createDatabaseDesc = createDatabaseDesc;
+  }
+
+  /**
+   * @param dropDatabaseDesc
+   *          Drop Database descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      DescDatabaseDesc descDatabaseDesc) {
+    this(inputs, outputs);
+    this.descDbDesc = descDatabaseDesc;
+  }
+
+  public DescDatabaseDesc getDescDatabaseDesc() {
+    return descDbDesc;
   }
 
   /**
@@ -378,7 +393,7 @@ public class DDLWork implements Serializable {
   public void setCreateTblDesc(CreateTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
   }
-  
+
   /**
    * @return the createIndexDesc
    */
