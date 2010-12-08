@@ -119,6 +119,8 @@ Trunk -  Unreleased
     HIVE-1836 Extend CREATE DATABASE command with DBPROPERTIES
     (Ning Zhang via namit)
 
+    HIVE-1096 Hive variables (Edward Capriolo via namit)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

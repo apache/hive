@@ -29,6 +29,7 @@
       <item name="Data Manipulation Statements" href="/language_manual/data-manipulation-statements.html" />
       <item name="Joins" href="/language_manual/joins.html" />
       <item name="Cli" href="/language_manual/cli.html" />
+      <item name="Var Substitution" href="/language_manual/var_substitution.html" />
     </menu>
     <menu name="Developer Guide">
       <item name="Issue Tracking (JIRA)" href="https://issues.apache.org/jira/browse/HIVE"/>

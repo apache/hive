@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<document>
+
+  <properties>
+    <title>Hadoop Hive- Variable Substitution</title>
+    <author email="hive-user@hadoop.apache.org">Hadoop Hive Documentation Team</author>
+  </properties>
+
+  <body>
+<h3>Hive Variable Substitution</h3>
+<section name="Introduction" href="Introduction">
+
+<p>Hive is used for both interactive queries as well as part. The hive variable substitution mechanism was 
+designed to avoid some of the code that was getting baked into the scripting language ontop of hive. For example:</p>
+
+<source><![CDATA[$ a=b
+$ hive -e " describe $a "
+]]></source>
+
+<p>
+are becoming common place. This is frustrating as hive becomes closely coupled with scripting languages. The hive
+startup time of a couple seconds is non-trivial when doing thousands of manipulations multiple hive -e invocations.</p>
+
+<p>
+Hive Variables combine the set capability you know and love with some limited yet powerful (evil laugh) substitution 
+ability. For example:</p>
+
+<source><![CDATA[$ bin/hive -hiveconf a=b -e 'set a; set hiveconf:a; \
+create table if not exists b (col int); describe ${hiveconf:a}'
+]]></source>
+
+<p>Results in:</p>
+<source><![CDATA[Hive history file=/tmp/edward/hive_job_log_edward_201011240906_1463048967.txt
+a=b
+hiveconf:a=b
+OK
+Time taken: 5.913 seconds
+OK
+col	int	
+Time taken: 0.754 seconds
+]]></source>
+
+</section>
+
+<section name="Using variables" href="using_variables">
+
+<p>There are three namespaces for variables hiveconf,system, and env. hiveconf variables are set as normal:</p>
+
+<source><![CDATA[set x=myvalue
+]]></source>
+
+<p>However they are retrieved using</p>
+
+<source><![CDATA[${hiveconf:x}
+]]></source>
+ 
+<p>Annotated examples of usage from the test case ql/src/test/queries/clientpositive/set_processor_namespaces.q</p>
+
+<source><![CDATA[set zzz=5;
+--  sets zzz=5
+set zzz;
+
+set system:xxx=5;
+set system:xxx;
+-- sets a system property xxx to 5
+
+set system:yyy=${system:xxx};
+set system:yyy;
+-- sets yyy with value of xxx
+
+set go=${hiveconf:zzz};
+set go;
+-- sets go base on value on zzz
+
+set hive.variable.substitute=false;
+set raw=${hiveconf:zzz};
+set raw;
+-- disable substitution set a value to the literal
+
+set hive.variable.substitute=true;
+
+EXPLAIN SELECT * FROM src where key=${hiveconf:zzz};
+SELECT * FROM src where key=${hiveconf:zzz};
+--use a variable in a query
+
+set a=1;
+set b=a;
+set c=${hiveconf:${hiveconf:b}};
+set c;
+--uses nested variables. 
+
+
+set jar=../lib/derby.jar;
+
+add file ${hiveconf:jar};
+list file;
+delete file ${hiveconf:jar};
+list file;
+]]></source>
+</section>
+
+<section name="Disabling" href="disable">
+  <p>Variable substitution is on by default. If this causes an issue with an already existing script disable it.</p>
+
+<source><![CDATA[set hive.variable.substitute=false;
+]]></source>
+
+</section>
+
+</body>
+</document>

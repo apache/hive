@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -312,6 +313,7 @@ public class Driver implements CommandProcessor {
     TaskFactory.resetId();
 
     try {
+      command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);
 
       ParseDriver pd = new ParseDriver();

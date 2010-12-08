@@ -314,6 +314,9 @@ public class HiveConf extends Configuration {
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 
+    // Hive Variables
+    HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),
+
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
     
     // Print column names in output
@@ -624,4 +627,5 @@ public class HiveConf extends Configuration {
   public static String getColumnInternalName(int pos) {
     return "_col" + pos;
   }
+
 }

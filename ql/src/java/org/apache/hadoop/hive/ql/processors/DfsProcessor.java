@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FsShell;
+import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -46,10 +47,13 @@ public class DfsProcessor implements CommandProcessor {
   }
 
   public CommandProcessorResponse run(String command) {
-    String[] tokens = command.split("\\s+");
+
 
     try {
       SessionState ss = SessionState.get();
+      command = new VariableSubstitution().substitute(ss.getConf(),command);
+
+      String[] tokens = command.split("\\s+");
       PrintStream oldOut = System.out;
 
       if (ss != null && ss.out != null) {
