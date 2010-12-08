@@ -39,10 +39,9 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.Counters.Group;
-import org.apache.hadoop.mapred.Counters;
 
 /**
  * HiveHistory.
@@ -126,7 +125,7 @@ public class HiveHistory {
 
   /**
    * Parses history file and calls call back functions.
-   * 
+   *
    * @param path
    * @param l
    * @throws IOException
@@ -156,7 +155,7 @@ public class HiveHistory {
 
   /**
    * Parse a single line of history.
-   * 
+   *
    * @param line
    * @param l
    * @throws IOException
@@ -217,7 +216,7 @@ public class HiveHistory {
 
   /**
    * Construct HiveHistory object an open history log file.
-   * 
+   *
    * @param ss
    */
   public HiveHistory(SessionState ss) {
@@ -240,8 +239,10 @@ public class HiveHistory {
         }
       }
       Random randGen = new Random();
-      histFileName = conf_file_loc + "/hive_job_log_" + ss.getSessionId() + "_"
+      do {
+        histFileName = conf_file_loc + "/hive_job_log_" + ss.getSessionId() + "_"
           + Math.abs(randGen.nextInt()) + ".txt";
+      } while (new File(histFileName).exists());
       console.printInfo("Hive history file=" + histFileName);
       histStream = new PrintWriter(histFileName);
 
@@ -265,7 +266,7 @@ public class HiveHistory {
 
   /**
    * Write the a history record to history file.
-   * 
+   *
    * @param rt
    * @param keyValMap
    */
@@ -284,7 +285,7 @@ public class HiveHistory {
       String key = ent.getKey();
       String val = ent.getValue();
       if(val != null) {
-        val = val.replace('\n', ' ');        
+        val = val.replace('\n', ' ');
       }
       sb.append(key + "=\"" + val + "\"");
 
@@ -317,7 +318,7 @@ public class HiveHistory {
 
   /**
    * Used to set job status and other attributes of a job.
-   * 
+   *
    * @param queryId
    * @param propName
    * @param propValue
@@ -332,7 +333,7 @@ public class HiveHistory {
 
   /**
    * Used to set task properties.
-   * 
+   *
    * @param taskId
    * @param propName
    * @param propValue
@@ -349,7 +350,7 @@ public class HiveHistory {
 
   /**
    * Serialize the task counters and set as a task property.
-   * 
+   *
    * @param taskId
    * @param rj
    */
@@ -413,7 +414,7 @@ public class HiveHistory {
 
   /**
    * Called at the end of Job. A Job is sql query.
-   * 
+   *
    * @param queryId
    */
   public void endQuery(String queryId) {
@@ -428,7 +429,7 @@ public class HiveHistory {
   /**
    * Called at the start of a task. Called by Driver.run() A Job can have
    * multiple tasks. Tasks will have multiple operator.
-   * 
+   *
    * @param task
    */
   public void startTask(String queryId, Task<? extends Serializable> task,
@@ -452,7 +453,7 @@ public class HiveHistory {
 
   /**
    * Called at the end of a task.
-   * 
+   *
    * @param task
    */
   public void endTask(String queryId, Task<? extends Serializable> task) {
@@ -467,7 +468,7 @@ public class HiveHistory {
 
   /**
    * Called at the end of a task.
-   * 
+   *
    * @param task
    */
   public void progressTask(String queryId, Task<? extends Serializable> task) {
@@ -495,7 +496,7 @@ public class HiveHistory {
 
   /**
    * Set the table to id map.
-   * 
+   *
    * @param map
    */
   public void setIdToTableMap(Map<String, String> map) {
@@ -504,7 +505,7 @@ public class HiveHistory {
 
   /**
    * Returns table name for the counter name.
-   * 
+   *
    * @param name
    * @return tableName
    */
@@ -521,5 +522,11 @@ public class HiveHistory {
     return null;
 
   }
-
+  @Override
+  public void finalize() throws Throwable {
+    if (histStream !=null){
+      histStream.close();
+    }
+    super.finalize();
+  }
 }
