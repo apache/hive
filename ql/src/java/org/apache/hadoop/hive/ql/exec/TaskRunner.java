@@ -52,7 +52,11 @@ public class TaskRunner extends Thread {
    */
 
   public void runSequential() {
-    int exitVal = tsk.executeTask();
+    int exitVal = -101;
+    try {
+      exitVal = tsk.executeTask();
+    } catch (Throwable t) {
+    }
     result.setExitVal(exitVal);
   }
 

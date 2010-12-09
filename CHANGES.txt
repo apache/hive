@@ -596,6 +596,9 @@ Trunk -  Unreleased
     HIVE-1830 Mappers in group by followed by map-join may die OOM
     (Liyin Tang via namit)
 
+    HIVE-1844 Hanging hive client due to OOM error
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
