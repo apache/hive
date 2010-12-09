@@ -37,7 +37,7 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.FORWARD;
   }
 }

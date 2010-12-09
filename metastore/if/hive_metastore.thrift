@@ -3,7 +3,7 @@
 # Thrift Service that the MetaStore is built on
 #
 
-include "thrift/fb303/if/fb303.thrift"
+include "share/fb303/if/fb303.thrift"
 
 namespace java org.apache.hadoop.hive.metastore.api
 namespace php metastore

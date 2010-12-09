@@ -514,7 +514,7 @@ public class Hive {
         }
       }
 
-      org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().clone();
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor storageDescriptor = baseTbl.getSd().deepCopy();
       SerDeInfo serdeInfo = storageDescriptor.getSerdeInfo();
       if(serde != null) {
         serdeInfo.setSerializationLib(serde);

@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <string.h>
 
 #include "hiveclienthelper.h"
 #include "thriftserverconstants.h"

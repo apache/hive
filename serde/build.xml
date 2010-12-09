@@ -30,7 +30,6 @@ to call at top-level: ant deploy-contrib compile-core-test
 
   <target name="dynamic-serde" depends="init" if="javacc.home">
 
-<!--    <mkdir dir="${src.dir}/gen-java/org/apache/hadoop/hive/serde2/dynamic_type"/> -->
     <jjtree buildnodefiles="true"
       target="${src.dir}/java/org/apache/hadoop/hive/serde2/dynamic_type/thrift_grammar.jjt"
       outputdirectory="${src.dir}/java/org/apache/hadoop/hive/serde2/dynamic_type"
@@ -43,11 +42,11 @@ to call at top-level: ant deploy-contrib compile-core-test
     />
   </target>
 
-  <target name="compile" depends="init,dynamic-serde">
+  <target name="compile" depends="init,dynamic-serde,ivy-retrieve">
     <echo message="Compiling: ${name}"/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${src.dir}/java/:${src.dir}/gen-java/"
+     srcdir="${src.dir}/java/:${src.dir}/gen/thrift/gen-javabean/:${src.dir}/gen/protobuf/gen-java/"
      destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}">
@@ -56,18 +55,19 @@ to call at top-level: ant deploy-contrib compile-core-test
     </javac>
   </target>
 
-  <target name="thriftif">
-    <echo>Executing thrift (which needs to be in your path) to build java serde Constants... </echo>
+  <target name="thriftif" depends="check-thrift-home">
+    <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
+    <echo>Executing ${thrift.home}/bin/thrift to build java serde Constants... </echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="--gen py --gen cpp --gen php --gen java -o ${src.dir} if/serde.thrift " />
+      <arg line="${thrift.args} -o ${src.dir}/gen/thrift if/serde.thrift " />
     </exec>
-    <echo>Executing thrift (which needs to be in your path) to build complex.thrift test classes... </echo>
+    <echo>Executing ${thrift.home}/bin/thrift to build complex.thrift test classes... </echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="--gen java -o ${src.dir} if/test/complex.thrift " />
+      <arg line="--gen java:beans -o ${src.dir}/gen/thrift if/test/complex.thrift " />
     </exec>
-    <echo>Executing thrift (which needs to be in your path) to build testthrift.thrift classes... </echo>
+    <echo>Executing ${thrift.home}/bin/thrift to build testthrift.thrift classes... </echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="--gen java -o ${src.dir} if/test/testthrift.thrift " />
+      <arg line="--gen java:beans -o ${src.dir}/gen/thrift if/test/testthrift.thrift " />
     </exec>
   </target>
 

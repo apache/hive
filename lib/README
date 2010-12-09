@@ -1,8 +1,8 @@
 Folowing is the list of external jars contained in this directory and the sources from where they were obtained:
 ---------------------------------------------------------------------------------------------------------------
 
-*  libfb303.jar - http://developers.facebook.com/thrift/
-*  libthrift.jar - http://developers.facebook.com/thrift/
+*  thrift-0.5.0.jar - http://thrift.apache.org/
+*  thrift-fb303-0.5.0.jar - http://thrift.apache.org/
 *  jpox-core-1.2.2.jar - http://www.jpox.org/docs/download.html
 *  derby.jar - http://db.apache.org/derby/derby_downloads.html
 *  asm-3.1.jar - http://forge.objectweb.org/projects/asm/

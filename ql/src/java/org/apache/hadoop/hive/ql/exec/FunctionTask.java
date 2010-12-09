@@ -120,7 +120,7 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.FUNC;
   }
 

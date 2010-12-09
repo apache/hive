@@ -181,7 +181,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.TABLESCAN;
   }
 

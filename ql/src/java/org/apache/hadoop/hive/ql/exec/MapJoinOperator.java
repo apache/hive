@@ -297,7 +297,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.MAPJOIN;
   }
 }

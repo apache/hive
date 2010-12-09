@@ -759,7 +759,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.FILESINK;
   }
 

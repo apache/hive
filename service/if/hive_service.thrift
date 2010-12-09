@@ -24,7 +24,7 @@
 # TODO: include/thrift is shared among different components. It
 # should not be under metastore.
 
-include "thrift/fb303/if/fb303.thrift"
+include "share/fb303/if/fb303.thrift"
 include "metastore/if/hive_metastore.thrift"
 include "ql/if/queryplan.thrift"
 

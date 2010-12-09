@@ -59,15 +59,15 @@ public class TestThriftObjectInspectors extends TestCase {
 
       // real object
       Complex c = new Complex();
-      c.aint = 1;
-      c.aString = "test";
+      c.setAint(1);
+      c.setAString("test");
       List<Integer> c2 = Arrays.asList(new Integer[] {1, 2, 3});
-      c.lint = c2;
+      c.setLint(c2);
       List<String> c3 = Arrays.asList(new String[] {"one", "two"});
-      c.lString = c3;
+      c.setLString(c3);
       List<IntString> c4 = new ArrayList<IntString>();
-      c.lintString = c4;
-      c.mStringString = null;
+      c.setLintString(c4);
+      c.setMStringString(null);
 
       assertEquals(1, soi.getStructFieldData(c, fields.get(0)));
       assertEquals("test", soi.getStructFieldData(c, fields.get(1)));

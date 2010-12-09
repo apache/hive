@@ -133,7 +133,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.JOIN;
   }
 

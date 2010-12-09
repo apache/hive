@@ -440,10 +440,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.HASHTABLESINK;
   }
-
-
-
 }

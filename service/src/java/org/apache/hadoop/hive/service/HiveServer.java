@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.facebook.fb303.fb_status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -145,7 +146,7 @@ public class HiveServer extends ThriftHive {
         JobTracker.State jbs = cs.getJobTrackerState();
 
         // Convert the ClusterStatus to its Thrift equivalent: HiveClusterStatus
-        int state;
+        JobTrackerState state;
         switch (jbs) {
         case INITIALIZING:
           state = JobTrackerState.INITIALIZING;
@@ -321,8 +322,8 @@ public class HiveServer extends ThriftHive {
      * Return the status of the server.
      */
     @Override
-    public int getStatus() {
-      return 0;
+    public fb_status getStatus() {
+      return fb_status.ALIVE;
     }
 
     /**

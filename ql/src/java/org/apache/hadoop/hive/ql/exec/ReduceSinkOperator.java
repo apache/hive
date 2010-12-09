@@ -314,7 +314,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.REDUCESINK;
   }
 }

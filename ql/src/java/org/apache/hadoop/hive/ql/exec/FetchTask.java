@@ -151,7 +151,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.FETCH;
   }
 

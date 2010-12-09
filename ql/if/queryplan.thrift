@@ -1,5 +1,5 @@
 namespace java org.apache.hadoop.hive.ql.plan.api
-namespace cpp Hive
+namespace cpp Apache.Hadoop.Hive
 
 enum AdjacencyType { CONJUNCTIVE, DISJUNCTIVE }
 struct Adjacency {
@@ -16,7 +16,27 @@ struct Graph {
 }
 
 #Represents a operator along with its counters
-enum OperatorType { JOIN, MAPJOIN, EXTRACT, FILTER, FORWARD, GROUPBY, LIMIT, SCRIPT, SELECT, TABLESCAN, FILESINK, REDUCESINK, UNION, UDTF, LATERALVIEWJOIN, LATERALVIEWFORWARD, HASHTABLESINK, HASHTABLEDUMMY }
+enum OperatorType {
+  JOIN,
+  MAPJOIN,
+  EXTRACT,
+  FILTER,
+  FORWARD,
+  GROUPBY,
+  LIMIT,
+  SCRIPT,
+  SELECT,
+  TABLESCAN,
+  FILESINK,
+  REDUCESINK,
+  UNION,
+  UDTF,
+  LATERALVIEWJOIN,
+  LATERALVIEWFORWARD,
+  HASHTABLESINK,
+  HASHTABLEDUMMY,
+}
+
 struct Operator {
 1: string operatorId,
 2: OperatorType operatorType,
@@ -41,7 +61,18 @@ struct Task {
 }
 
 # Represents a Stage - unfortunately, it is represented as Task in ql/exec
-enum StageType { CONDITIONAL, COPY, DDL, MAPRED, EXPLAIN, FETCH, FUNC, MAPREDLOCAL, MOVE, STATS }
+enum StageType {
+  CONDITIONAL,
+  COPY,
+  DDL,
+  MAPRED,
+  EXPLAIN,
+  FETCH,
+  FUNC,
+  MAPREDLOCAL,
+  MOVE,
+  STATS,
+}
 
 struct Stage {
 1: string stageId,

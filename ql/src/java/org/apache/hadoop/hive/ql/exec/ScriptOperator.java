@@ -662,7 +662,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.SCRIPT;
   }
 }

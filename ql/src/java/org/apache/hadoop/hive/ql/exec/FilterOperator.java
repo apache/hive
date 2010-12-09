@@ -108,7 +108,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.FILTER;
   }
 }

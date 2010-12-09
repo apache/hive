@@ -618,6 +618,11 @@ Trunk -  Unreleased
     HIVE-1658. Fix describe [extended] column formatting
     (Thiruvel Thirumoolan via Ning Zhang)
 
+  TASKS
+
+    HIVE-1526. Hive should depend on a release version of Thrift
+    (Carl Steinbach via Ning Zhang)
+
 Release 0.6.0 - 2010-10-19
 
   INCOMPATIBLE CHANGES

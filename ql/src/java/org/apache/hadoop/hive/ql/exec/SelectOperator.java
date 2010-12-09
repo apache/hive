@@ -93,7 +93,7 @@ public class SelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.SELECT;
   }
 }

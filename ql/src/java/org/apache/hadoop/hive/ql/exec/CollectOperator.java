@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -78,7 +79,7 @@ public class CollectOperator extends Operator<CollectDesc> implements
   }
 
   @Override
-  public int getType() {
-    return -1;
+  public OperatorType getType() {
+    return null;
   }
 }

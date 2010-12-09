@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.thrift;
 
 import java.io.EOFException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -239,6 +240,10 @@ public class TCTLSeparatedProtocol extends TProtocol implements
         }
         tokenizer = new StringTokenizer(row, separator, true);
       } catch (TTransportException e) {
+        if(e.getType() == TTransportException.END_OF_FILE){
+          tokenizer = new StringTokenizer("", separator, true);
+          return false;
+        }
         e.printStackTrace();
         tokenizer = null;
         return false;
@@ -605,7 +610,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   @Override
-  public void writeBinary(byte[] bin) throws TException {
+  public void writeBinary(ByteBuffer bin) throws TException {
     throw new TException(
         "Ctl separated protocol cannot support writing Binary data!");
   }
@@ -838,7 +843,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   @Override
-  public byte[] readBinary() throws TException {
+  public ByteBuffer readBinary() throws TException {
     throw new TException("Not implemented for control separated data");
   }
 }

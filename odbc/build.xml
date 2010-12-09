@@ -46,18 +46,6 @@
     </condition>
   </target>
 
-  <target name="check-thrift-home">
-    <condition property="thrift.home.defined">
-      <and>
-        <isset property="thrift.home"/>
-        <not>
-          <equals arg1="${thrift.home}" arg2="$${thrift.home}" trim="true"/>
-        </not>
-      </and>
-    </condition>
-  </target>
-
-
   <target name="compile-cpp" depends="init,check-word-size">
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <env key="WORD_SIZE" value="${word.size}"/>

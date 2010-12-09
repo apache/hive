@@ -730,7 +730,7 @@ public class Table implements Serializable {
   }
 
   public Table copy() throws HiveException {
-    return new Table(tTable.clone());
+    return new Table(tTable.deepCopy());
   }
 
   public void setCreateTime(int createTime) {

@@ -2738,7 +2738,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.DDL;
   }
 

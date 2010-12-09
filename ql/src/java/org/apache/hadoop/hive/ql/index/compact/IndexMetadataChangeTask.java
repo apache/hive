@@ -96,7 +96,7 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.DDL;
   }
 

@@ -3,6 +3,8 @@
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency> 
+        </dependency>
+        <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
+        <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
     </dependencies>
 </ivy-module>

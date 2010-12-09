@@ -588,7 +588,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.MAPJOIN;
   }
 }

@@ -450,7 +450,12 @@ public class ObjectStore implements RawStore, Configurable {
             .getComment()));
       }
     }
-    return new Type(mtype.getName(), mtype.getType1(), mtype.getType2(), fields);
+    Type ret = new Type();
+    ret.setName(mtype.getName());
+    ret.setType1(mtype.getType1());
+    ret.setType2(mtype.getType2());
+    ret.setFields(fields);
+    return ret;
   }
 
   public boolean createType(Type type) {

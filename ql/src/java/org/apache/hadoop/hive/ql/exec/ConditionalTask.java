@@ -172,7 +172,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.CONDITIONAL;
   }
 

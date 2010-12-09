@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -1204,7 +1205,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    *
    * @return OperatorType.*
    */
-  abstract public int getType();
+  abstract public OperatorType getType();
 
   public void setGroupKeyObject(Object keyObject) {
     this.groupKeyObject = keyObject;

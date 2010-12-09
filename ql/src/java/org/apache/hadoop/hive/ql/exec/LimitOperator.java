@@ -57,7 +57,7 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.LIMIT;
   }
 

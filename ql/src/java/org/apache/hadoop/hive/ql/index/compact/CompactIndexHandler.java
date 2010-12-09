@@ -57,7 +57,7 @@ public class CompactIndexHandler extends AbstractIndexHandler {
       Table indexTable) throws HiveException {
     StorageDescriptor storageDesc = index.getSd();
     if (this.usesIndexTable() && indexTable != null) {
-      StorageDescriptor indexTableSd = storageDesc.clone();
+      StorageDescriptor indexTableSd = storageDesc.deepCopy();
       List<FieldSchema> indexTblCols = indexTableSd.getCols();
       FieldSchema bucketFileName = new FieldSchema("_bucketname", "string", "");
       indexTblCols.add(bucketFileName);

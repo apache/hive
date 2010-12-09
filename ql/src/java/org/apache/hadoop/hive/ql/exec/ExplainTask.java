@@ -407,7 +407,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.EXPLAIN;
   }
 

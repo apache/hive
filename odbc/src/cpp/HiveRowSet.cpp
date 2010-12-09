@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <string.h>
 
 #include "HiveRowSet.h"
 #include "hiveclienthelper.h"

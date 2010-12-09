@@ -58,7 +58,7 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.HASHTABLEDUMMY;
   }
 

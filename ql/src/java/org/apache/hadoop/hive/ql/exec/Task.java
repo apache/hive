@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -352,14 +353,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
 
   /**
-   * Should be overridden to return the type of the specific task among the types in TaskType.
+   * Should be overridden to return the type of the specific task among the types in StageType.
    *
-   * @return TaskTypeType.* or -1 if not overridden
+   * @return StageType.* or null if not overridden
    */
-  public int getType() {
-    assert false;
-    return -1;
-  }
+  public abstract StageType getType();
 
   /**
    * If this task uses any map-reduce intermediate data (either for reading or for writing),

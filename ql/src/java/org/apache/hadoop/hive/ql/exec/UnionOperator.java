@@ -141,7 +141,7 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.UNION;
   }
 }

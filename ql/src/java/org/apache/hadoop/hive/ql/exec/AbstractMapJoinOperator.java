@@ -132,7 +132,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.MAPJOIN;
   }
 

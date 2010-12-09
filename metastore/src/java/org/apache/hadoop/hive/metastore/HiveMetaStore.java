@@ -416,7 +416,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public int getStatus() {
+    public fb_status getStatus() {
       return fb_status.ALIVE;
     }
 

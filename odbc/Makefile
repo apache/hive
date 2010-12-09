@@ -56,12 +56,13 @@ LINK = ln -sf
 BUILD_DIR = $(HIVE_ROOT)/build
 ODBC_BUILD_DIR = $(BUILD_DIR)/odbc
 OBJ_SERVICE_BUILD_DIR = $(BUILD_DIR)/service/objs
-OBJ_FB303_BUILD_DIR = $(BUILD_DIR)/service/fb303/objs
+OBJ_QL_BUILD_DIR = $(BUILD_DIR)/ql/objs
 OBJ_METASTORE_BUILD_DIR = $(BUILD_DIR)/metastore/objs
 OBJ_ODBC_BUILD_DIR = $(ODBC_BUILD_DIR)/objs
 LIB_ODBC_BUILD_DIR = $(ODBC_BUILD_DIR)/lib
 TEST_ODBC_BUILD_DIR = $(ODBC_BUILD_DIR)/test
-THRIFT_INCLUDE_PATH = $(HIVE_ROOT)/service/include/thrift
+THRIFT_INCLUDE_PATH=$(THRIFT_HOME)/include/thrift
+FB303_INCLUDE_PATH=$(THRIFT_INCLUDE_PATH)/fb303
 INSTALL_PATH = /usr/local
 INSTALL_LIB_PATH = $(INSTALL_PATH)/lib
 INSTALL_INCLUDE_PATH = $(INSTALL_PATH)/include
@@ -79,30 +80,31 @@ AR_NAME = lib$(LIB_NAME).a
 AR_TARGET = $(LIB_ODBC_BUILD_DIR)/$(AR_NAME)
 AR_INSTALL_TARGET = $(INSTALL_LIB_PATH)/$(AR_NAME)
 
-SERVICE_SRC_DIR = $(HIVE_ROOT)/service/src/gen-cpp
+SERVICE_SRC_DIR = $(HIVE_ROOT)/service/src/gen/thrift/gen-cpp
 SERVICE_SOURCES = ThriftHive.cpp \
                   hive_service_constants.cpp \
                   hive_service_types.cpp
 SERVICE_OBJS = $(addprefix $(OBJ_SERVICE_BUILD_DIR)/,$(patsubst %,%.o,$(basename $(SERVICE_SOURCES))))
 
-FB303_SRC_DIR = $(THRIFT_INCLUDE_PATH)/fb303
-FB303_SOURCES = FacebookService.cpp \
-                fb303_constants.cpp \
-                fb303_types.cpp
-FB303_OBJS = $(addprefix $(OBJ_FB303_BUILD_DIR)/,$(patsubst %,%.o,$(basename $(FB303_SOURCES))))
+QL_SRC_DIR = $(HIVE_ROOT)/ql/src/gen/thrift/gen-cpp
+QL_SOURCES = queryplan_types.cpp queryplan_constants.cpp
+QL_OBJS = $(addprefix $(OBJ_QL_BUILD_DIR)/,$(patsubst %,%.o,$(basename $(QL_SOURCES))))
 
-METASTORE_SRC_DIR = $(HIVE_ROOT)/metastore/src/gen-cpp
+
+METASTORE_SRC_DIR = $(HIVE_ROOT)/metastore/src/gen/thrift/gen-cpp
 METASTORE_SOURCES = ThriftHiveMetastore.cpp \
                     hive_metastore_constants.cpp \
                     hive_metastore_types.cpp
 METASTORE_OBJS = $(addprefix $(OBJ_METASTORE_BUILD_DIR)/,$(patsubst %,%.o,$(basename $(METASTORE_SOURCES))))
 
 ODBC_SRC_DIR = $(BASE_DIR)/src/cpp
+
 ODBC_SOURCES = hiveclient.cpp \
                HiveResultSet.cpp \
                HiveColumnDesc.cpp \
                HiveRowSet.cpp \
                hiveclienthelper.cpp
+
 ODBC_OBJS = $(addprefix $(OBJ_ODBC_BUILD_DIR)/,$(patsubst %,%.o,$(basename $(ODBC_SOURCES))))
 
 ODBC_TEST_SRC_DIR = $(BASE_DIR)/src/test
@@ -111,9 +113,10 @@ TEST_FLAGS = -DTEST_DATA_DIR=$(ODBC_TEST_DATA_DIR)
 HIVE_CLIENT_TEST = $(TEST_ODBC_BUILD_DIR)/HiveClientTestC
 
 INCLUDE_PATHS = -I$(THRIFT_INCLUDE_PATH) \
+                -I$(FB303_INCLUDE_PATH) \
                 -I$(BOOST_INCLUDE_PATH) \
-                -I$(FB303_SRC_DIR) \
                 -I$(SERVICE_SRC_DIR) \
+                -I$(QL_SRC_DIR) \
                 -I$(METASTORE_SRC_DIR) \
                 -I$(ODBC_SRC_DIR)
 
@@ -127,20 +130,25 @@ LIB_THRIFT_DIR = $(THRIFT_HOME)/lib
 LIB_THRIFT_ADD = -L$(LIB_THRIFT_DIR) -lthrift
 LIB_THRIFT_AR = $(LIB_THRIFT_DIR)/libthrift.a
 
+LIB_FB303_DIR = $(THRIFT_HOME)/lib
+LIB_FB303_ADD = -L$(LIB_FB303_DIR) -lfb303
+LIB_FB303_AR  = $(LIB_FB303_DIR)/libfb303.a
+
 
 all:: $(AR_TARGET) $(SO_TARGET) $(HIVE_CLIENT_TEST)
 
-$(AR_TARGET): $(FB303_OBJS) $(METASTORE_OBJS) $(SERVICE_OBJS) $(ODBC_OBJS)
+$(AR_TARGET): $(METASTORE_OBJS) $(SERVICE_OBJS) $(QL_OBJS) $(ODBC_OBJS)
 	if test -z '$(THRIFT_HOME)'; then echo 'THRIFT_HOME directory?'; exit 1; else exit 0; fi
 	mkdir -p $(LIB_ODBC_BUILD_DIR)
 	$(AR) $(ARXFLAGS) $(LIB_THRIFT_AR) #Extract thrift archive
+	$(AR) $(ARXFLAGS) $(LIB_FB303_AR)  #Extract fb303 archive
 	$(AR) $(ARFLAGS) $@ $+ *.o #Include all object files into new archive
 	rm *.o #Remove extracted archive object files
 
-$(SO_TARGET): $(FB303_OBJS) $(METASTORE_OBJS) $(SERVICE_OBJS) $(ODBC_OBJS)
+$(SO_TARGET): $(METASTORE_OBJS) $(SERVICE_OBJS) $(QL_OBJS) $(ODBC_OBJS)
 	if test -z '$(THRIFT_HOME)'; then echo 'THRIFT_HOME directory?'; exit 1; else exit 0; fi
 	mkdir -p $(LIB_ODBC_BUILD_DIR)
-	$(LD) $(ARCH_FLAGS) $(LDFLAGS) $+ $(LIB_THRIFT_ADD) -o $@ \
+	$(LD) $(ARCH_FLAGS) $(LDFLAGS) $+ $(LIB_THRIFT_ADD) $(LIB_FB303_ADD) -o $@ \
         && $(LINK) $(SO_NAME) $(SO_LINK_TARGET)
 
 
@@ -148,8 +156,8 @@ $(OBJ_SERVICE_BUILD_DIR)/%.o: $(SERVICE_SRC_DIR)/%.cpp
 	mkdir -p $(OBJ_SERVICE_BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(ARCH_FLAGS) $(INCLUDE_PATHS) -c $< -o $@
 
-$(OBJ_FB303_BUILD_DIR)/%.o: $(FB303_SRC_DIR)/%.cpp
-	mkdir -p $(OBJ_FB303_BUILD_DIR)
+$(OBJ_QL_BUILD_DIR)/%.o: $(QL_SRC_DIR)/%.cpp
+	mkdir -p $(OBJ_QL_BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(ARCH_FLAGS) $(INCLUDE_PATHS) -c $< -o $@
 
 $(OBJ_METASTORE_BUILD_DIR)/%.o: $(METASTORE_SRC_DIR)/%.cpp
@@ -162,7 +170,7 @@ $(OBJ_ODBC_BUILD_DIR)/%.o: $(ODBC_SRC_DIR)/%.cpp
 
 $(HIVE_CLIENT_TEST): $(SO_TARGET) $(ODBC_TEST_SRC_DIR)/hiveclienttest.c
 	mkdir -p $(TEST_ODBC_BUILD_DIR)
-	$(CC) $(CFLAGS) $(ARCH_FLAGS) $(TEST_FLAGS) $(INCLUDE_PATHS) $(ODBC_TEST_SRC_DIR)/hiveclienttest.c -L$(LIB_ODBC_BUILD_DIR) -L$(LIB_THRIFT_DIR) -l$(LIB_NAME) -lthrift -o $@
+	$(CC) $(CFLAGS) $(ARCH_FLAGS) $(TEST_FLAGS) $(INCLUDE_PATHS) $(ODBC_TEST_SRC_DIR)/hiveclienttest.c -L$(LIB_ODBC_BUILD_DIR) -L$(LIB_THRIFT_DIR) -l$(LIB_NAME) -lthrift $(LIB_FB303_ADD) -o $@
 
 
 install: $(AR_TARGET) $(SO_TARGET)
@@ -179,7 +187,7 @@ uninstall:
 	rm -f $(HEADER_TARGETS)
 
 clean:
-	rm -rf $(ODBC_BUILD_DIR) $(OBJ_SERVICE_BUILD_DIR) $(OBJ_FB303_BUILD_DIR) $(OBJ_METASTORE_BUILD_DIR)
+	rm -rf $(ODBC_BUILD_DIR) $(OBJ_SERVICE_BUILD_DIR) $(OBJ_QL_BUILD_DIR) $(OBJ_METASTORE_BUILD_DIR)
 
 test: $(AR_TARGET) $(SO_TARGET) $(HIVE_CLIENT_TEST)
-	LD_LIBRARY_PATH=$(LIB_ODBC_BUILD_DIR):$(LIB_THRIFT_DIR):$(LD_LIBRARY_PATH) $(HIVE_CLIENT_TEST)
+	LD_LIBRARY_PATH=$(LIB_ODBC_BUILD_DIR):$(LIB_THRIFT_DIR):$(LIB_FB303_DIR):$(LD_LIBRARY_PATH) $(HIVE_CLIENT_TEST)

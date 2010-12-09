@@ -56,15 +56,15 @@ public class TestObjectInspectorUtils extends TestCase {
 
       // real object
       Complex cc = new Complex();
-      cc.aint = 1;
-      cc.aString = "test";
+      cc.setAint(1);
+      cc.setAString("test");
       List<Integer> c2 = Arrays.asList(new Integer[] {1, 2, 3});
-      cc.lint = c2;
+      cc.setLint(c2);
       List<String> c3 = Arrays.asList(new String[] {"one", "two"});
-      cc.lString = c3;
+      cc.setLString(c3);
       List<IntString> c4 = new ArrayList<IntString>();
-      cc.lintString = c4;
-      cc.mStringString = null;
+      cc.setLintString(c4);
+      cc.setMStringString(null);
       // standard object
       Object c = ObjectInspectorUtils.copyToStandardObject(cc, oi1);
 

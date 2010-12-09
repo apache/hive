@@ -26,7 +26,6 @@
   <property name="test.junit.output.format" value="plain"/>
   <property name="test.output" value="false"/>
   <property name="test.junit.output.usefile" value="false"/>
-  <property name="thrift.args" value="--gen java:beans --gen php --gen py -I ${basedir}/include -I ${basedir}/.. -o ${src.dir}"/>
 
   <import file="../build-common.xml"/>
 
@@ -41,17 +40,18 @@
     <path refid="classpath"/>
   </path>
 
-  <target name="thriftif">
-    <echo>Executing thrift (which needs to be in your path) on if/hive_service.thrift</echo>
+  <target name="thriftif" depends="check-thrift-home">
+    <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
+    <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/hive_service.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-      <arg line="${thrift.args} if/hive_service.thrift " />
+      <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${src.dir}/gen/thrift if/hive_service.thrift " />
     </exec>
   </target>
 
   <target name="core-compile" depends="init">
     <javac
      encoding="${build.encoding}"
-     srcdir="${src.dir}/java:${src.dir}/gen-javabean"
+     srcdir="${src.dir}/java:${src.dir}/gen/thrift/gen-javabean"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"

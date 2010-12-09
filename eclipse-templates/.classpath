@@ -16,10 +16,10 @@
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/hbase-0.20.3.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/hbase-0.20.3-test.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/libfb303.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/libthrift.jar"/>
+  <classpathentry exported="true" kind="lib" path="lib/hbase-@hbase.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="lib/hbase-@hbase-test.version@-test.jar"/>
+  <classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/zookeeper-@zookeeper.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>
@@ -33,25 +33,28 @@
   <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-@commons-dbcp.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/commons-pool-@commons-pool.version@.jar"/>
-  <classpathentry kind="src" path="build/metastore/gen-java"/>
-  <classpathentry kind="src" path="build/ql/gen-java"/>
+  <classpathentry kind="lib" path="build/dist/lib/slf4j-api-@slf4j-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
+  <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="build/ql/test/src"/>
+  <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="cli/src/java"/>
   <classpathentry kind="src" path="common/src/java"/>
   <classpathentry kind="src" path="contrib/src/java"/>
   <classpathentry kind="src" path="contrib/src/test"/>
-  <classpathentry kind="src" path="metastore/src/gen-javabean"/>
+  <classpathentry kind="src" path="metastore/src/gen/thrift/gen-javabean"/>
   <classpathentry kind="src" path="metastore/src/java"/>
   <classpathentry kind="src" path="metastore/src/model"/>
   <classpathentry kind="src" path="metastore/src/test"/>
-  <classpathentry kind="src" path="ql/src/gen-javabean"/>
+  <classpathentry kind="src" path="ql/src/gen/thrift/gen-javabean"/>
   <classpathentry kind="src" path="ql/src/java"/>
   <classpathentry kind="src" path="ql/src/test"/>
-  <classpathentry kind="src" path="serde/src/gen-java"/>
+  <classpathentry kind="src" path="serde/src/gen/thrift/gen-javabean"/>
+  <classpathentry kind="src" path="serde/src/gen/protobuf/gen-java"/>
   <classpathentry kind="src" path="serde/src/java"/>
   <classpathentry kind="src" path="serde/src/test"/>
-  <classpathentry kind="src" path="service/src/gen-javabean"/>
+  <classpathentry kind="src" path="service/src/gen/thrift/gen-javabean"/>
   <classpathentry kind="src" path="service/src/java"/>
   <classpathentry kind="src" path="service/src/test"/>
   <classpathentry kind="src" path="jdbc/src/java"/>

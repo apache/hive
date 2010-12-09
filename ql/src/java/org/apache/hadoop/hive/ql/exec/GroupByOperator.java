@@ -1055,7 +1055,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.GROUPBY;
   }
 }

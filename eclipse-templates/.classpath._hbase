@@ -6,29 +6,29 @@
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@SERVLETAPIJAR@"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYJAR@"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>
-	<classpathentry exported="true" kind="lib" path="cli/lib/jline-0.9.94.jar"/>
+	<classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-cli-2.0-SNAPSHOT.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-cli-@commons-cli.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-codec-@commons-code.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-2.3-SNAPSHOT.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-1.1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-1.1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-1.1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/libfb303.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/libthrift.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-3.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-3.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="testlibs/junit-3.8.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="stats/lib/hbase-0.20.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="stats/lib/hbase-0.20.3-test.jar"/>
-	<classpathentry exported="true" kind="lib" path="stats/lib/zookeeper-3.2.2.jar"/>
-	<classpathentry kind="src" path="build/ql/gen-java"/>
+	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-@jdo2-api.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-@datanucleus-core.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-@antlr-runtime.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="testlibs/junit-@junit.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="stats/lib/hbase-@hbase.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="stats/lib/hbase-@hbase-test.version@-test.jar"/>
+	<classpathentry exported="true" kind="lib" path="stats/lib/zookeeper-@zookeeper.version@.jar"/>
+	<classpathentry kind="src" path="build/ql/gen-javabean"/>
 	<classpathentry kind="src" path="build/contrib/test/src"/>
 	<classpathentry kind="src" path="build/ql/test/src"/>
 	<classpathentry kind="src" path="cli/src/java"/>
@@ -42,7 +42,8 @@
 	<classpathentry kind="src" path="ql/src/gen-javabean"/>
 	<classpathentry kind="src" path="ql/src/java"/>
 	<classpathentry kind="src" path="ql/src/test"/>
-	<classpathentry kind="src" path="serde/src/gen-java"/>
+	<classpathentry kind="src" path="serde/src/gen-javabean"/>
+        <classpathentry kind="src" path="serde/src/gen-java"/>
 	<classpathentry kind="src" path="serde/src/java"/>
 	<classpathentry kind="src" path="serde/src/test"/>
 	<classpathentry kind="src" path="service/src/gen-javabean"/>
@@ -53,7 +54,7 @@
 	<classpathentry kind="src" path="shims/src/@HADOOPVERPREF@/java"/>
 	<classpathentry kind="src" path="shims/src/common/java"/>
 	<classpathentry kind="src" path="hbase-handler/src/java"/>
-    <classpathentry kind="src" path="hwi/src/java"/>
+        <classpathentry kind="src" path="hwi/src/java"/>
 	<classpathentry kind="src" path="hwi/src/test"/>
-    <classpathentry kind="output" path="build/eclipse-classes"/>
+        <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>

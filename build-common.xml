@@ -25,6 +25,8 @@
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
 
+  <property environment="env"/>
+
   <property name="hive.conf.dir" value="${hive.root}/conf"/>
   <property name="dist.dir" location="${hive.root}"/>
 
@@ -33,6 +35,8 @@
   <property name="build.dir" location="${build.dir.hive}/${ant.project.name}"/>
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
+
+  <property name="thrift.args" value="-I ${thrift.home} --gen java:beans --gen cpp --gen php --gen py --gen rb"/>
 
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
@@ -101,7 +105,7 @@
   </condition>
 
   <!--this is the naming policy for artifacts we want pulled down-->
-  <property name="ivy.artifact.retrieve.pattern" value="${ant.project.name}/[conf]/[artifact]-[revision].[ext]"/>
+  <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision].[ext]"/>
 
   <target name="ivy-init-dirs">
     <mkdir dir="${build.ivy.dir}" />
@@ -159,15 +163,15 @@
       log="${ivyresolvelog}"/>
   </target>
 
-  <target name="ivy-resolve-checkstyle" depends="ivy-init">
-    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
-      log="${ivyresolvelog}"/>
-  </target>
-
-  <target name="ivy-retrieve" depends="ivy-resolve" unless="offline"
+  <target name="ivy-retrieve" depends="ivy-resolve"
     description="Retrieve Ivy-managed artifacts">
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+  </target>
+
+  <target name="ivy-resolve-checkstyle" depends="ivy-init">
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
       log="${ivyresolvelog}"/>
   </target>
 
@@ -226,8 +230,8 @@
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
-    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"  excludes="*hadoop*.jar"
-	erroronmissingdir="false" />
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" excludes="*hadoop*.jar"
+             erroronmissingdir="false"/>
   </path>
 
   <path id="classpath">
@@ -459,6 +463,17 @@
   <target name="clean">
     <echo message="Cleaning: ${ant.project.name}"/>
     <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="check-thrift-home">
+    <condition property="thrift.home.defined">
+      <or>
+        <not>
+          <isset property="thrift.home"/>
+        </not>
+        <equals arg1="${thrift.home}" arg2="$${thrift.home}" trim="true"/>
+      </or>
+    </condition>
   </target>
 
 </project>

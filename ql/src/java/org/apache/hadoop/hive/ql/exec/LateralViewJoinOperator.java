@@ -143,7 +143,7 @@ public class LateralViewJoinOperator extends Operator<LateralViewJoinDesc> {
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.LATERALVIEWJOIN;
   }
 

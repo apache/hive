@@ -43,7 +43,7 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.LATERALVIEWFORWARD;
   }
 }

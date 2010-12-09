@@ -118,7 +118,7 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.UDTF;
   }
 

@@ -46,7 +46,7 @@ public class ExtractOperator extends Operator<ExtractDesc> implements
   }
 
   @Override
-  public int getType() {
+  public OperatorType getType() {
     return OperatorType.EXTRACT;
   }
 }

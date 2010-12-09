@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -519,8 +520,8 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   }
 
   @Override
-  public int getType() {
-    return -1;
+  public OperatorType getType() {
+    return null;
   }
 
 }

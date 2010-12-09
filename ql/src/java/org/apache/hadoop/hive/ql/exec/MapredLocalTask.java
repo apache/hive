@@ -451,8 +451,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   }
 
   @Override
-  public int getType() {
-    // assert false;
+  public StageType getType() {
+    //assert false;
     return StageType.MAPREDLOCAL;
   }
 

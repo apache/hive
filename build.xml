@@ -25,6 +25,8 @@
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
 
+  <property environment="env"/>
+
   <property name="target.dir" location="${build.dir.hive}/dist"/>
   <property name="target.lib.dir" location="${target.dir}/lib"/>
   <property name="target.conf.dir" location="${target.dir}/conf"/>
@@ -91,6 +93,28 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="iterate-test">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+	<property name="thrift.home" value="${thrift.home}"/>
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
+        <filelist dir="." files="ql/build.xml,contrib/build.xml,hbase-handler/build.xml,hwi/build.xml,jdbc/build.xml,metastore/build.xml,odbc/build.xml,serde/build.xml,service/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="iterate-thriftif">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+	<property name="thrift.home" value="${thrift.home}"/>
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
+        <filelist dir="." files="ql/build.xml,service/build.xml,metastore/build.xml,serde/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
   <macrodef name="iterate-all">
     <attribute name="target"/>
     <sequential>
@@ -121,7 +145,7 @@
     <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
-    <fileset dir="${build.dir.hive}/ivy/lib/metastore/default" includes="*.jar"
+    <fileset dir="${build.dir.hive}/ivy/lib/default" includes="*.jar"
 	excludes="*hadoop*.jar" erroronmissingdir="false"/>
   </path>
 
@@ -165,16 +189,24 @@
     <iterate target="compile"/>
   </target>
 
+  <target name="thriftif">
+    <iterate-thriftif target="thriftif"/>
+  </target>
+
   <target name="jar"
           description="Build JAR artifacts">
     <iterate target="jar"/>
+  </target>
+
+  <target name="jar-test" depends="jar"
+          description="Build Java test artifacts">
+    <iterate-test target="compile-test"/>
   </target>
 
   <target name="test"
           depends="clean-test,jar"
           description="Run tests">
     <iterate target="test"/>
-    <iterate-cpp target="test"/>
   </target>
 
   <!-- create an html report from junit output files -->
@@ -212,7 +244,7 @@
   <target name="clean-offline" if="offline">
     <!-- preserve the downloaded ivy .jar  -->
     <delete quiet="true" includeemptydirs="true">
-      <fileset dir="${build.dir.hive}" excludes="ivy/**/*"/>
+      <fileset dir="${build.dir.hive}" excludes="ivy/**/ivy*.jar"/>
     </delete>
   </target>
 
@@ -280,16 +312,16 @@
      <fileset dir="${hive.root}/service/lib/php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/serde">
-      <fileset dir="${hive.root}/serde/src/gen-php" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/serde/src/gen/thrift/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/hive_metastore">
-      <fileset dir="${hive.root}/metastore/src/gen-php" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/metastore/src/gen/thrift/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/hive_service">
-      <fileset dir="${hive.root}/service/src/gen-php" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/service/src/gen/thrift/gen-php" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/php/packages/queryplan">
-      <fileset dir="${hive.root}/ql/src/gen-php" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/ql/src/gen/thrift/gen-php" excludes="${vcs.excludes}"/>
     </copy>
 
 
@@ -298,16 +330,16 @@
       <fileset dir="${hive.root}/service/lib/py" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_serde">
-      <fileset dir="${hive.root}/serde/src/gen-py/org_apache_hadoop_hive_serde" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/serde/src/gen/thrift/gen-py/org_apache_hadoop_hive_serde" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_metastore">
-      <fileset dir="${hive.root}/metastore/src/gen-py/hive_metastore" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/metastore/src/gen/thrift/gen-py/hive_metastore" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/hive_service">
-      <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/service/src/gen/thrift/gen-py/hive_service" excludes="${vcs.excludes}"/>
     </copy>
     <copy todir="${target.lib.dir}/py/queryplan">
-      <fileset dir="${hive.root}/ql/src/gen-py/queryplan" excludes="${vcs.excludes}"/>
+      <fileset dir="${hive.root}/ql/src/gen/thrift/gen-py/queryplan" excludes="${vcs.excludes}"/>
     </copy>
 
     <!-- copy jar files -->
@@ -320,7 +352,7 @@
       <fileset file="${build.dir.hive}/hwi/hive-hwi-${version}.war"/>
       <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
       <fileset file="${build.dir.hive}/contrib/hive-hbase_handler-${version}.jar"/>
-      <fileset dir="${build.dir.hive}/ivy/lib/metastore/default">
+      <fileset dir="${build.dir.hive}/ivy/lib/default">
         <include name="*.jar"/>
         <exclude name="*.tar.gz"/>
       </fileset>
@@ -449,18 +481,21 @@
       <packageset dir="common/src/java"/>
       <packageset dir="service/src/java"/>
       <packageset dir="service/src/test"/>
-      <packageset dir="service/src/gen-javabean"/>
+      <packageset dir="service/src/gen/thrift/gen-javabean"/>
       <packageset dir="serde/src/java"/>
       <packageset dir="serde/src/test"/>
-      <packageset dir="serde/src/gen-java"/>
+      <packageset dir="serde/src/gen/thrift/gen-javabean"/>
+      <packageset dir="serde/src/gen/protobuf/gen-java"/>
       <packageset dir="jdbc/src/java"/>
       <packageset dir="jdbc/src/test"/>
       <packageset dir="metastore/src/java"/>
       <packageset dir="metastore/src/test"/>
-      <packageset dir="metastore/src/gen-javabean"/>
+      <packageset dir="metastore/src/gen/thrift/gen-javabean"/>
       <packageset dir="metastore/src/model"/>
       <packageset dir="cli/src/java"/>
       <packageset dir="ql/src/java"/>
+      <packageset dir="ql/src/test"/>
+      <packageset dir="ql/src/gen/thrift/gen-javabean"/>
       <packageset dir="${build.dir.hive}/ql/gen-java"/>
       <packageset dir="shims/src/common/java"/>
 

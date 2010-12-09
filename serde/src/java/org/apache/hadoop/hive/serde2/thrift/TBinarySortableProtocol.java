@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.thrift;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -345,12 +346,39 @@ public class TBinarySortableProtocol extends TProtocol implements
   }
 
   @Override
+  public void writeBinary(ByteBuffer bin) throws TException {
+    if (bin == null) {
+      writeRawBytes(nullByte, 0, 1);
+      return;
+    }
+
+    int length = bin.limit() - bin.position() - bin.arrayOffset();
+    if (bin.hasArray()) {
+      writeBinary(bin.array(), bin.arrayOffset() + bin.position(),
+        length);
+    } else {
+      byte []copy = new byte[length];
+      bin.get(copy);
+      writeBinary(copy);
+    }
+  }
+
   public void writeBinary(byte[] bin) throws TException {
     if (bin == null) {
       writeRawBytes(nullByte, 0, 1);
     } else {
-      writeI32(bin.length);
-      writeRawBytes(bin, 0, bin.length);
+      writeBinary(bin, 0, bin.length);
+    }
+  }
+
+
+  public void writeBinary(byte[] bin, int offset, int length)
+  throws TException {
+    if (bin == null) {
+      writeRawBytes(nullByte, 0, 1);
+    } else {
+      writeI32(length);
+      writeRawBytes(bin, offset, length);
     }
   }
 
@@ -612,14 +640,14 @@ public class TBinarySortableProtocol extends TProtocol implements
   }
 
   @Override
-  public byte[] readBinary() throws TException {
+  public ByteBuffer readBinary() throws TException {
     int size = readI32();
     if (lastPrimitiveWasNull) {
       return null;
     }
     byte[] buf = new byte[size];
     readRawAll(buf, 0, size);
-    return buf;
+    return ByteBuffer.wrap(buf);
   }
 
   boolean lastPrimitiveWasNull;

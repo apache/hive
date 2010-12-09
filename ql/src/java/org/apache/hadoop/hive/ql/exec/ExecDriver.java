@@ -1269,7 +1269,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
   }
 
   @Override
-  public int getType() {
+  public StageType getType() {
     return StageType.MAPRED;
   }
 

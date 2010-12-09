@@ -1,6 +1,6 @@
 build
 build-eclipse
-.classpath
+.classpath*
 .externalToolBuilders
 .project
 .settings
