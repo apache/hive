@@ -92,7 +92,6 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       JoinDesc joinDesc = joinOp.getConf();
       Byte[] order = joinDesc.getTagOrder();
       int numAliases = order.length;
-
       try {
         HashSet<Integer> smallTableOnlySet = MapJoinProcessor.getSmallTableOnlySet(joinDesc
             .getConds());
@@ -115,7 +114,6 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           if (smallTableOnlySet.contains(i)) {
             continue;
           }
-
           // create map join task and set big table as i
           // deep copy a new mapred work from xml
           InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -148,9 +146,7 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
               aliasToPath.put(bigTableAlias, path);
             }
           }
-
         }
-
       } catch (Exception e) {
         e.printStackTrace();
         throw new SemanticException("Generate Map Join Task Error: " + e.getMessage());
@@ -212,7 +208,6 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       }
     }
 
-
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
@@ -243,19 +238,16 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       return null;
     }
 
-
     private JoinOperator getJoinOp(MapRedTask task) throws SemanticException {
       if (task.getWork() == null) {
         return null;
       }
-
       Operator<? extends Serializable> reducerOp = task.getWork().getReducer();
       if (reducerOp instanceof JoinOperator) {
         return (JoinOperator) reducerOp;
       } else {
         return null;
       }
-
     }
   }
 }

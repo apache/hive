@@ -79,6 +79,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   private LinkedHashMap<String, LinkedHashMap<String, ArrayList<String>>> aliasBucketFileNameMapping;
   private LinkedHashMap<String, Integer> bucketFileNameMapping;
+  private float hashtableMemoryUsage;
 
   public HashTableSinkDesc() {
     bucketFileNameMapping = new LinkedHashMap<String, Integer>();
@@ -123,6 +124,14 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
       }
       retainList.put(current.getKey(), list);
     }
+  }
+
+  public float getHashtableMemoryUsage() {
+    return hashtableMemoryUsage;
+  }
+
+  public void setHashtableMemoryUsage(float hashtableMemoryUsage) {
+    this.hashtableMemoryUsage = hashtableMemoryUsage;
   }
 
   public boolean isHandleSkewJoin() {

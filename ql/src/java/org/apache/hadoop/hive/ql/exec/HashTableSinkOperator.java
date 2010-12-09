@@ -118,7 +118,6 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private long hashTableScale;
   private boolean isAbort = false;
 
-
   public static class HashTableSinkObjectCtx {
     ObjectInspector standardOI;
     SerDe serde;
@@ -244,14 +243,13 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     for (int pos = 0; pos < numAliases; pos++) {
       metadataValueTag[pos] = -1;
     }
-
     mapJoinTables = new HashMap<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>>();
 
     int hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     float hashTableLoadFactor = HiveConf.getFloatVar(hconf,
         HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
-    float hashTableMaxMemoryUsage = HiveConf.getFloatVar(hconf,
-        HiveConf.ConfVars.HIVEHASHTABLEMAXMEMORYUSAGE);
+    float hashTableMaxMemoryUsage = this.getConf().getHashtableMemoryUsage();
+
     hashTableScale = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVEHASHTABLESCALE);
     if (hashTableScale <= 0) {
       hashTableScale = 1;

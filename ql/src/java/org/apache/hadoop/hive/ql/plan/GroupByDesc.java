@@ -52,6 +52,8 @@ public class GroupByDesc implements java.io.Serializable {
   private java.util.ArrayList<ExprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private java.util.ArrayList<java.lang.String> outputColumnNames;
+  private float groupByMemoryUsage;
+  private float memoryThreshold;
 
   public GroupByDesc() {
   }
@@ -61,9 +63,9 @@ public class GroupByDesc implements java.io.Serializable {
       final java.util.ArrayList<java.lang.String> outputColumnNames,
       final java.util.ArrayList<ExprNodeDesc> keys,
       final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey) {
+      final boolean groupKeyNotReductionKey,float groupByMemoryUsage, float memoryThreshold) {
     this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey,
-        false);
+        false, groupByMemoryUsage, memoryThreshold);
   }
 
   public GroupByDesc(
@@ -71,13 +73,15 @@ public class GroupByDesc implements java.io.Serializable {
       final java.util.ArrayList<java.lang.String> outputColumnNames,
       final java.util.ArrayList<ExprNodeDesc> keys,
       final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators,
-      final boolean groupKeyNotReductionKey, final boolean bucketGroup) {
+      final boolean groupKeyNotReductionKey, final boolean bucketGroup,float groupByMemoryUsage, float memoryThreshold) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
     this.aggregators = aggregators;
     this.groupKeyNotReductionKey = groupKeyNotReductionKey;
     this.bucketGroup = bucketGroup;
+    this.groupByMemoryUsage = groupByMemoryUsage;
+    this.memoryThreshold = memoryThreshold;
   }
 
   public Mode getMode() {
@@ -127,6 +131,22 @@ public class GroupByDesc implements java.io.Serializable {
   public void setOutputColumnNames(
       java.util.ArrayList<java.lang.String> outputColumnNames) {
     this.outputColumnNames = outputColumnNames;
+  }
+
+  public float getGroupByMemoryUsage() {
+    return groupByMemoryUsage;
+  }
+
+  public void setGroupByMemoryUsage(float groupByMemoryUsage) {
+    this.groupByMemoryUsage = groupByMemoryUsage;
+  }
+
+  public float getMemoryThreshold() {
+    return memoryThreshold;
+  }
+
+  public void setMemoryThreshold(float memoryThreshold) {
+    this.memoryThreshold = memoryThreshold;
   }
 
   @Explain(displayName = "aggregations")

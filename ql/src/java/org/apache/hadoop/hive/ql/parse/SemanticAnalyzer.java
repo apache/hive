@@ -82,12 +82,12 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
@@ -2274,10 +2274,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDAFEvaluators.put(entry.getKey(), genericUDAFEvaluator);
       }
     }
-
+    float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         reduceSinkOperatorInfo), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
@@ -2422,10 +2423,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupByOutputRowResolver.putExpression(value, new ColumnInfo(
           field, udaf.returnType, "", false));
     }
-
+    float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        distPartAgg), new RowSchema(groupByOutputRowResolver
+        distPartAgg,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver
         .getColumnInfos()), reduceSinkOperatorInfo),
         groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
@@ -2540,10 +2542,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDAFEvaluators.put(entry.getKey(), genericUDAFEvaluator);
       }
     }
-
+    float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
     return op;
@@ -2847,10 +2850,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupByOutputRowResolver2.putExpression(value, new ColumnInfo(
           field, udaf.returnType, "", false));
     }
-
+    float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false), new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
+        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
         reduceSinkOperatorInfo2), groupByOutputRowResolver2);
     op.setColumnExprMap(colExprMap);
     return op;
@@ -4578,9 +4582,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Generate group-by operator
+    float groupByMemoryUsage = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-        false), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+        false,groupByMemoryUsage,memoryThreshold), new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
 
     op.setColumnExprMap(colExprMap);

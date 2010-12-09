@@ -161,7 +161,6 @@ public class HashMapWrapper<K, V> implements Serializable {
     int size = mHash.size();
     long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
     double rate = (double) usedMemory / (double) maxMemory;
-    long mem1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     console.printInfo(Utilities.now() + "\tProcessing rows:\t" + numRows + "\tHashtable size:\t"
         + size + "\tMemory usage:\t" + usedMemory + "\trate:\t" + num.format(rate));
     if (rate > (double) maxMemoryUsage) {

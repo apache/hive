@@ -253,6 +253,18 @@
 </property>
 
 <property>
+  <name>hive.mapjoin.followby.map.aggr.hash.percentmemory</name>
+  <value>0.3</value>
+  <description>Portion of total memory to be used by map-side grup aggregation hash table, when this group by is followed by map join</description>
+</property>
+
+<property>
+  <name>hive.map.aggr.hash.force.flush.memory.threshold</name>
+  <value>0.9</value>
+  <description>The max memory to be used by map-side grup aggregation hash table, if the memory usage is higher than this number, force to flush data</description>
+</property>
+
+<property>
   <name>hive.map.aggr.hash.percentmemory</name>
   <value>0.5</value>
   <description>Portion of total memory to be used by map-side grup aggregation hash table</description>
@@ -505,6 +517,12 @@
 </property>
 
 <property>
+  <name>hive.mapjoin.followby.gby.localtask.max.memory.usage</name>
+  <value>0.55</value>
+  <description>This number means how much memory the local task can take to hold the key/value into in-memory hash table when this map join followed by a group by; If the local task's memory usage is more than this number, the local task will be abort by themself. It means the data of small table is too large to be hold in the memory.</description>
+</property>
+
+<property>
   <name>hive.mapjoin.check.memory.rows</name>
   <value>100000</value>
   <description>The number means after how many rows processed it needs to check the memory usage</description>
@@ -648,7 +666,6 @@
   <value>100000</value>
   <description>Maximum number of HDFS files created by all mappers/reducers in a MapReduce job.</description>
 </property>
-
 
 <property>
   <name>hive.exec.default.partition.name</name>

@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1290011504</string> 
+          <string>1291874216</string> 
          </void> 
         </object> 
        </void> 
@@ -809,12 +809,18 @@
                     </void> 
                    </object> 
                   </void> 
+                  <void property="groupByMemoryUsage"> 
+                   <float>0.5</float> 
+                  </void> 
                   <void property="keys"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object idref="ExprNodeGenericFuncDesc0"/> 
                     </void> 
                    </object> 
+                  </void> 
+                  <void property="memoryThreshold"> 
+                   <float>0.9</float> 
                   </void> 
                   <void property="mode"> 
                    <object class="org.apache.hadoop.hive.ql.plan.GroupByDesc$Mode" method="valueOf"> 
@@ -1148,7 +1154,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1160,7 +1166,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1217,11 +1223,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1290011504</string> 
+           <string>1291874216</string> 
           </void> 
          </object> 
         </void> 
@@ -1264,13 +1270,13 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/tmp/njain/hive_2010-11-17_08-31-47_349_1076341287549233934/-ext-10001</string> 
+                 <string>file:/tmp/njain/hive_2010-12-08_21-56-58_827_2958066279964475091/-ext-10001</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>file:/tmp/njain/hive_2010-11-17_08-31-47_349_1076341287549233934/-ext-10001/</string> 
+                 <string>file:/tmp/njain/hive_2010-12-08_21-56-58_827_2958066279964475091/-ext-10001/</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -1779,8 +1785,14 @@
           </void> 
          </object> 
         </void> 
+        <void property="groupByMemoryUsage"> 
+         <float>0.5</float> 
+        </void> 
         <void property="keys"> 
          <object class="java.util.ArrayList"/> 
+        </void> 
+        <void property="memoryThreshold"> 
+         <float>0.9</float> 
         </void> 
         <void property="mode"> 
          <object class="org.apache.hadoop.hive.ql.plan.GroupByDesc$Mode" method="valueOf"> 

@@ -75,7 +75,6 @@ public class MapredWork implements Serializable {
 
   private QBJoinTree joinTree;
 
-
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
   }

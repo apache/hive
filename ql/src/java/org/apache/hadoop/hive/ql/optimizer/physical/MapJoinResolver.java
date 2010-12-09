@@ -55,31 +55,32 @@ import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalR
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
 
 /**
- * An implementation of PhysicalPlanResolver. It iterator each MapRedTask to see whether the task has a local map work
- * if it has, it will move the local work to a new local map join task. Then it will make this new generated task depends on
- * current task's parent task and make current task depends on this new generated task.
+ * An implementation of PhysicalPlanResolver. It iterator each MapRedTask to see whether the task
+ * has a local map work if it has, it will move the local work to a new local map join task. Then it
+ * will make this new generated task depends on current task's parent task and make current task
+ * depends on this new generated task.
  */
 public class MapJoinResolver implements PhysicalPlanResolver {
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
 
-    //create dispatcher and graph walker
+    // create dispatcher and graph walker
     Dispatcher disp = new LocalMapJoinTaskDispatcher(pctx);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
-    //get all the tasks nodes from root task
+    // get all the tasks nodes from root task
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.rootTasks);
 
-    //begin to walk through the task tree.
+    // begin to walk through the task tree.
     ogw.startWalking(topNodes, null);
     return pctx;
   }
 
   /**
-   * Iterator each tasks. If this task has a local work,create a new task for this local work, named MapredLocalTask.
-   * then make this new generated task depends on current task's parent task, and make current task
-   * depends on this new generated task
+   * Iterator each tasks. If this task has a local work,create a new task for this local work, named
+   * MapredLocalTask. then make this new generated task depends on current task's parent task, and
+   * make current task depends on this new generated task
    */
   class LocalMapJoinTaskDispatcher implements Dispatcher {
 
@@ -91,195 +92,160 @@ public class MapJoinResolver implements PhysicalPlanResolver {
     }
 
     private void processCurrentTask(Task<? extends Serializable> currTask,
-        ConditionalTask conditionalTask) throws SemanticException{
-
-
-      //get current mapred work and its local work
+        ConditionalTask conditionalTask) throws SemanticException {
+      // get current mapred work and its local work
       MapredWork mapredWork = (MapredWork) currTask.getWork();
       MapredLocalWork localwork = mapredWork.getMapLocalWork();
-
-
-      if(localwork != null){
-        //get the context info and set up the shared tmp URI
+      if (localwork != null) {
+        // get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
         String tmpFileURI = Utilities.generateTmpURI(ctx.getLocalTmpFileURI(), currTask.getId());
         localwork.setTmpFileURI(tmpFileURI);
         String hdfsTmpURI = Utilities.generateTmpURI(ctx.getMRTmpFileURI(), currTask.getId());
         mapredWork.setTmpHDFSFileURI(hdfsTmpURI);
-        //create a task for this local work; right now, this local work is shared
-        //by the original MapredTask and this new generated MapredLocalTask.
-        MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork,
-            physicalContext.getParseContext().getConf());
+        // create a task for this local work; right now, this local work is shared
+        // by the original MapredTask and this new generated MapredLocalTask.
+        MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork, physicalContext
+            .getParseContext().getConf());
 
-        //set the backup task from curr task
+        // set the backup task from curr task
         localTask.setBackupTask(currTask.getBackupTask());
         localTask.setBackupChildrenTasks(currTask.getBackupChildrenTasks());
         currTask.setBackupChildrenTasks(null);
         currTask.setBackupTask(null);
 
-        if(currTask.getTaskTag() == Task.CONVERTED_MAPJOIN) {
+        if (currTask.getTaskTag() == Task.CONVERTED_MAPJOIN) {
           localTask.setTaskTag(Task.CONVERTED_LOCAL_MAPJOIN);
         } else {
           localTask.setTaskTag(Task.LOCAL_MAPJOIN);
         }
+        // replace the map join operator to local_map_join operator in the operator tree
+        // and return all the dummy parent
+        LocalMapJoinProcCtx  localMapJoinProcCtx= adjustLocalTask(localTask);
+        List<Operator<? extends Serializable>> dummyOps = localMapJoinProcCtx.getDummyParentOp();
 
-        //replace the map join operator to local_map_join operator in the operator tree
-        //and return all the dummy parent
-        List<Operator<? extends Serializable>>  dummyOps= adjustLocalTask(localTask);
-
-        //create new local work and setup the dummy ops
+        // create new local work and setup the dummy ops
         MapredLocalWork newLocalWork = new MapredLocalWork();
         newLocalWork.setDummyParentOp(dummyOps);
         newLocalWork.setTmpFileURI(tmpFileURI);
         newLocalWork.setInputFileChangeSensitive(localwork.getInputFileChangeSensitive());
         mapredWork.setMapLocalWork(newLocalWork);
-
-        //get all parent tasks
+        // get all parent tasks
         List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
         currTask.setParentTasks(null);
         if (parentTasks != null) {
-
           for (Task<? extends Serializable> tsk : parentTasks) {
-            //make new generated task depends on all the  parent tasks of current task.
+            // make new generated task depends on all the parent tasks of current task.
             tsk.addDependentTask(localTask);
-            //remove the current task from its original parent task's dependent task
+            // remove the current task from its original parent task's dependent task
             tsk.removeDependentTask(currTask);
           }
-
-        }else{
-          //in this case, current task is in the root tasks
-          //so add this new task into root tasks and remove the current task from root tasks
-          if(conditionalTask== null){
+        } else {
+          // in this case, current task is in the root tasks
+          // so add this new task into root tasks and remove the current task from root tasks
+          if (conditionalTask == null) {
             physicalContext.addToRootTask(localTask);
             physicalContext.removeFromRootTask(currTask);
-          }else{
-            //set list task
+          } else {
+            // set list task
             List<Task<? extends Serializable>> listTask = conditionalTask.getListTasks();
-            ConditionalWork conditionalWork= conditionalTask.getWork();
+            ConditionalWork conditionalWork = conditionalTask.getWork();
             int index = listTask.indexOf(currTask);
             listTask.set(index, localTask);
-
-            //set list work
-            List<Serializable> listWork = (List<Serializable>)conditionalWork.getListWorks();
+            // set list work
+            List<Serializable> listWork = (List<Serializable>) conditionalWork.getListWorks();
             index = listWork.indexOf(mapredWork);
-            listWork.set(index,(Serializable)localwork);
+            listWork.set(index, (Serializable) localwork);
             conditionalWork.setListWorks(listWork);
-
             ConditionalResolver resolver = conditionalTask.getResolver();
-            if(resolver instanceof ConditionalResolverSkewJoin){
-              //get bigKeysDirToTaskMap
-              ConditionalResolverSkewJoinCtx context  =
-                (ConditionalResolverSkewJoinCtx) conditionalTask.getResolverCtx();
-              HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap =
-                context.getDirToTaskMap();
-
-              //to avoid concurrent modify the hashmap
-              HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap =
-                new HashMap<String, Task<? extends Serializable>>();
-
-
-              //reset the resolver
-              for(Map.Entry<String, Task<? extends Serializable>> entry: bigKeysDirToTaskMap.entrySet()){
+            if (resolver instanceof ConditionalResolverSkewJoin) {
+              // get bigKeysDirToTaskMap
+              ConditionalResolverSkewJoinCtx context = (ConditionalResolverSkewJoinCtx) conditionalTask
+                  .getResolverCtx();
+              HashMap<String, Task<? extends Serializable>> bigKeysDirToTaskMap = context
+                  .getDirToTaskMap();
+              // to avoid concurrent modify the hashmap
+              HashMap<String, Task<? extends Serializable>> newbigKeysDirToTaskMap = new HashMap<String, Task<? extends Serializable>>();
+              // reset the resolver
+              for (Map.Entry<String, Task<? extends Serializable>> entry : bigKeysDirToTaskMap
+                  .entrySet()) {
                 Task<? extends Serializable> task = entry.getValue();
                 String key = entry.getKey();
-                if(task.equals(currTask)){
+                if (task.equals(currTask)) {
                   newbigKeysDirToTaskMap.put(key, localTask);
-                }else{
+                } else {
                   newbigKeysDirToTaskMap.put(key, task);
                 }
               }
-
               context.setDirToTaskMap(newbigKeysDirToTaskMap);
               conditionalTask.setResolverCtx(context);
-
-            }else if(resolver instanceof ConditionalResolverCommonJoin){
-              //get bigKeysDirToTaskMap
-              ConditionalResolverCommonJoinCtx context  =
-                (ConditionalResolverCommonJoinCtx) conditionalTask.getResolverCtx();
-              HashMap<String, Task<? extends Serializable>> aliasToWork =
-                context.getAliasToTask();
-
-              //to avoid concurrent modify the hashmap
-              HashMap<String, Task<? extends Serializable>> newAliasToWork =
-                new HashMap<String, Task<? extends Serializable>>();
-
-              //reset the resolver
-              for(Map.Entry<String, Task<? extends Serializable>> entry: aliasToWork.entrySet()){
+            } else if (resolver instanceof ConditionalResolverCommonJoin) {
+              // get bigKeysDirToTaskMap
+              ConditionalResolverCommonJoinCtx context = (ConditionalResolverCommonJoinCtx) conditionalTask
+                  .getResolverCtx();
+              HashMap<String, Task<? extends Serializable>> aliasToWork = context.getAliasToTask();
+              // to avoid concurrent modify the hashmap
+              HashMap<String, Task<? extends Serializable>> newAliasToWork = new HashMap<String, Task<? extends Serializable>>();
+              // reset the resolver
+              for (Map.Entry<String, Task<? extends Serializable>> entry : aliasToWork.entrySet()) {
                 Task<? extends Serializable> task = entry.getValue();
                 String key = entry.getKey();
 
-                if(task.equals(currTask)){
+                if (task.equals(currTask)) {
                   newAliasToWork.put(key, localTask);
-                }else{
+                } else {
                   newAliasToWork.put(key, task);
                 }
               }
-
               context.setAliasToTask(newAliasToWork);
               conditionalTask.setResolverCtx(context);
-
-            }else{
-
             }
-
-
           }
         }
-
-        //make current task depends on this new generated localMapJoinTask
-        //now localTask is the parent task of the current task
+        // make current task depends on this new generated localMapJoinTask
+        // now localTask is the parent task of the current task
         localTask.addDependentTask(currTask);
-
       }
-
     }
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
       Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
-      //not map reduce task or not conditional task, just skip
-      if(currTask.isMapRedTask() ){
-        if(currTask instanceof ConditionalTask){
-          //get the list of task
-          List<Task<? extends Serializable>> taskList =  ((ConditionalTask) currTask).getListTasks();
-          for(Task<? extends Serializable> tsk : taskList){
-            if(tsk.isMapRedTask()){
-              this.processCurrentTask(tsk,((ConditionalTask) currTask));
+      // not map reduce task or not conditional task, just skip
+      if (currTask.isMapRedTask()) {
+        if (currTask instanceof ConditionalTask) {
+          // get the list of task
+          List<Task<? extends Serializable>> taskList = ((ConditionalTask) currTask).getListTasks();
+          for (Task<? extends Serializable> tsk : taskList) {
+            if (tsk.isMapRedTask()) {
+              this.processCurrentTask(tsk, ((ConditionalTask) currTask));
             }
           }
-        }else{
-          this.processCurrentTask(currTask,null);
+        } else {
+          this.processCurrentTask(currTask, null);
         }
       }
       return null;
     }
 
-    //replace the map join operator to local_map_join operator in the operator tree
-    private List<Operator<? extends Serializable>> adjustLocalTask(MapredLocalTask task) throws SemanticException {
-
-      LocalMapJoinProcCtx localMapJoinProcCtx = new LocalMapJoinProcCtx(task,
-          physicalContext.getParseContext());
-
+    // replace the map join operator to local_map_join operator in the operator tree
+    private LocalMapJoinProcCtx adjustLocalTask(MapredLocalTask task)
+        throws SemanticException {
+      LocalMapJoinProcCtx localMapJoinProcCtx = new LocalMapJoinProcCtx(task, physicalContext
+          .getParseContext());
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-      //opRules.put(new RuleRegExp("R1", "MAPJOIN%.*MAPJOIN%"),
-          //LocalMapJoinProcFactory.getMapJoinMapJoinProc());
       opRules.put(new RuleRegExp("R1", "MAPJOIN%"), LocalMapJoinProcFactory.getJoinProc());
-
       // The dispatcher fires the processor corresponding to the closest
       // matching rule and passes the context along
-      Dispatcher disp = new DefaultRuleDispatcher(LocalMapJoinProcFactory
-          .getDefaultProc(), opRules, localMapJoinProcCtx);
+      Dispatcher disp = new DefaultRuleDispatcher(LocalMapJoinProcFactory.getDefaultProc(),
+          opRules, localMapJoinProcCtx);
       GraphWalker ogw = new DefaultGraphWalker(disp);
-
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
-
       topNodes.addAll(task.getWork().getAliasToWork().values());
       ogw.startWalking(topNodes, null);
-
-      return localMapJoinProcCtx.getDummyParentOp();
-
+      return localMapJoinProcCtx;
     }
 
     public PhysicalContext getPhysicalContext() {
@@ -290,6 +256,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       this.physicalContext = physicalContext;
     }
   }
+
   /**
    * A container of current task and parse context.
    */
@@ -297,12 +264,13 @@ public class MapJoinResolver implements PhysicalPlanResolver {
     private Task<? extends Serializable> currentTask;
     private ParseContext parseCtx;
     private List<Operator<? extends Serializable>> dummyParentOp = null;
+    private boolean isFollowedByGroupBy;
 
-    public LocalMapJoinProcCtx(Task<? extends Serializable> task,
-        ParseContext parseCtx) {
+    public LocalMapJoinProcCtx(Task<? extends Serializable> task, ParseContext parseCtx) {
       currentTask = task;
       this.parseCtx = parseCtx;
       dummyParentOp = new ArrayList<Operator<? extends Serializable>>();
+      isFollowedByGroupBy = false;
     }
 
     public Task<? extends Serializable> getCurrentTask() {
@@ -313,6 +281,13 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       this.currentTask = currentTask;
     }
 
+    public boolean isFollowedByGroupBy() {
+      return isFollowedByGroupBy;
+    }
+
+    public void setFollowedByGroupBy(boolean isFollowedByGroupBy) {
+      this.isFollowedByGroupBy = isFollowedByGroupBy;
+    }
     public ParseContext getParseCtx() {
       return parseCtx;
     }
@@ -321,17 +296,16 @@ public class MapJoinResolver implements PhysicalPlanResolver {
       this.parseCtx = parseCtx;
     }
 
-    public void setDummyParentOp(List<Operator<? extends Serializable>> op){
-      this.dummyParentOp=op;
+    public void setDummyParentOp(List<Operator<? extends Serializable>> op) {
+      this.dummyParentOp = op;
     }
 
-    public List<Operator<? extends Serializable>> getDummyParentOp(){
+    public List<Operator<? extends Serializable>> getDummyParentOp() {
       return this.dummyParentOp;
     }
-    public void addDummyParentOp(Operator<? extends Serializable> op){
-       this.dummyParentOp.add(op);
-    }
 
+    public void addDummyParentOp(Operator<? extends Serializable> op) {
+      this.dummyParentOp.add(op);
+    }
   }
 }
-

@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,6 +135,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   // new Key ObjectInspectors are objectInspectors from the parent
   transient StructObjectInspector newKeyObjectInspector;
   transient StructObjectInspector currentKeyObjectInspector;
+  public static MemoryMXBean memoryMXBean;
+  private long maxMemory;
+  private float memoryThreshold;
 
   /**
    * This is used to store the position and field names for variable length
@@ -373,6 +378,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     if (hashAggr) {
       computeMaxEntriesHashAggr(hconf);
     }
+    memoryMXBean = ManagementFactory.getMemoryMXBean();
+    maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+    memoryThreshold = this.getConf().getMemoryThreshold();
     initializeChildren(hconf);
   }
 
@@ -386,8 +394,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    *         aggregation only
    **/
   private void computeMaxEntriesHashAggr(Configuration hconf) throws HiveException {
-    maxHashTblMemory = (long) (HiveConf.getFloatVar(hconf,
-        HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY) * Runtime.getRuntime().maxMemory());
+    float memoryPercentage = this.getConf().getGroupByMemoryUsage();
+    maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
     estimateRowSize();
   }
 
@@ -824,10 +832,18 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    **/
   private boolean shouldBeFlushed(KeyWrapper newKeys) {
     int numEntries = hashAggregations.size();
+    long usedMemory;
+    float rate;
 
     // The fixed size for the aggregation class is already known. Get the
     // variable portion of the size every NUMROWSESTIMATESIZE rows.
     if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
+      //check how much memory left memory
+      usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
+      rate = (float) usedMemory / (float) maxMemory;
+      if(rate > memoryThreshold){
+        return true;
+      }
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.getKeyArray()[pos.intValue()];
         // Ignore nulls

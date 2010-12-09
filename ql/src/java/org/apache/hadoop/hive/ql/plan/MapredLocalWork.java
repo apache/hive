@@ -45,7 +45,6 @@ public class MapredLocalWork implements Serializable {
   private String tmpFileURI;
   private String stageID;
 
-
   private List<Operator<? extends Serializable>> dummyParentOp ;
 
   public MapredLocalWork() {
@@ -89,7 +88,6 @@ public class MapredLocalWork implements Serializable {
   public void setStageID(String stageID) {
     this.stageID = stageID;
   }
-
 
   public void setAliasToWork(
       final LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork) {
