@@ -300,6 +300,9 @@ Trunk -  Unreleased
     HIVE-1834 more debugging for locking
     (namit via He Yongqiang)
 
+    HIVE-1415: add CLI command for executing a SQL script
+    (Edward Capriolo via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

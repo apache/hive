@@ -89,6 +89,20 @@ public class CliDriver {
       // this counts as a successful run
       System.exit(0);
 
+    } else if (tokens[0].equalsIgnoreCase("source")) {
+      File sourceFile = new File(cmd_1);
+      if (! sourceFile.isFile()){
+        console.printError("File: "+ cmd_1 + " is not a file.");
+        ret = 1;
+      } else {
+        try {
+          this.processFile(cmd_1);
+        } catch (IOException e) {
+          console.printError("Failed processing file "+ cmd_1 +" "+ e.getLocalizedMessage(),
+            org.apache.hadoop.util.StringUtils.stringifyException(e));
+          ret = 1;
+        }
+      }
     } else if (cmd_trimmed.startsWith("!")) {
 
       String shell_cmd = cmd_trimmed.substring(1);

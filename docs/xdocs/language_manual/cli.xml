@@ -143,6 +143,11 @@ Use ";" (semicolon) to terminate commands. Comments in scripts can be specified 
 <td>Executes a hive query and prints results to standard out</td>
 </tr>
 
+<tr>
+<td>source FILE</td>
+<td>Used to execute a script file inside the CLI.</td>
+</tr>
+
 </table>
 
 Sample Usage:
