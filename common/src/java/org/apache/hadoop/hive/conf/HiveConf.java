@@ -323,7 +323,10 @@ public class HiveConf extends Configuration {
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
 
     // Print column names in output
-    HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false);
+    HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
+
+    HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false);
+
     ;
 
 

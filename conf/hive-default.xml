@@ -815,4 +815,11 @@
   <description>This enables substitution using syntax like ${var} ${system:var} and ${env:var}.</description>
 </property>
 
+<property>
+  <name>hive.error.on.empty.partition</name>
+  <value>false</value>
+  <description>Whether to throw an excpetion if dynamic partition insert generates empty results.</description>
+</property>
+
+
 </configuration>

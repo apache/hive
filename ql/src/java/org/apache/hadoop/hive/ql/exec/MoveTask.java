@@ -185,7 +185,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
 
             // publish DP columns to its subscribers
-            pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+            if (dps != null && dps.size() > 0) {
+              pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+            }
 
             // load the list of DP partitions and return the list of partition specs
             // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
@@ -204,6 +206,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 	dpCtx.getNumDPCols(),
                 	tbd.getHoldDDLTime());
 
+            if (dp.size() == 0 && conf.getBoolVar(HiveConf.ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION)) {
+              throw new HiveException("This query creates no partitions." +
+              		" To turn off this error, set hive.error.on.empty.partition=false.");
+            }
 
             // for each partition spec, get the partition
             // and put it to WriteEntity for post-exec hook
