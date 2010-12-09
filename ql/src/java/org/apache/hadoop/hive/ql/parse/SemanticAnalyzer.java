@@ -7283,7 +7283,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if(MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers) != null) {
           hasNonLocalJob = true;
           break;
-        }
+        }else{
+          mrtask.setLocalMode(true);
+	}
       } catch (IOException e) {
         throw new SemanticException (e);
       }

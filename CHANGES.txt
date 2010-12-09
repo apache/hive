@@ -121,6 +121,9 @@ Trunk -  Unreleased
 
     HIVE-1096 Hive variables (Edward Capriolo via namit)
 
+    HIVE-1842 Track if a map-reduce job is running locally
+    (Liyin Tang via namit)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)
