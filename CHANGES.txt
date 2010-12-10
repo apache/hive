@@ -602,6 +602,9 @@ Trunk -  Unreleased
     HIVE-1843 Add an option in dynamic partition inserts to throw an error if
     0 partitions are created (Ning Zhang via namit)
 
+    HIVE-1846 Hive should not assume that local mode mappers run in same JVM
+    (rvadali via jssarma)
+
   TESTS
 
     HIVE-1464. improve  test query performance

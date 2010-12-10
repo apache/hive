@@ -169,7 +169,15 @@ public final class Utilities {
       assert jobID != null;
       gWork = gWorkMap.get(jobID);
       if (gWork == null) {
-        InputStream in = new FileInputStream("HIVE_PLAN" + jobID);
+        String jtConf = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT);
+        String path;
+        if (jtConf == "local") {
+          String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
+          path = new Path(planPath).toUri().getPath();
+        } else {
+          path = "HIVE_PLAN" + jobID;
+        }
+        InputStream in = new FileInputStream(path);
         MapredWork ret = deserializeMapRedWork(in, job);
         gWork = ret;
         gWork.initialize();
@@ -302,15 +310,15 @@ public final class Utilities {
       Path planPath = new Path(hiveScratchDir, jobID);
       HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
 
+      // use the default file system of the job
+      FileSystem fs = planPath.getFileSystem(job);
+      FSDataOutputStream out = fs.create(planPath);
+      serializeMapRedWork(w, out);
+
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
       // able to get the plan directly from the cache
       if (!HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT).equals("local")) {
-        // use the default file system of the job
-        FileSystem fs = planPath.getFileSystem(job);
-        FSDataOutputStream out = fs.create(planPath);
-        serializeMapRedWork(w, out);
-
         // Set up distributed cache
         DistributedCache.createSymlink(job);
         String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;
