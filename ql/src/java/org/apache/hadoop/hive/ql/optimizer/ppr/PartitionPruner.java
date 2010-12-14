@@ -175,6 +175,8 @@ public class PartitionPruner implements Transform {
       Object[] rowWithPart = new Object[2];
 
       if (tab.isPartitioned()) {
+        LOG.debug("tabname = " + tab.getTableName() + " is partitioned");
+
         for (String partName : Hive.get().getPartitionNames(tab.getDbName(),
             tab.getTableName(), (short) -1)) {
           // If the "strict" mode is on, we have to provide partition pruner for
@@ -192,6 +194,7 @@ public class PartitionPruner implements Transform {
           LinkedHashMap<String, String> partSpec = Warehouse
               .makeSpecFromName(partName);
 
+          LOG.trace("about to process partition " + partSpec + " for pruning ");
           // evaluate the expression tree
           if (prunerExpr != null) {
             Boolean r = (Boolean) PartExprEvalUtils.evalExprWithPart(prunerExpr, partSpec,
