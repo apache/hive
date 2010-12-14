@@ -608,6 +608,9 @@ Trunk -  Unreleased
     HIVE-1848 Bug in MAPJOIN with hints
     (He Yongqiang via namit)
 
+    HIVE-1845 Some attributes in eclipse template file are deprecated
+    (Liyin Tang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
