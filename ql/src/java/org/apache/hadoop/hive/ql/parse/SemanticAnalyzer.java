@@ -1730,6 +1730,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           : selectExprs.getChildCount());
       if (selectExprs != null) {
         for (int i = 0; i < selectExprs.getChildCount(); ++i) {
+          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.TOK_HINTLIST) {
+            continue;
+          }
           // table.column AS alias
           ASTNode grpbyExpr = (ASTNode) selectExprs.getChild(i).getChild(0);
           result.add(grpbyExpr);
