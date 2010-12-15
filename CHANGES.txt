@@ -124,6 +124,9 @@ Trunk -  Unreleased
     HIVE-1842 Track if a map-reduce job is running locally
     (Liyin Tang via namit)
 
+    HIVE-842 Authentication Infrastructure for Hive
+    (Ashutosh Chauhan via He Yongqiang)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

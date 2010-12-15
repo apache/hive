@@ -32,6 +32,7 @@ to call at top-level: ant deploy-contrib compile-core-test
     <pathelement location="${hadoop.newstyle-name.jar}"/>
     <pathelement location="${hadoop.newstyle-name.test.jar}"/>
     <pathelement location="${hadoop.newstyle-name.tools.jar}"/>
+  	<fileset dir="../lib" includes="*.jar" />
     <fileset dir="${hadoop.root}/lib">
       <include name="**/*.jar" />
       <exclude name="**/excluded/" />

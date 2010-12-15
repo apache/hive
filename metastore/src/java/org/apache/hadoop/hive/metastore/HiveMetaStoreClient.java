@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -62,6 +65,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private URI metastoreUris[];
   private final boolean standAloneClient = false;
   private final HiveMetaHookLoader hookLoader;
+  private final HiveConf conf;
 
   // for thrift connects
   private int retries = 5;
@@ -80,7 +84,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (conf == null) {
       conf = new HiveConf(HiveMetaStoreClient.class);
     }
-
+    this.conf = conf;
 
     boolean localMetaStore = conf.getBoolean("hive.metastore.local", false);
     if (localMetaStore) {
@@ -167,18 +171,41 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   private void openStore(URI store) throws MetaException {
-    open = false;
-    transport = new TSocket(store.getHost(), store.getPort());
-    ((TSocket) transport).setTimeout(20000);
-    TProtocol protocol = new TBinaryProtocol(transport);
-    client = new ThriftHiveMetastore.Client(protocol);
 
     for (int i = 0; i < retries && !open; ++i) {
-      try {
+      open = false;
+      transport = new TSocket(store.getHost(), store.getPort());
+      ((TSocket) transport).setTimeout(20000);
+
+      // Wrap thrift connection with SASL if enabled.
+      boolean useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
+      if (useSasl) {
+        try {
+          HadoopThriftAuthBridge.Client authBridge =
+          ShimLoader.getHadoopThriftAuthBridge().createClient();
+          String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
+          transport = authBridge.createClientTransport(
+          principalConfig, store.getHost(), "KERBEROS",transport);
+        } catch (IOException ioe) {
+          LOG.error("Couldn't create client transport", ioe);
+          throw new MetaException(ioe.toString());
+        }
+     }
+
+     TProtocol protocol = new TBinaryProtocol(transport);
+     client = new ThriftHiveMetastore.Client(protocol);
+
+     try {
         transport.open();
         open = true;
       } catch (TTransportException e) {
+        if (LOG.isDebugEnabled()) {
+          LOG.warn("failed to connect to MetaStore, re-trying...", e);
+        } else {
+        // Don't print full exception trace if DEBUG is not on.
         LOG.warn("failed to connect to MetaStore, re-trying...");
+        }
+
         try {
           Thread.sleep(1000);
         } catch (InterruptedException ignore) {

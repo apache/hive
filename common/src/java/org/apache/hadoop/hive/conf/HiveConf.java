@@ -151,6 +151,9 @@ public class HiveConf extends Configuration {
         "_INTERMEDIATE_ARCHIVED"),
     METASTORE_INT_EXTRACTED("hive.metastore.archive.intermediate.extracted",
         "_INTERMEDIATE_EXTRACTED"),
+    METASTORE_KERBEROS_KEYTAB_FILE("hive.metastore.kerberos.keytab.file", ""),
+    METASTORE_KERBEROS_PRINCIPAL("hive.metastore.kerberos.principal", ""),
+    METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false),
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),

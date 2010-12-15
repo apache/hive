@@ -632,6 +632,24 @@
 </property>
 
 <property>
+  <name>hive.metastore.sasl.enabled</name>
+  <value>false</value>
+  <description>If true, the metastore thrift interface will be secured with SASL. Clients must authenticate with Kerberos.</description>
+</property>
+
+<property>
+  <name>hive.metastore.kerberos.keytab.file</name>
+  <value></value>
+  <description>The path to the Kerberos Keytab file containing the metastore thrift server's service principal.</description>
+</property>
+
+<property>
+  <name>hive.metastore.kerberos.principal</name>
+  <value>hive-metastore/_HOST@EXAMPLE.COM</value>
+  <description>The service principal for the metastore thrift server. The special string _HOST will be replaced automatically with the correct host name.</description>
+</property>
+
+<property>
   <name>hive.optimize.reducededuplication</name>
   <value>true</value>
   <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>

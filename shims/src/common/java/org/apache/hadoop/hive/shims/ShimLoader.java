@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.VersionInfo;
 
 /**
@@ -75,10 +76,23 @@ public abstract class ShimLoader {
     return jettyShims;
   }
 
+  public static synchronized HadoopThriftAuthBridge getHadoopThriftAuthBridge() {
+        if ("0.20S".equals(getMajorVersion())) {
+          return createShim("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge20S",
+                            HadoopThriftAuthBridge.class);
+        } else {
+          return new HadoopThriftAuthBridge();
+        }
+      }
+
   @SuppressWarnings("unchecked")
   private static <T> T loadShims(Map<String, String> classMap, Class<T> xface) {
     String vers = getMajorVersion();
     String className = classMap.get(vers);
+    return createShim(className, xface);
+  }
+
+    private static <T> T createShim(String className, Class<T> xface) {
     try {
       Class clazz = Class.forName(className);
       return xface.cast(clazz.newInstance());

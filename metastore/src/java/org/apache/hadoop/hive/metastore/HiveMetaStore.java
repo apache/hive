@@ -57,9 +57,12 @@ import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -68,18 +71,18 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.FacebookService;
 import com.facebook.fb303.fb_status;
 
 /**
  * TODO:pc remove application logic to a separate interface.
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
+  public static final Log LOG = LogFactory.getLog(
+    HiveMetaStore.class);
 
   public static class HMSHandler extends FacebookBase implements
       ThriftHiveMetastore.Iface {
-    public static final Log LOG = LogFactory.getLog(HiveMetaStore.class
-        .getName());
+    public static final Log LOG = HiveMetaStore.LOG;
     private static boolean createDefaultDB = false;
     private String rawStoreClassName;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
@@ -2185,17 +2188,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
+      boolean useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      FacebookService.Processor processor = new ThriftHiveMetastore.Processor(
-          handler);
+      TProcessor processor = new ThriftHiveMetastore.Processor(handler);
+      TTransportFactory transFactory;
+      if (useSasl) {
+        HadoopThriftAuthBridge.Server authBridge = ShimLoader.getHadoopThriftAuthBridge().createServer(
+           conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
+           conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
+        transFactory = authBridge.createTransportFactory();
+        processor = authBridge.wrapProcessor(processor);
+      } else {
+        transFactory = new TTransportFactory();
+      }
+
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
       options.minWorkerThreads = minWorkerThreads;
       options.maxWorkerThreads = maxWorkerThreads;
       TServer server = new TThreadPoolServer(processor, serverTransport,
-          new TTransportFactory(), new TTransportFactory(),
+          transFactory, transFactory,
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
       HMSHandler.LOG.info("Started the new metaserver on port [" + port
           + "]...");
