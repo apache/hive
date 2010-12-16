@@ -58,7 +58,7 @@
           <exclude org="org.apache.ant" module="ant"/>
           <exclude org="oracle" module="ojdbc14_g"/>
         </dependency>
-        <dependency org="javax.jdo" name="jdo-api" rev="${jdo-api.version}">
+        <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}">
           <exclude org="javax.transaction" module="jta"/>
           <exclude org="org.apache.ant" module="ant"/>
           <exclude org="org.apache.geronimo.specs" module="geronimo-jpa_3.0_spec"/>

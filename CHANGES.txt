@@ -127,6 +127,8 @@ Trunk -  Unreleased
     HIVE-842 Authentication Infrastructure for Hive
     (Ashutosh Chauhan via He Yongqiang)
 
+    HIVE-1853 Downrgrade JDO (Paul Yang via namit)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

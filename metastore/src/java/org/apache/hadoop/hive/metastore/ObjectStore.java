@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -66,9 +66,9 @@ import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MType;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -1022,53 +1022,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MPartition> listMPartitionsByFilter(String dbName, String tableName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException{
-    boolean success = false;
-    List<MPartition> mparts = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listMPartitionsByFilter");
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
-
-      MTable mtable = getMTable(dbName, tableName);
-      if( mtable == null ) {
-        throw new NoSuchObjectException("Specified database/table does not exist : "
-            + dbName + "." + tableName);
-      }
-      Map<String, String> params = new HashMap<String, String>();
-      String queryFilterString =
-        makeQueryFilterString(mtable, filter, params);
-
-      Query query = pm.newQuery(MPartition.class,
-          queryFilterString);
-
-      if( maxParts >= 0 ) {
-        //User specified a row limit, set it on the Query
-        query.setRange(0, maxParts);
-      }
-
-      LOG.debug("Filter specified is " + filter + "," +
-             " JDOQL filter is " + queryFilterString);
-
-      params.put("t1", tableName.trim());
-      params.put("t2", dbName.trim());
-
-      String parameterDeclaration = makeParameterDeclarationString(params);
-      query.declareParameters(parameterDeclaration);
-      query.setOrdering("partitionName ascending");
-
-      mparts = (List<MPartition>) query.executeWithMap(params);
-
-      LOG.debug("Done executing query for listMPartitionsByFilter");
-      pm.retrieveAll(mparts);
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listMPartitionsByFilter");
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return mparts;
+    throw new RuntimeException("listMPartitionsByFilter is not supported " +
+        "due to a JDO library downgrade");
   }
 
   @Override

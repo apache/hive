@@ -1781,45 +1781,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, TException {
       incrementCounter("get_partitions_ps");
       logStartPartitionFunction("get_partitions_ps", db_name, tbl_name, part_vals);
+      List<Partition> parts = null;
+      List<Partition> matchingParts = new ArrayList<Partition>();
 
-      Table t;
+      // This gets all the partitions and then filters based on the specified
+      // criteria. An alternative approach would be to get all the partition
+      // names, do the filtering on the names, and get the partition for each
+      // of the names. that match.
+
       try {
-        t = get_table(db_name, tbl_name);
+         parts = get_partitions(db_name, tbl_name, (short) -1);
       } catch (NoSuchObjectException e) {
         throw new MetaException(e.getMessage());
       }
 
-      if (part_vals.size() > t.getPartitionKeys().size()) {
-        throw new MetaException("Incorrect number of partition values");
-      }
-      // Create a map from the partition column name to the partition value
-      Map<String, String> partKeyToValues = new LinkedHashMap<String, String>();
-      int i=0;
-      for (String value : part_vals) {
-        String col = t.getPartitionKeys().get(i).getName();
-        if (value.length() > 0) {
-          partKeyToValues.put(col, value);
+      for (Partition p : parts) {
+        if (MetaStoreUtils.pvalMatches(part_vals, p.getValues())) {
+          matchingParts.add(p);
         }
-        i++;
-      }
-      final String filter = MetaStoreUtils.makeFilterStringFromMap(partKeyToValues);
-
-      List<Partition> ret = null;
-      try {
-        ret = executeWithRetry(new Command<List<Partition>>() {
-          @Override
-          List<Partition> run(RawStore ms) throws Exception {
-            return ms.getPartitionsByFilter(db_name, tbl_name, filter, max_parts);
-          }
-        });
-      } catch (MetaException e) {
-        throw e;
-      } catch (Exception e) {
-        assert(e instanceof RuntimeException);
-        throw (RuntimeException)e;
       }
 
-      return ret;
+      return matchingParts;
     }
 
     @Override
@@ -1835,37 +1817,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       }
 
-      if (part_vals.size() > t.getPartitionKeys().size()) {
-        throw new MetaException("Incorrect number of partition values");
-      }
-      // Create a map from the partition column name to the partition value
-      Map<String, String> partKeyToValues = new LinkedHashMap<String, String>();
-      int i=0;
-      for (String value : part_vals) {
-        String col = t.getPartitionKeys().get(i).getName();
-        if (value.length() > 0) {
-          partKeyToValues.put(col, value);
+     List<String> partNames = get_partition_names(db_name, tbl_name, max_parts);
+     List<String> filteredPartNames = new ArrayList<String>();
+
+      for(String name : partNames) {
+        LinkedHashMap<String, String> spec = Warehouse.makeSpecFromName(name);
+        List<String> vals = new ArrayList<String>();
+        // Since we are iterating through a LinkedHashMap, iteration should
+        // return the partition values in the correct order for comparison.
+        for (String val : spec.values()) {
+          vals.add(val);
         }
-        i++;
-      }
-      final String filter = MetaStoreUtils.makeFilterStringFromMap(partKeyToValues);
-
-      List<String> ret = null;
-      try {
-        ret = executeWithRetry(new Command<List<String>>() {
-          @Override
-          List<String> run(RawStore ms) throws Exception {
-            return ms.listPartitionNamesByFilter(db_name, tbl_name, filter, max_parts);
-          }
-        });
-      } catch (MetaException e) {
-        throw e;
-      } catch (Exception e) {
-        assert(e instanceof RuntimeException);
-        throw (RuntimeException)e;
+        if (MetaStoreUtils.pvalMatches(part_vals, vals)) {
+          filteredPartNames.add(name);
+        }
       }
 
-      return ret;
+      return filteredPartNames;
     }
 
     @Override
