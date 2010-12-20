@@ -619,6 +619,9 @@ Trunk -  Unreleased
     HIVE-1845 Some attributes in eclipse template file are deprecated
     (Liyin Tang via namit)
 
+    HIVE-1854 Temporarily disable metastore tests for listPartitionsByFilter()
+    (Paul Yang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
