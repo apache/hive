@@ -171,7 +171,7 @@ public final class Utilities {
       if (gWork == null) {
         String jtConf = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJT);
         String path;
-        if (jtConf == "local") {
+        if (jtConf.equals("local")) {
           String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
           path = new Path(planPath).toUri().getPath();
         } else {
