@@ -171,8 +171,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
-              .getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()),
-              tbd.getHoldDDLTime());
+              .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime());
           if (work.getOutputs() != null) {
             work.getOutputs().add(new WriteEntity(table));
           }
@@ -202,7 +201,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                   tbd.getTable().getTableName(),
                 	tbd.getPartitionSpec(),
                 	tbd.getReplace(),
-                	new Path(tbd.getTmpDir()),
                 	dpCtx.getNumDPCols(),
                 	tbd.getHoldDDLTime());
 
@@ -243,8 +241,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()),
-                tbd.getHoldDDLTime());
+                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime());
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
