@@ -32,7 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jline.Completor;
 import jline.ArgumentCompletor;
+import jline.ArgumentCompletor.ArgumentDelimiter;
+import jline.ArgumentCompletor.AbstractArgumentDelimiter;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
@@ -43,6 +46,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -295,6 +300,71 @@ public class CliDriver {
     ss.setIsSilent(saveSilent);
   }
 
+  public static Completor getCommandCompletor () {
+    // SimpleCompletor matches against a pre-defined wordlist
+    // We start with an empty wordlist and build it up
+    SimpleCompletor sc = new SimpleCompletor(new String[0]);
+
+    // We add Hive function names
+    // For functions that aren't infix operators, we add an open
+    // parenthesis at the end.
+    for (String s : FunctionRegistry.getFunctionNames()) {
+      if (s.matches("[a-z_]+")) {
+        sc.addCandidateString(s + "(");
+      } else {
+        sc.addCandidateString(s);
+      }
+    }
+
+    // We add Hive keywords, including lower-cased versions
+    for (String s : ParseDriver.getKeywords()) {
+      sc.addCandidateString(s);
+      sc.addCandidateString(s.toLowerCase());
+    }
+
+    // Because we use parentheses in addition to whitespace
+    // as a keyword delimiter, we need to define a new ArgumentDelimiter
+    // that recognizes parenthesis as a delimiter.
+    ArgumentDelimiter delim = new AbstractArgumentDelimiter () {
+      public boolean isDelimiterChar (String buffer, int pos) {
+        char c = buffer.charAt(pos);
+        return (Character.isWhitespace(c) || c == '(' || c == ')' ||
+          c == '[' || c == ']');
+      }
+    };
+
+    // The ArgumentCompletor allows us to match multiple tokens
+    // in the same line.
+    final ArgumentCompletor ac = new ArgumentCompletor(sc, delim);
+    // By default ArgumentCompletor is in "strict" mode meaning
+    // a token is only auto-completed if all prior tokens
+    // match. We don't want that since there are valid tokens
+    // that are not in our wordlist (eg. table and column names)
+    ac.setStrict(false);
+
+    // ArgumentCompletor always adds a space after a matched token.
+    // This is undesirable for function names because a space after
+    // the opening parenthesis is unnecessary (and uncommon) in Hive.
+    // We stack a custom Completor on top of our ArgumentCompletor
+    // to reverse this.
+    Completor completor = new Completor () {
+      public int complete (String buffer, int offset, List completions) {
+        List<String> comp = (List<String>) completions;
+        int ret = ac.complete(buffer, offset, completions);
+        // ConsoleReader will do the substitution if and only if there
+        // is exactly one valid completion, so we ignore other cases.
+        if (completions.size() == 1) {
+          if (comp.get(0).endsWith("( ")) {
+            comp.set(0, comp.get(0).trim());
+          }
+        }
+        return ret;
+      }
+    };
+    
+    return completor;
+  }
+
   public static void main(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
@@ -361,11 +431,7 @@ public class CliDriver {
     ConsoleReader reader = new ConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-
-    List<SimpleCompletor> completors = new LinkedList<SimpleCompletor>();
-    completors.add(new SimpleCompletor(new String[] {"set", "from", "create", "load", "describe",
-        "quit", "exit"}));
-    reader.addCompletor(new ArgumentCompletor(completors));
+    reader.addCompletor(getCommandCompletor());
 
     String line;
     final String HISTORYFILE = ".hivehistory";

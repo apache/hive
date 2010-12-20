@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -189,6 +190,10 @@ public class ParseDriver {
     xlateMap.put("TILDE", "~");
     xlateMap.put("BITWISEOR", "|");
     xlateMap.put("BITWISEXOR", "^");
+  }
+
+  public static Collection<String> getKeywords() {
+    return xlateMap.values();
   }
 
   private static String xlate(String name) {

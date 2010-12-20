@@ -129,6 +129,9 @@ Trunk -  Unreleased
 
     HIVE-1853 Downrgrade JDO (Paul Yang via namit)
 
+    HIVE-1835 Better auto-complete for Hive
+    (Paul Butler via Ning Zhang)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)
