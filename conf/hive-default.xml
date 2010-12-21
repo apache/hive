@@ -796,6 +796,14 @@
 </property>
 
 <property>
+  <name>hive.exec.drop.ignorenonexistent</name>
+  <value>true</value>
+  <description>
+    Do not report an error if DROP TABLE/VIEW specifies a non-existent table/view
+  </description>
+</property>
+
+<property>
   <name>hive.exec.show.job.failure.debug.info</name>
   <value>false</value>
   <description>

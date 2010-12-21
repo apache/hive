@@ -1,5 +1,3 @@
-DROP VIEW xxx6;
-
--- Can't use DROP TABLE on a view
-CREATE VIEW xxx6 AS SELECT key FROM src;
-DROP TABLE xxx6;
+SET hive.exec.drop.ignorenonexistent=false;
+-- Can't use DROP VIEW if the view doesn't exist and IF EXISTS isn't specified
+DROP VIEW UnknownView;

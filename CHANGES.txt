@@ -132,6 +132,9 @@ Trunk -  Unreleased
     HIVE-1835 Better auto-complete for Hive
     (Paul Butler via Ning Zhang)
 
+    HIVE-1856 Implement DROP TABLE/VIEW IF EXISTS
+    (Marcel Kornacker via jvs)
+
   IMPROVEMENTS
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)

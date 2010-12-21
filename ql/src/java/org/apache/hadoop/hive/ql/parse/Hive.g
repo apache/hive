@@ -434,7 +434,7 @@ dropIndexStatement
 dropTableStatement
 @init { msgs.push("drop statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_TABLE Identifier  -> ^(TOK_DROPTABLE Identifier)
+    : KW_DROP KW_TABLE ifExists? Identifier -> ^(TOK_DROPTABLE Identifier ifExists?)
     ;
 
 alterStatement
@@ -763,8 +763,7 @@ createViewStatement
 dropViewStatement
 @init { msgs.push("drop view statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_VIEW Identifier
-    -> ^(TOK_DROPVIEW Identifier)
+    : KW_DROP KW_VIEW ifExists? Identifier -> ^(TOK_DROPVIEW Identifier ifExists?)
     ;
 
 showStmtIdentifier

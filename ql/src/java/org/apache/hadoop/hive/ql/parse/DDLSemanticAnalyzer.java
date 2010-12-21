@@ -319,9 +319,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeDropTable(ASTNode ast, boolean expectView)
       throws SemanticException {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+    // we want to signal an error if the table/view doesn't exist and we're
+    // configured not to fail silently
+    boolean throwException =
+      !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
     try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
-      // Ignore if table does not exist
+      Table tab = db.getTable(db.getCurrentDatabase(), tableName, throwException);
       if (tab != null) {
         inputs.add(new ReadEntity(tab));
         outputs.add(new WriteEntity(tab));
