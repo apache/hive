@@ -628,6 +628,9 @@ Trunk -  Unreleased
     HIVE-1854 Temporarily disable metastore tests for listPartitionsByFilter()
     (Paul Yang via namit)
 
+    HIVE-1857 mixed case tablename on lefthand side of LATERAL VIEW results in
+    query failing with confusing error message (John Sichi via pauly)
+
   TESTS
 
     HIVE-1464. improve  test query performance

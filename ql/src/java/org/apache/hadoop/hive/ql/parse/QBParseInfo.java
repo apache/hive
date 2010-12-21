@@ -398,8 +398,7 @@ public class QBParseInfo {
   }
 
   public void addLateralViewForAlias(String alias, ASTNode lateralView) {
-    String lowerAlias = alias.toLowerCase();
-    ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(lowerAlias);
+    ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(alias);
     if (lateralViews == null) {
       lateralViews = new ArrayList<ASTNode>();
       aliasToLateralViews.put(alias, lateralViews);

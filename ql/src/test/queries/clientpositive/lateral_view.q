@@ -21,7 +21,7 @@ SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS 
 EXPLAIN
 SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3;
 
-SELECT myCol from tmp_pyang_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3;
+SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3;
 
 CREATE TABLE tmp_pyang_src_rcfile (key string, value array<string>) STORED AS RCFILE;
 INSERT OVERWRITE TABLE tmp_pyang_src_rcfile SELECT key, array(value) FROM src ORDER BY key LIMIT 20;
