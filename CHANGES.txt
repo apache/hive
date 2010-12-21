@@ -311,6 +311,9 @@ Trunk -  Unreleased
     HIVE-1415: add CLI command for executing a SQL script
     (Edward Capriolo via jvs)
 
+    HIVE-1855 Include Process ID in the log4j log file name
+    (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
