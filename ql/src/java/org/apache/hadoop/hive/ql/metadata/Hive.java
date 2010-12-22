@@ -950,8 +950,7 @@ public class Hive {
    *          The temporary directory.
    */
   public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, boolean replace, Path tmpDirPath,
-      boolean holdDDLTime)
+      Map<String, String> partSpec, boolean replace, boolean holdDDLTime)
       throws HiveException {
     Table tbl = getTable(tableName);
     try {
@@ -975,7 +974,7 @@ public class Hive {
           .toUri().getAuthority(), partPath.toUri().getPath());
 
       if (replace) {
-        Hive.replaceFiles(loadPath, newPartPath, oldPartPath, tmpDirPath, getConf());
+        Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
         FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
         Hive.copyFiles(loadPath, newPartPath, fs);
@@ -1010,7 +1009,7 @@ public class Hive {
    */
   public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
       String tableName, Map<String, String> partSpec, boolean replace,
-      Path tmpDirPath, int numDP, boolean holdDDLTime)
+      int numDP, boolean holdDDLTime)
       throws HiveException {
 
     try {
@@ -1045,7 +1044,7 @@ public class Hive {
       	fullPartSpecs.add(fullPartSpec);
 
         // finally load the partition -- move the file to the final table address
-      	loadPartition(partPath, tableName, fullPartSpec, replace, tmpDirPath, holdDDLTime);
+      	loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime);
       	LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
     	}
       return fullPartSpecs;
@@ -1070,11 +1069,11 @@ public class Hive {
    *          The temporary directory.
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
-      Path tmpDirPath, boolean holdDDLTime) throws HiveException {
+      boolean holdDDLTime) throws HiveException {
     Table tbl = getTable(tableName);
 
     if (replace) {
-      tbl.replaceFiles(loadPath, tmpDirPath);
+      tbl.replaceFiles(loadPath);
     } else {
       tbl.copyFiles(loadPath);
     }
@@ -1503,90 +1502,84 @@ public class Hive {
   }
 
   /**
-   * Replaces files in the partition with new data set specifed by srcf. Works
-   * by moving files.
-   * srcf, destf, and tmppath should resident in the same dfs, but the oldPath can be in a
-   * different dfs.
+   * Replaces files in the partition with new data set specified by srcf. Works
+   * by renaming directory of srcf to the destination file.
+   * srcf, destf, and tmppath should resident in the same DFS, but the oldPath can be in a
+   * different DFS.
    *
    * @param srcf
-   *          Files to be moved. Leaf Directories or Globbed File Paths
+   *          Source directory to be renamed to tmppath. It should be a
+   *          leaf directory where the final data files reside. However it
+   *          could potentially contain subdirectories as well.
    * @param destf
    *          The directory where the final data needs to go
    * @param oldPath
    *          The directory where the old data location, need to be cleaned up.
-   * @param tmppath
-   *          Temporary directory
    */
   static protected void replaceFiles(Path srcf, Path destf, Path oldPath,
-      Path tmppath, Configuration conf) throws HiveException {
-
-    FileSystem fs = null;
-    FsShell fshell = new FsShell();
-    fshell.setConf(conf);
-    try {
-      fs = FileSystem.get(srcf.toUri(), conf);
-    } catch (IOException e1) {
-      throw new HiveException(e1.getMessage(), e1);
-    }
-
-    FileStatus[] srcs;
-    try {
-      srcs = fs.listStatus(srcf);
-    } catch (IOException e) {
-      throw new HiveException("addFiles: filesystem error in check phase", e);
-    }
-    if (srcs == null) {
-      LOG.info("No sources specified to move: " + srcf);
-      return;
-      // srcs = new FileStatus[0]; Why is this needed?
-    }
-    checkPaths(fs, srcs, destf, true);
+      Configuration conf) throws HiveException {
 
     try {
-      fs.mkdirs(tmppath);
-      for (FileStatus src : srcs) {
-        FileStatus[] items = fs.listStatus(src.getPath());
-        for (int j = 0; j < items.length; j++) {
-          if (!fs.rename(items[j].getPath(), new Path(tmppath, items[j]
-              .getPath().getName()))) {
-            throw new HiveException("Error moving: " + items[j].getPath()
-                + " into: " + tmppath);
+      FileSystem fs = srcf.getFileSystem(conf);
+
+      // check if srcf contains nested sub-directories
+      FileStatus[] srcs;
+      try {
+        srcs = fs.globStatus(srcf);
+      } catch (IOException e) {
+        throw new HiveException("Getting globStatus " + srcf.toString(), e);
+      }
+      if (srcs == null) {
+        LOG.info("No sources specified to move: " + srcf);
+        return;
+      }
+      checkPaths(fs, srcs, destf, true);
+
+      // point of no return -- delete oldPath
+      if (oldPath != null) {
+        try {
+          FileSystem fs2 = oldPath.getFileSystem(conf);
+          if (fs2.exists(oldPath)) {
+            // use FsShell to move data to .Trash first rather than delete permanently
+            FsShell fshell = new FsShell();
+            fshell.setConf(conf);
+            fshell.run(new String[]{"-rmr", oldPath.toUri().toString()});
+          }
+        } catch (Exception e) {
+          //swallow the exception
+          LOG.warn("Directory " + oldPath.toString() + " canot be removed.");
+        }
+      }
+
+      // rename src directory to destf
+      if (srcs.length == 1 && srcs[0].isDir()) {
+      	// rename can fail if the parent doesn't exist
+      	if (!fs.exists(destf.getParent())) {
+      	  fs.mkdirs(destf.getParent());
+      	}
+
+      	boolean b = fs.rename(srcs[0].getPath(), destf);
+      	if (!b) {
+      	  throw new HiveException("Unable to move results from " + srcs[0].getPath()
+      	      + " to destination directory: " + destf);
+      	}
+      	LOG.debug("Renaming:" + srcf.toString() + ",Status:" + b);
+      } else { // srcf is a file or pattern containing wildcards
+        if (!fs.exists(destf)) {
+          fs.mkdirs(destf);
+        }
+        // srcs must be a list of files -- ensured by LoadSemanticAnalyzer
+        for (FileStatus src : srcs) {
+          Path destPath = new Path(destf, src.getPath().getName());
+          if (!fs.rename(src.getPath(), destPath)) {
+            throw new HiveException("Error moving: " + src.getPath()
+                + " into: " + destf);
           }
         }
       }
-
-      // point of no return
-      if (oldPath != null) {
-        try {
-          fshell.run(new String[]{"-rmr", oldPath.toUri().toString()});
-        } catch (Exception e) {
-          //swallow the exception
-        }
-      }
-      try {
-        fshell.run(new String[]{"-rmr", destf.toUri().toString()});
-      } catch (Exception e) {
-      }
-
-      // create the parent directory otherwise rename can fail if the parent
-      // doesn't exist
-      if (!fs.mkdirs(destf.getParent())) {
-        throw new HiveException("Unable to create destination directory: "
-            + destf.getParent().toString());
-      }
-
-      boolean b = fs.rename(tmppath, destf);
-      if (!b) {
-        throw new HiveException("Unable to move results from " + tmppath
-            + " to destination directory: " + destf.getParent().toString());
-      }
-      LOG.debug("Renaming:" + tmppath.toString() + ",Status:" + b);
     } catch (IOException e) {
-      throw new HiveException("replaceFiles: error while moving files from "
-          + tmppath + " to " + destf + "!!!", e);
+      throw new HiveException(e.getMessage(), e);
     }
-    // In case of error, we should leave the temporary data there, so
-    // that user can recover the data if necessary.
   }
 
   /**

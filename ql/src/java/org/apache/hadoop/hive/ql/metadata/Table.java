@@ -515,17 +515,17 @@ public class Table implements Serializable {
   }
 
   /**
-   * Replaces files in the partition with new data set specified by srcf. Works
-   * by moving files
+   * Replaces the directory corresponding to the table by srcf. Works by
+   * deleting the table directory and renaming the source directory.
    *
    * @param srcf
-   *          Files to be replaced. Leaf directories or globbed file paths
+   *          Source directory
    * @param tmpd
    *          Temporary directory
    */
-  protected void replaceFiles(Path srcf, Path tmpd) throws HiveException {
-    Hive.replaceFiles(srcf, new Path(getDataLocation().getPath()), null, tmpd,
-        Hive.get().getConf());
+  protected void replaceFiles(Path srcf) throws HiveException {
+    Path tableDest =  new Path(getDataLocation().getPath());
+    Hive.replaceFiles(srcf, tableDest, tableDest, Hive.get().getConf());
   }
 
   /**

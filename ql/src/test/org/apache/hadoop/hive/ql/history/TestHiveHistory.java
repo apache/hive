@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QTestUtil.QTestSetup;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.ql.QTestUtil.QTestSetup;
 
 /**
  * TestHiveHistory.
@@ -104,7 +104,7 @@ public class TestHiveHistory extends TestCase {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, null, false);
+        db.loadTable(hadoopDataFile[i], src, false, false);
         i++;
       }
 
