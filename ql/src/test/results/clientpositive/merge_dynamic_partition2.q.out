@@ -1,0 +1,163 @@
+PREHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table srcpart_merge_dp like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_merge_dp
+PREHOOK: query: create table merge_dynamic_part like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table merge_dynamic_part like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@merge_dynamic_part
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../data/files/srcbucket0.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket0.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../data/files/srcbucket1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/srcbucket1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+PREHOOK: query: explain
+insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart_merge_dp)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB merge_dynamic_part (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        srcpart_merge_dp 
+          TableScan
+            alias: srcpart_merge_dp
+            Filter Operator
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: hr
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: merge_dynamic_part
+
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/nzhang/work/2/apache-hive/build/ql/scratchdir/hive_2010-12-15_11-09-33_994_7142549978626881266/-ext-10000
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: merge_dynamic_part
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        pfile:/data/users/nzhang/work/2/apache-hive/build/ql/scratchdir/hive_2010-12-15_11-09-33_994_7142549978626881266/-ext-10002 
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: merge_dynamic_part
+
+
+PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+PREHOOK: Output: default@merge_dynamic_part@ds=2008-04-08
+POSTHOOK: query: insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show table extended like `merge_dynamic_part`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `merge_dynamic_part`
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
+tableName:merge_dynamic_part
+owner:null
+location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/merge_dynamic_part
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds, string hr}
+totalNumberFiles:3
+totalFileSize:17415
+maxFileSize:5901
+minFileSize:5702
+lastAccessTime:0
+lastUpdateTime:1292440184000
+

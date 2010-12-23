@@ -510,8 +510,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
       job.setNumMapTasks(work.getNumMapTasks().intValue());
     }
     if (work.getMinSplitSize() != null) {
-      HiveConf.setIntVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize()
-          .intValue());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize().longValue());
     }
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);

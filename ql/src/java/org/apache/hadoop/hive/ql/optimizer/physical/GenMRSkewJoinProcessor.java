@@ -316,7 +316,7 @@ public final class GenMRSkewJoinProcessor {
       newPlan.setNumMapTasks(HiveConf
           .getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINNUMMAPTASK));
       newPlan
-          .setMinSplitSize(HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
+          .setMinSplitSize(HiveConf.getLongVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
       newPlan.setInputformat(HiveInputFormat.class.getName());
       Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(
           newPlan, jc);

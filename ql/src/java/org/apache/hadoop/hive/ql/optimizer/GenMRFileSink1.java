@@ -246,7 +246,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // NOTE: we should gather stats in MR1 (rather than the merge MR job)
     // since it is unknown if the merge MR will be triggered at execution time.
-    
+
     MoveWork dummyMv = new MoveWork(null, null, null,
         new LoadFileDesc(fsConf.getDirName(), finalName, true, null, null), false);
 
@@ -271,8 +271,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // create a Map-only job for merge, otherwise create a MapReduce merge job.
     ParseContext parseCtx = ctx.getParseCtx();
     HiveConf conf = parseCtx.getConf();
-    if ((conf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) ||
-         conf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES)) &&
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPONLY) &&
         Utilities.supportCombineFileInputFormat()) {
       // create Map-only merge job
       createMap4Merge(fsOp, ctx, finalName);

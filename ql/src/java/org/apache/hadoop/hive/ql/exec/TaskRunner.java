@@ -56,6 +56,7 @@ public class TaskRunner extends Thread {
     try {
       exitVal = tsk.executeTask();
     } catch (Throwable t) {
+      t.printStackTrace();
     }
     result.setExitVal(exitVal);
   }

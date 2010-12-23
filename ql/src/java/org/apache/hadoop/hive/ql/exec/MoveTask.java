@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -60,6 +61,54 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     super();
   }
 
+  private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
+      throws Exception {
+    FileSystem fs = sourcePath.getFileSystem(conf);
+    if (isDfsDir) {
+      // Just do a rename on the URIs, they belong to the same FS
+      String mesg = "Moving data to: " + targetPath.toString();
+      String mesg_detail = " from " + sourcePath.toString();
+      console.printInfo(mesg, mesg_detail);
+
+      // delete the output directory if it already exists
+      fs.delete(targetPath, true);
+      // if source exists, rename. Otherwise, create a empty directory
+      if (fs.exists(sourcePath)) {
+        if (!fs.rename(sourcePath, targetPath)) {
+          throw new HiveException("Unable to rename: " + sourcePath
+              + " to: " + targetPath);
+        }
+      } else if (!fs.mkdirs(targetPath)) {
+        throw new HiveException("Unable to make directory: " + targetPath);
+      }
+    } else {
+      // This is a local file
+      String mesg = "Copying data to local directory " + targetPath.toString();
+      String mesg_detail = " from " + sourcePath.toString();
+      console.printInfo(mesg, mesg_detail);
+
+      // delete the existing dest directory
+      LocalFileSystem dstFs = FileSystem.getLocal(conf);
+
+      if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
+        console.printInfo(mesg, mesg_detail);
+        // if source exists, rename. Otherwise, create a empty directory
+        if (fs.exists(sourcePath)) {
+          fs.copyToLocalFile(sourcePath, targetPath);
+        } else {
+          if (!dstFs.mkdirs(targetPath)) {
+            throw new HiveException("Unable to make local directory: "
+                + targetPath);
+          }
+        }
+      } else {
+        throw new AccessControlException(
+            "Unable to delete the existing destination directory: "
+            + targetPath);
+      }
+    }
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -70,49 +119,23 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (lfd != null) {
         Path targetPath = new Path(lfd.getTargetDir());
         Path sourcePath = new Path(lfd.getSourceDir());
-        FileSystem fs = sourcePath.getFileSystem(conf);
-        if (lfd.getIsDfsDir()) {
-          // Just do a rename on the URIs, they belong to the same FS
-          String mesg = "Moving data to: " + lfd.getTargetDir();
-          String mesg_detail = " from " + lfd.getSourceDir();
-          console.printInfo(mesg, mesg_detail);
+        moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+      }
 
-          // delete the output directory if it already exists
-          fs.delete(targetPath, true);
-          // if source exists, rename. Otherwise, create a empty directory
-          if (fs.exists(sourcePath)) {
-            if (!fs.rename(sourcePath, targetPath)) {
-              throw new HiveException("Unable to rename: " + sourcePath
-                  + " to: " + targetPath);
-            }
-          } else if (!fs.mkdirs(targetPath)) {
-            throw new HiveException("Unable to make directory: " + targetPath);
-          }
-        } else {
-          // This is a local file
-          String mesg = "Copying data to local directory " + lfd.getTargetDir();
-          String mesg_detail = " from " + lfd.getSourceDir();
-          console.printInfo(mesg, mesg_detail);
-
-          // delete the existing dest directory
-          LocalFileSystem dstFs = FileSystem.getLocal(conf);
-
-          if (dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
-            console.printInfo(mesg, mesg_detail);
-            // if source exists, rename. Otherwise, create a empty directory
-            if (fs.exists(sourcePath)) {
-              fs.copyToLocalFile(sourcePath, targetPath);
-            } else {
-              if (!dstFs.mkdirs(targetPath)) {
-                throw new HiveException("Unable to make local directory: "
-                    + targetPath);
-              }
-            }
-          } else {
-            throw new AccessControlException(
-                "Unable to delete the existing destination directory: "
-                + targetPath);
-          }
+      // Multi-file load is for dynamic partitions when some partitions do not
+      // need to merge and they can simply be moved to the target directory.
+      LoadMultiFilesDesc lmfd = work.getLoadMultiFilesWork();
+      if (lmfd != null) {
+        Path destPath = new Path(lmfd.getTargetDir());
+        FileSystem fs = destPath.getFileSystem(conf);
+        if (!fs.exists(destPath)) {
+          fs.mkdirs(destPath);
+        }
+        boolean isDfsDir = lmfd.getIsDfsDir();
+        for (String s: lmfd.getSourceDirs()) {
+          Path srcPath = new Path(s);
+          Path dstPath = new Path(destPath, srcPath.getName());
+          moveFile(srcPath, dstPath, isDfsDir);
         }
       }
 

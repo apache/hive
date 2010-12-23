@@ -36,6 +36,7 @@ public class MoveWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private LoadTableDesc loadTableWork;
   private LoadFileDesc loadFileWork;
+  private LoadMultiFilesDesc loadMultiFilesWork;
 
   private boolean checkFileFormat;
   ArrayList<String> dpSpecPaths; // dynamic partition specified paths -- the root of DP columns
@@ -91,6 +92,15 @@ public class MoveWork implements Serializable {
   @Explain(displayName = "files")
   public LoadFileDesc getLoadFileWork() {
     return loadFileWork;
+  }
+
+  @Explain(displayName = "files")
+  public LoadMultiFilesDesc getLoadMultiFilesWork() {
+    return loadMultiFilesWork;
+  }
+
+  public void setMultiFilesDesc(LoadMultiFilesDesc lmfd) {
+    this.loadMultiFilesWork = lmfd;
   }
 
   public void setLoadFileWork(final LoadFileDesc loadFileWork) {

@@ -639,6 +639,9 @@ Trunk -  Unreleased
     HIVE-1456 No need to check for LOG as null in sort-merge join
     (Alexey Diomin via namit)
 
+    HIVE-1806 Merge per dynamic partition based on size of each dynamic partition
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

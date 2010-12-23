@@ -60,7 +60,7 @@ public class MapredWork implements Serializable {
 
   private Integer numReduceTasks;
   private Integer numMapTasks;
-  private Integer minSplitSize;
+  private Long minSplitSize;
 
   private boolean needsTagging;
   private boolean hadoopSupportsSplittable;
@@ -315,11 +315,11 @@ public class MapredWork implements Serializable {
     this.hadoopSupportsSplittable = hadoopSupportsSplittable;
   }
 
-  public Integer getMinSplitSize() {
+  public Long getMinSplitSize() {
     return minSplitSize;
   }
 
-  public void setMinSplitSize(Integer minSplitSize) {
+  public void setMinSplitSize(Long minSplitSize) {
     this.minSplitSize = minSplitSize;
   }
 
