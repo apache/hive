@@ -159,9 +159,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       FetchOperator fetchOp = new FetchOperator(entry.getValue(),jobClone);
       fetchOpJobConfMap.put(fetchOp, jobClone);
       fetchOperators.put(entry.getKey(), fetchOp);
-      if (l4j != null) {
-        l4j.info("fetchoperator for " + entry.getKey() + " created");
-      }
+      l4j.info("fetchoperator for " + entry.getKey() + " created");
     }
 
     for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {

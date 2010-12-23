@@ -636,6 +636,9 @@ Trunk -  Unreleased
     HIVE-1857 mixed case tablename on lefthand side of LATERAL VIEW results in
     query failing with confusing error message (John Sichi via pauly)
 
+    HIVE-1456 No need to check for LOG as null in sort-merge join
+    (Alexey Diomin via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
