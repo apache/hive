@@ -21,7 +21,7 @@ POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
+location:pfile:/Users/carl/Work/repos/hive-trunk/build/ql/test/data/warehouse/load_overwrite
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -32,16 +32,16 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1292947812000
+lastUpdateTime:1293236939000
 
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-13_988_5469633857781542014/-mr-10000
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-01_642_4117310668630206026/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-13_988_5469633857781542014/-mr-10000
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-01_642_4117310668630206026/-mr-10000
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
@@ -60,7 +60,7 @@ POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
+location:pfile:/Users/carl/Work/repos/hive-trunk/build/ql/test/data/warehouse/load_overwrite
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -71,16 +71,16 @@ totalFileSize:11624
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1292947817000
+lastUpdateTime:1293236950000
 
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-17_432_7158322687813669458/-mr-10000
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-10_368_4454551304535476251/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-17_432_7158322687813669458/-mr-10000
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-10_368_4454551304535476251/-mr-10000
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1000
@@ -99,7 +99,7 @@ POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, typ
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 tableName:load_overwrite
 owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
+location:pfile:/Users/carl/Work/repos/hive-trunk/build/ql/test/data/warehouse/load_overwrite
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -110,266 +110,16 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1292947820000
+lastUpdateTime:1293236959000
 
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-20_973_6945059136879205510/-mr-10000
+PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-20_226_8434991417019547380/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_08-10-20_973_6945059136879205510/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-500
-PREHOOK: query: create table load_overwrite like src
-PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table load_overwrite like src
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: default@load_overwrite
-PREHOOK: query: insert overwrite table load_overwrite select * from src
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: insert overwrite table load_overwrite select * from src
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465082000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-43_366_2197078026513947066/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-43_366_2197078026513947066/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-500
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
-PREHOOK: type: LOAD
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:2
-totalFileSize:11624
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465086000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-46_973_8511923253102164649/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-46_973_8511923253102164649/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-1000
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
-PREHOOK: type: LOAD
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465090000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-50_537_1323277203199221916/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-50_537_1323277203199221916/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-500
-PREHOOK: query: create table load_overwrite like src
-PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table load_overwrite like src
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: default@load_overwrite
-PREHOOK: query: insert overwrite table load_overwrite select * from src
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: insert overwrite table load_overwrite select * from src
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465082000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-43_366_2197078026513947066/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-43_366_2197078026513947066/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-500
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
-PREHOOK: type: LOAD
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:2
-totalFileSize:11624
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465086000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-46_973_8511923253102164649/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-46_973_8511923253102164649/-mr-10000
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-1000
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
-PREHOOK: type: LOAD
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@load_overwrite
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show table extended like load_overwrite
-PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like load_overwrite
-POSTHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-tableName:load_overwrite
-owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/load_overwrite
-inputformat:org.apache.hadoop.mapred.TextInputFormat
-outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-columns:struct columns { string key, string value}
-partitioned:false
-partitionColumns:
-totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
-lastAccessTime:0
-lastUpdateTime:1292465090000
-
-PREHOOK: query: select count(*) from load_overwrite
-PREHOOK: type: QUERY
-PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-50_537_1323277203199221916/-mr-10000
-POSTHOOK: query: select count(*) from load_overwrite
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-15_18-04-50_537_1323277203199221916/-mr-10000
+POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2010-12-24_16-29-20_226_8434991417019547380/-mr-10000
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500

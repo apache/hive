@@ -642,6 +642,9 @@ Trunk -  Unreleased
     HIVE-1806 Merge per dynamic partition based on size of each dynamic partition
     (Ning Zhang via namit)
 
+    HIVE-1864 Fix test load_overwrite..q
+    (Carl Steinbach via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
