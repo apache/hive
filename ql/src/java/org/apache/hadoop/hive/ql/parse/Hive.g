@@ -428,8 +428,8 @@ indexPropertiesList
 dropIndexStatement
 @init { msgs.push("drop index statement");}
 @after {msgs.pop();}
-    : KW_DROP KW_INDEX indexName=Identifier KW_ON tab=Identifier
-    ->^(TOK_DROPINDEX $indexName $tab)
+    : KW_DROP KW_INDEX ifExists? indexName=Identifier KW_ON tab=Identifier
+    ->^(TOK_DROPINDEX $indexName $tab ifExists?)
     ;
 
 dropTableStatement
@@ -556,8 +556,8 @@ partitionLocation
 alterStatementSuffixDropPartitions
 @init { msgs.push("drop partition statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_DROP partitionSpec (COMMA partitionSpec)*
-    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier partitionSpec+)
+    : Identifier KW_DROP ifExists? partitionSpec (COMMA partitionSpec)*
+    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier partitionSpec+ ifExists?)
     ;
 
 alterStatementSuffixProperties
@@ -739,8 +739,8 @@ createFunctionStatement
 dropFunctionStatement
 @init { msgs.push("drop temporary function statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_TEMPORARY KW_FUNCTION Identifier
-    -> ^(TOK_DROPFUNCTION Identifier)
+    : KW_DROP KW_TEMPORARY KW_FUNCTION ifExists? Identifier
+    -> ^(TOK_DROPFUNCTION Identifier ifExists?)
     ;
 
 createViewStatement

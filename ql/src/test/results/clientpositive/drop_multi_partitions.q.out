@@ -61,3 +61,14 @@ PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions mp
 POSTHOOK: type: SHOWPARTITIONS
 b=2/c=2
+PREHOOK: query: alter table mp drop if exists partition (b='3')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@mp
+POSTHOOK: query: alter table mp drop if exists partition (b='3')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@mp
+PREHOOK: query: show partitions mp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions mp
+POSTHOOK: type: SHOWPARTITIONS
+b=2/c=2

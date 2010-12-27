@@ -1,2 +1,2 @@
 SET hive.exec.drop.ignorenonexistent=false;
-DROP VIEW IF EXISTS UnknownView;
+DROP INDEX IF EXISTS UnknownIndex ON src;

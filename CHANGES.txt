@@ -137,6 +137,9 @@ Trunk -  Unreleased
     HIVE-1856 Implement DROP TABLE/VIEW IF EXISTS
     (Marcel Kornacker via jvs)
 
+    HIVE-1858 Implement DROP {PARTITION, INDEX, TEMPORARY FUNCTION} IF EXISTS
+    (Marcel Kornacker via jvs)
+
   IMPROVEMENTS
 
     HIVE-1852 Reduce unnecessary DFSClient.rename() calls (Ning Zhang via jssarma)

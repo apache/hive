@@ -1,2 +1,2 @@
-SET hive.exec.dropfailssilently=false;
+SET hive.exec.drop.ignorenonexistent=false;
 DROP TABLE IF EXISTS UnknownTable;

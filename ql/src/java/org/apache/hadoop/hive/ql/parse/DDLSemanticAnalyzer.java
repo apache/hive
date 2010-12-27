@@ -418,9 +418,22 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(createIndex);
   }
 
-  private void analyzeDropIndex(ASTNode ast) {
+  private void analyzeDropIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
     String tableName = unescapeIdentifier(ast.getChild(1).getText());
+    boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+    // we want to signal an error if the index doesn't exist and we're
+    // configured not to ignore this
+    boolean throwException =
+      !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+    if (throwException) {
+      try {
+        Index idx = db.getIndex(tableName, indexName);
+      } catch (HiveException e) {
+        throw new SemanticException(ErrorMsg.INVALID_INDEX.getMsg(indexName));
+      }
+    }
+
     DropIndexDesc dropIdxDesc = new DropIndexDesc(indexName, tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropIdxDesc), conf));
@@ -1223,7 +1236,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (partSpecs != null) {
-      addTablePartsOutputs(tblName, partSpecs);
+      boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
+      // we want to signal an error if the partition doesn't exist and we're
+      // configured not to fail silently
+      boolean throwException =
+        !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
+      addTablePartsOutputs(tblName, partSpecs, throwException, ast);
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -1470,6 +1488,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs)
     throws SemanticException {
+    addTablePartsOutputs(tblName, partSpecs, false, null);
+  }
+
+  /**
+   * Add the table partitions to be modified in the output, so that it is available for the
+   * pre-execution hook. If the partition does not exist, throw an error if
+   * throwIfNonExistent is true, otherwise ignore it.
+   */
+  private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs,
+				    boolean throwIfNonExistent, ASTNode ast)
+    throws SemanticException {
     Table tab;
     try {
       tab = db.getTable(tblName);
@@ -1477,7 +1506,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
     }
 
-    for (Map<String, String> partSpec : partSpecs) {
+    Iterator<Map<String, String>> i;
+    int index;
+    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
+	Map<String, String> partSpec = i.next();
       try {
         Partition part = db.getPartition(tab, partSpec, false);
         if (part == null) {
@@ -1486,7 +1518,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         outputs.add(new WriteEntity(part));
       } catch (HiveException e) {
         // Ignore the error if the partition does not exist
+	  if (throwIfNonExistent) {
+	    throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(index)));
+	  }
       }
     }
   }
+
 }

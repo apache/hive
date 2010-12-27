@@ -41,6 +41,7 @@ public enum ErrorMsg {
   GENERIC_ERROR("Exception while processing"),
   INVALID_TABLE("Table not found", "42S02"),
   INVALID_COLUMN("Invalid Column Reference"),
+  INVALID_INDEX("Invalid Index"),
   INVALID_TABLE_OR_COLUMN("Invalid Table Alias or Column Reference"),
   AMBIGUOUS_TABLE_OR_COLUMN("Ambiguous Table Alias or Column Reference"),
   INVALID_PARTITION("Partition not found"),

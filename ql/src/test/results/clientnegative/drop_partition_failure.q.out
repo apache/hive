@@ -1,0 +1,34 @@
+PREHOOK: query: create table mp (a string) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table mp (a string) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mp
+PREHOOK: query: alter table mp add partition (b='1', c='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
+POSTHOOK: query: alter table mp add partition (b='1', c='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
+POSTHOOK: Output: default@mp@b=1/c=1
+PREHOOK: query: alter table mp add partition (b='1', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
+POSTHOOK: query: alter table mp add partition (b='1', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
+POSTHOOK: Output: default@mp@b=1/c=2
+PREHOOK: query: alter table mp add partition (b='2', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mp
+POSTHOOK: query: alter table mp add partition (b='2', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mp
+POSTHOOK: Output: default@mp@b=2/c=2
+PREHOOK: query: show partitions mp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions mp
+POSTHOOK: type: SHOWPARTITIONS
+b=1/c=1
+b=1/c=2
+b=2/c=2
+FAILED: Error in semantic analysis: line 3:31 Partition not found '3'
