@@ -57,6 +57,7 @@ TOK_SERDEPROPS;
 TOK_EXPLIST;
 TOK_ALIASLIST;
 TOK_GROUPBY;
+TOK_HAVING;
 TOK_ORDERBY;
 TOK_CLUSTERBY;
 TOK_DISTRIBUTEBY;
@@ -1086,12 +1087,13 @@ regular_body
    fromClause
    whereClause?
    groupByClause?
+   havingClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
-                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? limitClause?))
    |
    selectStatement
@@ -1103,12 +1105,13 @@ selectStatement
    fromClause
    whereClause?
    groupByClause?
+   havingClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? limitClause?))
    ;
 
@@ -1119,23 +1122,25 @@ body
    selectClause
    whereClause?
    groupByClause?
+   havingClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT insertClause?
-                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? limitClause?)
    |
    selectClause
    whereClause?
    groupByClause?
+   havingClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     selectClause whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? limitClause?)
    ;
 
@@ -1424,6 +1429,20 @@ groupByClause
 
 groupByExpression
 @init { msgs.push("group by expression"); }
+@after { msgs.pop(); }
+    :
+    expression
+    ;
+
+havingClause
+@init { msgs.push("having clause"); }
+@after { msgs.pop(); }
+    :
+    KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
+    ;
+
+havingCondition
+@init { msgs.push("having condition"); }
 @after { msgs.pop(); }
     :
     expression
@@ -1781,6 +1800,7 @@ KW_DESC : 'DESC';
 KW_ORDER : 'ORDER';
 KW_BY : 'BY';
 KW_GROUP : 'GROUP';
+KW_HAVING : 'HAVING';
 KW_WHERE : 'WHERE';
 KW_FROM : 'FROM';
 KW_AS : 'AS';
