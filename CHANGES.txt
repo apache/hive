@@ -650,6 +650,9 @@ Trunk -  Unreleased
     HIVE-1864 Fix test load_overwrite..q
     (Carl Steinbach via namit)
 
+    HIVE-1870 Add TestRemoveHiveMetaStore deleted accidently
+    (Carl Steinbach via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
