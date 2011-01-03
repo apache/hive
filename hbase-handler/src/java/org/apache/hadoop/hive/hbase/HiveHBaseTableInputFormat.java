@@ -345,7 +345,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
 
     // for now, we only support equality comparisons
-    analyzer.addComparisonOp("=");
+    analyzer.addComparisonOp(
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
 
     // and only on the key column
     analyzer.clearAllowedColumnNames();

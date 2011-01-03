@@ -39,27 +39,26 @@ STAGE PLANS:
         hbase_pushdown 
           TableScan
             alias: hbase_pushdown
+            filterExpr:
+                expr: (key = 90)
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key = 90)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key = 90)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -69,11 +68,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-45-49_710_5850592212021046409/-mr-10000
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-17_206_4185141159586177240/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown where key=90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-45-49_710_5850592212021046409/-mr-10000
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-17_206_4185141159586177240/-mr-10000
 90	val_90
 PREHOOK: query: -- with partial pushdown
 
@@ -97,9 +96,12 @@ STAGE PLANS:
         hbase_pushdown 
           TableScan
             alias: hbase_pushdown
+            filterExpr:
+                expr: (key = 90)
+                type: boolean
             Filter Operator
               predicate:
-                  expr: ((key = 90) and (value like '%90%'))
+                  expr: (value like '%90%')
                   type: boolean
               Filter Operator
                 predicate:
@@ -127,11 +129,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-45-54_425_6743860916711765300/-mr-10000
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-23_971_8228733230872798781/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-45-54_425_6743860916711765300/-mr-10000
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-23_971_8228733230872798781/-mr-10000
 90	val_90
 PREHOOK: query: -- with two residuals
 
@@ -157,9 +159,12 @@ STAGE PLANS:
         hbase_pushdown 
           TableScan
             alias: hbase_pushdown
+            filterExpr:
+                expr: (key = 90)
+                type: boolean
             Filter Operator
               predicate:
-                  expr: (((key = 90) and (value like '%90%')) and (key = UDFToInteger(value)))
+                  expr: ((value like '%90%') and (key = UDFToInteger(value)))
                   type: boolean
               Filter Operator
                 predicate:
@@ -239,12 +244,12 @@ PREHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-46-00_265_1484640014270648892/-mr-10000
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-30_678_8030079731107253758/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/njain/hive_2010-10-19_10-46-00_265_1484640014270648892/-mr-10000
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-30_678_8030079731107253758/-mr-10000
 PREHOOK: query: -- with nothing to push down
 
 explain select * from hbase_pushdown
