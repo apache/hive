@@ -653,6 +653,9 @@ Trunk -  Unreleased
     HIVE-1870 Add TestRemoveHiveMetaStore deleted accidently
     (Carl Steinbach via namit)
 
+    HIVE-1873 Fix 'tar' build target broken in HIVE-1526
+    (Carl Steinbach via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

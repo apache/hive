@@ -496,7 +496,7 @@
       <packageset dir="ql/src/java"/>
       <packageset dir="ql/src/test"/>
       <packageset dir="ql/src/gen/thrift/gen-javabean"/>
-      <packageset dir="${build.dir.hive}/ql/gen-java"/>
+      <packageset dir="${build.dir.hive}/ql/gen/antlr/gen-java"/>
       <packageset dir="shims/src/common/java"/>
 
       <link href="${javadoc.link.java}"/>
