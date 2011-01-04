@@ -659,6 +659,9 @@ Trunk -  Unreleased
     HIVE-1874 fix HBase filter pushdown broken by HIVE-1638
     (John Sichi via namit)
 
+    HIVE-1871 Bug in merging dynamic partitions introduced by HIVE-1806
+    (He Yongqiag via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

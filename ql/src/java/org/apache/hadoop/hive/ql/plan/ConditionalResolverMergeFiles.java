@@ -25,8 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -42,7 +40,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 public class ConditionalResolverMergeFiles implements ConditionalResolver,
     Serializable {
   private static final long serialVersionUID = 1L;
-  static final private Log LOG = LogFactory.getLog(ConditionalResolverMergeFiles.class.getName());
 
   public ConditionalResolverMergeFiles() {
   }
@@ -180,14 +177,35 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
             // add the merge MR job
             setupMapRedWork(conf, work, trgtSize, totalSz);
             resTsks.add(mrTask);
-
+            
             // add the move task for those partitions that do not need merging
           	if (toMove.size() > 0) { //
           	  // modify the existing move task as it is already in the candidate running tasks
           	  MoveWork mvWork = (MoveWork) mvTask.getWork();
           	  LoadFileDesc lfd = mvWork.getLoadFileWork();
+          	  
+          	  String targetDir = lfd.getTargetDir();
+          	  List<String> targetDirs = new ArrayList<String>(toMove.size());
+          	  int numDPCols = dpCtx.getNumDPCols();
+
+              for (int i = 0; i < toMove.size(); i++) {
+                String toMoveStr = toMove.get(i);
+                if (toMoveStr.endsWith(Path.SEPARATOR)) {
+                  toMoveStr = toMoveStr.substring(0, toMoveStr.length() - 1);
+                }
+                String [] moveStrSplits = toMoveStr.split(Path.SEPARATOR);
+                int dpIndex = moveStrSplits.length - numDPCols;
+                String target = targetDir;
+                while (dpIndex < moveStrSplits.length) {
+                  target = target + Path.SEPARATOR + moveStrSplits[dpIndex];
+                  dpIndex ++;
+                }
+                
+                targetDirs.add(target);
+              }
+
           	  LoadMultiFilesDesc lmfd = new LoadMultiFilesDesc(toMove,
-          	      lfd.getTargetDir(), lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
+          	      targetDirs, lfd.getIsDfsDir(), lfd.getColumns(), lfd.getColumnTypes());
           	  mvWork.setLoadFileWork(null);
           	  mvWork.setLoadTableWork(null);
           	  mvWork.setMultiFilesDesc(lmfd);
@@ -245,6 +263,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       for (FileStatus fStat : fStats) {
         totalSz += fStat.getLen();
       }
+      
       if (totalSz < avgSize * fStats.length) {
         return totalSz;
       } else {

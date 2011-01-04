@@ -126,16 +126,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // need to merge and they can simply be moved to the target directory.
       LoadMultiFilesDesc lmfd = work.getLoadMultiFilesWork();
       if (lmfd != null) {
-        Path destPath = new Path(lmfd.getTargetDir());
-        FileSystem fs = destPath.getFileSystem(conf);
-        if (!fs.exists(destPath)) {
-          fs.mkdirs(destPath);
-        }
         boolean isDfsDir = lmfd.getIsDfsDir();
-        for (String s: lmfd.getSourceDirs()) {
-          Path srcPath = new Path(s);
-          Path dstPath = new Path(destPath, srcPath.getName());
-          moveFile(srcPath, dstPath, isDfsDir);
+        int i = 0;
+        while (i <lmfd.getSourceDirs().size()) {
+          Path srcPath = new Path(lmfd.getSourceDirs().get(i));
+          Path destPath = new Path(lmfd.getTargetDirs().get(i));
+          FileSystem fs = destPath.getFileSystem(conf);
+          if (!fs.exists(destPath.getParent())) {
+            fs.mkdirs(destPath.getParent());
+          }
+          moveFile(srcPath, destPath, isDfsDir);
+          i++;
         }
       }
 

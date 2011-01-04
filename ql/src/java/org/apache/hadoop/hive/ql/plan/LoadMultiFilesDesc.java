@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class LoadMultiFilesDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  private String targetDir;
+  private List<String> targetDirs;
   private boolean isDfsDir;
   // list of columns, comma separated
   private String columns;
@@ -37,19 +37,19 @@ public class LoadMultiFilesDesc implements Serializable {
   public LoadMultiFilesDesc() {
   }
 
-  public LoadMultiFilesDesc(final List<String> sourceDirs, final String targetDir,
+  public LoadMultiFilesDesc(final List<String> sourceDirs, final List<String> targetDir,
       final boolean isDfsDir, final String columns, final String columnTypes) {
 
     this.srcDirs = sourceDirs;
-    this.targetDir = targetDir;
+    this.targetDirs = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;
     this.columnTypes = columnTypes;
   }
 
-  @Explain(displayName = "destination")
-  public String getTargetDir() {
-    return targetDir;
+  @Explain(displayName = "destinations")
+  public List<String> getTargetDirs() {
+    return targetDirs;
   }
 
   @Explain(displayName = "sources")
@@ -61,8 +61,8 @@ public class LoadMultiFilesDesc implements Serializable {
     this.srcDirs = srcs;
   }
 
-  public void setTargetDir(final String targetDir) {
-    this.targetDir = targetDir;
+  public void setTargetDirs(final List<String> targetDir) {
+    this.targetDirs = targetDir;
   }
 
   @Explain(displayName = "hdfs directory")
