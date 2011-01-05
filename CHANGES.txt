@@ -324,6 +324,10 @@ Trunk -  Unreleased
     HIVE-1855 Include Process ID in the log4j log file name
     (Ning Zhang via namit)
 
+    HIVE-1878 Set the version of Hive trunk to '0.7.0-SNAPSHOT' to avoid
+    confusing it with a release
+    (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES
