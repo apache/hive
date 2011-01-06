@@ -399,6 +399,18 @@ public class Hive {
     }
   }
 
+  public void alterDatabase(String dbName, Database db)
+      throws HiveException {
+    try {
+      getMSC().alterDatabase(dbName, db);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter database " + dbName, e);
+    } catch (NoSuchObjectException e) {
+      throw new HiveException("Database " + dbName + " does not exists.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter database " + dbName, e);
+    }
+  }
   /**
    * Creates the table with the give objects
    *

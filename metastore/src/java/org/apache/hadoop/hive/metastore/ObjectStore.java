@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -66,9 +66,9 @@ import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -360,6 +360,35 @@ public class ObjectStore implements RawStore, Configurable {
     db.setLocationUri(mdb.getLocationUri());
     db.setParameters(mdb.getParameters());
     return db;
+  }
+
+  /**
+   * Alter the database object in metastore. Currently only the parameters
+   * of the database can be changed.
+   * @param dbName the database name
+   * @param db the Hive Database object
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  public boolean alterDatabase(String dbName, Database db)
+    throws MetaException, NoSuchObjectException {
+
+    MDatabase mdb = null;
+    boolean committed = false;
+    try {
+      mdb = getMDatabase(dbName);
+      // currently only allow changing database parameters
+      mdb.setParameters(db.getParameters());
+      openTransaction();
+      pm.makePersistent(mdb);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return false;
+      }
+    }
+    return true;
   }
 
   public boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException {

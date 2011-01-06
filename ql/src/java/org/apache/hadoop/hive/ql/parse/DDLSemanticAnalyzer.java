@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_CREATEDATABASE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASECOMMENT;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DROPDATABASE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SHOWDATABASES;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SWITCHDATABASE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,6 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -159,7 +157,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
 
-    if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PARTITION) {
+    switch(ast.getToken().getType()) {
+    case HiveParser.TOK_ALTERTABLE_PARTITION: {
       TablePartition tblPart = new TablePartition((ASTNode)ast.getChild(0));
       String tableName = tblPart.tableName;
       HashMap<String, String> partSpec = tblPart.partSpec;
@@ -171,94 +170,158 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_LOCATION) {
         analyzeAlterTableLocation(ast, tableName, partSpec);
       }
-    } else if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE) {
+      break;
+    }
+    case HiveParser.TOK_DROPTABLE:
       analyzeDropTable(ast, false);
-    } else if (ast.getToken().getType() == HiveParser.TOK_CREATEINDEX) {
+      break;
+    case HiveParser.TOK_CREATEINDEX:
       analyzeCreateIndex(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_DROPINDEX) {
+      break;
+    case HiveParser.TOK_DROPINDEX:
       analyzeDropIndex(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE) {
+      break;
+    case HiveParser.TOK_DESCTABLE:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescribeTable(ast);
-    } else if (ast.getToken().getType() == TOK_SHOWDATABASES) {
+      break;
+    case TOK_SHOWDATABASES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowDatabases(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWTABLES) {
+      break;
+    case HiveParser.TOK_SHOWTABLES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTables(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOW_TABLESTATUS) {
+      break;
+    case HiveParser.TOK_SHOW_TABLESTATUS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTableStatus(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWFUNCTIONS) {
+      break;
+    case HiveParser.TOK_SHOWFUNCTIONS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowFunctions(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWLOCKS) {
+      break;
+    case HiveParser.TOK_SHOWLOCKS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowLocks(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_DESCFUNCTION) {
+      break;
+    case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescFunction(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_DESCDATABASE) {
+      break;
+    case HiveParser.TOK_DESCDATABASE:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescDatabase(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
+      break;
+    case HiveParser.TOK_MSCK:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_DROPVIEW) {
+      break;
+    case HiveParser.TOK_DROPVIEW:
       analyzeDropTable(ast, true);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW_PROPERTIES) {
+      break;
+    case HiveParser.TOK_ALTERVIEW_PROPERTIES:
       analyzeAlterTableProps(ast, true);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_RENAME:
       analyzeAlterTableRename(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_TOUCH) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_TOUCH:
       analyzeAlterTableTouch(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ARCHIVE) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_ARCHIVE:
       analyzeAlterTableArchive(ast, false);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UNARCHIVE) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
       analyzeAlterTableArchive(ast, true);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_ADDCOLS:
       analyzeAlterTableModifyCols(ast, AlterTableTypes.ADDCOLS);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_REPLACECOLS:
       analyzeAlterTableModifyCols(ast, AlterTableTypes.REPLACECOLS);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMECOL) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_RENAMECOL:
       analyzeAlterTableRenameCol(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_ADDPARTS:
       analyzeAlterTableAddParts(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_DROPPARTS:
       analyzeAlterTableDropParts(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
       analyzeAlterTableSerdeProps(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_SERIALIZER:
       analyzeAlterTableSerde(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT) {
+      break;
+    case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       analyzeAlterTableClusterSort(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_REBUILD) {
+      break;
+    case HiveParser.TOK_ALTERINDEX_REBUILD:
       analyzeAlterIndexRebuild(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERINDEX_PROPERTIES) {
+      break;
+    case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       analyzeAlterIndexProps(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS) {
+      break;
+    case HiveParser.TOK_SHOWPARTITIONS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWINDEXES) {
+      break;
+    case HiveParser.TOK_SHOWINDEXES:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowIndexes(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_LOCKTABLE) {
+      break;
+    case HiveParser.TOK_LOCKTABLE:
       analyzeLockTable(ast);
-    } else if (ast.getToken().getType() == HiveParser.TOK_UNLOCKTABLE) {
+      break;
+    case HiveParser.TOK_UNLOCKTABLE:
       analyzeUnlockTable(ast);
-    } else if (ast.getToken().getType() == TOK_CREATEDATABASE) {
+      break;
+    case HiveParser.TOK_CREATEDATABASE:
       analyzeCreateDatabase(ast);
-    } else if (ast.getToken().getType() == TOK_DROPDATABASE) {
+      break;
+    case HiveParser.TOK_DROPDATABASE:
       analyzeDropDatabase(ast);
-    } else if (ast.getToken().getType() == TOK_SWITCHDATABASE) {
+      break;
+    case HiveParser.TOK_SWITCHDATABASE:
       analyzeSwitchDatabase(ast);
-    } else {
+      break;
+    case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
+      analyzeAlterDatabase(ast);
+      break;
+    default:
       throw new SemanticException("Unsupported command.");
     }
   }
 
+  private void analyzeAlterDatabase(ASTNode ast) throws SemanticException {
+
+    String dbName = unescapeIdentifier(ast.getChild(0).getText());
+    Map<String, String> dbProps = null;
+
+    for (int i = 1; i < ast.getChildCount(); i++) {
+      ASTNode childNode = (ASTNode) ast.getChild(i);
+      switch (childNode.getToken().getType()) {
+      case HiveParser.TOK_DATABASEPROPERTIES:
+        dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
+        break;
+      default:
+        throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
+      }
+    }
+
+    // currently alter database command can only change properties
+    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, null, null, false);
+    alterDesc.setDatabaseProperties(dbProps);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc),
+        conf));
+
+  }
   private void analyzeCreateDatabase(ASTNode ast) throws SemanticException {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     boolean ifNotExists = false;

@@ -57,6 +57,7 @@ public class DDLWork implements Serializable {
   private ShowTableStatusDesc showTblStatusDesc;
   private ShowIndexesDesc showIndexesDesc;
   private DescDatabaseDesc descDbDesc;
+  private AlterDatabaseDesc alterDbDesc;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -101,6 +102,12 @@ public class DDLWork implements Serializable {
       DescDatabaseDesc descDatabaseDesc) {
     this(inputs, outputs);
     this.descDbDesc = descDatabaseDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterDatabaseDesc alterDbDesc) {
+    this(inputs, outputs);
+    this.alterDbDesc = alterDbDesc;
   }
 
   public DescDatabaseDesc getDescDatabaseDesc() {
@@ -740,4 +747,11 @@ public class DDLWork implements Serializable {
     this.dropIdxDesc = dropIdxDesc;
   }
 
+  public void setAlterDatabaseDesc(AlterDatabaseDesc alterDbDesc) {
+    this.alterDbDesc = alterDbDesc;
+  }
+
+  public AlterDatabaseDesc getAlterDatabaseDesc() {
+    return this.alterDbDesc;
+  }
 }

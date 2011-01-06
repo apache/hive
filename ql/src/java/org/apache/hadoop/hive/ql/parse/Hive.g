@@ -195,6 +195,7 @@ TOK_INDEXCOMMENT;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DBPROPLIST;
+TOK_ALTERDATABASE_PROPERTIES;
 }
 
 
@@ -448,6 +449,8 @@ alterStatement
             KW_VIEW! alterViewStatementSuffix
         |
             KW_INDEX! alterIndexStatementSuffix
+        |
+            KW_DATABASE! alterDatabaseStatementSuffix
         )
     ;
 
@@ -488,6 +491,19 @@ alterIndexStatementSuffix
       indexProperties
       ->^(TOK_ALTERINDEX_PROPERTIES $tableName $indexName indexProperties)
     )
+    ;
+
+alterDatabaseStatementSuffix
+@init { msgs.push("alter database statement"); }
+@after { msgs.pop(); }
+    : alterDatabaseSuffixProperties
+    ;
+    
+alterDatabaseSuffixProperties
+@init { msgs.push("alter database properties statement"); }
+@after { msgs.pop(); }
+    : name=Identifier KW_SET KW_DBPROPERTIES dbProperties
+    -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
     ;
 
 alterStatementSuffixRename

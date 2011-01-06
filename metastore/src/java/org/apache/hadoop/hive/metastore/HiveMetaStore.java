@@ -513,6 +513,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return db;
     }
 
+    public void alter_database(final String dbName, final Database db)
+        throws NoSuchObjectException, TException, MetaException {
+      incrementCounter("alter_database");
+      logStartFunction("alter_database" + dbName);
+      try {
+        executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            return ms.alterDatabase(dbName, db);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
+        throw e;
+      } catch (TException e) {
+        throw e;
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      }
+    }
+
     private void drop_database_core(RawStore ms,
         final String name, final boolean deleteData)
         throws NoSuchObjectException, InvalidOperationException, MetaException {

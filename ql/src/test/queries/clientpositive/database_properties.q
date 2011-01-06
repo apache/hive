@@ -1,3 +1,6 @@
+set datanucleus.cache.collections=false;
+set datanucleus.cache.collections.lazy=false;
+
 create database db1;
 
 show databases;
@@ -12,4 +15,12 @@ describe database db2;
 describe database extended db2;
 
 
+set datanucleus.cache.collections=false;
+set datanucleus.cache.collections.lazy=false;
+
+alter database db2 set dbproperties (
+  'new.property' = 'some new props',
+  'hive.warehouse.dir' = 'new/warehouse/dir');
+
+describe database extended db2;
 

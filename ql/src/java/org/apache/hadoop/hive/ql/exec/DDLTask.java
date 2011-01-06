@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.ql.metadata.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
@@ -183,6 +184,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       DescDatabaseDesc descDatabaseDesc = work.getDescDatabaseDesc();
       if (descDatabaseDesc != null) {
         return descDatabase(descDatabaseDesc);
+      }
+
+      AlterDatabaseDesc alterDatabaseDesc = work.getAlterDatabaseDesc();
+      if (alterDatabaseDesc != null) {
+        return alterDatabase(alterDatabaseDesc);
       }
 
       CreateTableDesc crtTbl = work.getCreateTblDesc();
@@ -316,6 +322,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return (1);
     }
     assert false;
+    return 0;
+  }
+
+  private int alterDatabase(AlterDatabaseDesc alterDbDesc) throws HiveException {
+
+    String dbName = alterDbDesc.getDatabaseName();
+    Database database = db.getDatabase(dbName);
+    Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
+
+    if (database != null) {
+      Map<String, String> params = database.getParameters();
+      // if both old and new params are not null, merge them
+      if (params != null && newParams != null) {
+        params.putAll(newParams);
+        database.setParameters(params);
+      } else { // if one of them is null, replace the old params with the new one
+        database.setParameters(newParams);
+      }
+      db.alterDatabase(database.getName(), database);
+    } else {
+      throw new HiveException("ERROR: The database " + dbName + " does not exist.");
+    }
     return 0;
   }
 

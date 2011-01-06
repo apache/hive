@@ -669,6 +669,9 @@ Trunk -  Unreleased
     HIVE-1881 Add an option to use FsShell to delete dir in warehouse
     (He Yongqiang via namit)
 
+    HIVE-1840 Support ALTER DATABASE to change database properties
+    (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

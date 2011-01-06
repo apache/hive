@@ -19,12 +19,25 @@ POSTHOOK: query: create database db2 with dbproperties (
   'mapred.scratch.dir' = 'hdfs://tmp.dfs.com:50029/tmp')
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: describe database db2
-PREHOOK: type: null
+PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database db2
-POSTHOOK: type: null
+POSTHOOK: type: DESCDATABASE
 db2		pfile:/data/users/nzhang/work/1/apache-hive/build/ql/test/data/warehouse/db2.db	
 PREHOOK: query: describe database extended db2
-PREHOOK: type: null
+PREHOOK: type: DESCDATABASE
 POSTHOOK: query: describe database extended db2
-POSTHOOK: type: null
+POSTHOOK: type: DESCDATABASE
 db2		pfile:/data/users/nzhang/work/1/apache-hive/build/ql/test/data/warehouse/db2.db	{mapred.jobtracker.url=http://my.jobtracker.com:53000, mapred.scratch.dir=hdfs://tmp.dfs.com:50029/tmp, hive.warehouse.dir=/user/hive/warehouse}
+PREHOOK: query: alter database db2 set dbproperties (
+  'new.property' = 'some new props',
+  'hive.warehouse.dir' = 'new/warehouse/dir')
+PREHOOK: type: ALTERDATABASE
+POSTHOOK: query: alter database db2 set dbproperties (
+  'new.property' = 'some new props',
+  'hive.warehouse.dir' = 'new/warehouse/dir')
+POSTHOOK: type: ALTERDATABASE
+PREHOOK: query: describe database extended db2
+PREHOOK: type: DESCDATABASE
+POSTHOOK: query: describe database extended db2
+POSTHOOK: type: DESCDATABASE
+db2		pfile:/data/users/nzhang/work/1/apache-hive/build/ql/test/data/warehouse/db2.db	{mapred.jobtracker.url=http://my.jobtracker.com:53000, new.property=some new props, mapred.scratch.dir=hdfs://tmp.dfs.com:50029/tmp, hive.warehouse.dir=new/warehouse/dir}

@@ -95,6 +95,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_databases failed: unknown result')
     end
 
+    def alter_database(dbname, db)
+      send_alter_database(dbname, db)
+      recv_alter_database()
+    end
+
+    def send_alter_database(dbname, db)
+      send_message('alter_database', Alter_database_args, :dbname => dbname, :db => db)
+    end
+
+    def recv_alter_database()
+      result = receive_message(Alter_database_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def get_type(name)
       send_get_type(name)
       return recv_get_type()
@@ -737,6 +753,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_all_databases', seqid)
     end
 
+    def process_alter_database(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_database_args)
+      result = Alter_database_result.new()
+      begin
+        @handler.alter_database(args.dbname, args.db)
+      rescue MetaException => o1
+        result.o1 = o1
+      rescue NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_database', seqid)
+    end
+
     def process_get_type(seqid, iprot, oprot)
       args = read_args(iprot, Get_type_args)
       result = Get_type_result.new()
@@ -1348,6 +1377,42 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_database_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    DB = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      DB => {:type => ::Thrift::Types::STRUCT, :name => 'db', :class => Database}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_database_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end

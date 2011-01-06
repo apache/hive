@@ -20,6 +20,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void drop_database(const std::string& name, const bool deleteData) = 0;
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
+  virtual void alter_database(const std::string& dbname, const Database& db) = 0;
   virtual void get_type(Type& _return, const std::string& name) = 0;
   virtual bool create_type(const Type& type) = 0;
   virtual bool drop_type(const std::string& type) = 0;
@@ -72,6 +73,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_all_databases(std::vector<std::string> & /* _return */) {
+    return;
+  }
+  void alter_database(const std::string& /* dbname */, const Database& /* db */) {
     return;
   }
   void get_type(Type& /* _return */, const std::string& /* name */) {
@@ -721,6 +725,117 @@ class ThriftHiveMetastore_get_all_databases_presult {
   MetaException o1;
 
   _ThriftHiveMetastore_get_all_databases_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_database_args__isset {
+  _ThriftHiveMetastore_alter_database_args__isset() : dbname(false), db(false) {}
+  bool dbname;
+  bool db;
+} _ThriftHiveMetastore_alter_database_args__isset;
+
+class ThriftHiveMetastore_alter_database_args {
+ public:
+
+  ThriftHiveMetastore_alter_database_args() : dbname("") {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_database_args() throw() {}
+
+  std::string dbname;
+  Database db;
+
+  _ThriftHiveMetastore_alter_database_args__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_alter_database_args & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(db == rhs.db))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_database_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_database_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_database_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_database_pargs() throw() {}
+
+  const std::string* dbname;
+  const Database* db;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_database_result__isset {
+  _ThriftHiveMetastore_alter_database_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_database_result__isset;
+
+class ThriftHiveMetastore_alter_database_result {
+ public:
+
+  ThriftHiveMetastore_alter_database_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_database_result() throw() {}
+
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_database_result__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_alter_database_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_database_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_database_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_database_presult__isset {
+  _ThriftHiveMetastore_alter_database_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_alter_database_presult__isset;
+
+class ThriftHiveMetastore_alter_database_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_database_presult() throw() {}
+
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_database_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -4780,6 +4895,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_all_databases(std::vector<std::string> & _return);
   void send_get_all_databases();
   void recv_get_all_databases(std::vector<std::string> & _return);
+  void alter_database(const std::string& dbname, const Database& db);
+  void send_alter_database(const std::string& dbname, const Database& db);
+  void recv_alter_database();
   void get_type(Type& _return, const std::string& name);
   void send_get_type(const std::string& name);
   void recv_get_type(Type& _return);
@@ -4895,6 +5013,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_drop_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_all_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
+  void process_alter_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_create_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_drop_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
@@ -4938,6 +5057,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["drop_database"] = &ThriftHiveMetastoreProcessor::process_drop_database;
     processMap_["get_databases"] = &ThriftHiveMetastoreProcessor::process_get_databases;
     processMap_["get_all_databases"] = &ThriftHiveMetastoreProcessor::process_get_all_databases;
+    processMap_["alter_database"] = &ThriftHiveMetastoreProcessor::process_alter_database;
     processMap_["get_type"] = &ThriftHiveMetastoreProcessor::process_get_type;
     processMap_["create_type"] = &ThriftHiveMetastoreProcessor::process_create_type;
     processMap_["drop_type"] = &ThriftHiveMetastoreProcessor::process_drop_type;
@@ -5042,6 +5162,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       } else {
         ifaces_[i]->get_all_databases(_return);
       }
+    }
+  }
+
+  void alter_database(const std::string& dbname, const Database& db) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      ifaces_[i]->alter_database(dbname, db);
     }
   }
 

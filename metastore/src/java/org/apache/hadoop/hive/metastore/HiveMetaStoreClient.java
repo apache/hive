@@ -680,6 +680,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.alter_partition(dbName, tblName, newPart);
   }
 
+  public void alterDatabase(String dbName, Database db)
+      throws MetaException, NoSuchObjectException, TException {
+    client.alter_database(dbName, db);
+  }
   /**
    * @param db
    * @param tableName

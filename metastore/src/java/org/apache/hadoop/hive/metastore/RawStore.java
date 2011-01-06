@@ -64,6 +64,8 @@ public interface RawStore extends Configurable {
 
   public abstract boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException;
 
+  public abstract boolean alterDatabase(String dbname, Database db) throws NoSuchObjectException, MetaException;
+
   public abstract List<String> getDatabases(String pattern) throws MetaException;
 
   public abstract List<String> getAllDatabases() throws MetaException;

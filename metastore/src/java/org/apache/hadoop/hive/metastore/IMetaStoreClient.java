@@ -308,6 +308,9 @@ public interface IMetaStoreClient {
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
+  public void alterDatabase(String name, Database db)
+      throws NoSuchObjectException, MetaException, TException;
+
   /**
    * @param db_name
    * @param tbl_name
