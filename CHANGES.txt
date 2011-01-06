@@ -666,6 +666,9 @@ Trunk -  Unreleased
     HIVE-1871 Bug in merging dynamic partitions introduced by HIVE-1806
     (He Yongqiag via namit)
 
+    HIVE-1881 Add an option to use FsShell to delete dir in warehouse
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

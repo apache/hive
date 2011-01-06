@@ -37,11 +37,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * This class represents a warehouse where data of Hive tables is stored
@@ -54,6 +55,8 @@ public class Warehouse {
   private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
+  
+  private MetaStoreFS fsHandler = null;
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
@@ -62,7 +65,25 @@ public class Warehouse {
       throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname
           + " is not set in the config or blank");
     }
+    fsHandler = getMetaStoreFsHandler(conf);
   }
+  
+  private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
+      throws MetaException {
+    String handlerClassStr = HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_METASTORE_FS_HANDLER_CLS);
+    try {
+      Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
+          .forName(handlerClassStr, true, JavaUtils.getClassLoader());
+      MetaStoreFS handler = (MetaStoreFS) ReflectionUtils.newInstance(
+          handlerClass, conf);
+      return handler;
+    } catch (ClassNotFoundException e) {
+      throw new MetaException("Error in loading index handler."
+          + e.getMessage());
+    }
+  }
+
 
   /**
    * Helper functions to convert IOException to MetaException
@@ -146,39 +167,8 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
-    LOG.info("deleting  " + f);
-    FileSystem fs = null;
-    try {
-      fs = getFs(f);
-      if (!fs.exists(f)) {
-        return false;
-      }
-
-      // older versions of Hadoop don't have a Trash constructor based on the
-      // Path or FileSystem. So need to achieve this by creating a dummy conf.
-      // this needs to be filtered out based on version
-      Configuration dupConf = new Configuration(conf);
-      FileSystem.setDefaultUri(dupConf, fs.getUri());
-
-      Trash trashTmp = new Trash(dupConf);
-      if (trashTmp.moveToTrash(f)) {
-        LOG.info("Moved to trash: " + f);
-        return true;
-      }
-      if (fs.delete(f, true)) {
-        LOG.info("Deleted the diretory " + f);
-        return true;
-      }
-      if (fs.exists(f)) {
-        throw new MetaException("Unable to delete directory: " + f);
-      }
-    } catch (FileNotFoundException e) {
-      return true; // ok even if there is not data
-    } catch (IOException e) {
-      closeFs(fs);
-      MetaStoreUtils.logAndThrowMetaException(e);
-    }
-    return false;
+    FileSystem fs = getFs(f);
+    return fsHandler.deleteDir(fs, f, recursive, conf);
   }
 
   /*
