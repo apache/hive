@@ -672,6 +672,10 @@ Trunk -  Unreleased
     HIVE-1840 Support ALTER DATABASE to change database properties
     (Ning Zhang via namit)
 
+    HIVE-1889 add an option (hive.index.compact.file.ignore.hdfs)
+    to ignore HDFS location stored in index files
+    (Yongqiang He via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

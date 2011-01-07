@@ -333,8 +333,9 @@ public class HiveConf extends Configuration {
     // Print column names in output
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
 
-    HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false);
-
+    HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false),
+    
+    HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false),
     ;
 
 

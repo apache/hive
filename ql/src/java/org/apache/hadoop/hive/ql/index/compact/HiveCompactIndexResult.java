@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -74,6 +75,7 @@ public class HiveCompactIndexResult {
 
   JobConf job = null;
   BytesRefWritable[] bytesRef = new BytesRefWritable[2];
+  boolean ignoreHdfsLoc = false;
 
   public HiveCompactIndexResult(String indexFile, JobConf conf) throws IOException,
       HiveException {
@@ -81,6 +83,7 @@ public class HiveCompactIndexResult {
 
     bytesRef[0] = new BytesRefWritable();
     bytesRef[1] = new BytesRefWritable();
+    ignoreHdfsLoc = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INDEX_IGNORE_HDFS_LOC); 
 
     if (indexFile != null) {
       Path indexFilePath = new Path(indexFile);
@@ -128,6 +131,11 @@ public class HiveCompactIndexResult {
               + line.toString());
     }
     String bucketFileName = new String(bytes, 0, firstEnd);
+    
+    if (ignoreHdfsLoc) {
+      Path tmpPath = new Path(bucketFileName);
+      bucketFileName = tmpPath.toUri().getPath();
+    }
     IBucket bucket = buckets.get(bucketFileName);
     if (bucket == null) {
       bucket = new IBucket(bucketFileName);

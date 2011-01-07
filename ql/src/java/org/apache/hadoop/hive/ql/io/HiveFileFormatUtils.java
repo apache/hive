@@ -249,11 +249,19 @@ public final class HiveFileFormatUtils {
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
       Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap)
       throws IOException {
+    return getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
+        cacheMap, false);
+  }
+  
+  public static PartitionDesc getPartitionDescFromPathRecursively(
+      Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
+      Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap,
+      boolean ignoreSchema) throws IOException {
 
     PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
     if (part == null
-        && (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
-            .equals(""))) {
+        && (ignoreSchema || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
+            .equals("")))) {
 
       Map<String, PartitionDesc> newPathToPartitionInfo = null;
       if (cacheMap != null) {
@@ -275,7 +283,7 @@ public final class HiveFileFormatUtils {
       return part;
     } else {
       throw new IOException("cannot find dir = " + dir.toString()
-                          + " in partToPartitionInfo: " + pathToPartitionInfo.keySet());
+                          + " in pathToPartitionInfo: " + pathToPartitionInfo.keySet());
     }
   }
 

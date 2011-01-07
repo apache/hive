@@ -44,7 +44,7 @@ public class HiveCompactIndexInputFormat extends HiveInputFormat {
     for (Path dir : dirs) {
       PartitionDesc part = HiveFileFormatUtils
           .getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
-              IOPrepareCache.get().allocatePartitionDescMap());
+              IOPrepareCache.get().allocatePartitionDescMap(), true);
       // create a new InputFormat instance if this is the first time to see this
       // class
       Class inputFormatClass = part.getInputFileFormatClass();

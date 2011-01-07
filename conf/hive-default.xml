@@ -847,5 +847,11 @@
   <description>Whether to throw an excpetion if dynamic partition insert generates empty results.</description>
 </property>
 
+<property>
+  <name>hive.index.compact.file.ignore.hdfs</name>
+  <value>false</value>
+  <description>True the hdfs location stored in the index file will be igbored at runtime. 
+  If the data got moved or the name of the cluster got changed, the index data should still be usable.</description>
+</property>
 
 </configuration>
