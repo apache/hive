@@ -1009,4 +1009,16 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     client.add_partition(part);
   }
+
+  /**
+   * Tests {@link HiveMetaStoreClient#newSynchronizedClient}.  Does not
+   * actually test multithreading, but does verify that the proxy
+   * at least works correctly.
+   */
+  public void testSynchronized() throws Exception {
+    IMetaStoreClient synchronizedClient =
+      HiveMetaStoreClient.newSynchronizedClient(client);
+    List<String> databases = synchronizedClient.getAllDatabases();
+    assertEquals(1, databases.size());
+  }
 }

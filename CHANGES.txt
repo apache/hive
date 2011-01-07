@@ -142,6 +142,8 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1899 Add a factory method for creating a synchronized wrapper for IMetaStoreClient (John Sichi via cws)
+
     HIVE-1852 Reduce unnecessary DFSClient.rename() calls (Ning Zhang via jssarma)
 
     HIVE-1712. Migrating metadata from derby to mysql thrown NullPointerException (Jake Farrell via pauly)
