@@ -142,6 +142,8 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)
+
     HIVE-1899 Add a factory method for creating a synchronized wrapper for IMetaStoreClient (John Sichi via cws)
 
     HIVE-1852 Reduce unnecessary DFSClient.rename() calls (Ning Zhang via jssarma)
