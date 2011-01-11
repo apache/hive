@@ -702,6 +702,9 @@ Trunk -  Unreleased
     HIVE-1658. Fix describe [extended] column formatting
     (Thiruvel Thirumoolan via Ning Zhang)
 
+    HIVE-1829. Fix intermittent failures in TestRemoteMetaStore
+    (Carl Steinbach via jvs)
+
   TASKS
 
     HIVE-1526. Hive should depend on a release version of Thrift

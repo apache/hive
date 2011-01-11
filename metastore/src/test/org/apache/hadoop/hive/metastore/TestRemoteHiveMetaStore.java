@@ -19,20 +19,23 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   private static final String METASTORE_PORT = "29083";
-  private static boolean isServerRunning = false;
+  private static boolean isServerStarted = false;
+
+  public TestRemoteHiveMetaStore() {
+    super();
+    isThriftClient = true;
+  }
 
   private static class RunMS implements Runnable {
 
       @Override
       public void run() {
-        System.out.println("Running metastore!");
-        String [] args = new String [1];
-        args[0] = METASTORE_PORT;
-        HiveMetaStore.main(args);
+        HiveMetaStore.main(new String[] { METASTORE_PORT });
       }
 
     }
@@ -40,11 +43,16 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    if(isServerRunning) {
+
+    if (isServerStarted) {
+      assertNotNull("Unable to connect to the MetaStore server", client);
       return;
     }
+
+    System.out.println("Starting MetaStore Server on port " + METASTORE_PORT);
     Thread t = new Thread(new RunMS());
     t.start();
+    isServerStarted = true;
 
     // Wait a little bit for the metastore to start. Should probably have
     // a better way of detecting if the metastore has started?
@@ -53,13 +61,10 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
     // hive.metastore.local should be defined in HiveConf
     hiveConf.set("hive.metastore.local", "false");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
-    hiveConf.setIntVar(HiveConf.ConfVars.METATORETHRIFTRETRIES, 3);
+    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
+    hiveConf.setIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60);
 
     client = new HiveMetaStoreClient(hiveConf);
-    isThriftClient = true;
-
-    // Now you have the client - run necessary tests.
-    isServerRunning = true;
   }
 
 }

@@ -35,6 +35,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -65,7 +66,7 @@ import org.apache.thrift.transport.TTransportException;
 public class HiveMetaStoreClient implements IMetaStoreClient {
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;
-  private boolean open = false;
+  private boolean isConnected = false;
   private URI metastoreUris[];
   private final boolean standAloneClient = false;
   private final HiveMetaHookLoader hookLoader;
@@ -73,6 +74,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   // for thrift connects
   private int retries = 5;
+  private int retryDelaySeconds = 0;
 
   static final private Log LOG = LogFactory.getLog("hive.metastore");
 
@@ -95,12 +97,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       client = new HiveMetaStore.HMSHandler("hive client", conf);
-      open = true;
+      isConnected = true;
       return;
     }
 
     // get the number retries
-    retries = HiveConf.getIntVar(conf, HiveConf.ConfVars.METATORETHRIFTRETRIES);
+    retries = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORETHRIFTRETRIES);
+    retryDelaySeconds = conf.getIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY);
 
     // user wants file store based configuration
     if (conf.getVar(HiveConf.ConfVars.METASTOREURIS) != null) {
@@ -161,13 +164,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         openStore(store);
       } catch (MetaException e) {
         LOG.warn(e.getStackTrace());
-        LOG.warn("Unable to connect metastore with URI " + store);
+        LOG.warn("Unable to connect to metastore with URI " + store);
       }
-      if (open) {
+      if (isConnected) {
         break;
       }
     }
-    if (!open) {
+    if (!isConnected) {
       throw new MetaException(
           "Could not connect to meta store using any of the URIs provided");
     }
@@ -175,11 +178,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   private void openStore(URI store) throws MetaException {
+    isConnected = false;
 
-    for (int i = 0; i < retries && !open; ++i) {
-      open = false;
+    for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
+      if (attempt > 0 && retryDelaySeconds > 0) {
+        try {
+          LOG.info("Waiting " + retryDelaySeconds + " seconds before next connection attempt.");
+          Thread.sleep(retryDelaySeconds * 1000);
+        } catch (InterruptedException ignore) {
+        }
+      }
+
       transport = new TSocket(store.getHost(), store.getPort());
-      ((TSocket) transport).setTimeout(20000);
+      ((TSocket)transport).setTimeout(1000 * conf.getIntVar(ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT));
 
       // Wrap thrift connection with SASL if enabled.
       boolean useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
@@ -189,7 +200,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           ShimLoader.getHadoopThriftAuthBridge().createClient();
           String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
           transport = authBridge.createClientTransport(
-          principalConfig, store.getHost(), "KERBEROS",transport);
+          principalConfig, store.getHost(), "KERBEROS", transport);
         } catch (IOException ioe) {
           LOG.error("Couldn't create client transport", ioe);
           throw new MetaException(ioe.toString());
@@ -201,28 +212,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
      try {
         transport.open();
-        open = true;
+        isConnected = true;
       } catch (TTransportException e) {
         if (LOG.isDebugEnabled()) {
-          LOG.warn("failed to connect to MetaStore, re-trying...", e);
+          LOG.warn("Failed to connect to the MetaStore Server...", e);
         } else {
-        // Don't print full exception trace if DEBUG is not on.
-        LOG.warn("failed to connect to MetaStore, re-trying...");
-        }
-
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException ignore) {
+          // Don't print full exception trace if DEBUG is not on.
+          LOG.warn("Failed to connect to the MetaStore Server...");
         }
       }
     }
-    if (!open) {
-      throw new MetaException("could not connect to meta store");
+    if (!isConnected) {
+      throw new MetaException("Could not connect to the MetaStore server!");
     }
   }
 
   public void close() {
-    open = false;
+    isConnected = false;
     if ((transport != null) && transport.isOpen()) {
       transport.close();
     }
@@ -962,5 +968,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
     }
   }
-  
+
 }

@@ -54,7 +54,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
-      HiveConf.ConfVars.METATORETHRIFTRETRIES,
+      HiveConf.ConfVars.METASTORETHRIFTRETRIES,
       HiveConf.ConfVars.METASTOREPWD,
       HiveConf.ConfVars.METASTORECONNECTURLHOOK,
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
@@ -128,7 +128,11 @@ public class HiveConf extends Configuration {
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
     METASTOREURIS("hive.metastore.uris", ""),
     // Number of times to retry a connection to a Thrift metastore server
-    METATORETHRIFTRETRIES("hive.metastore.connect.retries", 3),
+    METASTORETHRIFTRETRIES("hive.metastore.connect.retries", 5),
+    // Number of seconds the client should wait between connection attempts
+    METASTORE_CLIENT_CONNECT_RETRY_DELAY("hive.metastore.client.connect.retry.delay", 1),
+    // Socket timeout for the client connection (in seconds)
+    METASTORE_CLIENT_SOCKET_TIMEOUT("hive.metastore.client.socket.timeout", 20),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
     // Class name of JDO connection url hook
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", ""),
@@ -334,7 +338,7 @@ public class HiveConf extends Configuration {
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
 
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false),
-    
+
     HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false),
     ;
 

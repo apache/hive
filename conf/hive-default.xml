@@ -211,6 +211,18 @@
 </property>
 
 <property>
+  <name>hive.metastore.client.connect.retry.delay</name>
+  <value>1</value>
+  <description>Number of seconds for the client to wait between consecutive connection attempts</description>
+</property>
+
+<property>
+  <name>hive.metastore.client.socket.timeout</name>
+  <value>20</value>
+  <description>MetaStore Client socket timeout in seconds</description>
+</property>
+
+<property>
   <name>hive.metastore.rawstore.impl</name>
   <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
   <description>Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. This class is used to store and retrieval of raw metadata objects such as table, database</description>
