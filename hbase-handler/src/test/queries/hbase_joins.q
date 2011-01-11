@@ -1,6 +1,7 @@
 DROP TABLE users;
 DROP TABLE states;
 DROP TABLE countries;
+DROP TABLE users_level;
 
 -- From HIVE-1257
 
@@ -62,3 +63,20 @@ ON (u.state = s.key);
 DROP TABLE users;
 DROP TABLE states;
 DROP TABLE countries;
+
+CREATE TABLE users(key int, userid int, username string, created int) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:nickname,f:created");
+
+CREATE TABLE users_level(key int, userid int, level int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,f:userid,f:level");
+
+-- HIVE-1903:  the problem fixed here showed up even without any data,
+-- so no need to load any to test it
+SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
+ FROM users JOIN users_level ON (users.userid = users_level.userid) 
+ GROUP BY year(from_unixtime(users.created)), level;
+
+DROP TABLE users;
+DROP TABLE users_level;

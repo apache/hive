@@ -680,6 +680,9 @@ Trunk -  Unreleased
     to ignore HDFS location stored in index files
     (Yongqiang He via namit)
 
+    HIVE-1903 Can't join HBase tables if one's name is the beginning of
+    the other (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

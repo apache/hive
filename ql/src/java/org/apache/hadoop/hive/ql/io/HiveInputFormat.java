@@ -217,17 +217,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // clone a jobConf for setting needed columns for reading
     JobConf cloneJobConf = new JobConf(job);
-    pushProjectionsAndFilters(cloneJobConf, inputFormatClass, hsplit.getPath()
-        .toString(), hsplit.getPath().toUri().getPath());
 
-    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
-        cloneJobConf);
+    if (this.mrwork == null) {
+      init(job);
+    }
 
+    boolean nonNative = false;
     PartitionDesc part = pathToPartitionInfo.get(hsplit.getPath().toString());
     if ((part != null) && (part.getTableDesc() != null)) {
       Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+      nonNative = part.getTableDesc().isNonNative();
     }
 
+    pushProjectionsAndFilters(cloneJobConf, inputFormatClass, hsplit.getPath()
+      .toString(), hsplit.getPath().toUri().getPath(), nonNative);
+
+    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
+        cloneJobConf);
     RecordReader innerReader = inputFormat.getRecordReader(inputSplit,
         cloneJobConf, reporter);
 
@@ -356,6 +362,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
       String splitPath, String splitPathWithNoSchema) {
+    pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath,
+      splitPathWithNoSchema, false);
+  }
+  
+  protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
+      String splitPath, String splitPathWithNoSchema, boolean nonNative) {
     if (this.mrwork == null) {
       init(job);
     }
@@ -367,7 +379,22 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     while (iterator.hasNext()) {
       Entry<String, ArrayList<String>> entry = iterator.next();
       String key = entry.getKey();
-      if (splitPath.startsWith(key) || splitPathWithNoSchema.startsWith(key)) {
+      boolean match;
+      if (nonNative) {
+        // For non-native tables, we need to do an exact match to avoid
+        // HIVE-1903.  (The table location contains no files, and the string
+        // representation of its path does not have a trailing slash.)
+        match =
+          splitPath.equals(key) || splitPathWithNoSchema.equals(key);
+      } else {
+        // But for native tables, we need to do a prefix match for
+        // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
+        // to be a potential problem here since we are always dealing with the
+        // path to something deeper than the table location.)
+        match =
+          splitPath.startsWith(key) || splitPathWithNoSchema.startsWith(key);
+      }
+      if (match) {
         ArrayList<String> list = entry.getValue();
         for (String val : list) {
           aliases.add(val);
